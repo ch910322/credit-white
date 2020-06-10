@@ -1,0 +1,436 @@
+remote inner procedure CredManVc_PasteType(var record CredManVc);
+external inner function roundmode SetRoundModeD(Integer);
+external  procedure CredManSetDatesCust(var record CredManVc);
+external procedure CalculateSuretyAge(record B2BLoanApplicationVc,Integer);
+external inner updating function Boolean AddContactCUDsmRemote(record CUVc,string);
+external inner updating procedure SendCustomerLetterWithDetails(record RCVc,string,string,string);
+external inner function Boolean GetNextCustNr(var string);
+
+global
+function Boolean InsertContactName(var record B2BLoanApplicationVc LAr)
+begin
+  Boolean res;
+  record CUVc CUr;
+  record ContactRelVc CRr;
+  
+  CRr.ContactName = LAr.ContactName;
+  CRr.CustCode = LAr.CustCode;
+  if (ReadFirstKey("Contact",CRr,2,true)) then begin
+    CUr.Code = CRr.ContactCode;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      LAr.ContactPhoneNo = CUr.Phone;
+      LAr.ContactMobile = CUr.Mobile;
+      LAr.ContacteMail = CUr.eMail;
+      res = true;
+    end;
+  end;
+
+  InsertContactName = res;
+  return;
+end;
+
+procedure InsertAdditionalContacts(var record B2BLoanApplicationVc LAr)
+begin
+  record CUVc CUr;
+  record ContactRelVc CRr;
+  record CMApplicationSetBlock ASb;
+  
+  BlockLoad(ASb);
+  if (nonblank(ASb.CEOTitle) or nonblank(ASb.OwnerTitle)) then begin
+    while (LoopKey("CustContactCode:" & LAr.CustCode,CRr,1,true)) begin
+      if (SetInSet(ASb.OwnerTitle,CRr.JobTitle)) then begin
+        LAr.OwnerCustCode = CRr.ContactCode;
+        LAr.OwnerName = CRr.ContactName;
+      end;
+      if (SetInSet(ASb.CEOTitle,CRr.JobTitle)) then begin
+        LAr.CEOCustCode = CRr.ContactCode;
+        LAr.CEOName = CRr.ContactName;
+      end;
+    end;
+  end;  
+
+  return;
+end;
+
+global
+function Boolean InsertCustomerInB2BApplication(var record B2BLoanApplicationVc LAr)
+begin
+  record CUVc CUr;
+  Boolean res;
+  record BankVc Bankr;
+
+  CUr.Code = LAr.CustCode;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    LAr.CustName = CUr.Name;
+    LAr.PhoneNo = CUr.Phone;
+    LAr.eMail = CUr.eMail;
+    LAr.ContactName = CUr.Person;
+    LAr.Addr0 = CUr.InvAddr0;
+    LAr.Addr1 = CUr.InvAddr1;
+    LAr.Addr2 = CUr.InvAddr2;
+    LAr.Addr3 = CUr.InvAddr3;
+    LAr.Addr4 = CUr.InvAddr4;
+    LAr.BankCode = CUr.AccOperator;
+    Bankr.Code = CUr.AccOperator;
+    if (ReadFirstMain(Bankr,1,true)) then begin
+      LAr.BankName = Bankr.Name;
+    end;
+    LAr.BankAccount = CUr.BankAccount;
+  
+    InsertContactName(LAr);
+    InsertAdditionalContacts(LAr);
+    res = true;
+  end;
+  
+  InsertCustomerInB2BApplication = res;
+  return;
+end;
+
+global
+function Boolean InsertSuretyInB2BApplication(var record B2BLoanApplicationVc LAr,Integer num)
+begin
+  record CUVc CUr;
+  Boolean res;
+
+  CUr.Code = GetFieldValueByName(LAr,"SuretyProvider" & num,-1);
+  if (ReadFirstMain(CUr,1,true)) then begin
+    SetFieldValueByName(LAr,"Surety" & num & "AccessToDataUntil",CUr.AccessToDataUntil,-1);
+    SetFieldValueByName(LAr,"Surety" & num & "Name",CUr.Name,-1);
+    SetFieldValueByName(LAr,"Surety" & num & "Position",CUr.JobDesc,-1);
+    SetFieldValueByName(LAr,"Surety" & num & "Phone",CUr.Phone,-1);
+    SetFieldValueByName(LAr,"Surety" & num & "eMail",CUr.eMail,-1);
+    SetFieldValueByName(LAr,"Surety" & num & "ID",CUr.RegNr1,-1);
+    SetFieldValueByName(LAr,"Surety" & num & "Addr0",CUr.InvAddr0,-1);
+    SetFieldValueByName(LAr,"Surety" & num & "Addr1",CUr.InvAddr1,-1);
+    SetFieldValueByName(LAr,"Surety" & num & "Addr2",CUr.InvAddr2,-1);
+    SetFieldValueByName(LAr,"Surety" & num & "Addr3",CUr.InvAddr3,-1);
+    SetFieldValueByName(LAr,"Surety" & num & "Addr4",CUr.InvAddr4,-1);
+    CalculateSuretyAge(LAr,num);
+    //UpdateSuretyScoring(LAr,CUr.Code);
+
+    res = true;
+  end;
+  
+  InsertSuretyInB2BApplication = res;
+  return;
+end;
+
+global
+function Boolean InsertManagerInB2BApplication(var record B2BLoanApplicationVc LAr)
+begin
+  record UserVc Userr;
+  record GlobalUserVc GlobalUserr;
+  Boolean res;
+  
+  Userr.Code = LAr.Manager;
+  if (ReadFirstMain(Userr,1,true)) then begin
+    LAr.ManagerName = Userr.Name;
+    res = true;
+  end else begin
+    GlobalUserr.Code = LAr.Manager;
+    if (ReadFirstMain(GlobalUserr,1,true)) then begin
+      LAr.ManagerName = Userr.Name;
+      res = true;
+    end;
+  end;
+
+  InsertManagerInB2BApplication = res;
+  return;
+end;
+
+global
+procedure B2BLoanApp_ContactSClassOnOpenRemote(string custcode,var Array string acontact,var Integer acnt)
+begin
+  Boolean found;
+  string 255 tstr,maincontact,spacertstr;
+  record CUVc CUr;
+  record CUVc ContactCUr;
+  record ContactRelVc ContactRelr;
+
+  spacertstr = "#";
+/*
+  CUr.Code = custcode;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    if (nonblank(CUr.Person)) then begin
+      tstr = CUr.Person;
+      maincontact = CUr.Person;
+//       M4PadString(CUr.Person,60," ",false,tstr);
+      tstr = CUr.Person;
+      if (FindCustomerRelation(CUr.Code,CUr.Person,ContactCUr)) then begin
+        tstr = tstr & spacertstr & ContactCUr.Title;
+      end else begin
+        tstr = tstr & spacertstr & CUr.Title;
+      end;
+      acontact[acnt] = tstr;
+      acnt = acnt + 1;
+    end;
+  end;
+*/
+  ContactRelr.CustCode = custcode;
+  found = true;
+  while (LoopKey("CompKey",ContactRelr,1,found)) begin
+    if ((ContactRelr.CustCode==custcode) or (blank(custcode))) then begin
+      if (ContactRelr.ContactName!=maincontact) then begin
+        if (ContactRelr.Invalid==0) then begin
+          ContactCUr.Code = ContactRelr.ContactCode;
+          if (ReadFirstMain(ContactCUr,1,true)) then begin
+            if (ContactCUr.blockedFlag==0) then begin
+//               M4PadString(ContactCUr.Name,60," ",false,tstr);
+              tstr = ContactCUr.Code & spacertstr;
+              tstr = tstr & ContactCUr.Name;
+              if (nonblank(ContactCUr.Title)) then begin 
+                tstr = tstr & spacertstr & ContactCUr.Title;
+              end; 
+              acontact[acnt] = tstr;
+              acnt = acnt + 1;
+            end;
+          end;
+        end;
+      end;
+    end else begin
+      found = false;
+    end;
+  end;
+  return;
+end;
+
+global
+procedure PasteSuretyInCredMan(var record CredManVc CredManr,string code,Integer num)
+begin
+  record CUVc CUr;
+  
+  CUr.Code = code;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    SetFieldValueByName(CredManr,"SuretyProvider" & num,CUr.Code,-1);
+    SetFieldValueByName(CredManr,"Surety" & num & "Name",CUr.Name,-1);
+    SetFieldValueByName(CredManr,"Surety" & num & "Position",CUr.JobDesc,-1);
+    SetFieldValueByName(CredManr,"Surety" & num & "Phone",CUr.Phone,-1);
+    SetFieldValueByName(CredManr,"Surety" & num & "Mobile",CUr.Mobile,-1);
+    SetFieldValueByName(CredManr,"Surety" & num & "eMail",CUr.eMail,-1);
+    SetFieldValueByName(CredManr,"Surety" & num & "ID",CUr.RegNr1,-1);
+    SetFieldValueByName(CredManr,"Surety" & num & "Addr0",CUr.InvAddr0,-1);
+    SetFieldValueByName(CredManr,"Surety" & num & "Addr1",CUr.InvAddr1,-1);
+    SetFieldValueByName(CredManr,"Surety" & num & "Addr2",CUr.InvAddr2,-1);
+    SetFieldValueByName(CredManr,"Surety" & num & "Addr3",CUr.InvAddr3,-1);
+    SetFieldValueByName(CredManr,"Surety" & num & "Addr4",CUr.InvAddr4,-1);
+  end;
+
+  return;
+end;
+
+global
+updating function Boolean B2BLoanAppCreateCredMan(var record B2BLoanApplicationVc LAr,var record CredManVc CredManr)
+begin
+  record CUVc CUr;
+  Boolean res;
+  record CMOrderClassBlock OCb;
+  record CredManTypeVc CMTr;
+
+  CUr.Code = LAr.CustCode;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    BlockLoad(OCb);
+    RecordNew(CredManr);
+    CredManr.SerNr = NextSerNr("CredManVc",CurrentDate,-1,false,"");
+    CredManr.Type = LAr.Type;
+    CredManVc_PasteType(CredManr);
+    CredManr.IntRate = LAr.InterestRate;
+    CredManr.CustCode = LAr.CustCode;
+    CredManr.Addr0 = LAr.CustName;
+    CredManr.SalesMan = LAr.Manager;
+    CredManr.InvSum4 = LAr.Sum;
+    CredManr.OrderClass = OCb.CMDefOrderClass;
+    CredManr.startDate = CurrentDate;//LAr.StartDate;
+    CredManr.InstalmentMonths = LAr.Months;
+    CMTr.Code = LAr.Type;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      CredManr.AnnualRate = CMTr.AnnualRate;
+      CredManr.PayDeal = CMTr.PayDeal;
+      CredManr.Classifications = CMTr.Classifications;
+    end else begin  
+      CredManr.PayDeal = CUr.PayDeal;
+    end;
+    CredManr.ClientContact = LAr.ContactName;
+    CredManr.MonthlyPaymentDay = LAr.MonthlyPaymentDay;
+    CredManr.DepositSum = Round(CredManr.DepositPrc/100 * CredManr.InvSum4,SetRoundModeD(2));
+    CredManSetDatesCust(CredManr);
+    CredManr.BankCode = LAr.BankCode;
+    CredManr.BankName = LAr.BankName;
+    CredManr.BankAccount = LAr.BankAccount;
+    CredManr.PrincipleDelayMonths = LAr.PrincipleDelayMonths;
+    CredManr.PrincipleDelayInterest = LAr.PrincipleDelayInterest;
+    CredManr.MaxMonthlyPayment = LAr.MaxMonthlyPayment;
+    CredManr.LoanApplication = LAr.SerNr;
+//Pasting sureties
+    PasteSuretyInCredMan(CredManr,GetFieldValueByName(LAr,"SuretyProvider" & 1,-1),1);
+    PasteSuretyInCredMan(CredManr,GetFieldValueByName(LAr,"SuretyProvider" & 2,-1),2);
+    PasteSuretyInCredMan(CredManr,GetFieldValueByName(LAr,"SuretyProvider" & 3,-1),3);
+
+    if (RecordInsert(CredManr,true)) then begin
+      LAr.OrderClass = OCb.AcceptedAppOrderClass;
+
+      res = true;
+      CreateRecordLink(LAr,CurrentCompany,CredManr,CurrentCompany);
+      CreateRecordLink(CredManr,CurrentCompany,LAr,CurrentCompany);
+    end;
+  end;
+
+  B2BLoanAppCreateCredMan = res;
+  return;
+end;
+
+global
+updating function Boolean MakeActFromB2BLoanApp(var record B2BLoanApplicationVc LAr,var record ActVc Actr)
+begin
+  Integer curcomp;
+  Boolean res;
+
+  if (ReadFirstMain(LAr,0,true)) then begin end;  
+  curcomp = CurrentCompany;
+  Actr.Invalid = 0;
+  Actr.TodoFlag = 1;
+  Actr.CUCode = LAr.CustCode;
+  Actr.Contact = LAr.ContactName;
+  Actr.CUName = LAr.CustName;
+  Actr.Phone = LAr.PhoneNo;
+  Actr.TransDate = CurrentDate;
+  Actr.MainPersons = LAr.Manager;
+  Actr.SerNr = NextSerNr("ActVc",Actr.TransDate,-1,false,"");  
+  if (RecordStore(Actr,false)) then begin 
+    CreateRecordLink(Actr,curcomp,LAr,curcomp);  
+    CreateRecordLink(LAr,curcomp,Actr,curcomp);  
+    res = true;
+  end;  
+  MakeActFromB2BLoanApp = res;
+  return;
+end;
+
+procedure AddBankAccountToArr(string bankcode,string bankaccount,var array string arr_bankaccount)
+begin
+  string 255 tstr;
+
+  tstr = bankcode & "#";
+  tstr = tstr & bankaccount;
+  arr_bankaccount[arr_bankaccount.length] = tstr;
+
+  return;
+end;
+
+global
+procedure BankAccountSClassOnOpenWindowRemote(string custcode,var array string arr_bankaccount)
+begin
+  record CUVc CUr;
+  record CUBankAccVc BAr;
+  row CUBankAccVc BArw;
+  Integer i,rwcnt;
+
+  CUr.Code = custcode;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    AddBankAccountToArr(CUr.AccOperator,CUr.BankAccount,arr_bankaccount);
+  end;
+  BAr.CustCode = custcode;
+  if (ReadFirstMain(BAr,1,true)) then begin
+    rwcnt = MatRowCnt(BAr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(BAr,i,BArw);
+      AddBankAccountToArr(BArw.BankCode,BArw.BankAccount,arr_bankaccount);
+    end;
+  end;
+  return;
+end;
+
+updating function Boolean CreateAndLinkContactPerson(string custcode,string email,var string contactcode)
+begin
+  record CUVc CUr,ContactCUr;
+  string 255 tstr;
+  Boolean res;
+ 
+  CUr.Code = custcode;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    RecordNew(ContactCUr);
+    if (GetNextCustNr(tstr)) then begin end;
+    ContactCUr.Code = tstr;
+    ContactCUr.eMail = email;
+    if (RecordInsert(ContactCUr,true)) then begin
+      if (AddContactCUDsmRemote(CUr,ContactCUr.Code)) then begin
+        res = true;
+        contactcode = ContactCUr.Code;
+      end;
+    end;
+  end;
+
+  CreateAndLinkContactPerson = res;
+  return;
+end;
+
+updating function Boolean AddSuretyToApplication(var record B2BLoanApplicationVc LAr,string contactcode)
+begin
+  Boolean res;
+  Integer scnt;
+  record CMOrderClassBlock OCb;
+  
+  if (nonblank(contactcode)) then begin
+    scnt = 1;
+    while (nonblank(GetFieldValueByName(LAr,"SuretyProvider" & scnt,-1))) begin
+      scnt = scnt + 1;
+    end;
+    if (scnt<4) then begin
+      BlockLoad(OCb);//loading this block twice....sorry, I know
+      SetFieldValueByName(LAr,"SuretyProvider" & scnt,contactcode,-1);
+      InsertSuretyInB2BApplication(LAr,scnt);
+      LAr.SuretyCnt = scnt;
+      LAr.OrderClass = OCb.OtherWebAppClass;
+      res = true;
+    end;
+  end;
+
+  AddSuretyToApplication = res;
+  return;
+end;
+
+updating procedure SendSuretyInvitationMail(Longint sernr,string email,string contactcode)
+begin
+  record InvitationRequestVc IRr;
+  record CMApplicationSetBlock CMb;
+  record RcVc RepSpec;
+  
+  BlockLoad(CMb);
+  RecordNew(IRr);
+  IRr.UUID = MakeUUID;
+  IRr.TransDate = CurrentDate;
+  IRr.TransTime = CurrentTime;
+  IRr.LoanAppNr = sernr;
+  IRr.ContactCode = contactcode;
+  if (RecordInsert(IRr,true)) then begin
+    RepSpec.searchstr = "?sess=" & IRr.UUID & "&cc=" & contactcode;
+    RepSpec.f1 = contactcode;
+    SendCustomerLetterWithDetails(RepSpec,CMb.SuretyInviteLetter,"",email);
+  end;
+
+  return;
+end;
+
+global
+updating function Boolean SendSuretyInvitation(record RcVc RepSpec,var record B2BLoanApplicationVc LAr)
+begin
+  Boolean res;
+  string 255 contactcode;
+  record B2BLoanApplicationVc oldLAr;
+
+  LAr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(LAr,1,true)) then begin
+    if (CreateAndLinkContactPerson(LAr.CustCode,RepSpec.f1,contactcode)) then begin
+      RecordCopy(oldLAr,LAr);
+      //add surety
+      if (AddSuretyToApplication(LAr,contactcode)) then begin
+        //if (RecordUpdate(oldLAr,LAr,true)==0) then begin
+          SendSuretyInvitationMail(LAr.SerNr,RepSpec.f1,contactcode);
+          res = true;
+        //end;
+      end;
+    end;
+  end;
+
+
+  SendSuretyInvitation = res;
+  return;
+end;

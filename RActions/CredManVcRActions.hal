@@ -1,0 +1,403 @@
+//<halrule>server-only</halrule>
+external inner procedure CredManVc_PasteType(var record CredManVc);
+external inner procedure CUCreditLimit(record CUVc,Date,string,var val,var LongInt);
+external function val GetMonthlyPaymentAmount(record CredManVc,Integer);
+external updating procedure ClearAgreementDocRecords(Longint,Integer);
+
+
+global
+function LongInt CredManVcRecordDefaults(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  record BaseCurBlock BCb;
+  record CredManSetBlock CMb;
+  record CMOrderClassBlock OCb;
+
+  BlockLoad(BCb);
+  BlockLoad(CMb);
+  BlockLoad(OCb);
+  CredManr.CurncyCode = BCb.BaseCur1;
+  CredManr.MonthlyPaymentDay = CMb.InvDay;
+
+  res = inner.CredManVcRecordDefaults(CredManr,CredMan2r,stat,long4);
+  CredManVc_PasteType(CredManr);
+
+  CredManr.OrderClass = OCb.CMDefOrderClass;
+
+  CredManVcRecordDefaults = res;
+  return;
+END;
+
+global
+function LongInt CredManVcRecordDuplicate(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  record BaseCurBlock BCb;
+  record CredManSetBlock CMb;
+  val t;
+
+  BlockLoad(BCb);
+  BlockLoad(CMb);
+  CredManr.CurncyCode = BCb.BaseCur1;
+  CredManr.MonthlyPaymentDay = CMb.InvDay;
+  CredManr.StateChangeDate = CurrentDate;
+  CredManr.StateChangeTime = CurrentTime;
+  CredManr.StateNotified = 0;
+  CredManr.VersionNo = -1;
+/*
+  CredManr.FactInvAmount = t;
+  CredManr.LoanToValue = t;
+  CredManr.FactBuyer = "";
+  CredManr.FactBuyerName = "";
+  CredManr.FactInvNumber = "";
+  CredManr.FactComment = "";
+  CredManr.FactInsured = 0;
+*/
+
+  res = inner.CredManVcRecordDefaults(CredManr,CredMan2r,stat,long4);
+  
+  CredManVcRecordDuplicate = res;
+  return;
+END;
+
+function val GetFactoringTotalAgreementWorth(string cucode,Date enddate,Longint sernr)
+begin
+  record CredManVc CredManr;
+  Boolean TrHs;
+  val res;
+
+  TrHs = true;
+  CredManr.FactBuyer = cucode;
+  CredManr.endDate = CurrentDate;
+  while (LoopKey("FactBuyer",CredManr,2,TrHs)) begin
+    if (CredManr.FactBuyer!=cucode ) then begin//or CredManr.endDate>enddate?
+      TrHs = false;
+    end else begin
+      if (CredManr.startDate<=CurrentDate and CredManr.InstalmentType==4) then begin
+        if (CredManr.SerNr!=sernr) then begin
+          res = res + CredManr.FactInvAmount;
+        end;
+      end;
+    end;
+  end;
+  
+  GetFactoringTotalAgreementWorth = res;
+  return;
+end;
+
+global
+updating function LongInt CredManVcRecordCheck(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  record CredManVc tCredManr;
+  Boolean TrHs,credf;
+  Longint crlimitdays;
+  val crlimit,totworth;
+  record CUVc CUr;
+  record CredManFactVc CMFr;
+
+  res = 0;
+
+  if (CredManr.InstalmentType==4) then begin
+/*
+    if (CredManr.FactInvAmount<=0) then begin
+      RecordCheckError(1058,"",-1,"FactInvAmount");
+      res = -1;
+      goto LCredManVcRecordCheck;
+    end;
+    if (blank(CredManr.FactInvNumber)) then begin
+      RecordCheckError(1058,"",-1,"FactInvNumber");
+      res = -1;
+      goto LCredManVcRecordCheck;
+    end else begin
+      TrHs = true;
+      tCredManr.FactInvNumber = CredManr.FactInvNumber;
+      while (LoopKey("FactInvNumber",tCredManr,1,TrHs)) begin
+        if (tCredManr.FactInvNumber!=CredManr.FactInvNumber) then begin
+          TrHs = false;
+        end else begin
+          if (tCredManr.SerNr!=CredManr.SerNr) then begin
+            RecordCheckError(200100,"",-1,"FactInvNumber");
+            res = -1;
+            goto LCredManVcRecordCheck;
+          end;
+        end;
+      end;
+    end;
+  */
+    CMFr.CredManNr = CredManr.SerNr;
+    if (ReadFirstMain(CMFr,1,true)) then begin
+      if (CMFr.Total>CredManr.InvSum4) then begin
+        RecordCheckError(200101,"",-1,"InvSum4");
+        res = -1;
+        goto LCredManVcRecordCheck;
+      end;
+    end;
+  end;
+
+  if (CredManr.MonthlyPaymentDay<=0) then begin
+    RecordCheckError(1058,"",-1,"MonthlyPaymentDay");
+    res = -1;
+    goto LCredManVcRecordCheck;
+  end;
+
+  if (CredManr.InstalmentType==6) then begin
+    if (CredManr.PrincipleDelayMonths<=0) then begin
+      RecordCheckError(1058,"",-1,"PrincipleDelayMonths");
+      res = -1;
+      goto LCredManVcRecordCheck;
+    end;
+    if (CredManr.PrincipleDelayInterest<=0) then begin
+      RecordCheckError(1058,"",-1,"PrincipleDelayInterest");
+      res = -1;
+      goto LCredManVcRecordCheck;
+    end;
+  end;
+  if (CredManr.MaxMonthlyPayment>0) then begin
+    if (CredManr.MaxMonthlyPayment<GetMonthlyPaymentAmount(CredManr,6)) then begin
+      RecordCheckError(200105,"",-1,"MaxMonthlyPayment");
+      res = -1;
+      goto LCredManVcRecordCheck;
+    end;
+  end;
+
+  if (CredManr.OrderClass!=CredMan2r.OrderClass) then begin
+    CredManr.StateChangeDate = CurrentDate;
+    CredManr.StateChangeTime = CurrentTime;
+    CredManr.StateNotified = 0;
+  end;
+
+  if (blank(CredManr.CreatedDate)) then begin
+    CredManr.CreatedDate = CurrentDate;
+  end;
+
+  if (CredManr.OKFlag!=0 and CredMan2r.OKFlag==0) then begin
+    if (blank(CredManr.PayDeal)) then begin
+      RecordCheckError(1058,"",-1,"PayDeal");
+      res = -1;
+      goto LCredManVcRecordCheck;
+    end;
+  end;
+
+  res = inner.CredManVcRecordCheck(CredManr,CredMan2r,stat,long4);
+  
+LCredManVcRecordCheck:;
+  CredManVcRecordCheck = res;
+  return;
+END;
+
+
+updating procedure CheckAndCloseCredManTasks(record CredManVc CredManr)
+begin
+  record CredManCloseTaskBlock CTb;
+  record ActVc Actr,oldActr;
+  record RLinkVc RLr;
+  Integer i;
+  
+  BlockLoad(CTb);
+  if (nonblank(CTb.CredManOrderClass)) then begin
+    if (nonblank(CredManr.OrderClass) and SetInSet(CredManr.OrderClass,CTb.CredManOrderClass)) then begin
+      i = 1;
+      while (ReadRecordLink(CredManr,i,Actr,RLr)) begin
+        if (Actr.OKFlag==0) then begin
+          RecordCopy(oldActr,Actr);
+          Actr.OKFlag = 1;
+          RecordUpdate(oldActr,Actr,true);
+        end;
+        i = i + 1;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+global
+updating function LongInt CredManVcRecordUpdateAfter(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
+begin
+  Longint res;
+
+  res = 0;
+
+  if (CredManr.OrderClass!=CredMan2r.OrderClass) then begin
+    CheckAndCloseCredManTasks(CredManr);
+  end;
+
+  CredManVcRecordUpdateAfter = res;
+  return;
+end;
+
+global
+function val GetCustomerOpenInvoices(string custcode,Longint credmannr,var val openval)
+begin
+  record ARVc ARr;
+  val res;
+  Boolean TrHs;
+  record IVVc IVr;
+
+  openval = blankval;
+  TrHs = true;
+  ARr.CustCode = custcode;
+  while (LoopKey("CustCode",ARr,1,TrHs)) begin
+    if (ARr.CustCode!=custcode) then begin
+      TrHs = false;
+    end else begin
+      openval = openval + ARr.RVal;
+      IVr.SerNr = ARr.InvoiceNr;
+      if (ReadFirstMain(IVr,1,true)) then begin
+        if (IVr.CustCredManNr==credmannr) then begin
+          res = res + ARr.RVal;
+        end;
+      end;
+    end;
+  end;
+
+  GetCustomerOpenInvoices = res;
+  return;
+end;
+
+global
+function val GetSellerOpenInvoices(string custcode,Longint credmannr,var val openval)
+begin
+  record ARVc ARr;
+  val res;
+  Boolean TrHs;
+  record IVVc IVr;
+  record CredManGrntReportVc GRr;
+
+  openval = blankval;
+  TrHs = true;
+  GRr.CustCode = custcode;
+  GRr.CustPaidFlag = 0;
+  while (LoopKey("CustCode:" & credmannr,GRr,2,TrHs)) begin
+    if (GRr.CustCode!=custcode or GRr.CustPaidFlag!=0) then begin
+      TrHs = false;
+    end else begin
+      ARr.InvoiceNr = GRr.BuyerIVNr;
+      if (ReadFirstMain(ARr,1,true)) then begin
+        openval = openval + ARr.RVal;
+        res = res + ARr.RVal;
+      end;
+    end;
+  end;
+
+  GetSellerOpenInvoices = res;
+  return;
+end;
+
+global
+function LongInt CredManFactVcRecordCheck(var record CredManFactVc CMFr,record CredManFactVc CMF2r,LongInt stat,LongInt long4)
+begin
+  Longint res;
+  record CredManVc CredManr;
+  row CredManFactVc CMFrw;
+  Integer i,rwcnt;
+  val openval,usedval;
+
+  res = 0;
+  
+  CredManr.SerNr = CMFr.CredManNr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    if (CMFr.Total>CredManr.InvSum4) then begin
+      RecordCheckError(200101,"",-1,"Total");
+      res = -1;
+      goto LCredManFactVcRecordCheck;
+    end;
+  end;
+  rwcnt = MatRowCnt(CMFr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(CMFr,i,CMFrw);
+    usedval = GetCustomerOpenInvoices(CMFrw.CustCode,CredManr.SerNr,openval);
+    if (usedval>CMFrw.MaxLimit) then begin
+      RecordCheckError(200104,openval,i,"MaxLimit");
+      res = -1;
+      goto LCredManFactVcRecordCheck;
+    end;
+  end;
+
+LCredManFactVcRecordCheck:;
+  CredManFactVcRecordCheck = res;
+  return;
+end;
+
+global
+function LongInt CredManPmtGrntVcRecordCheck(var record CredManPmtGrntVc PGr,record CredManPmtGrntVc PG2r,LongInt stat,LongInt long4)
+begin
+  Longint res;
+  record CredManVc CredManr;
+  row CredManPmtGrntVc PGrw;
+  Integer i,rwcnt;
+  val openval,usedval;
+
+  res = 0;
+  
+  CredManr.SerNr = PGr.CredManNr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    if (PGr.Total>CredManr.InvSum4) then begin
+      RecordCheckError(200101,"",-1,"Total");
+      res = -1;
+      goto LCredManPmtGrntVcRecordCheck;
+    end;
+  end;
+  rwcnt = MatRowCnt(PGr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(PGr,i,PGrw);
+    usedval = GetSellerOpenInvoices(PGrw.CustCode,CredManr.SerNr,openval);
+    if (usedval>PGrw.MaxLimit) then begin
+      RecordCheckError(200104,openval,i,"MaxLimit");
+      res = -1;
+      goto LCredManPmtGrntVcRecordCheck;
+    end;
+  end;
+
+LCredManPmtGrntVcRecordCheck:;
+  CredManPmtGrntVcRecordCheck = res;
+  return;
+end;
+
+function Boolean ContractHasHistory(record CredManVc CredManr)
+begin
+  record CredHistVc CredHistr;
+  Boolean res;
+  
+  CredHistr.CredManNr = CredManr.SerNr;
+  if (ReadFirstKey("CredManChargeType",CredHistr,1,true)) then begin
+    res = true;
+  end;
+
+  ContractHasHistory = res;
+  return;
+end;
+
+global
+function LongInt CredManVcRecordRemoveTest(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  record CredManEventVc CredManEventr;
+  string 200 thekey;
+
+  res = inner.CredManVcRecordRemoveTest(CredManr,CredMan2r,stat,long4);
+
+  if (res!=0) then begin
+    if (ContractHasHistory(CredManr)) then begin
+      res = 0;
+    end;
+  end;
+  
+  CredManVcRecordRemoveTest = res;
+  return;
+END;
+
+
+global
+updating function LongInt CredManVcRecordRemoveAfter(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+
+  res = 0;
+  
+  ClearAgreementDocRecords(CredManr.SerNr,0);
+  
+  CredManVcRecordRemoveAfter = res;
+  return;
+end;

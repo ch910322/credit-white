@@ -1,0 +1,68 @@
+//<halrule>server-only</halrule>
+external updating procedure UpdateCredHistInvoice(var record IVVc,record IVVc);
+external updating procedure UpdateSMSReminderQueue(record IVVc,record IVVc);
+external updating procedure UpdateFactoringInvoicesSL(record IVVc,Boolean);
+external updating procedure CheckAndCreateFactoringFeeInvoicePL(record IVVc);
+
+
+global
+updating function LongInt IVVcRecordUpdate(var record IVVc IVr,record IVVc IV2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+
+  res = inner.IVVcRecordUpdate(IVr,IV2r,stat,long4);
+  UpdateCredHistInvoice(IVr,IV2r);
+
+  IVVcRecordUpdate = res; 
+  return;
+end;
+
+global
+updating function LongInt IVVcRecordSave(var record IVVc IVr,record IVVc IV2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  record IVVc IV3r;
+
+  res = inner.IVVcRecordSave(IVr,IV2r,stat,long4);
+  UpdateCredHistInvoice(IVr,IV3r);
+  
+  IVVcRecordSave = res; 
+  return;
+end;
+
+global
+updating function LongInt IVVcRecordUpdateAfter(var record IVVc IVr,record IVVc IV2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+
+  res = inner.IVVcRecordUpdateAfter(IVr,IV2r,stat,long4);
+  UpdateSMSReminderQueue(IVr,IV2r);
+  if (IVr.OKFlag==1 and IV2r.OKFlag==0) then begin
+    UpdateFactoringInvoicesSL(IVr,true);
+  end;
+  if (IVr.OKFlag==0 and IV2r.OKFlag==1) then begin
+    UpdateFactoringInvoicesSL(IVr,false);
+  end;
+
+  IVVcRecordUpdateAfter = res; 
+  return;
+end;
+
+global
+updating function LongInt IVVcRecordSaveAfter(var record IVVc IVr,record IVVc IV2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  record IVVc IV3r;
+
+  RecordCopy(IV3r,IVr);
+  IV3r.OKFlag = 0;
+  res = inner.IVVcRecordSaveAfter(IVr,IV2r,stat,long4);
+  UpdateSMSReminderQueue(IVr,IV3r);
+  if (IVr.OKFlag==1) then begin
+    UpdateFactoringInvoicesSL(IVr,true);
+    CheckAndCreateFactoringFeeInvoicePL(IVr);
+  end;
+
+  IVVcRecordSaveAfter = res; 
+  return;
+end;

@@ -1,0 +1,143 @@
+//<halrule>server-only</halrule>
+external function Boolean InsertManagerInB2BApplication(var record B2BLoanApplicationVc);
+external updating procedure ClearAgreementDocRecords(Longint,Integer);
+
+global
+function LongInt B2BLoanApplicationVcRecordDefaults(var record B2BLoanApplicationVc LAr,record B2BLoanApplicationVc LA2r,LongInt long3,LongInt long4)
+begin
+  LongInt res;
+  record CredManSetBlock CredManSb;
+  record CMOrderClassBlock OCb;
+  
+  res = 1;  
+
+  LAr.TransDate = CurrentDate;
+  if (SingleUserMode) then begin
+    LAr.SerNr = NextSerNr("B2BLoanApplicationVc",LAr.TransDate,-1,false,"");
+  end;
+  LAr.Manager = CurrentUser;
+  InsertManagerInB2BApplication(LAr);
+ 
+  BlockLoad(CredManSb);
+  LAr.MonthlyPaymentDay = CredManSb.InvDay;
+
+  BlockLoad(OCb);
+  LAr.OrderClass = OCb.DefOrderClass;
+  
+  B2BLoanApplicationVcRecordDefaults = res; 
+  return;
+end;
+
+global
+function LongInt B2BLoanApplicationVcRecordDuplicate(var record B2BLoanApplicationVc LAr,record B2BLoanApplicationVc LA2r,LongInt long3,LongInt long4)
+begin
+  LongInt res; 
+  res = 1;  
+
+  LAr.TransDate = CurrentDate;
+  LAr.SerNr = -1;
+  LAr.Manager = CurrentUser;
+  LAr.StateChangeDate = CurrentDate;
+  LAr.StateChangeTime = CurrentTime;
+  LAr.StateNotified = 0;
+
+  InsertManagerInB2BApplication(LAr);
+
+
+  B2BLoanApplicationVcRecordDuplicate = res; 
+  return;
+end;
+
+global
+updating function LongInt B2BLoanApplicationVcRecordCheck(var record B2BLoanApplicationVc LAr,record B2BLoanApplicationVc LA2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  record CUVc CUr,oldCUr;
+
+  res = 0;
+  if (LAr.SerNr<=0) then begin
+    LAr.SerNr = NextSerNr("B2BLoanApplicationVc",LAr.TransDate,-1,false,"");
+  end;
+  if (nonblank(LAr.BankCode) or nonblank(LAr.BankAccount)) then begin
+    CUr.Code = LAr.CustCode;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      if (blank(CUr.AccOperator) or blank(CUr.BankAccount)) then begin
+        CUr.Code = LAr.CustCode;
+        if (ReadFirstMain(CUr,1,true)) then begin
+          RecordCopy(oldCUr,CUr);
+          CUr.BankAccount = LAr.BankAccount;
+          CUr.AccOperator = LAr.BankCode;
+          RecordUpdate(oldCUr,CUr,false);
+        end;
+      end;
+    end;
+  end;
+
+  if (LAr.OrderClass!=LA2r.OrderClass) then begin
+    LAr.StateChangeDate = CurrentDate;
+    LAr.StateChangeTime = CurrentTime;
+    LAr.StateNotified = 0;
+  end;
+
+  if (blank(LAr.CreatedDate)) then begin
+    LAr.CreatedDate = CurrentDate;
+  end;
+
+
+  B2BLoanApplicationVcRecordCheck = res;
+  return;
+end;
+
+updating procedure CheckAndCloseLoanAppTasks(record B2BLoanApplicationVc LAr)
+begin
+  record CredManCloseTaskBlock CTb;
+  record ActVc Actr,oldActr;
+  record RLinkVc RLr;
+  Integer i;
+  
+  BlockLoad(CTb);
+  if (nonblank(CTb.LoanAppOrderClass)) then begin
+    if (nonblank(LAr.OrderClass) and SetInSet(LAr.OrderClass,CTb.LoanAppOrderClass)) then begin
+      i = 1;
+      while (ReadRecordLink(LAr,i,Actr,RLr)) begin
+        if (Actr.OKFlag==0) then begin
+          RecordCopy(oldActr,Actr);
+          Actr.OKFlag = 1;
+          RecordUpdate(oldActr,Actr,true);
+        end;
+        i = i + 1;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+global
+updating function LongInt B2BLoanApplicationVcRecordUpdateAfter(var record B2BLoanApplicationVc LAr,record B2BLoanApplicationVc LA2r,LongInt stat,LongInt long4)
+begin
+  Longint res;
+
+  res = 0;
+
+  if (LAr.OrderClass!=LA2r.OrderClass) then begin
+    CheckAndCloseLoanAppTasks(LAr);
+  end;
+
+  B2BLoanApplicationVcRecordUpdateAfter = res;
+  return;
+end;
+
+
+global
+updating function LongInt B2BLoanApplicationVcRecordRemoveAfter(var record B2BLoanApplicationVc LAr,record B2BLoanApplicationVc LA2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+
+  res = 0;
+  
+  ClearAgreementDocRecords(LAr.SerNr,1);
+  
+  B2BLoanApplicationVcRecordRemoveAfter = res;
+  return;
+end;

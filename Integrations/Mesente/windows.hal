@@ -1,0 +1,45 @@
+event startup
+begin
+  
+  SetLangMode(LangEnglish,"ENG",0);
+
+  Setting("Mesente SMS",MesenteSMSTClass,modSY);
+
+end;
+
+event DefineWindows
+begin
+  real h,v,vs,h2;
+
+  vs = 20; h2 = 330;
+
+  SetLangMode(LangEnglish,"ENG",0);
+
+  WindowBegin("Mesente SMS",MesenteSMSTClass,CGSbl,SRType);
+  SetBlid(MesenteSMSBlock);
+  SetWRect(20,80,570,298);
+  Sizeable(-1,-1,0,0);
+  EditField(h=150,v=6,200,"Sender (optional)",Normal,SMSSender,false,0);
+  EditField(h,v+=vs,200,"API Url",Normal,APIUrl,false,0);
+  EditField(h,v+=vs,200,"API User",Normal,APIUser,false,0);
+  EditField(h,v+=vs,200,"API Password",Normal,APIPassword,false,0);
+  ButtonFrame(h,v=v+40,320,4,"Failed Reminders");
+  CheckBox(h,v,0,"Create Activity if SMS can not be sent",CreateActivity);
+  EditField(h+50,v+=vs,70,"Person",Normal,ActPerson,false,UserSClass);
+  EditField(h2,v,70,"Type",Normal,ActType,false,ActTypeSClass);
+  EditField(h+50,v+=vs,250,"Text",Normal,ActText,false,0);
+  SpecialMenu("Send SMS",'',1,"SendMesentaSMS");  
+  EndWindow;
+
+  WindowBegin("Send SMS",SendSMSWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,400,180);
+  AutoSizeWindow(false);  
+  h = 150;
+  EditFieldTL(h,v=6,120,"To",M4Str,Normal,255,f1,false,0);
+  EditFieldTL(h,v+=vs,120,"Text",M4Str,Normal,255,f2,false,0);
+  HalPushButton(h,v+=vs,h+120,v+20,"SendSMSWClassSend","Send");
+  EndWindow;
+
+  return;
+end;

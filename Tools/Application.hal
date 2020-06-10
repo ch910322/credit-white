@@ -1,0 +1,19 @@
+external procedure InitSMSReminderTask();
+external procedure InitCredManAutoTasks();
+external procedure InitAgreementDocReminderTask();
+external procedure InitAutoInvoiceTask(string);
+
+global
+updating procedure OnApplicationStartupComplete()
+begin
+  
+  inner.OnApplicationStartupComplete;
+  if (ServerMode) then begin
+    InitSMSReminderTask;
+    InitCredManAutoTasks;
+    InitAgreementDocReminderTask;
+    InitAutoInvoiceTask("");
+  end;
+
+  return;
+end;

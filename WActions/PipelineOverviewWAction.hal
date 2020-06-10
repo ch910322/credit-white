@@ -1,0 +1,108 @@
+
+global
+function string 40 PORegisterFilterSetSClassPasteSpecialWindowClass(string defpsname)
+begin
+  string 40 psname,actfld;
+  record PipelinOverviewBlock POb;
+  row PipelinOverviewBlock PObrw;
+  Integer rwcnt,wn,arow;
+  record UserPipelinOverviewVc UPOr;
+  row UserPipelinOverviewVc UPOrw;
+  Boolean foundf;
+  
+  wn = CurWindow;
+  arow = WindowActiveRow(wn);
+  actfld = WindowActiveField(wn);
+  psname = "";
+  switch (GetWindowClass(wn)) begin
+    case "UserPipelinOverviewDClass":
+      GetWindowRecord(wn,UPOr);
+      rwcnt = MatRowCnt(UPOr);
+      if (arow<rwcnt) then begin
+        MatRowGet(UPOr,arow,UPOrw);
+        switch (StringSetFromString(584,UPOrw.Register)) begin
+          case "CredManVc":
+            if (actfld=="RegisterFilter") then begin
+              psname = "OrderClassSClass";
+            end;
+            foundf = true;
+          case "B2BLoanApplicationVc":
+            if (actfld=="RegisterFilter") then begin
+              psname = "OrderClassSClass";
+            end;
+            foundf = true;
+        end;
+      end;
+    case "PipelineOverviewTClass":
+      GetWindowRecord(wn,POb);
+      rwcnt = MatRowCnt(POb);
+      if (arow<rwcnt) then begin
+        MatRowGet(POb,arow,PObrw);
+        switch (StringSetFromString(584,PObrw.Register)) begin
+          case "CredManVc":
+            if (actfld=="RegisterFilter") then begin
+              psname = "OrderClassSClass";
+            end;
+            if (actfld=="RegisterFilter2") then begin
+              psname = "AgreementTypeSetSClass";
+            end;
+            foundf = true;
+          case "B2BLoanApplicationVc":
+            if (actfld=="RegisterFilter") then begin
+              psname = "OrderClassSClass";
+            end;
+            if (actfld=="RegisterFilter2") then begin
+              psname = "AgreementTypeSetSClass";
+            end;
+            foundf = true;
+        end;
+      end;
+  end;  
+  if (!foundf) then begin
+    psname = inner.PORegisterFilterSetSClassPasteSpecialWindowClass(defpsname);
+  end;
+  PORegisterFilterSetSClassPasteSpecialWindowClass = psname;
+  return;
+end;
+
+
+global
+function Boolean AgreementTypeSetSClassOnOpenWindow(Integer wn)
+begin
+  Integer i;
+
+  for (i=0;i<8;i=i+1) begin
+    SetListStringAndTag(wn,i,StringFromSet(2001,i),i);
+  end;
+
+  AgreementTypeSetSClassOnOpenWindow = false;
+  return;
+end;
+
+procedure PasteFromWn(Integer wn,string paststr)
+begin
+  Integer mwn;
+  
+  mwn = MotherWindow(wn);
+  CloseWindow(wn);
+  if (mwn!=0) then begin
+    PasteString(mwn,paststr);
+  end;
+  return;
+end;
+
+global
+function Boolean AgreementTypeSetSClassOnOKWindow(Integer wn)
+begin
+  Integer Sel;
+
+  Sel = SelectedListLine(wn);
+  if (Sel>-1) then begin
+    PasteFromWn(wn,GetListTag(wn,SelectedListLine(wn)));
+  end else begin
+    CloseWindow(wn);
+  end;
+
+  AgreementTypeSetSClassOnOKWindow = false;
+  return;
+end;

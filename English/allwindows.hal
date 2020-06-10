@@ -1,0 +1,1333 @@
+
+external function real VATZoneButtonsLabelsENG(real,real,real,real);
+external function Boolean HasMetroTestFeatures();
+external function Boolean HasJewelleryInterface();
+external function Boolean HasModHotel();
+external function Boolean HasModHRM();
+external function Boolean IsEnterprise();
+external function Boolean StandardHansa();
+external function Boolean HasCharts();
+external function string 60 UserDefined(string,string);
+external function Boolean HasExtTax();
+external function Boolean HasSalesGroup();
+external function Boolean HasTaxMatrix();
+external function real VATZoneButtonsLabelsLAT(real,real,real,real);
+external function Boolean HasWithholdingTax();
+external function Boolean HasCustomerStatusReport();
+external function Boolean HasSalesman();
+external function Boolean HasSalesmanBonus();
+external procedure RateField(real,real,real,string,integer,string,boolean,real,real,string,boolean);
+external function Boolean HasModCRM();
+external function Boolean HasModSL();
+external function Boolean HasModCheck();
+external function Boolean HasModCO();
+external function Boolean HasAdvancedCRM();
+external function Boolean HasModQT();
+external function Boolean HasModSO();
+external function Boolean HasModPOS();
+external function Boolean HasModTS();
+external function Boolean HasModRent();
+external function Boolean HasModSVO();
+external function Boolean HasMultiCurrency();
+external function Boolean HasObjects();
+
+
+window CUDClass:14
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h1,h2,h3,h4,h5,h6,l,v,vm,vm2,vs;
+  string 255 label;
+  record CUVc CUr;
+  Integer wn,tilenr;
+  record ModuleBlock Modb;
+
+  BlockLoad(Modb);
+  WindowBegin("Contact",CUDClass,CGview,-);
+  DynamicWindow;
+  SetWRect(20,80,850,441);
+  Sizeable(-1,-1,0,0);
+  UseView(CUVc);
+  FormName(PrintCUD);
+
+  wn = CurWindow;
+  if (wn>0) then begin
+    if (GetWindowClass(wn)=="CUDClass") then begin
+      GetWindowRecord(wn,CUr);
+    end;
+  end;
+
+  if (HasLocalization("EST,GBR,LTU,LVA,NOR")) then begin
+    ActiveFieldOnNew("Code"); // dont change, otherwise automatic address lookup helper window wont show automatically //wns
+                              // this should not be based on localization, but rather on if the
+                              // address lookup is enabled, erik
+  end else begin
+    ActiveFieldOnNew("Name");
+  end;
+  if (HasMetroTestFeatures or GUIType!=kGUIMetro) then begin
+    CommunicateButton;
+  end;
+  if (HasJewelleryInterface) then begin
+    Tile(0,155,false,"",Code);
+  end else begin
+    Tile(0,95,false,"",Code);
+  end;
+  v = 6; h = 130; l=223; vs = 20; h1=410; h2 = 350; h3 = 430; h4 = 580; h5 = 460;
+  EditField(h,v ,   95,"No.",Normal,Code,false,TSerSClass);
+  EditField(h1,v,50,"Customer Category",Normal,CustCat,false,CCatSClass);
+  EditField(h,v+=vs,95,"Short",Normal,SearchKey,false,0);
+  EditField(h1,v,50,"#Supplier# Category",Normal,VECat,false,VGSClass);
+  if (HasJewelleryInterface) then begin
+    EditField(h,v+=vs,95,"Title",Normal,Salutation1,false,0);
+    EditField(h1,v,50,"Suffix",Normal,ANACode,false,0);
+    EditField(h,v+=vs,h1-h+50,"First Name",Normal,Salutation2,false,0);
+    EditField(h,v+=vs,h1-h+50,"Last Name",Normal,Salutation3,false,0);
+    EditField(h,v+=vs,h1-h+50,"Display Name",Normal,Name,false,0);
+  end else begin
+    EditField(h,v+=vs,h1-h+50,"Name",Normal,Name,false,0);
+  end;
+  CheckBox(h1+80,v=6,0,"C_ustomer",CUType);
+  CheckBox(h1+80,v+=16,0,"#Supplier#",VEType);
+  if (HasModHotel) then begin
+    CheckBox(h1+80,v+=16,0,"Guest",GuestType);
+  end;
+  if (HasJewelleryInterface) then begin
+    CheckBox(h1+80,v+=16,0,"No Mass SMS",NoLetterPosting);
+    CheckBox(h1+80,v+=16,0,"No Mass Emailing",NoMailPosting);
+    EditField(h1+120,v+=20,100,"Salesman",Normal,SalesMan,false,UserSClass);
+  end;
+  v=6;
+  if (HasModHRM or IsEnterprise) then begin
+    CheckBox(h1+180,v,0,"Employee",EmployeeType); v = v + 16;
+  end;
+  if (StandardHansa==false) then begin
+    CheckBox(h1+180,v,0,"Dealer",DealerType);
+  end;
+  CheckBox(h1+180,v+=16,0,"Lead",LeadType);
+
+  CheckBox(h1+280,v=6,0,"Branch",BranchType);
+
+//  HalPushButton(h1+170,v=10,h1+170+100,v+20,"CreditInfoCUDsm","Credit Info");
+//  HalPushButton(h1+170,v=10,h1+170+100,v+20,"UpdCustomerAddressCUDsm","Update Address");
+  tilenr = 1;
+  TileButton(tilenr,"Co_ntact"); tilenr = tilenr + 1;
+  TileButton(tilenr,"Delivery"); tilenr = tilenr + 1;
+  TileButton(tilenr,"Terms"); tilenr = tilenr + 1;
+  TileButton(tilenr,"Pricing"); tilenr = tilenr + 1;
+  TileButton(tilenr,"Compan_y"); tilenr = tilenr + 1;
+  TileButton(tilenr,"Accounts"); tilenr = tilenr + 1;
+  TileButton(tilenr,"E-Records"); tilenr = tilenr + 1;
+  if (StandardHansa==false) then begin
+    TileButton(tilenr,"Web"); tilenr = tilenr + 1;
+  end;
+  TileButton(tilenr,"C_omments"); tilenr = tilenr + 1;
+  if (true) then begin//HasModHotel
+    TileButton(tilenr,"Personal"); tilenr = tilenr + 1;
+  end;
+  if (StandardHansa==false) then begin
+    if (GuiType==kGuiMetro) then begin//UGLY
+      TileButton(tilenr,"Other"); tilenr = tilenr + 1;
+    end else begin
+      TileButton(tilenr,"User Defined"); tilenr = tilenr + 1;
+    end;
+  end;
+  TileButton(tilenr,"Notes"); tilenr = tilenr + 1;
+  if (CUr.CUType!=0 and HasCharts) then begin
+    TileButton(tilenr,"BI"); tilenr = tilenr + 1;
+  end;
+  tilenr = 1;
+  Tile(tilenr,290,true,tilenr,InvAddr0); tilenr = tilenr + 1;
+  v=6;
+  h6 = h+120;
+  HalPushButton(h6,v,h6+100,v+20,"UpdCustomerAddressCUDsm","Update Address");
+  h6 = h6 + 130;
+  HalPushButton(h6,v,h6+150,v+20,"CheckEUVATNumberCUDsm","Check EU #VAT# Number ");
+  v=v+10;
+  StaticText(h,v+13,"Invoice Address",false);
+  label = UserDefined("CUVc","InvAddr0");
+  EditField(h,v+=vs,-20,label,Normal,InvAddr0,false,0);
+  label = UserDefined("CUVc","InvAddr1");
+  EditField(h,v+=vs,-20,label,Normal,InvAddr1,false,0);
+  label = UserDefined("CUVc","InvAddr2");
+  EditField(h,v+=vs,-20,label,Normal,InvAddr2,false,0);
+  label = UserDefined("CUVc","InvAddr3");
+  EditField(h,v+=vs,-20,label,Normal,InvAddr3,false,0);
+  label = UserDefined("CUVc","InvAddr4");
+  EditField(h,v+=vs,-20,label,Normal,InvAddr4,false,0);
+  EditField(h,v+=vs,50,"Country",Normal,CountryCode,false,CountrySClass);
+  if (HasLocalization("BRA")) then begin 
+    EditField(h2-159,v,214,"",ViewOnly,InvCountryName,false,0);
+    v = v + vs;
+  end;  
+  EditField(h1,v,-20,"Department",Normal,Department,false,0);
+  EditField(h,v+=vs,150,"Telephone",Normal,Phone,false,0);
+  EditField(h1,v,-20,"Fax",Normal,Fax,false,0);
+  EditField(h,v+=vs,150,"Alt Phone",Normal,AltPhone,false,0);
+  EditField(h1,v,-20,"#Mobile#",Normal,Mobile,false,0);
+  EditField(h,v+=vs,150,"Skype Name",Normal,SkypeName,false,0);
+  EditField(h1,v,-20,"SIP",Normal,SIPCode,false,0);
+  EditField(h,v+=vs,150,"Email",Normal,eMail,false,0);
+  EditField(h1,v,-20,"Extension",Normal,Extension,false,0);
+  EditField(h,v+=vs,150,"Primary Contact",Normal,Person,false,ContactSClass);
+  EditField(h1,v,-20,"Web Site",Normal,wwwAddr,false,0);
+  EditField(h,v+=vs,-20,"Classification",Normal,Classification,false,CClassSClass);
+  if (HasLocalization("CHN")) then begin
+    EditField(h,v+=vs,150,"QQ Account Number",Normal,QQName,false,0);
+    EditField(h1,v,-20,"Weibo Account Number",Normal,WeiboName,false,0);
+  end;
+  RecordList2(10,v+=40,-30,-39,"ContactRelVc");
+  RlColKey(4,4,"Code",ContactCode,false,ActCustContactCode);
+  RlCol(55,55,"Title",ContactTitle,false);
+  RlColKey(105,105,"Name",ContactName,false,ActCustContactName);
+  RlCol(235,235,"Phone",ContactPhone,false);
+  RlCol(335,335,"#Mobile#",ContactMobile,false);
+  RlCol(435,435,"Job Title",JobTitle,false);
+  RlCol(535,535,"Email",ContacteMail,false);
+//  RlCol(-1,-1,"",Invalid,true);
+  Tile(tilenr,240,false,tilenr,DelAddr0); tilenr = tilenr + 1;
+  v=6;
+  if (HasLocalization("CAN,GBR,LVA,EST,SWE,USA")) then begin
+    HalPushButton(h+120,v,h+120+100,v+20,"UpdDeliveryAddressCUDsm","Update Address");
+  end;
+  v=v+12;
+  StaticText(h,v+13,"Delivery Address",false);
+  label = UserDefined("CUVc","DelAddr0");
+  EditField(h,v+=vs,-20,label,Normal,DelAddr0,false,0);
+  label = UserDefined("CUVc","DelAddr1");
+  EditField(h,v+=vs,-20,label,Normal,DelAddr1,false,0);
+  label = UserDefined("CUVc","DelAddr2");
+  EditField(h,v+=vs,-20,label,Normal,DelAddr2,false,0);
+  label = UserDefined("CUVc","DelAddr3");
+  EditField(h,v+=vs,-20,label,Normal,DelAddr3,false,0);
+  label = UserDefined("CUVc","DelAddr4");
+  EditField(h,v+=vs,-20,label,Normal,DelAddr4,false,0);
+  EditField(h,v+=vs,50,"Country",Normal,DelCountry,false,CountrySClass);
+  if (HasLocalization("BRA")) then begin 
+    EditField(h2-159,v,203,"",ViewOnly,DelCountryName,false,0);
+    v = v + vs;
+  end;    
+  EditField(h2+50,v,-20,"Order Comment",Normal,OrderComment,false,0);
+  EditField(h,v+=vs,120,"Freight No.",Normal,FreightNr,false,0);
+  EditField(h2+50,v,70,"Region",Normal,Region,false,RegionSClass);
+  EditField(h,vm=(v+=vs),120,"Sales Del. Terms",Normal,ShipDeal,false,ShipDealSClass);
+  EditField(h2+50,v,70,"Purchase Del. Terms",Normal,VEShipDeal,false,ShipDealSClass);
+  EditField(h,v+=vs,120,"Sales Del. Mode",Normal,ShipMode,false,DMSClass);
+  EditField(h2+50,v,70,"Purchase Del. Mode",Normal,VEShipMode,false,DMSClass);
+  EditField(h,v+=vs,120,"Route",Normal,Sorting,false,DelRouteSClass);
+  EditField(h,v+=vs,120,"psw",Normal,Password,false,0);
+  EditField(h,v+=vs,120,"oldpsw",Normal,OldPassword,false,0);
+/* these fields were used for securities trading, this module doesnt exist in hansa anymore */
+/* Two of these fields are used in Russia and Ukraine */
+//  EditField(h,vm=(v+=vs),120,"Securities Acc.",Normal,SecAccount,false,0);
+//  EditField(h,v+=vs,120,"Bank Account",Normal,BankAccount,false,0);//xx
+//  EditField(h,v+=vs,120,"Account Operator",Normal,AccOperator,false,BankSClass);//xx
+//##  EditField(h,v+=vs ,70, "Com. Matrix",Normal,ComCode,false,ComSClass);
+  ButtonFrame(h5+30,v=vm,150,2,"Delivery Date Based On");
+  RadioButton(h5+30,v,0,0,"Current Date",DeliveryBasedOn);
+  RadioButton(h5+30,v+=16,1,0,"Planned Delivery Date",DeliveryBasedOn);
+  Tile(tilenr,190,false,tilenr,PayDeal); tilenr = tilenr + 1;
+  EditField(h,v=6,35,"Sales Pay. Terms",Normal,PayDeal,false,PDSClass);
+  EditField(h,v+=vs,80,"Sales Credit Limit",Normal,CreditLimit,true,0);
+  EditField(h,v+=vs,80,"Sales Credit Limit Days",Normal,CreditLimitDays,false,0);
+  EditField(h,v+=vs,80,"Their #Supp.# Code",Normal,TheirCode,false,0);
+  EditField(h,v+=vs,80,"Invoice To",Normal,InvoiceToCode,false,CUSClass);
+//  EditField(h,v+=vs,80,"E-Invoice Address",Normal,ANACode,false,0);
+  EditField(h,v+=2*vs,80,"Interest Rate",Normal,IntRate,false,0);
+  EditField(h,v+=vs,80,"Creation Date",ViewOnly,DateCreated,false,0);
+  EditField(h,v+=vs,80,"Main Partner",Normal,MainPartner,false,CUSClass);
+//CUST-BEGIN
+  EditField(h,v+=20,80,"Birthday/Reg. Date",Normal,BirthDate,false,PasteCurDate);
+//CUST-END
+  EditField(h2,v=6,35,"Purch. Pay. Terms",Normal,VEPayDeal,false,PDSClass);
+  EditField(h2,v+=vs,80,"Purch. Credit Limit",Normal,VECreditLimit,true,0);
+  EditField(h2,v+=vs,80,"Purch. Credit Limit Days",Normal,VECreditLimitDays,false,0);
+  EditField(h2,v+=vs,80,"Their Customer Code",Normal,VECustID,false,0);
+  EditField(h2,v+=vs,80,"Purch. Invoice From",Normal,VEInvoiceToCode,false,VESClass);
+  EditField(h2,v+=vs,80,"Factoring",Normal,VEFactoring,false,VESClass);
+  EditField(h2,v+=vs,80,"Min. Order Sum",Normal,MinOrdSum,false,0);
+  EditField(h2,v+=vs,80,"Reference",Normal,RefStr,false,0);
+  EditField(h2,v+=vs,80,"Last Changed",Normal,DateChanged,false,0);
+//CUST-BEGIN
+  EditField(h2,v+=vs,80,"Access to Private Data till",Normal,AccessToDataUntil,false,PasteCurDate);
+//CUST-END
+  
+  CheckBox(h5,v=12,0,"Closed",blockedFlag);
+  CheckBox(h5,v+=16,0,"On Hold",OnHoldFlag);
+  CheckBox(h5,v+=16,0,"Reminders",RemndrFlag);
+//  CheckBox(h5,v+=16,0,"Collection",ColectionFlag);
+  CheckBox(h5,v+=16,0,"Interest",InterestFlag);
+  CheckBox(h5,v+=16,0,"On Account",OnAccount);
+  if (StandardHansa==false) then begin
+    CheckBox(h5,v+=16,0,"No Factoring",NoFactoringFlag);
+    CheckBox(h5,v+=16,0,"No Extra Tax",NoTax1);
+    CheckBox(h5,v+=16,0,"Group Inv. Only",GroupInv);
+    CheckBox(h5,v+=16,0,"Self Billing",SelfBilling);
+    CheckBox(h5,v+=16,0,"Approved for Chemical Storage",ChemicalStorageApproved);
+    CheckBox(h4,v=12,0,"EGO Customer",EGOFlag);
+    CheckBox(h4,v+=16,0,"EDI Customer",EDIFlag);
+    CheckBox(h4,v+=16,0,"Allow Login",AllowLogin);
+//  CheckBox(h4,v+=16,0,"Allow FTP Access",FTPLogin);
+    CheckBox(h4,v+=16,0,"Fiscal Invoices Only",FiscalFlag);
+    CheckBox(h4,v+=16,0,"No Mass SMS",NoLetterPosting);
+  end else begin
+    CheckBox(h4,v=12,0,"No Mass SMS",NoLetterPosting);
+  end;
+  CheckBox(h4,v+=16,0,"No Mass Emailing",NoMailPosting);
+  CheckBox(h4,v+=16,0,"No Environment Tax",NoRepa);
+  if (HasLocalization("GBR,LTU,POL,LVA")) then begin
+    CheckBox(h4,v+=16,0,"Reverse #VAT#",RvrsVAT);
+  end;
+  if (HasExtTax) then begin
+    CheckBox(h4,v+=16,0,"No Region Perceptions",NoTax2);
+  end;
+  Tile(tilenr,110,false,tilenr,PLCode); tilenr = tilenr + 1;
+  EditField(h,v=6,  80,"Sales Currency",Normal,CurncyCode,false,CurncyCodeSClass);
+  EditField(h,v+=vs ,80, "Price List",Normal,PLCode,false,PLDefSClass);
+  EditField(h,v+=vs ,80, "Discount Matrix",Normal,RebCode,false,RebSClass);
+  if (HasSalesman or HasSalesmanBonus) then begin
+    EditField(h,v+=vs,80,"#Salesman#",Normal,SalesMan,false,UserSClass);
+  end;
+  EditField(h,v+=vs,80,"Default Items",Normal,CompItemCode,false,CompItemSClass);
+  EditField(h2,v=6,80,"Purch. Currency",Normal,VECurncyCode,false,CurncyCodeSClass);
+  EditField(h2,v+=2*vs ,80, "#Supp.# Disc. Matrix",Normal,VERebCode,false,RebSClass);
+  if (HasSalesGroup) then begin
+    EditField(h2,v+=vs,80,"Sales Group",Normal,SalesGroup,false,SalesGroupSClass);
+  end;
+  ButtonFrame(h5,v=24,150,3,"Price Based On");
+  RadioButton(h5,v,0,0,"Order Date",PriceBasedOn);
+  RadioButton(h5,v+=16,1,0,"Planned Del. Date",PriceBasedOn);
+  RadioButton(h5,v+=16,2,0,"#Despatch# Dates",PriceBasedOn);
+  Tile(tilenr,180,false,tilenr,Comment); tilenr = tilenr + 1;
+  EditField(h,v=6,-20,"Comment",Normal,Comment,false,0);
+  EditField(h,v+=vs,-20,"Warning on Sales",Normal,WarnText1,false,0);
+  EditField(h,v+=vs,-20,"Warning on Purchase",Normal,VEWarnText1,false,0);
+  EditField(h,v+=vs,120,"#VAT Reg. No.#",Normal,VATNr,false,0);
+  EditField(h2-20,v,120,"#Reg. No.# 1",Normal,RegNr1,false,0);
+  ButtonFrame(h5+30,v+18,143,1,"Type");
+  RadioButton(h5+30,v+18,0,0,"Company",CustType);
+  RadioButton(h5+110,v+18,1,0,"Person",CustType);
+  HalPushButton(h5+110+110,v+15,h5+110+110+100,v+15+20,"UpdCustomerAddressCUDsm","Update Address");
+
+  v = v + vs;
+  EditField(h,v,120,"Country #VAT Reg. No.#",Normal,CountryVATNr,false,0);
+  EditField(h2-20,v,120,"#Reg. No. 2#",Normal,RegNr2,false,RegDefSClass);
+  EditField(h,v+=vs,120,"#VAT No.# Check Date",Normal,VATNrCheckDate,false,PasteCurDate);
+  EditField(h2-20,v,120,"GLN",Normal,RecipientGLN,false,0);
+  if (HasLocalization("HRV,SVN")) then begin 
+    EditField(h,v+=vs,120,"Legal Form",Normal,LegalForm,false,CULegalFormSClass);
+  end;
+  EditField(h,v+=vs,45,"Sales #VAT# Code",Normal,VATCode,false,VATCodeSClass);
+  if (HasTaxMatrix) then begin
+    EditField(h2-20,v,50,"Sales Tax Temp.",Normal,TaxTemplateCode,false,TaxTemplateSClass);
+  end;
+  EditField(h,v+=vs,45,"Purch. #VAT# Code",Normal,VEVATCode,false,VATCodeSClass);
+  if (HasTaxMatrix) then begin
+    EditField(h2-20,v,50,"Purch. Tax Temp.",Normal,VETaxTemplateCode,false,TaxTemplateSClass);
+  end;
+  EditField(h,v+=vs,50,"Language",Normal,LangCode,false,LangSClass);
+  EditField(h2-20, v,50,"Business Nature",Normal,BusinessNature,false,BNSClass);
+  EditField(h,v+=vs, 260,"Business Entity",Normal,BusinessEntity,false,SetSClass);
+  if (HasLocalization("ARG")) then begin
+    ButtonFrame(h+125,v+=20,177,4,"Tax Condition ");
+    RadioButton(h+125,v,2,0,"Unscripted",TaxCondition);
+    RadioButton(h+125,v+=16,0,0,"Local",TaxCondition);
+    RadioButton(h+125,v+=16,1,0,"Multilateral Agreement",TaxCondition);
+    RadioButton(h+125,v+=16,3,0,"Simplified Taxpaying Regimen",TaxCondition);
+  end;  
+  if (HasLocalization("BRA")) then begin
+    EditField(h,v+=vs,120,"SUFRAMA Reg. No.",Normal,SuframaRegNr,false,0);
+  end;
+//  EditField(h,v+=vs,120,"Channel",Normal,WebServiceChannel,false,SetSClass);
+  v = 130;
+  v = VATZoneButtonsLabelsENG(h5+30,v,170,16);
+  Tile(tilenr,130,false,tilenr,AccAP); tilenr = tilenr + 1;
+  EditField(h,v=6,80,"Creditor A/C",Normal,AccAP,false,AccSClass);
+  EditField(h,v+=vs,80,"Cost A/C",Normal,AccCost,false,AccSClass);
+  EditField(h,v+=vs,80,"Cred. On Acc. A/C",Normal,OnAccAccAP,false,AccSClass);
+  EditField(h,v+=vs,120,"Sales Tags/Objects",Normal,Objects,false,ObjSClass);
+  EditField(h,v+=vs,120,"Purch. Tags/Objects",Normal,VEObjects,false,ObjSClass);
+  EditField(h,v+=vs,50,"Payment Code",Normal,PaymentCode,false,PaymentCodeSClass);
+  EditField(h,v+=vs,50,"Tax Exemption",Normal,TaxExemption,false,TaxExemptionsSClass);
+  if (HasLocalization("HRV,HUN,POL,SRB,SLV,SVN")) then begin
+    ButtonFrame(h,v+=40,150,3,"Post Receipt #VAT#");
+    RadioButton(h,v,0,0,"Default",IPBookVAT);
+    RadioButton(h,v+=16,1,0,"Post #VAT#",IPBookVAT);
+    RadioButton(h,v+=16,2,0,"Do not post #VAT#",IPBookVAT);
+  end;
+  EditField(h1,v=6,200,"IBAN Code",Normal,IBANCode,false,0);
+  EditField(h1,v+=vs,-20,"Account Operator",Normal,AccOperator,false,BankSClass);
+  EditField(h1,v+=vs,-20,"Bank Account",Normal,BankAccount,false,0);
+  EditField(h1,v+=vs,-20,"Bank Account 2",Normal,Bank,false,0);
+  EditField(h1,v+=vs,80,"#Sort Code#",Normal,SortCode,false,0);
+  if (HasWithholdingTax) then begin
+    EditField(h1,v+=vs,120,"Withholding Payment Modes",Normal,WithPayMode,false,PMSClass);
+  end;
+//CUST-BEGIN
+  HalPushButton(h1,v+=30,h1+150,v+20,"OpenCUBankAccountsDsm","Additional Bank Accounts");
+//CUST-END
+  if (HasLocalization("HRV,HUN,POL,SRB,SLV,SVN")) then begin
+    ButtonFrame(h1,v+=60,150,3,"Post Payment #VAT#");
+    RadioButton(h1,v,0,0,"Default",OPBookVAT);
+    RadioButton(h1,v+=16,1,0,"Post #VAT#",OPBookVAT);
+    RadioButton(h1,v+=16,2,0,"Do not post #VAT#",OPBookVAT);
+  end;  
+  Tile(tilenr,170,false,tilenr,ANACode); tilenr = tilenr + 1;
+  StaticText(h,v=20,"E-Invoices",true);
+  EditField(h,vm=(v+=10),80,"E-Invoice Account",Normal,ANACode,false,0);
+  EditField(h,v+=vs,80,"Alt. E-Invoice Account",Normal,eInvAlternativeAccount,false,0);
+
+  ButtonFrame(h,v+=40,163,1,"Receiving Preference");
+  RadioButton(h,v,kEInvoiceRcvPreferenceDefault,0,"Default",eInvRcvPref);
+  RadioButton(h,v+=16,kEInvoiceRcvPreferenceElectronic,0,"Electronic Invoice",eInvRcvPref);
+  if (HasLocalization("LVA")) then begin
+    RadioButton(h,v+=16,kEInvoiceRcvPreferenceEMail,0,"Email",eInvRcvPref);
+    RadioButton(h,v+=16,kEInvoiceRcvPreferencePaper,0,"Paper Invoice",eInvRcvPref);
+    RadioButton(h,v+=16,kEInvoiceRcvPreferenceInternetBank,0,"Internet Bank",eInvRcvPref);
+  end else begin
+    if (HasLocalization("FIN,NOR,SWE")) then begin
+      RadioButton(h,v+=16,kEInvoiceRcvPreferenceEMail,0,"Email",eInvRcvPref);
+    end else begin
+      RadioButton(h,v+=16,kEInvoiceRcvPreferencePaper,0,"Paper Invoice",eInvRcvPref);
+    end;
+  end;
+  if (Modb.InterCompany) then begin
+    RadioButton(h,v+=16,kEInvoiceRcvPreferenceInternal,0,"Internal Company",eInvRcvPref);
+    EditField(h+130,v,30,"",Normal,eInvRcvToCompanyCode,false,Companies2SClass);
+  end;
+  RadioButton(h,v+=16,kEInvoiceRcvPreferenceNone,0,"No Receiving",eInvRcvPref);
+  EndFrame;
+  if (HasLocalization("EST,LTU")) then begin
+    ButtonFrame(h,v+=40,143,1,"Alternative Channel");
+    RadioButton(h,v,kEInvoiceRcvPreferenceDefault,0,"Not used",eInvAltRcvPref);
+    RadioButton(h,v+=16,kEInvoiceRcvPreferenceElectronic,0,"Electronic Invoice",eInvAltRcvPref);
+    RadioButton(h,v+=16,kEInvoiceRcvPreferencePaper,0,"Paper Invoice",eInvAltRcvPref);
+    RadioButton(h,v+=16,kEInvoiceRcvPreferenceEMail,0,"Email",eInvAltRcvPref);
+    RadioButton(h,v+=16,kEInvoiceRcvPreferenceInternetBank,0,"Internet Bank",eInvAltRcvPref);
+    EndFrame;
+  end;
+  vm2 = v;
+
+  CheckBox(h1,v=vm,0,"Don't Send Electronic Invoices",eInvStop);
+  if (HasLocalization("FIN")==false) then begin
+    CheckBox(h1,v+=16,0,"Electronic Invoices with pdf files",eInvAttachPDF);
+    ButtonFrame(h1,v+=44,160,3,"Postage for Paper Invoice");
+  end else begin
+    ButtonFrame(h1,v+=60,143,3,"Postage for Paper Invoice");
+  end;
+  RadioButton(h1,v,2,0,"Default",eInvPostage);
+  RadioButton(h1,v+=16,0,0,"Priority",eInvPostage);
+  RadioButton(h1,v+=16,1,0,"Economy",eInvPostage);
+  if (HasLocalization("EST,LTU")) then begin
+    CheckBox(h1,v+=84,0,"Electronic Invoices in short notes",eInvShortNote);
+  end;
+  StaticText(h,v=(vm2+40),"E-Purchase Orders",true);
+  ButtonFrame(h,v+=20,163,3,"Receiving Preference");
+  RadioButton(h,v,kPORcvPreferenceNone,0,"None",ePORcvPref);
+  RadioButton(h,v+=16,kPORcvPreferenceDefault,0,"Default",ePORcvPref);
+  if (Modb.InterCompany) then begin
+    RadioButton(h,v+=16,kPORcvPreferenceInternal,0,"Internal Company",ePORcvPref);
+    EditField(h+130,v,30,"",Normal,ePORcvToCompanyCode,false,Companies2SClass);
+  end;
+  EndFrame;
+
+  if (StandardHansa==false) then begin
+    Tile(tilenr,70,false,tilenr,WebConf); tilenr = tilenr + 1;
+    EditField(h,vm=(v=6),120,"Web Conference",Normal,WebConf,true,0);
+    EditField(h1,v,150,"Parent Product Category",Normal,MainDispGroup,false,WebNGProductCatSClass);
+    EditField(h,v+=vs,120,"Web Start Page",Normal,WebStartPage,false,0);
+    EditField(h1,v,150,"Display on the Web",Normal,WebDisplays,false,WebDisplaySClass);
+    EditField(h,v+=vs,120,"Freight Code",Normal,FreightCode,false,WebFreightSClass);
+    EditField(h1,v,150,"Web Tag/Object Type",Normal,WebOTCode,false,OTSClass);
+  end;
+  Tile(tilenr,170,false,tilenr,Comment0); tilenr = tilenr + 1;
+  EditField(h,v=6,-20,"Comment",Normal,Comment0,false,0);
+  EditField(h,v+=vs,-20,"",Normal,Comment1,false,0);
+  EditField(h,v+=vs,-20,"",Normal,Comment2,false,0);
+  EditField(h,v+=vs,-20,"Courtesy Title",Normal,Title,false,CourtesyTitlesSClass);
+  EditField(h,v+=vs,-20,"Job Title",Normal,JobDesc,false,JobTitleSClass);
+  EditField(h,v+=vs,-20,"Salutation 1",Normal,Salutation1,false,0);
+  EditField(h,v+=vs,-20,"Salutation 2",Normal,Salutation2,false,0);
+  EditField(h,v+=vs,-20,"Salutation 3",Normal,Salutation3,false,0);
+  if (true) then begin//HasModHotel
+    Tile(tilenr,250,false,tilenr,DocType); tilenr = tilenr + 1;
+    EditField(h,v=6,100,"Doc. Type",Normal,DocType,false,CUDocTypeSClass);
+    EditField(h2,v,-20,"ID",Normal,PassportNr,false,0);
+    EditField(h2,v+=vs,-20,"Name in Document",Normal,NameinDocument,false,0);
+//  EditFieldTL(h,vm=(v+=20),100,"Nationality",M4StrSet,Normal,423,Nationality,false,StrSetSClass);
+    EditField(h,vm=(v+=20),100,"Nationality",Normal,Nationality,false,CountrySClass);
+//CUST-BEGIN
+//    EditField(h,v+=20,100,"Birthday",Normal,BirthDate,false,PasteCurDate);
+//CUST-END
+    EditField(h,v+=20,100,"Place of Birth",Normal,BirthPlace,false,0);
+    EditField(h,v+=20,100,"Country of Birth",Normal,BirthCountry,false,CountrySClass);
+    EditField(h,v+=20,100,"Profession",Normal,Profesion,false,0);
+    EditField(h,v+=20,100,"Newspaper",Normal,Newspaper,false,NewspaperSClass);
+    EditField(h,v+=20,100,"Passphrase",Normal,Passphrase,false,0);
+    EditField(h,v+=vs,100,"Tour Operator",Normal,TourOperator,false,CUSClass);
+    EditField(h,v+=vs,100,"Agent",Normal,Agent,false,CUSClass);
+    EditField(h,v+=vs,100,"Def. Pay. Mode",Normal,DefGuestPayMode,false,PMSClass);
+    EditField(h,v+=vs,100,"Def. Booking Org.",Normal,BookOrigin,false,BookOrgSClass);
+    EditField(h,v+=vs,300,"Diet Remarks",Normal,DietRemarks,false,0);
+    EditField(h,v+=vs,300,"Req. Remarks",Normal,RequirementRemarks,false,0);
+
+    ButtonFrame(h2,v=vm+20,100,2,"Sex");
+    RadioButton(h2,v,0,0,"Male",Gender);
+    RadioButton(h2,v+=17,1,0,"Female",Gender);
+
+    CheckBox(h2+130,v=vm+20,0,"Smoker",Smoking);
+    CheckBox(h2+130,v+=17,0,"Blacklisted",Blacklist);
+
+    ButtonFrame(h2,vm=(v+=40),100,4,"Marital Status");
+    RadioButton(h2,v,0,0,"Single",MarStatus);
+    RadioButton(h2,v+=17,1,0,"Married",MarStatus);
+    RadioButton(h2,v+=17,2,0,"Divorced",MarStatus);
+    RadioButton(h2,v+=17,3,0,"Widowed",MarStatus);
+
+    ButtonFrame(h2=h2+130,v=vm,100,3,"Age Status");
+    RadioButton(h2,v,1,0,"Child",AgeStatus);
+    RadioButton(h2,v+=17,0,0,"Adult",AgeStatus);
+    RadioButton(h2,v+=17,2,0,"Pensioner",AgeStatus);
+  end;
+
+  if (StandardHansa==false) then begin
+    Tile(tilenr,270,false,tilenr,UserStr1); tilenr = tilenr + 1;
+    v=6;h=180;
+    label = UserDefined("CUVc","UserStr1");
+    if (nonblank(label)) then begin
+      EditField(h,v,-20,label,Normal,UserStr1,false,0);
+    end;
+    label = UserDefined("CUVc","UserStr2");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,-20,label,Normal,UserStr2,false,0);
+    end;
+    label = UserDefined("CUVc","UserStr3");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,-20,label,Normal,UserStr3,false,0);
+    end;
+    label = UserDefined("CUVc","UserStr4");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,-20,label,Normal,UserStr4,false,0);
+    end;
+    label = UserDefined("CUVc","UserStr5");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,-20,label,Normal,UserStr5,false,0);
+    end;
+    label = UserDefined("CUVc","UserVal1");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,-20,label,Normal,UserVal1,false,0);
+    end;
+    label = UserDefined("CUVc","UserVal2");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,-20,label,Normal,UserVal2,false,0);
+    end;
+    label = UserDefined("CUVc","UserVal3");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,-20,label,Normal,UserVal3,false,0);
+    end;
+    label = UserDefined("CUVc","UserDate1");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,80,label,Normal,UserDate1,false,PasteCurDate);
+    end;
+    label = UserDefined("CUVc","UserDate2");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,80,label,Normal,UserDate2,false,PasteCurDate);
+    end;
+    label = UserDefined("CUVc","UserDate3");
+    if (nonblank(label)) then begin
+      EditField(h,v+=vs,80,label,Normal,UserDate3,false,PasteCurDate);
+    end;
+
+    EditField(h,v+=vs,-20,"Address Books",Normal,AddressBooks,false,0);
+  end;
+
+  Tile(tilenr,500,false,tilenr,Math2); tilenr = tilenr + 1;
+  CheckBox(50,v=6,0,"HTML",HtmlFlag);
+  StaticText(50,v+=30,"Notes",true);
+  TextField(60,v-5,-20,370,Math2,0);
+  if (CUr.CUType!=0 and HasCharts) then begin
+    Tile(tilenr,430,false,tilenr,-); tilenr = tilenr + 1;
+    ChartArea(10,6,-10,390,"$CUDCLass_BIChart");
+    ColourPushButton(17,400,300,420,"LaunchFlexBI","Try flex.bi for more detailed analytics",kButtonColourBabyBlue);
+  end;
+
+  if (GuiType==kGuiMetro) then begin // Temporarily disabled on Windows 8
+    if (UserCanReport("CustPSRn","",true) and HasCustomerStatusReport) then begin
+      SpecialMenu("Customer Status",'e',0,"CUStatusCUDsm");
+    end;
+    if (UserCanReport("VEPSRn","",true)) then begin
+      SpecialMenu("#Supplier# Status",'u',4,"VEStatusVEDsm");
+    end;
+    SpecialMenu("Link Existing Contact",' ',1,"AddContactCUDsm");
+    SpecialMenu("Create Linked Contact Person",' ',1,"NewContactCUDsm");
+    SpecialMenu("Activity",'c',2,"NewActCUDsm");
+  end else begin
+    if (UserCanReport("CustPSRn","",true) and HasCustomerStatusReport) then begin
+      SpecialMenu("Customer Status",'e',0,"CUStatusCUDsm");
+    end;
+    if (UserCanReport("VEPSRn","",true)) then begin
+      SpecialMenu("#Supplier# Status",'u',4,"VEStatusVEDsm");
+    end;
+    SpecialMenu("Link Existing Contact",' ',1,"AddContactCUDsm");
+    SpecialMenu("Remove Linked Contact",' ',1,"DelContactCUDsm");
+    SpecialMenu("Edit Linked Contact Data",' ',1,"EditContactCUDsm");
+    SpecialMenu("Update Contact Persons",' ',6,"UpdContactAddrCUDsm");
+    if (HasLocalization("ARG")) then begin
+      SpecialMenu("Open Regional Perceptions",' ',1,"RPCUTaxDsm");
+    end;
+    if (HasLocalization("ARG,BRA,ITA,KEN,MEX,PRT,SGP,ZAF")) then begin
+      SpecialMenu("Open #Supplier# Withholdings",' ',1,"WHVEDsm");
+    end; //EMZ
+    if (GuiType==kGuiCocoa) then begin
+      SpecialMenu("Copy to local address book",' ',7,"CopyToLocalAddressBookDsm");
+    end;
+    if (GuiType==kGuiiPhone) then begin
+      SpecialMenu("Change Password",' ',1,"ChangePasswdCUDsm");
+    end;
+  //CUST-BEGIN
+    SpecialMenu("Open Self-Service Portal",' ',1,"OpenCustomerPortalDsm");
+    SpecialMenu("Send Registration Invitation E-mail",' ',1,"SendRegistrationInviteDsm");
+  //CUST-END
+    SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0);
+//    SpecialMenu("Activity",'c',2,"NewActCUDsm");
+    SpecialMenu("Linked Contact Person",' ',1,"NewContactCUDsm");
+    if (StandardHansa==false) then begin
+      SpecialMenu("Email",'m',5,"NewMailCUDsm");
+    end;
+    SpecialMenu("Tags/Objects",' ',1,"CreateObjectCUDsm");
+    SpecialMenu("Random Password Mail",' ',3,"RandomPassMailCUDsm");
+//CUST-BEGIN
+    SpecialMenu("B2B Loan Application",' ',3,"CreateB2BLoanApplicationCUDsm");
+    SpecialMenu("Credit Agreement",' ',3,"CreateCredManCUDsm");
+//END-CUST
+  end;
+  EndWindow;
+end;
+
+window CredManDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h2,h3,h4,t,v,vm,vs;
+  string 255 label1,label2,label3,label4,label5;
+  WindowBegin("Credit Agreement",CredManDClass,CGview,-);
+  SetWRect(20,80,940,500);
+  Sizeable(-1,-1,0,0);
+  UseView(CredManVc);
+  FormName(CredManForm);
+  h = 120; h2 = 320; h3 = 550; h4 = 760; vs = 20;
+  Tile(0,230,false,"",SerNr);
+  EditField(h,vm=(v=6), 82,"No.",St_i,SerNr,false,TSerSClass);
+  EditField(h+90,v,50,"",ViewOnly,VersionNo,false,0);
+  EditField(h,v+=vs,82,"Type",Normal,Type,false,CredManTypeSClass);
+  EditField(h2,v,-40,"Interest",Normal,InstalmentType,false,SetSClass);
+  EditField(h,v+=vs,82, "Customer",Normal,CustCode,false,CUSClass);
+  EnterSkip(InvSum4);
+  EditField(h2,v,-40,"Name",Normal,Addr0,false,0);
+  EditField(h,v+=vs,82,"#Salesman#",Normal,SalesMan,false,UserSClass);
+  EditField(h2,v,-40,"Attn.",Normal,ClientContact,false,ContactSClass);
+//CUST-BEGIN
+  EditField(h,v+=vs,-40,"Other Conditions",Normal,OtherConditions,false,0);
+//CUST-END
+  EditField(h,vm=(v+=vs),82,"Total Sum",Normal,InvSum4,true,0);
+  EditField(h,v+=vs,30,"Monthly Rate %",Normal,IntRate,false,0);//CUST changed label
+//CUST-BEGIN
+  CheckBox(h+35,v,0,"Annual",AnnualRate);
+//CUST-END
+  EditField(h,v+=vs,30,"Months",Normal,InstalmentMonths,false,0);
+  EditField(h,v+=vs,30,"Pay. Terms",Normal,PayDeal,false,PDSClass);
+  EditField(h,v+=vs,30,"Deposit % ",Normal,DepositPrc,false,0);
+  EditField(h,v+=vs,82,"Deposit Sum",Normal,DepositSum,true,0);
+  EditField(h2,v=vm,82,"Start Date",Normal,startDate,false,PasteCurDate);
+//CUST-BEGIN switched fields and renamed FirstIntDate
+  EditField(h2,v+=vs,82,"Interest From Date",Normal,FirstIntDate,false,PasteCurDate);
+  EditField(h2,v+=vs,82,"First Invoice Date",Normal,FirstInvDate,false,PasteCurDate);
+//CUST-END
+  EditField(h2,v+=vs,82,"End Date",ViewOnly,endDate,false,PasteCurDate);
+  EditField(h2,v+=vs,82,"Create Date",ViewOnly,TransDate,false,PasteCurDate);
+//CUST-BEGIN
+  EditField(h2,v+=vs,82,"Monthly Paym. Day",Normal,MonthlyPaymentDay,false,0);
+//CUST-END
+  EditField(h3,v=vm,82,"Monthly #Instalment#",ViewOnly,MonthlySum,false,0);
+//CUST-BEGIN
+  EditField(h3,v+=vs,82,"Order Class",Normal,OrderClass,false,OrderClassSClass);
+  EditField(h3,v+=vs,82,"Overdue percentage",Normal,OverduePercentage,false,0);
+  EditField(h3,v+=vs,82,"Surety Interest Rate",Normal,SuretyInterestRate,false,0);
+  EditField(h3,v+=vs,82,"Std Prolongation Fee",Normal,StdProlongFee,false,0);
+  EditField(h3,v+=vs,82,"Std Prolongation Fee %",Normal,StdProlongPrc,false,0);
+
+  EditField(h4,v=vm,-40,"Money Transfer Date",Normal,MoneyTransferDate,false,PasteCurDate);
+  EditField(h4,v+=vs,-40,"Max Monthly Payment",Normal,MaxMonthlyPayment,false,0);
+  EditField(h4,v+=vs,-40,"Princ. Delay Months",Normal,PrincipleDelayMonths,false,0);
+  EditField(h4,v+=vs,-40,"Princ. Delay Interest %",Normal,PrincipleDelayInterest,false,0);
+/*
+  SoftEditField(h4,v+=vs,-40,"Annual Interest",ViewOnly,"annualrate",true,0,M4Str,255);
+  SoftEditField(h4,v+=vs,-40,"Monthly Calc. Fees",ViewOnly,"monthlycalcfees",true,0,M4Str,255);
+  SoftEditField(h4,v+=vs,-40,"Monthly Fixed Fees",ViewOnly,"monthlyfixedfees",true,0,M4Val,0);
+*/
+//  ButtonFrame(h4,v=vm+20,150,2,"Charge Method");
+//  RadioButton(h4,v,0,0,"Running Balance",ChargeMethod);
+//  RadioButton(h4,v+=16,1,0,"Monthly Invoices",ChargeMethod);
+//CUST-END
+
+//  EditField(h2,v,82,"Specific #Instalment#",Normal,#Instalment#,false,InstallmentSClass);
+/*
+  ButtonFrame(h3,v=vm+vs,100,2,"Interest Type");
+  RadioButton(h3,v,0,0,"Fixed",RateType);
+  RadioButton(h3,v+=16,1,0,"Floating",RateType);
+*/
+  TileButton(1,"Events");
+  TileButton(2,"Planned Fees");
+  TileButton(3,"Currency");
+  TileButton(4,"Terms");
+//CUST-BEGIN
+  TileButton(5,"Surety");
+  TileButton(6,"Factoring");
+  TileButton(7,"Payment Guarantee");
+//CUST-END
+  Tile(1,500,true,"",Approved);//CUST CurncyCode>>Approved
+  CheckBox(20,-41,0,"Approved",Approved);
+  CheckBox(20,-21,0,"OK",OKFlag);
+//CUST-BEGIN
+/*
+  EditField(200,-21,50,"Currency",Normal,CurncyCode,false,CurncyCodeSClass);
+  EditField(-340,-41,80,"Total Interest",ViewOnly,TotalInterest,true,0);
+  EditField(-340,-21,80,"Total Value in Base",ViewOnly,BaseTotalSum,true,0);
+  EditField(-120,-41,80,"Total Excl. Deposit",ViewOnly,TotalSumExclDep,true,0);
+  EditField(-120,-21,80,"Total Value",ViewOnly,TotalSum,true,0);
+*/
+  
+
+  SoftEditField(-340,-41,80,"Accum. Penalty",ViewOnly,"acumpenalty",true,0,M4Val,0);
+  SoftEditField(-340,-21,80,"Buy-out Value",ViewOnly,"buyoutvalue",true,0,M4Val,0);
+  SoftEditField(-120,-41,80,"Remaining Principle Part",ViewOnly,"remainingprinciple",true,0,M4Val,0);
+  SoftEditField(-120,-21,80,"Total Due Amount",ViewOnly,"totaldue",true,0,M4Val,0);
+
+  CheckBox(110,-41,0,"Sign Agreement",SignAgreement);
+  CheckBox(110,-21,0,"Sign Schedule",SignSchedule);
+
+  HalPushButton(230,-47,280,-27,"CredManDClassSignAgreement","Open");
+  HalPushButton(230,-25,280,-5,"CredManDClassSignSchedule","Open");
+
+  CheckBox(300,-41,0,"Sign Surety",SignSurety);
+  CheckBox(300,-21,0,"Sign Vekselis",SignVekselis);
+
+  HalPushButton(400,-47,450,-27,"CredManDClassSignSurety","Open");
+  HalPushButton(400,-25,450,-5,"CredManDClassSignVekselis","Open");
+
+/*
+  DataList(10,10,-50,-285,"credmanevents");
+  DataListColumn(1,6,80,AdjLeft,"date","Date",M4Date);
+  DataListColumn(1,80,160,AdjLeft,"duedate","Due Date",M4Date);
+  DataListColumn(1,160,-400,AdjLeft,"comment","Comment",M4Str);
+  DataListColumn(1,-400,-300,AdjRight,"issued","Issued",M4Val);
+  DataListColumn(1,-300,-200,AdjRight,"paid","Paid",M4Val);
+  DataListColumn(1,-200,-100,AdjRight,"balance","Balance",M4Val);
+*/
+
+  if (GuiType==kGuiWPF) then begin
+    RecordList2(10,10,-30,-52,"CredHistVc");//CUST CredManEventVc >> CredManHistVc  
+  end else begin
+    RecordList2(10,10,-30,-82,"CredHistVc");//CUST CredManEventVc >> CredManHistVc
+  end;
+  RlColKey(4,4,"Date",TransDate,false,CredManTransDate);
+  RlCol(100,100,"Due Date",PayDate,false);
+  RlCol(200,200,"Comment",Comment2,false);
+  RlCol(-300,-300,"Issued",InvSum,true);
+  RlCol(-200,-200,"Paid",PaidSum,true);
+  RlCol(-100,-100,"Balance",Balance,true);
+
+/*
+  RecordList2(10,10,-30,-80,"CredManEventVc");
+  RlColKey(4,4,"Date",TransDate,false,CredManTransDate);
+  RlColKey(100,100,"Due Date",DueDate,false,CredManTransDate);
+  RlColKey(200,200,"Comment",Comment,false,CredManComment);
+//  RlColKey(-370,-370,"Sub. Type",FileName,false,FindOriginalRecord);
+//  RlColKey(-300,-300,"Sub. Record",RecordNr,false,FindOriginalRecord);
+  RlColKey(-300,-300,"Issued",InvSum,true,CredManPaidFlag);
+  RlColKey(-200,-200,"Paid",PaidSum,true,CredManPaidFlag);
+  RlColKey(-100,-100,"Balance",CredManBal,true,CredManTransDate);
+*/
+//CUST-END
+  Tile(2,70,true,"2",Math);
+  MatrixBegin(10,v=24,-50,-20,-,99);
+  Flip(0);
+  MatCol(t=1,32,"Item",0,ArtCode,false,INSClass);
+  MatCol(t,100,"Qty",0,Quant,true,0);
+  MatCol(t,160,"Type",0,ChargeType,false,SetSClass);
+  MatCol(t,310,"Description",0,Comment,false,0);
+  Flip(1);
+  MatCol(t,-240,"Unit Price",0,Price,true,0);
+  MatCol(t,-140,"%",0,vRebate,true,0);
+  MatCol(t,-100,"Sum",0,Sum,true,0);
+  Flip(2);
+  MatCol(t,-300,"Invoice No.",0,InvoicedOn,false,0);
+  MatCol(t,-200,"Invoiced Sum",0,InvoicedSum,true,0);
+  MatCol(t,-100,"Sum",0,Sum,true,0);
+  EndMatrix;
+  vs = 22;
+  v = 24; VTab(-35,v,-16,v+vs,ToolFlip,1,"A");
+  v=v+ vs; VTab(-35,v,-16,v+vs,ToolFlip,2,"B");
+  InsertRowTest;
+  DeleteRowTest;
+  Tile(3,70,false,"3",FrRate);
+  vs = 20;
+  EditField(h=110,v=6,50,"Currency",Normal,CurncyCode,false,CurncyCodeSClass);
+  EditField(h,v+vs,50,"Base Currency 1",Normal,BaseRate1,true,0);
+  EditField(h,v+(vs*2),50,"Base Currency 2",Normal,BaseRate2,true,0);  
+  EditField(h2=295,v,50,"Rate",Normal,FrRate,true,0);
+  RateField(h3=360,v,50,":",Normal,"ToRateB1",true,h3+60,v+14,"Base Currency 1",false);
+  RateField(h3,v+=vs,50,":",Normal,"ToRateB2",true,h3+60,v+14,"Base Currency 2",false);   
+  Tile(4,190,false,"4",InvoiceToCode);
+  h = 120; h2 = 360; h3 = 230; vs = 20;
+  EditField(h,v=6,100,"Invoice To",Normal,InvoiceToCode,false,CUSClass);
+  EditField(h2,v,-40,"Our Ref",Normal,OurContact,false,0);
+  EditField(h,v+=vs,60,"Control Acc.",Normal,CredManAcc,false,AccSClass);
+  EditField(h2,v,-40,"Tags/Objects",Normal,Objects,false,ObjSClass);
+  EditField(h,v+=vs,60,"Debtors",Normal,ARAcc,false,AccSClass);
+  EditField(h2,v,-40,"Debt. Tags/Objects",Normal,ARAccObject,false,ObjSClass);
+  EditField(h,v+=vs,100,"Invoice",ViewOnly,IVNr,false,0);
+  EditField(h,vm=(v+=vs),100,"Quotation",ViewOnly,QTNr,false,0);
+  EditField(h,v+=vs,40,"Price List",Normal,PriceList,false,PLDefSClass);
+  EditField(h,v+=vs,40,"Language",Normal,LangCode,false,LangSClass);
+//CUST-BEGIN
+  EditField(h,v+=vs,40,"First Invoice Lang.",Normal,LangCode2,false,LangSClass);
+//CUST-END
+  EditField(h,v+=vs,40,"Max Late Days",Normal,LateFeeDays,false,0);
+//  EditField(h,v+=vs,40,"Interest Free Days",Normal,FreeDays,false,0);
+  EditField(h,v+=vs,40,"Settlement Months",Normal,SettleLimit,false,0);
+  EditField(h,v+=vs,100,"Classifications",Normal,Classifications,false,CredManClassSClass);
+
+//CUST-BEGIN
+  EditField(h2,v=vm-20,-40,"Bank Code",Normal,BankCode,false,BankSClass);
+  EditField(h2,v+=vs,-40,"Bank Name",Normal,BankName,false,0);
+  EditField(h2,v+=vs,-40,"Bank Account",Normal,BankAccount,false,BankAccountSClass);
+  EditField(h2,v+=vs,-40,"Pause Date",ViewOnly,PauseDate,false,0);
+  EditField(h2,v+=vs,-40,"Pause Months",ViewOnly,PauseMonths,false,0);
+  EditField(h2,v+=vs,-40,"Prolong Date",ViewOnly,ProlongDate,false,0);
+  EditField(h2,v+=vs,-40,"Prolong Months",ViewOnly,ProlongMonths,false,0);
+  vm = v+40;
+//CUST-END
+  ButtonFrame(h2,v=vm,150,2,"Late Interest Based On");
+  RadioButton(h2,v,0,0,"Due Date",LateRateOption);
+  RadioButton(h2,v+=16,1,0,"Trans. Date",LateRateOption);
+
+//CUST-BEGIN
+  Tile(5,290,true,"5",SuretyProvider1); 
+
+  label1 = UserDefined("CUVc","InvAddr0");
+  label2 = UserDefined("CUVc","InvAddr1");
+  label3 = UserDefined("CUVc","InvAddr2");
+  label4 = UserDefined("CUVc","InvAddr3");
+  label5 = UserDefined("CUVc","InvAddr4");
+
+  StaticText(h,v=26,"Surety Provider 1",false);
+  EditField(h,v+=vs,100,"Contact Code 1",Normal,SuretyProvider1,false,B2BLoanApp_CUSClass);
+  EditField(h,v+=vs,100,"Name",Normal,Surety1Name,false,0);
+  EditField(h,v+=vs,100,"Position",Normal,Surety1Position,false,JobTitleSClass);
+  EditField(h,v+=vs,100,"Phone",Normal,Surety1Phone,false,0);
+  EditField(h,v+=vs,100,"Mobile",Normal,Surety1Mobile,false,0);
+  EditField(h,v+=vs,100,"Email",Normal,Surety1eMail,false,0);
+  EditField(h,v+=vs,100,"ID",Normal,Surety1ID,false,0);
+
+  EditField(h,v+=vs,130,label1,Normal,Surety1Addr0,false,0);
+  EditField(h,v+=vs,130,label2,Normal,Surety1Addr1,false,0);
+  EditField(h,v+=vs,130,label3,Normal,Surety1Addr2,false,0);
+  EditField(h,v+=vs,130,label4,Normal,Surety1Addr3,false,0);
+  EditField(h,v+=vs,130,label5,Normal,Surety1Addr4,false,0);
+
+  StaticText(h2=320,v=26,"Surety Provider 2",false);
+  EditField(h2,v+=vs,100,"Contact Code 2",Normal,SuretyProvider2,false,B2BLoanApp_CUSClass);
+  EditField(h2,v+=vs,100,"Name",Normal,Surety2Name,false,0);
+  EditField(h2,v+=vs,100,"Position",Normal,Surety2Position,false,JobTitleSClass);
+  EditField(h2,v+=vs,100,"Phone",Normal,Surety2Phone,false,0);
+  EditField(h2,v+=vs,100,"Mobile",Normal,Surety2Mobile,false,0);
+  EditField(h2,v+=vs,100,"Email",Normal,Surety2eMail,false,0);
+  EditField(h2,v+=vs,100,"ID",Normal,Surety2ID,false,0);
+
+  EditField(h2,v+=vs,130,label1,Normal,Surety2Addr0,false,0);
+  EditField(h2,v+=vs,130,label2,Normal,Surety2Addr1,false,0);
+  EditField(h2,v+=vs,130,label3,Normal,Surety2Addr2,false,0);
+  EditField(h2,v+=vs,130,label4,Normal,Surety2Addr3,false,0);
+  EditField(h2,v+=vs,130,label5,Normal,Surety2Addr4,false,0);
+
+  StaticText(h3=550,v=26,"Surety Provider 3",false);
+  EditField(h3,v+=vs,100,"Contact Code 3",Normal,SuretyProvider3,false,B2BLoanApp_CUSClass);
+  EditField(h3,v+=vs,100,"Name",Normal,Surety3Name,false,0);
+  EditField(h3,v+=vs,100,"Position",Normal,Surety3Position,false,JobTitleSClass);
+  EditField(h3,v+=vs,100,"Phone",Normal,Surety3Phone,false,0);
+  EditField(h3,v+=vs,100,"Mobile",Normal,Surety3Mobile,false,0);
+  EditField(h3,v+=vs,100,"Email",Normal,Surety3eMail,false,0);
+  EditField(h3,v+=vs,100,"ID",Normal,Surety3ID,false,0);
+
+  EditField(h3,v+=vs,130,label1,Normal,Surety3Addr0,false,0);
+  EditField(h3,v+=vs,130,label2,Normal,Surety3Addr1,false,0);
+  EditField(h3,v+=vs,130,label3,Normal,Surety3Addr2,false,0);
+  EditField(h3,v+=vs,130,label4,Normal,Surety3Addr3,false,0);
+  EditField(h3,v+=vs,130,label5,Normal,Surety3Addr4,false,0);
+
+  Tile(6,290,true,"6",LoanToValue); 
+
+  EditField(h,v=6,100,"Loan to Value %",Normal,LoanToValue,false,0);
+  //EditField(h,v+=vs,100,"Invoice Amount",Normal,FactInvAmount,false,0);
+  //EditField(h,v+=vs,100,"Invoice Number",Normal,FactInvNumber,false,0);
+  EditField(h,v+=vs,430,"Comment",Normal,FactComment,false,0);
+  CheckBox(h,v+=vs,0,"Insured",FactInsured);
+  v = v + vs;
+  HalPushButton(h,v,h+100,v+20,"OpenCredManFactoringBtn","Buyers");v = v + 30;
+  HalPushButton(h,v,h+100,v+20,"OpenCredManFactoringInvoicesBtn","Invoices");v = v + 30;
+  
+  Tile(7,600,true,"7",PayGrntComment); 
+  EditField(h,v=6,100,"Comment",Normal,PayGrntComment,false,0);
+  EditField(h,v+=vs,100,"Payment day 1 ",Normal,PayGrntPayDate1,true,0);
+  EditField(h,v+=vs,100,"Payment day 2",Normal,PayGrntPayDate2,true,0);
+  EditField(h,v+=vs,100,"Report day 1 ",Normal,PayGrntReportDate1,true,0);
+  EditField(h,v+=vs,100,"Report day 2",Normal,PayGrntReportDate2,true,0);
+  CheckBox(h,v+=vs,0,"Insured",PayGrntInsured);
+
+  v = v + vs;
+  HalPushButton(h,v,h+100,v+20,"OpenCredManPayGrntSellersBtn","Sellers");v = v + 30;
+  HalPushButton(h,v,h+100,v+20,"OpenCredManPayGrntReportsBtn","Reports");v = v + 30;
+
+  SpecialMenu("Open #NL# Transaction",'t',2,"OpenTRFromCredMan");
+  SpecialMenu("Open Subsystem Record",' ',3,"OpenSubsysCredManDsm");
+//CUST-BEGIN
+  SpecialMenu("Terminate Agreement",' ',4,"TerminateCredManDsm");
+  SpecialMenu("Buy-out Agreement",' ',5,"BuyOutCredManDsm");
+  SpecialMenu("Check Buy-out Value",' ',6,"CheckBuyoutValueWindowDsm");
+  SpecialMenu("Customer Status",'e',7,"CUStatusCredManDsm");
+  SpecialMenu("Print Payment Schedule",' ',8,"PaymentScheduleCredManDsm");
+  SpecialMenu("Pause/prolong Agreement",' ',8,"PauseCredManDsm");
+  SpecialMenu("Credit Agreement Info",'I',0,"CredManInfoDsm");
+  SpecialMenu("Refinance Agreement",' ',9,"RefinCredManDsm");
+  
+//CUST-END
+  SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0);
+//  SpecialMenu("Credit Agreement Info",'I',0,"CredManInfoDsm");//CUST moved to Oper. menu instead
+//CUST-BEGIN
+//  SpecialMenu("Invoice",'F',1,"InvoiceCredManDsm");
+  SpecialMenu("Invoice",'F',1,"CreateCredManInvoiceDsm");
+  SpecialMenu("Payment",' ',1,"CredManMakePaymentDsm");
+//CUST-END
+  SpecialMenu("Receipt",'r',1,"ReceiptCredManDsm");
+  EndWindow;
+end;
+
+window CredManTypeDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h2,h3,t,v,vm,vm2,vs;
+//CUST-BEGIN
+  real h4,h5,h6;
+//CUST-END
+  WindowBegin("Credit Agreement Type",CredManTypeDClass,CGview,-);
+  SetWRect(20,80,750,380);//CUST 640>>750
+  h = 150; h2 = 300; h3 = 440; v = 6; vs=20;
+  UseView(CredManTypeVc);
+  //CUST-BEGIN
+  h2 = 330;
+  Tile(0,0,false,"",Code); 
+  TileButton(1,"Main");
+  TileButton(2,"Documents");
+  Tile(1,400,false,"1",Code); 
+  //CUST-END
+  EditField(h,v,80,"Code",St_i,Code,false,0);
+  EditField(h2,v,-40,"Interest",Normal,InstalmentType,false,SetSClass);
+  EditField(h,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  EditField(h,v+=vs,40,"Default Months",Normal,InstalmentMonths,false,0);
+  EditField(h2,v,82,"Overdue percentage",Normal,OverduePercentage,false,0);//CUST added
+  EditField(h,vm=(v+=vs),40,"Pay. Terms",Normal,PayDeal,false,PDSClass);
+  EditField(h2,v,82,"Surety Interest Rate",Normal,SuretyInterestRate,false,0);//CUST added
+  EditField(h,v+=vs,40,"Max Days Late",Normal,LateFeeDays,false,0);
+  EditField(h2,v,82,"Std Prolongation Fee",Normal,StdProlongFee,false,0);//CUST added
+  EditField(h,v+=vs,40,"Monthly Rate %",Normal,IntRate,false,0);//CUST changed label
+  EditField(h2,v,82,"Std Prolongation Fee %",Normal,StdProlongPrc,false,0);//CUST added
+  EditField(h,v+=vs,40,"Deposit % ",Normal,DepositPrc,false,0);
+  EditField(h2,v,82,"Loan to Value %",Normal,LoanToValue,false,0);//CUST added
+//  EditField(h,v+=vs,40,"Interest Free Days",Normal,FreeDays,false,0);
+  EditField(h,v+=vs,40,"Months to Settle For Free",Normal,SettleLimit,false,0);
+  EditField(h2,v,82,"Princ. Delay Months",Normal,PrincipleDelayMonths,false,0);//CUST added
+  EditField(h,vm2=(v+=vs),40,"Fixed Deposit",Normal,DepositSum,true,0);//CUST 82>>40
+  EditField(h2,v,82,"Princ. Delay Interest %",Normal,PrincipleDelayInterest,false,0);//CUST added
+  //CUST-BEGIN
+  EditField(h,v+=vs,40,"Language",Normal,LangCode,false,LangSClass);
+  EditField(h2,v,40,"First Invoice Language",Normal,LangCode2,false,LangSClass);
+  h2 = h2 + 110;
+  CheckBox(h2,v,0,"Closed",Closed);
+  EditField(h,v+=vs,262,"Classifications",Normal,Classifications,false,CredManClassSClass);
+  CheckBox(h2,v,0,"Annual Rate",AnnualRate);
+  EditField(h,vm2=(v+=vs),262,"Bank Account",Normal,OwnBankAccount,false,0);
+  
+  //CUST-END
+  ButtonFrame(h2,v=vm,150,2,"Late Interest Based On");
+  RadioButton(h2,v,0,0,"Due Date",LateRateOption);
+  RadioButton(h2,v+=16,1,0,"Trans. Date",LateRateOption);
+  ButtonFrame(h2,v+=40,150,2,"Charge Method");
+  RadioButton(h2,v,0,0,"Running Balance",ChargeMethod);
+  RadioButton(h2,v+=16,1,0,"Monthly Invoices",ChargeMethod);
+/*
+  ButtonFrame(h=50,vm=(v+=45),140,2,"Default Interest Type");
+  RadioButton(h,v,0,0,"Fixed",RateType);
+  RadioButton(h,v+=16,1,0,"Floating",RateType);
+*/
+
+  MatrixBegin(20,vm=(vm2+=40),-30,-10,-,99);
+  MatCol(t=1,32,"Item",0,ArtCode,false,INSClass);
+  MatCol(t,100,"Qty",0,Quant,true,0);
+  MatCol(t,140,"Type",0,ChargeType,false,SetSClass);
+  MatCol(t,220,"Description",0,Comment,false,0);
+  MatCol(t,-210,"Unit Price",0,Price,true,0);
+  MatCol(t,-120,"%",0,vRebate,true,0);
+  MatCol(t,-90,"Sum",0,Sum,true,0);
+  EndMatrix;
+
+//CUST-BEGIN
+  Tile(2,400,false,"2",CredManCEO1);
+  v = 6;
+  h = 30;h2 = 150; h3 = 300; h4 = 400; h5 = 500; h6 = 620;
+  StaticText(h,v+13,"Credit Agreement",false);
+  CheckBox(h2,v,0,"CEO not Surety",CredManCEO1);
+  CheckBox(h3,v,0,"CEO Surety",CredManCEO2);
+  CheckBox(h4,v,0,"Surety",CredManSurety);
+  CheckBox(h5,v,0,"Us",CredManUs);
+  EditField(h6,v,40,"Language",Normal,CredManLangCode,false,LangSClass);
+  
+  v = v + vs;
+  StaticText(h,v+13,"Surety Agreement",false);
+  CheckBox(h2,v,0,"CEO not Surety",SuretyCEO1);
+  CheckBox(h3,v,0,"CEO Surety",SuretyCEO2);
+  CheckBox(h4,v,0,"Surety",SuretySurety);
+  CheckBox(h5,v,0,"Us",SuretyUs);
+  EditField(h6,v,40,"Language",Normal,SuretyLangCode,false,LangSClass);
+
+  v = v + vs;
+  StaticText(h,v+13,"Schedule",false);
+  CheckBox(h2,v,0,"CEO not Surety",ScheduleCEO1);
+  CheckBox(h3,v,0,"CEO Surety",ScheduleCEO2);
+  CheckBox(h4,v,0,"Surety",ScheduleSurety);
+  CheckBox(h5,v,0,"Us",ScheduleUs);
+  EditField(h6,v,40,"Language",Normal,ScheduleLangCode,false,LangSClass);
+
+  v = v + vs;
+  StaticText(h,v+13,"Vekselis",false);
+  CheckBox(h2,v,0,"CEO not Surety",VekselisCEO1);
+  CheckBox(h3,v,0,"CEO Surety",VekselisCEO2);
+  CheckBox(h4,v,0,"Surety",VekselisSurety);
+  CheckBox(h5,v,0,"Us",VekselisUs);
+  EditField(h6,v,40,"Language",Normal,VekselisLangCode,false,LangSClass);
+
+
+//CUST-END
+  EndWindow;
+end;
+
+
+window CustPSDClass:3
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h2,h3,v,vm,vs,vs2;
+  Integer tilenr;
+
+  WindowBegin("Information in Customer Status Report",CustPSDClass,CGview,-);
+  UseView(CustPSVc);
+  SetWRect(74,73,550,480);
+  h=70;h2=45;h3=390;v=10;vs=20;vm=30; vs2=18;
+  if (IsEnterprise) then begin
+    Tile(0,50,false,"",Signature);
+  end;
+  tilenr = 1;
+  EditField(h,v,82,"User",Normal,Signature,false,UserSClass);
+  if (IsEnterprise) then begin
+    TileButton(tilenr,tilenr);  tilenr = tilenr + 1;
+    TileButton(tilenr,tilenr); tilenr = tilenr + 1;
+    if (StandardHansa==false) then begin
+      TileButton(tilenr,tilenr); tilenr = tilenr + 1;
+    end;
+//CUST-BEGIN
+    TileButton(tilenr,tilenr); tilenr = tilenr + 1;
+//CUST-END
+    tilenr = 1;
+    Tile(tilenr,400,false,tilenr,NrOfAct); tilenr = tilenr + 1;
+    v = vm;
+  end else begin
+    tilenr = 1;
+    v = v + 40;
+    vm = v;
+  end;
+  h = 30;
+  if (HasModCRM) then begin
+    ButtonFrame(20,v=vm,420,2,"Activities");
+    CheckBox(h,v,0,"Include Activities",Activities);
+    CheckBox(h3-100,v,0,"Show Activity Classes",ShowActivityClasses);
+    CheckBox(h2,v+=17,0,"Include Not Done",NotOKAct);    
+    EditField(h3,v,40,"Last Done Activities",Normal,NrOfAct,false,0);
+  end;
+  if (HasModSL) then begin
+    ButtonFrame(20,vm=(v+40),420,3,"Invoices");
+    CheckBox(h=30,v+=(vs+20),0,"Include Invoices",Invoices);
+    CheckBox(h2,v+=17,0,"All Open",NotOKIV);
+    EditField(h3,v,40,"Last Paid Invoices",Normal,NrOfIV,false,0);
+  end;
+  if (HasModCheck) then begin
+    CheckBox(h2,v+=16,0,"Include #Cheques#",Checks);
+  end;
+  if (HasModSL) then begin
+    EndFrame;
+  end;
+  if (HasModCO) then begin
+    ButtonFrame(h=20,vm=(v+40),420,2,"Contract and Rental Quotations");
+    CheckBox(h=30,v+=(vs+20),0,"Include Contract and Rental Quotations",ContQuote);
+    CheckBox(h2,v+=17,0,"Include Rejected",TermCQ);
+    EditField(h3,v,40,"Number of Contract Quotations",Normal,NrOfCQ,false,0);
+    ButtonFrame(20,vm=(v+40),420,2,"Contracts");
+    CheckBox(h=30,v+=(vs+20),0,"Include Contracts",Contract);
+    EditField(h3,v=v-1,40,"Contract Class",Normal,ContractClass,false,ContractClassSClass);
+    CheckBox(h2,v+=17,0,"Include Not OK",NotOKCO);
+    EditField(h3,v+1,40,"Number of Contracts",Normal,NrOfCO,false,0);
+//  CheckBox(h,v+=vs+10,0,"Credit History",PaymentHistory);//available for evryone
+  end;
+  if (HasAdvancedCRM) then begin
+    ButtonFrame(20,vm=(v+40),420,2,"Messages");
+    CheckBox(h=30,v+=(vs+20),0,"Include Messages",SMSes);
+    EditField(h3,v,40,"Number of #SMS#'s",Normal,NrOfSMS,false,0);
+  end;
+  if (HasAdvancedCRM) then begin
+    Tile(tilenr,121,true,tilenr,CustItemMonthNr); tilenr = tilenr + 1;
+    if (StandardHansa==false) then begin
+      ButtonFrame(20,v=50,420,1,"Monthly Balances");
+      CheckBox(h=30,v,0,"Include Monthly Balances (12 months)",MonthBal);
+      ButtonFrame(20,vm=(v+45),420,1,"Customer Item Statistics");
+      CheckBox(h=30,v+=(vs+25),0,"Include Customer Item",CustItem);
+      EditField(h3,v,40,"Number of Months",Normal,CustItemMonthNr,false,0);
+    end;
+  end;
+  if (HasModQT) then begin
+    if (StandardHansa==false) then begin
+      ButtonFrame(20,vm=(v+45),420,2,"Quotations");
+      CheckBox(h=30,v+=(vs+25),0,"Include Quotations",Quotations);
+    end else begin
+      ButtonFrame(20,v=30,420,2,"Quotations");
+      CheckBox(h=30,v,0,"Include Quotations",Quotations);
+    end;
+    EditField(h3,v=v-1,40,"Quotation Class",Normal,QTClass,false,QuoteClassSClass);
+    EditField(h3,v+=vs2,40,"Number of Quotations",Normal,NrOfQT,false,0);
+  end;
+  if (HasModSO) then begin
+    ButtonFrame(20,vm=(v+40),420,2,"Orders");
+    CheckBox(h=30,v+=(vs+20),0,"Include Orders",Orders);
+    EditField(h3,v=v-1,40,"Order Class",Normal,ORClass,false,OrderClassSClass);
+    EditField(h3,v+=vs2,40,"Number of Orders",Normal,NrOfOR,false,0);
+  end;
+  if (HasModPOS) then begin
+    ButtonFrame(20,vm=(v+45),420,2,"POS Invoices");
+    CheckBox(h=20,v+=(vs+25),0,"Include POS Invoices",IVCash);
+    EditField(h3,v+=vs2,40,"Number of POS Invoices",Normal,NrOfIVCash,false,0);
+  end;
+  if (HasModCRM) then begin
+    ButtonFrame(20,vm=(v+40),420,1,"Exclude");
+    EditField(h+80,v+=(vs+20),100,"Activity Types",Normal,ExcludeActTypes,false,ActTypeSClass);
+  end;
+
+  if (HasModTS or HasModRent or HasModSVO) then begin
+    Tile(tilenr,121,true,tilenr,NrOfPR); tilenr = tilenr + 1;
+    h=20; v=20;
+  end;
+  if (HasModTS) then begin
+    ButtonFrame(h,v,420,1,"Projects");
+    CheckBox(h2=30,v,0,"Include Projects",Projects);
+    EditField(h3,v,40,"Number of Projects",Normal,NrOfPR,false,0);
+    ButtonFrame(h,vm=(v+40),420,1,"Project Budgets");
+    CheckBox(h2,v+=(vs+20),0,"Include Project Budgets",ProjectBudgets);
+    EditField(h3,v,40,"Number of Project Budgets",Normal,NrOfTBBU,false,0);
+  end;
+  if (HasModRent) then begin
+    ButtonFrame(h,vm=(v+40),420,1,"Agreements");
+    CheckBox(h2,v+=(vs+20),0,"Include Agreements",Agreements);
+    EditField(h3,v,40,"Number of Agreements",Normal,NrOfAgreements,false,0);
+    ButtonFrame(h,vm=(v+40),420,1,"Rental Reservations");
+    CheckBox(h2,v+=(vs+20),0,"Include Rental Reservations",RentalReservations);
+    EditField(h3,v,40,"Number of Rental Reservations",Normal,NrOfRentRes,false,0);
+  end;
+  if (HasModSVO) then begin
+    ButtonFrame(h,vm=(v+40),420,1,"Service Orders");
+    CheckBox(h2,v+=(vs+20),0,"Include Service Orders",ServiceOrders);
+    EditField(h3,v,40,"Number of Service Orders",Normal,NrOfSVO,false,0);
+    ButtonFrame(h,vm=(v+40),420,1,"Work Sheets");
+    CheckBox(h2,v+=(vs+20),0,"Include Work Sheets",WorkSheets);
+    EditField(h3,v,40,"Number of Work Sheets",Normal,NrOfWS,false,0);
+    ButtonFrame(h,vm=(v+40),420,1,"Other");
+    CheckBox(h2,v+=(vs+20),0,"Show Relations with other Contacts",ContactRelations);
+  end;
+//CUST-BEGIN
+  Tile(tilenr,121,true,tilenr,NrOfPR); tilenr = tilenr + 1;
+  h=20; v=20;
+  ButtonFrame(h,v,420,1,"B2B Loan Applications");
+  CheckBox(h2=30,v,0,"Include B2B Loan Applications",B2BApps);
+  EditField(h3,v,40,"Number of B2B Loan Applications",Normal,NrOfB2BApp,false,0);
+  ButtonFrame(h,v+=45,420,1,"Credit Applications");
+  CheckBox(h2=30,v,0,"Include Credit Applications",CredApps);
+  EditField(h3,v,40,"Number of Credit Applications",Normal,NrOfCredApp,false,0);
+  ButtonFrame(h,v+=45,420,1,"Credit Agreements");
+  CheckBox(h2=30,v,0,"Include Credit Agreements",CredMan);
+  EditField(h3,v,40,"Number of Credit Agreements",Normal,NrOfCredMan,false,0);
+
+//CUST-END
+  EndWindow;
+end;
+
+window CredManInfoRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v;
+  WindowBegin("Specify Credit Agreement Info",CredManInfoRClass,CGRcW,RcType);
+  SetWRect(20,80,400,270);
+  h = 120; v = 20;
+  EditFieldTL(h,v, 150,"Agreements",   M4UStr,Normal,21,f1,false,CredManSClass);
+/*CHN::Removed 
+  ButtonFrame(h,v=v+40,150,2,"Function");
+  RadioButton(h,v,1,0,"Overview",flags[0]);
+  RadioButton(h,v+=16,0,0,"Detailed",flags[0]);
+  ButtonFrame(h,v=v+40,150,2,"Agreement Type");
+  RadioButton(h,v,0,0,"Default",flags[1]);
+  RadioButton(h,v+=16,1,0,"Incr. Inst, Decr. Int.",flags[1]);
+  CheckBox(h,v+=40,0,"Include Actuals",flags[2]);
+  CheckBox(h,v+=20,0,"Calculate Interest on day of Actual",flags[3]);
+*/
+  EndWindow;
+end;
+
+
+window CredManTypeSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Credit Agreement Types",CredManTypeSClass,CGslist,-);
+  SetWRect(20,80,500,300);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManTypeDClass);
+  UseView(CredManTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,20,"Code",Code,false,ActCode);//CUST Code>>ActCode
+  RlColKey(100,100,"Comment",Comment,false,ActComment);//CUST Comment>>ActComment
+  SearchField("Search");
+  EndWindow;
+end;
+
+window IPSuggestionVClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm,vs;
+  WindowBegin("Create Receipts Suggestion",IPSuggestionVClass,CGMnt,RcType);
+  SetWRect(20,93,390,280);
+  vs=20;
+  PeriodField(h=160,v=6,"Due Date in Period");
+  EditFieldTL(h,v+=20 ,82,"Customer",M4UStr,Normal,41,f1,false,CUSClass);
+  EditFieldTL(h,v+=vs ,82,"Category",   M4UStr,Normal,10,LastAcc,false,CCatSClass);
+  EditFieldTL(h,v+=20 ,82,"Classification",M4UStr,Normal,60,f4,false,CClassSClass);
+  EditFieldTL(h,v+=20 ,82,"Payment Term",M4Code,Normal,5,AccStr,false,PDSClass);
+  EditFieldTL(h,v+=20 ,82,"Currency",M4UStr,Normal,5,CurncyCode,false,CurncyCodeSClass);
+  EditFieldTL(h,v+=20 ,30,"Receipt Payment Mode",M4Code,Normal,2,FirstAcc,false,PMSClass);
+  EditFieldTL(h,v+=20 ,82,"Receipt Date",M4Date,Normal,0,RegDate,false,PasteCurDate);
+  EditFieldTL(h,v+=20 ,82,"Receipt Date",M4Date,Normal,0,RegDate,false,PasteCurDate);
+  EditFieldTL(h,v+=20 ,82,"Amount up to",M4Val,Normal,0,vals0,false,0);
+  CheckBox(h,v+=20,0,"Only for finished Agreements",flags[1]);
+  EndWindow;
+end;
+
+window PipelineWClass:5
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h2,h3,h4,h5,v,vm,vs;
+  
+  WindowBegin("Workflow Overview",PipelineWClass,CGother,RcType);
+  UseView(RcVc);
+  DynamicWindow;
+  if (GuiType==kGuiWindowsDesktop) then begin
+    SetWRect(20,80,1200+ScrollBarWidth,800);
+  end else begin
+    SetWRect(20,80,1235,800);
+  end;
+  Sizeable(-1,-1,0,0);
+  v = 6;
+  vs = 20; h = 70; h2 = 210; h3 = 340; h4 = 560; h5 = 798;
+  if (GuiType==kGuiMetro) then begin
+    h = h + 57;
+    h2 = h2 + 57;
+    h3 = h3 + 57;
+    h4 = h4 + 57;
+    h5 = h5 + 57;
+  end;
+  EditFieldTL(h,v,50,"View", M4Str,Normal,20,f3,false,PipelineViewSClass);
+  EditFieldTL(h2,v,50,"Person", M4Code,Normal,20,f1,false,UserSClass);
+  EditFieldTL(h3,v,50,"Priority",M4Code,Normal,10,FirstAcc,false,ActPrioLevelSClass);
+  EditFieldTL(h4,v,289,"Filter",M4Str,Normal,100,f7,false,0);
+  v = v + vs;
+  StaticText(h-32,v+13,"Sorting by",false);
+  EditFieldTL(h2,v,50,"Supervisor",M4Code,Normal,20,f9,false,UserSClass);
+  if (HasModTS) then begin
+    EditFieldTL(h3,v,100,"Project",M4UStr,Normal,100,f6,false,PRSClass);
+  end;
+  EditFieldTL(h4,v,150,"Customer",M4Code,Normal,20,f2,false,CUSClass);
+  if (HasMultiCurrency) then begin
+    EditFieldTL(h5,v,50,"Currency",M4UStr,Normal,5,CurncyCode,false,CurncyCodeSClass);
+  end;
+   v = v + vs;
+//  StaticText(h-50,v+14,"Sorting",false);
+  DropDownMenu2(h-5,v,h+90,"Sorting",646,"PipelineWClassSortNew");
+  if (HasModCRM) then begin
+    EditFieldTL(h2,v,50,"CC",M4Code,Normal,20,f8,false,UserSClass);
+  end;
+  if (HasSalesGroup) then begin
+    EditFieldTL(h3,v,50,"Sales Group",M4UStr,Normal,10,f4,false,SalesGroupSClass);
+  end;
+  PeriodField(h4,v,"Period");
+//CUST-BEGIN
+  EditFieldTL(h5,v,100,"Type",M4UStr,Normal,60,f10,false,CredManTypeSClass);
+//CUST-END
+  v = v + vs;
+  if (HasObjects) then begin
+    EditFieldTL(h4,v,150,"Objects/Tags",M4UStr,Normal,60,ObjStr,false,ObjSClass);//CUST >> 150
+  end;
+//CUST-BEGIN
+  EditFieldTL(h5,v,100,"Classification",M4Code,Normal,30,f11,false,CredManClassSClass);
+//CUST-END
+  if (TestModule("modIntProjMan")) then begin
+    ColourPushButton(-350,20,-250,20+15,"PipelineWClassNewProjAct","New Project",kButtonColourSilver);
+    ColourPushButton(-240,20,-140,20+15,"PipelineWClassTaskMan","Task Manager",kButtonColourSilver);
+    ColourPushButton(-130,20,-30,20+15,"HalfYearWClassWeek","Week",kButtonColourSilver);
+//    HalPushButton(-350,1,-250,1+8,"PipelineWClassNewAct","New Project");
+//    HalPushButton(-240,1,-140,1+8,"PipelineWClassTaskMan","Task Manager");
+//    HalPushButton(-130,1,-30,1+8,"HalfYearWClassWeek","Week");
+  end else begin
+    v = 20;
+    if (BuildProductCode=="StandardRestaurant") then begin
+      h = -230;
+      StaticText(h,v,"Date " & CurrentDate,false);
+      StaticText(h,v+=20,"Time " & Left(CurrentTime,5),false);
+    end else begin
+      h = -330;
+      if (HasModQT) then begin
+        ColourPushButton(h,v,h+100,v+15,"PipelineWClassNewQT","New Quotation",kButtonColourSilver);
+        h = h + 110;
+      end;
+      ColourPushButton(h,v,h+100,v+15,"PipelineWClassNewAct","New Activity",kButtonColourSilver);
+      h = h + 110;
+      if (HasModCRM) then begin
+        ColourPushButton(h,v,h+100,v+15,"PipelineWClassTaskMan","Task Manager",kButtonColourSilver);
+      end;
+      if (h<=-10) then begin
+        h = -330; v = v + 30;
+      end;
+      if (HasCalendar) then begin
+        ColourPushButton(h,v,h+100,v+15,"HalfYearWClassWeek","Week",kButtonColourSilver);
+      end;
+  //    HalPushButton(-440,1,-340,1+8,"PipelineWClassNewQT","New Quotation");
+  //    HalPushButton(-330,1,-230,1+8,"PipelineWClassNewAct","New Activity");
+  //    HalPushButton(-220,1,-120,1+8,"PipelineWClassTaskMan","Task Manager");
+  //    HalPushButton(-110,1,-10,1+8,"HalfYearWClassWeek","Week");
+    end;
+  end;
+
+  if (GuiType==kGuiMetro) then begin
+    EndToolBar;
+  end;
+  v = v + vs+10;
+  ColumnGrid(0,v,-1,-1);
+  EndWindow;
+end;

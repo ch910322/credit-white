@@ -1,0 +1,444 @@
+external inner function val ValFromString(string,string,string);
+external inner function Date DateFromString(string,string);
+external inner updating function Boolean AddContactCUDsmRemote(record CUVc,string);
+external inner function Boolean GetNextCustNr(var string);
+external inner updating function LongInt CUVcRecordUpdate(var record CUVc,record CUVc,LongInt,LongInt);
+external function Boolean CheckIfCompanyInfoAvailable(string,string,var array Date,var array val,var array Integer,var array Longint);
+external function Boolean GetExistingCompanyInfo(string,string,Longint,var area);
+external procedure SendCompanyInfo(string,string,Integer,var area);
+
+function Integer YearDiff(Date d1,Date d2)
+begin
+  Integer res;
+
+  if (d2>d1) then begin
+    res = d2.year-d1.year;
+    if (d2.month<d1.month) then begin
+      res = res - 1;
+    end else begin
+      if (d2.month==d1.month) then begin
+        if (d2.day<d1.day) then begin
+          res = res - 1;
+        end;
+      end;
+    end;
+  end;
+
+  YearDiff = res;
+  return;
+end;
+
+function string 2 ReplaceStrings(string tstr,string realstr,var integer movep)
+begin
+  string 2 res;
+
+  res = realstr;
+  movep = 1;
+
+  if left(tstr,4)=="&lt;" then begin
+    res = "<";
+    movep = 4;
+  end;
+  if left(tstr,4)=="&gt;" then begin
+    res = ">";
+    movep = 4;
+  end;
+  if left(tstr,6)=="&apos;" then begin
+    res = "'";
+    movep = 6;
+  end;
+  if left(tstr,6)=="&quot;" then begin
+    res = """";
+    movep = 6;
+  end;
+
+  ReplaceStrings = res;
+  return;
+end;
+
+function string 255 ReplaceWebStrings(string rstr)
+begin
+  longint ln,i;
+  string 10 tstr,tmp;
+  integer movep;
+  string 255 res;
+
+  i = 0;
+  while (i < len(rstr)) begin
+    tmp = mid(rstr,i,1);
+    tstr = mid(rstr,i,6);
+    tmp = ReplaceStrings(tstr,tmp,movep);
+    res = res & tmp;
+    i = i + movep;
+  end;
+
+  ReplaceWebStrings = res;
+  return;
+end;
+
+global
+updating procedure TreatCreditInfoReply(var record B2BLoanApplicationVc LAr,var record CUVc CUr,area reply,var Integer res)
+begin
+  Boolean debugf;
+  string 255 lang,params,url,path,root,tstr,fn,name,surname,datestr,datestr1,datestr2;
+  record CUVc oldCUr,tCUr;
+  Date courtdate,td,enddate,maxdate;
+  Longint pos;
+  row B2BLoanApplicationVc LArw;
+  Integer i;
+  record ContactRelVc CRr;
+  record CMApplicationSetBlock ASb;
+  string 255 lastcode,lastname;
+  xml axml;
+
+
+  BlockLoad(ASb);
+  RecordCopy(oldCUr,CUr);
+  res = 1;
+  axml = ParseXmlArea(reply);
+  root = "root/BasicInfo";
+  if (nonblank(XmlGet(axml,root & "/Registered"))) then begin
+    LAr.Established = DateFromString(XmlGet(axml,root & "/Registered"),"YYYY.MM.DD");
+    CUr.BirthDate = LAr.Established;
+  end;
+  LAr.CEORep = XmlGet(axml,root & "/Atstovavimas");
+  CUr.Region = XmlGet(axml,root & "/Region");
+  root = "root/BankruptcyInfo/tr";
+  if (XmlCountChildren(axml,root)>0) then begin
+    LAr.BankruptcyFlag = 1;
+    //lets take the first row now.
+    tstr = XmlGetAttribute(axml,root & "[0]","CourtDate");
+    if (nonblank(tstr)) then begin
+      courtdate = DateFromString(tstr,"YYYY.MM.DD");
+      if (courtdate>CurrentDate) then begin
+        LAr.OngoingCourtCases = 1;
+      end else begin
+        LAr.HistoricalCourtCases = 1;
+      end;
+    end;
+    if (nonblank(XmlGetAttribute(axml,root & "[0]","NutarimasLikviduoti"))) then begin
+      LAr.LiquidationFlag = 1;
+    end;
+  end;
+  root = "root/Capital/tr";
+  LAr.Equity = ValFromString(XmlGetAttribute(axml,root & "[0]","IstatKap"),","," ");
+  LAr.CapitalCurncyCode = XmlGetAttribute(axml,root & "[0]","Valiuta");
+  root = "root/SpaudosPranesimai/SpaudosInformacijaNera";
+  if (XmlNodeExists(axml,root)) then begin
+    LAr.Publicity = 0;
+  end else begin
+    LAr.Publicity = 1;
+  end;
+  root = "root/Teismai/TeismaiNera";
+  if (XmlNodeExists(axml,root)) then begin
+    LAr.BeingSued = 0;
+  end else begin
+    LAr.BeingSued = 1;
+  end;
+  LAr.DebtCollections = 0;
+  root = "root/PretenzijosBendraInfo/PretenzijosBendraInfoPretenzijuNeraText";
+  if (XmlNodeExists(axml,root)==false) then begin
+    LAr.DebtCollections = 1;
+  end;
+  root = "root/Vekseliai/VekseliaiNeraInfo";
+  if (XmlNodeExists(axml,root)==false) then begin
+    LAr.DebtCollections = 1;
+  end;
+  root = "root/NepatikimiBendraInfo/NepatikimiBendraInfoDuomenuNeraText";
+  if (XmlNodeExists(axml,root)) then begin
+    LAr.UnreliableComp = 0;
+  end else begin
+    LAr.UnreliableComp = 1;
+  end;
+  root = "root/TurtoArestaiIreg/TurtoArestaiInfoNera";
+  if (XmlNodeExists(axml,root)) then begin
+    LAr.OngoingAssetArrests = 0;
+  end else begin
+    LAr.OngoingAssetArrests = 1;
+  end;
+  root = "root/TurtoArestaiIsreg/TurtoArestaiInfoNera";
+  if (XmlNodeExists(axml,root)) then begin
+    LAr.HistoricalAssetArrests = 0;
+  end else begin
+    LAr.HistoricalAssetArrests = 1;
+  end;
+  root = "root/IkeitimasAndTARInfo/IkeitimasAndTARInfoNera";
+  if (XmlNodeExists(axml,root)) then begin
+    LAr.HistoricalAssetArrests = 0;
+  end else begin
+    LAr.HistoricalAssetArrests = 1;
+  end;
+
+  //3.26
+  root = "root/SkolosBendraInfoLastDate/tr";
+  if (XmlNodeExists(axml,root)) then begin
+    LAr.LastRepaymentDate = DateFromString(XmlGetAttribute(axml,root,"SkolosBendraInfoLastDate"),"YYYY.MM.DD");
+  end;
+
+  //3.27
+  i = 0;
+  root = "root/Debts2/tr";
+  while (XmlNodeExists(axml,root & "[" & i & "]")) begin
+    i = i + 1;
+    ClearRow(LAr,LArw,1);
+    LArw.ClaimDate = DateFromString(XmlGetAttribute(axml,root & "[" & i & "]","Date"),"YYYY.MM.DD");
+    LArw.CreditorName = XmlGetAttribute(axml,root & "[" & i & "]","CreditorName");
+    LArw.CreditAmount = ValFromString(XmlGetAttribute(axml,root & "[" & i & "]","Amount"),","," ");
+    if (nonblank(LArw.CreditAmount)) then begin
+      MatRowPut(LAr,MatRowCnt(LAr),LArw);
+      LAr.CurrentDebts = LAr.CurrentDebts + LArw.CreditAmount;
+    end;
+  end;
+
+  //3.29
+  i = 0;
+  root = "root/Debts2History/tr";
+  while (XmlNodeExists(axml,root & "[" & i & "]")) begin
+    i = i + 1;
+    ClearRow(LAr,LArw,1);
+    pos = -1;
+    datestr = XmlGetAttribute(axml,root & "[" & i & "]","Date");
+    GetNextSubstring(datestr,pos,"/",datestr1);
+    GetNextSubstring(datestr,pos,"/",datestr2);
+    LArw.ClaimDate = DateFromString(datestr1,"YYYY.MM.DD");
+    LArw.PaymentDate = DateFromString(datestr2,"YYYY.MM.DD");
+    LArw.CreditorName = ReplaceWebStrings(XmlGetAttribute(axml,root & "[" & i & "]","CreditorName"));
+    LArw.CreditAmount = ValFromString(XmlGetAttribute(axml,root & "[" & i & "]","Amount"),","," ");
+    if (nonblank(LArw.CreditAmount)) then begin
+      MatRowPut(LAr,MatRowCnt(LAr),LArw);
+    end;
+  end;
+
+  //3.31
+  root = "root/SodraSkolos/SodraSkolosInfo";
+  if (XmlNodeExists(axml,root)) then begin
+    LAr.CurrentDebts = ValFromString(XmlGetAttribute(axml,root,"suma"),","," ");
+  end;
+
+  //3.32
+  root = "root/JARAtaskaitos/JARAtaskaitosInfoSvarbuText";
+  if (XmlNodeExists(axml,root)) then begin
+    LAr.AvailableFinStatements = 0;
+  end else begin
+    LAr.AvailableFinStatements = 1;
+  end;
+
+  i = 0;
+  root = "root/SHAREHOLDERS/Table";
+  while (XmlNodeExists(axml,root & "[" & i & "]")) begin
+    i = i + 1;
+    name = XmlGet(axml,root & "[" & i & "]/FirstNameLT");
+    surname = XmlGet(axml,root & "[" & i & "]/SurNameLT");
+    td = DateFromString(XmlGet(axml,root & "[" & i & "]/date"),"YYYY.MM.DD");
+    enddate = DateFromString(XmlGet(axml,root & "[" & i & "]/date_to"),"YYYY.MM.DD");
+    if (td>maxdate) then begin
+      maxdate = td;
+    end;
+    if (blank(enddate)) then begin
+      tCUr.Name = name & " " & surname;
+      if (ReadFirstKey("Name",tCUr,1,true)) then begin
+        CRr.CustCode = CUr.Code;
+        CRr.ContactCode = tCUr.Code;
+        if (ReadFirstMain(CRr,2,true)==false) then begin
+          AddContactCUDsmRemote(CUr,tCur.Code);
+        end;
+      end else begin
+        RecordNew(tCUr);
+        GetNextCustNr(tstr);
+        tCUr.Code = tstr;
+        tCUr.Name = name & " " & surname;
+        tCUr.JobDesc = ASb.OwnerTitle;
+        if (RecordInsert(tCUr,true)) then begin
+          AddContactCUDsmRemote(CUr,tCur.Code);
+        end;
+      end;
+    end;
+    lastcode = tCUr.Code;
+    lastname = tCUr.Name;
+  end;
+  LAr.OwnershipChanges = 0;
+  if (nonblank(td) and ASb.OwnershipYears>0) then begin
+    if (YearDiff(td,CurrentDate)>=ASb.OwnershipYears) then begin
+      LAr.OwnershipChanges = 1;
+    end;
+  end;
+  if (blank(LAr.OwnerCustCode)) then begin
+    LAr.OwnerCustCode = lastcode;
+    LAr.OwnerName = lastname;
+  end;
+
+  //3.35.1
+  root = "root/DraudimoSprendimas/tr";
+  if (XmlNodeExists(axml,root)) then begin
+    LAr.CreditinfoLimit = ValFromString(XmlGetAttribute(axml,root & "[0]","DraudimoSprindimasSuma"),","," ");
+  end;
+
+  root = "root/FinansiniaiImonesRodikliai/tr";
+  if (XmlNodeExists(axml,root)) then begin
+    LAr.PrevProfit = ValFromString(XmlGetAttribute(axml,root & "[0]","PNumber"),","," ");
+    LAr.PrevReceivables = ValFromString(XmlGetAttribute(axml,root & "[0]","GSaNumber"),","," ");
+    LAr.PrevPayables = ValFromString(XmlGetAttribute(axml,root & "[0]","MsaNumber"),","," ");
+    LAr.PrevTotal = LAr.PrevReceivables-LAr.PrevPayables;
+  end;
+  RecordUpdate(oldCUr,CUr,false);
+  CUVcRecordUpdate(CUr,oldCUr,Rs_Update,1);
+  fn = CUr.RegNr1  & "_creditinfo.txt";
+  WriteAreaToFile(reply,fn,0);
+  RecordLinkFile(fn,0,LAr,CurrentCompany);
+  Delete_File(fn);
+/*
+  "/BasicInfo";
+  //ManagersPersonalCodeValue,Registered,Atstovavimas,Region
+  "/BankruptcyInfo";
+  //CourtDate,Isk_data,NutarimasLikviduoti,NUTAR_SPREND_ISREG_DATA,Likvidavimas,Administrator,Admin,Court,Teismas
+  "/Capital/Header/tr";
+  //IstatKap,TvirData,Pavad,Valiuta
+  "/SpaudosPranesimai/tr";
+  //SpaudosInformacijaBendraInfoID,,SpaudosInformacijaBendraInfoText,SpaudosInformacijaIDText,SpaudosInformacijaID,SpaudosInformacijaDataText,SpaudosInformacijaData,SpaudosInformacijaTitleText,SpaudosInformacijaTitle
+  "/Teismai";
+  //TeismaiBendraInfoID,TeismaiBendraInfoText,TeismaiIDText,TeismaiID,TeismaiJarKodasText,TeismaiJarKodas,TeismaiPavadText,TeismaiPavad,TeismaiDataText,TeismaiData,TeismaiVadovasText,TeismaiVadovas,TeismaiKreditoriusText,TeismaiKreditorius,TeismaiSumaText,TeismaiSuma,TeismaiPastabosText,TeismaiPastabos
+  "/TeismaiWeb/Header";
+  //TeismaiDataBylosText,,TeismaiPavadinimasText,TeismaiDalyviaiText,TeismaiEsmeText
+  "/TeismaiWeb/tr";
+  //TeismaiData,TeismaiEsme,TeismaiTipas,TeismaiBylosNr,TeismaiPavadinimas,TeismaiDalyviai
+  "/PretenzijosBendraInfo/tr";
+  //PretenzijosBendraInfoID,PretenzijosBendraInfoText
+  "/Pretenzijos/tr";
+  "/Vekseliai/tr";
+  "/NepatikimiBendraInfo/tr";
+  "/TurtoArestaiIreg";
+  "/TurtoArestaiIsreg";
+  "/IkeitimasAndTARInfo";
+  "/SkolosBendraInfo/tr";
+  "/Debts2/tr";
+  "/ApmoketosSkolosBendraInfo/tr";
+  "/Debts2History/tr";
+  "/VMINurodymai";
+  "/SodraSkolos";
+  "/JARAtaskaitos";
+  "/SHAREHOLDERS";
+  "/DraudimoSprendimas/tr";
+  "/FinansiniaiImonesRodikliai";
+  "/CompanyRatingWithHistory";
+  "/RevenueChartBendraInfo";
+  "/RevenueChart";
+  "/VehiclesChartBendraInfo";
+  "/VehiclesChart";
+  "/EmployeesChart";
+  "/AvgSalaryInfo";
+  "/InfoPazymos";
+  "/FinansiniaiImonesRodikliaiIstorija";
+  "/StatisticsBySectors";
+  "/LicensedActivities";
+  "/RestrictionsOfTheActivities";
+  "/ImonesJarVeiklosInfo";
+  "/SodraSkolosIstorija";
+  "/Transport";
+  "/Antstoliai";
+  "/BailiffUrge";
+  "/VptInfo";
+*/
+  return;
+end;
+
+procedure DoGetCreditInfo(var record B2BLoanApplicationVc LAr,var Integer res,var string errstr)
+begin
+  record CreditinfoBlock CIb;
+  Boolean debugf;
+  area reply,request;
+  string 255 lang,params,url,path,root,tstr,fn,name,surname,datestr,datestr1,datestr2;
+  record CUVc CUr,oldCUr,tCUr;
+  Boolean sslf;
+  Longint port,pos;
+  xml axml;
+
+  res = 0;
+  BlockLoad(CIb);
+  CUr.Code = LAr.CustCode;
+  if (ReadFirstMain(CUr,1,true)) then begin
+  
+    lang = "0";
+    if (debugf) then begin
+      lang = "1";
+    end;
+    params = "username=" & CIb.APIUser & "&password=" & CIb.APIPassword & "&idnum=" & CUr.RegNr1 & "&lang=" & lang & "&productNumber=6202";
+    if (CIb.Mode==0) then begin//test
+      url = "ds.infobankas.lt";
+      port = 80;
+      sslf = false;
+    end else begin
+      url = "new.infobankas.lt";
+      port = 443;
+      sslf = true;
+    end;
+    path = "/creditinfogroup_lt/SAIS/WebServices/getsais.asmx/GetSAIS";
+
+    if (SendWebRequest(url,port,-1,sslf,"GET",path & "?" & params,"text/xml; charset=utf-8","",false,request,reply,10)) then begin
+      axml = ParseXmlArea(reply);
+      root = "root/BasicInfo";
+      if (XmlNodeExists(axml,"KLAIDA")) then begin
+        errstr = XmlGet(axml,"KLAIDA");
+      end;
+      if (XmlNodeExists(axml,root)==false) then begin
+        goto LGetCreditInfo;
+      end;
+
+      qupdating.TreatCreditInfoReply(LAr,CUr,reply,res);
+      threadasync.SendCompanyInfo(CUr.RegNr1,CUr.CountryCode,1,reply);
+    end;
+  end;
+
+LGetCreditInfo:;
+  return;
+end;
+
+
+global
+procedure GetCreditInfo(var record B2BLoanApplicationVc LAr,var Integer res,var string errstr,var array Date arrDate,var array val arrAmount,var array Integer arrSource,var array Longint arrID,Boolean forcenewf)
+begin
+  record CompanyInfoBlock CIb;
+  Boolean showoptionsf;
+  record CUVc CUr;
+  
+  BlockLoad(CIb);
+  if (CIb.CheckHistory==1 and !forcenewf) then begin
+    CUr.Code = LAr.CustCode;
+    if (ReadFirstMain(CUr,1,true)) then begin
+
+      if (CheckIfCompanyInfoAvailable(CUr.RegNr1,CUr.CountryCode,arrDate,arrAmount,arrSource,arrID)) then begin
+        //Show options
+        showoptionsf = true;
+      end;
+    end;
+  end;
+
+  if (showoptionsf) then begin
+    res = 2;//get back to client and open window with possible options
+  end else begin
+    DoGetCreditInfo(LAr,res,errstr);
+  end;
+
+  return;
+end;
+
+global
+procedure GetCreditInfoHistory(var record B2BLoanApplicationVc LAr,var Integer res,var string errstr,Integer source,Longint id)
+begin
+  record CUVc CUr;
+  area comparea;
+  
+logtext(0,"GetCreditInfoHistory1 " & source & ":" & id);
+  CUr.Code = LAr.CustCode;
+  if (ReadFirstMain(CUr,1,true)) then begin
+logtext(0,"GetCreditInfoHistory2");
+    if (GetExistingCompanyInfo(CUr.RegNr1,CUr.CountryCode,id,comparea)) then begin
+logtext(0,"GetCreditInfoHistory3");
+      switch (source) begin
+        case 1:
+          qupdating.TreatCreditInfoReply(LAr,CUr,comparea,res);
+      end;
+    end;
+  end;
+
+  return;
+end;

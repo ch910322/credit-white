@@ -1,0 +1,153 @@
+external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
+external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
+external inner function Boolean Getformcode(Integer,Integer,string,string,string,LongInt,LongInt,string,string,Integer,string,var string);
+external inner function Integer NumberofDocumentPages(string,Integer);
+external inner procedure CommonDocumentFields(record RcVc);
+external inner procedure PrintCredManHeader(record CredManVc);
+
+procedure PrintCredManr(record CredManVc CredManr,record DocVc Docr)
+begin
+  record CredManPayPlanVc CredManPayPlanr;
+  row CredManPayPlanVc CredManPayPlanrw;
+  LongInt i,rwcnt;
+  record SMVc SMr;
+  row SMVc SMrw;
+  val totpayment,totinterest;
+  record CredManSetBlock CredManSetb;
+  record CUVc CUr;
+  Integer num;
+ 
+  CUr.Code = CredManr.CustCode;
+  if (ReadFirstMain(CUr,1,true)) then begin
+  end;
+  BlockLoad(CredManSetb);
+  BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+  ReadFirstMain(CredManr,1,true);
+  BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+  
+  PrintCredManHeader(CredManr);
+/*
+  OutFormField("F_EMAIL",CUr.eMail);//Email
+  OutFormField("F_REGNUMBER1",CUr.RegNr1);//Customer Registration No. 1
+  OutFormField("F_KUNDTEL",CUr.Phone);//Customer Telephone Number
+  OutFormField("F_MOBILE",CUr.Mobile);//Mobile 
+*/
+  ReadFirstMain(CredManr,1,true);
+  rwcnt = MatRowCnt(SMr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(SMr,i,SMrw);
+    if (i==0 and SMrw.TransDate<CredManr.FirstInvDate) then begin
+      goto LNextRow;
+    end;
+    num = num + 1;
+    OutFormField("F_TRANSDATUM",SMrw.TransDate);//Transaction Date (transdate)
+    OutFormField("F_CREDINTEREST",SMrw.CredVal);//interest
+    OutFormField("F_CREDFEES",SMrw.DebVal2);//fees
+    OutFormField("F_CREDINTEREST2",SMrw.CredVal+SMrw.DebVal2);//interest+fees   
+    OutFormField("F_CREDINSTAL",SMrw.DebVal);//instalment
+    OutFormField("F_CREDBAL",SMrw.CurCredVal);//Balance
+    OutFormField("F_CREDINVTOT",SMrw.CredVal+SMrw.DebVal2+SMrw.DebVal);//Balance
+    OutFormField("F_ROWNR",num);
+    OUTFORMIMAGENAME(Docr,"F_CUSTIMAGE","line_black.png");
+    EndFormRow;
+    totinterest = totinterest + (SMrw.CredVal+SMrw.DebVal2);
+    totpayment = totpayment + (SMrw.CredVal+SMrw.DebVal2) + SMrw.DebVal;
+LNextRow:;
+  end;
+  OUTFORMIMAGENAME(Docr,"F_CUSTIMAGE","line_black.png");
+
+  OutFormField("F_CREDTOTINT",totinterest);
+  OutFormField("F_CREDTOTPAY",totpayment);
+
+  return;
+end;
+
+global
+procedure DoCredManScheduleForm(record RcVc RepSpec,record CredManVc CredManr)
+BEGIN
+  record DocVc Docr;
+  record CUVc CUr;
+  record SVOVc SVOr;
+  record INVc INr;
+  record FormDefVc FDr;
+  row FormDefVc FDrw;
+  Integer i,rwcnt;
+  string 255 tstr;
+  Boolean printf,langf;
+  Integer intdocnr;
+  string 30 formcode,langcode;
+  record UserVc Userr;
+    
+  FDr.repname = RepSpec.repname;
+  FDr.shortname = RepSpec.shortname;
+  if (ReadFirstMain(FDr,1,true)==false) then begin
+    MessageBox(1624, " " & USetStr(1623));
+    goto LDoCredManScheduleForm;
+  end;
+  rwcnt = MatRowCnt(FDr);
+  for (i=rwcnt-1;i>=0;i=i-1) begin
+    MatRowGet(FDr,i,FDrw);
+    if (FDrw.LangCode==langcode) then begin
+      i = -1;
+      langf = true;
+    end;
+  end;
+  if (langf==false) then begin langcode = ""; end;
+
+  intdocnr = 1;
+  printf = true;
+  while (printf) begin  
+    formcode = "";
+    if (nonblank(RepSpec.f12)) then begin
+      formcode = RepSpec.f12;
+      printf = false;
+    end else begin
+      for (i=rwcnt-1;i>=0;i=i-1) begin
+        MatRowGet(FDr,i,FDrw);
+        if (Getformcode(i,FDrw.intdocnr,FDrw.FPCode,FDrw.UserGroup,FDrw.LangCode,FDrw.SerNr,CredManr.SerNr,FDrw.PrintGroupCode,langcode,intdocnr,"",formcode)) then
+        begin
+          goto LBREAK;
+        end;
+      end;
+    end;
+LBREAK:;
+    if (nonblank(formcode)) then begin  
+      if (OpenForm(formcode)) then begin
+        CommonDocumentFields(RepSpec);
+        NumberofDocumentPages(formcode,MatRowCnt(CredManr));
+        Docr.Code = formcode;
+        if (ReadFirstMain(Docr,1,true)) then begin
+        end;
+//rest of fields go here
+        PrintCredManr(CredManr,Docr);
+
+        CloseForm;        
+      end else begin
+        printf = false;
+        MessageBox(1546,formcode);
+      end;
+    end else begin
+      printf = false;
+      if (intdocnr==1) then begin
+        MessageBox(1624, " " & USetStr(1623));
+      end;
+    end;
+    intdocnr = intdocnr + 1;
+  end;
+LDoCredManScheduleForm:;  
+  RETURN;  
+END;     
+ 
+
+global
+procedure CredManScheduleForm(record RcVc RepSpec)
+BEGIN
+  record CredManVc CredManr;
+  Boolean tmpf;
+  
+  CredManr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    tmpf = PrintDocument(CredManr,"CredManScheduleForm",false);    
+  end;
+  RETURN;
+END;

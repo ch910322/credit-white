@@ -1,0 +1,551 @@
+/* 
+we first get all unpaid amounts
+then we sort them by priority
+and then insert into receipts
+*/
+
+external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var val,Boolean,var Boolean);
+external inner procedure IPVc_PasteRecCurncy(var record IPVc,Integer);
+external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
+external inner procedure IPVc_PasteBankCurncy(var record IPVc,Integer);
+external updating procedure CreateCredHist(Longint,Integer,string,val,Integer,string,Date,Longint,Date,var Longint,Date,Date,Integer,Longint,val,Longint,val);
+external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val);
+external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var record IVVc,Date,Date,Date,Boolean,Boolean);
+external inner procedure IPPastePayMode(var record IPVc);
+external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val);
+external procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
+
+
+/*Invoicing tools*/
+function Integer GetItemPriority(record ItemPriorityBlock IPb,string item)
+begin
+  Integer i,rwcnt;
+  row ItemPriorityBlock IPbrw;
+  Integer res;
+
+  res = 9999;
+  rwcnt = MatRowCnt(IPb);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IPb,i,IPbrw);
+    if (item==IPbrw.ArtCode) then begin
+      res = IPbrw.Priority;
+      i = rwcnt;
+    end;
+  end;
+
+  GetItemPriority = res;
+  return;
+end;
+
+procedure InsertCredHistInArray(record CredHistVc CredHistr,array record ORVc arrORr,Integer priority)
+begin
+  Integer i,rwcnt,index;
+  record ORVc ORr,nORr;
+  Boolean foundf;
+  row ORVc ORrw;
+
+  index = arrORr.length;
+  for (i=0;i<arrORr.length;i=i+1) begin
+    ORr = arrORr[i];
+    if (ORr.BuildOn==priority) then begin
+      RecordCopy(nORr,ORr);
+      foundf = true;
+      index = i;
+      goto LInsertCredHistInArray;
+    end;
+  end;
+  
+//in case we don't  find existing record
+  RecordNew(nORr);
+  nORr.BuildOn = priority;
+
+LInsertCredHistInArray:;
+  ClearRow(nORr,ORrw,1);
+  ORrw.ArtCode = CredHistr.ArtCode;
+  ORrw.Sum = CredHistr.Sum;
+  ORrw.GroupOrdRow = CredHistr.RecordNr;
+  ORrw.CUServiceHistNr = CredHistr.SerNr;
+  ORrw.VECode = CredHistr.CustCode;
+  ORrw.TAX2Reb = CredHistr.CredManNr;
+  ORrw.Spec = DateToString(CredHistr.TransDate,"YYYYMMDD");
+  MatRowPut(nORr,MatRowCnt(nORr),ORrw);
+  arrORr[index] = nORr;
+
+  return;
+end;
+
+function val GetLoanItemPaidAmount(Longint histnr)
+begin
+  val res;
+  Boolean TrHs;
+  record CredHistVc CredHistr;
+
+  TrHs = true;
+  CredHistr.PreviousNr = histnr;
+  while (LoopKey("PreviousNr",CredHistr,1,TrHs)) begin
+    if (CredHistr.PreviousNr!=histnr) then begin
+      TrHs = false;
+    end else begin
+      res = res + CredHistr.Sum;
+    end;
+  end;
+
+  GetLoanItemPaidAmount = res;
+  return;
+end;
+
+function Boolean FindExistingRow(record IPVc IPr,Longint invnr,var Integer rownr)
+begin
+  Integer i,rwcnt;
+  row IPVc IPrw;
+  Boolean res;
+  
+  rwcnt = MatRowCnt(IPr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IPr,i,IPrw);
+    if (IPrw.InvoiceNr==invnr) then begin
+      res = true;
+      rownr = i;
+      goto LFindExistingRow;
+    end;
+  end;
+
+LFindExistingRow:;
+  FindExistingRow = res;
+  return;
+end;
+
+procedure AddCredHistToIP(row ORVc ORrw,var record IPVc IPr,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,var vector Boolean invused)
+begin
+  val credsum,chk;
+  Integer num;
+  row IPVc IPrw;
+  Boolean installmentf;
+
+
+  //if everything is done correctly then we shouldn't have a need to check if the amounts match. maybe we should implement that. later
+  
+  credsum = ORrw.Sum-ORrw.Price;
+  if (credsum>remsum) then begin
+    credsum = remsum;
+  end;
+  if (credsum<=0) then begin
+    goto LAddCredHistToIP;
+  end;
+
+  if (FindExistingRow(IPr,ORrw.GroupOrdRow,num)) then begin
+    MatRowGet(IPr,num,IPrw);
+    IPrw.BankVal = IPrw.BankVal + credsum;
+    IPrw.RecVal = IPrw.RecVal + credsum;
+    MatRowPut(IPr,num,IPrw);
+    IPVc_PasteRecVal(IPr,num);
+  end else begin
+    num = MatRowCnt(IPr);
+    ClearRow(IPr,IPrw,1);
+    IPrw.InvoiceNr = ORrw.GroupOrdRow;
+    invused[IPrw.InvoiceNr] = true;
+    MatRowPut(IPr,num,IPrw);
+    PasteInvIn2IPr(IPr,num,IPr.TransDate,chk,false,installmentf);
+    MatRowGet(IPr,num,IPrw);
+    IPrw.CustName = RecName;
+    IPrw.RecCurncy = CurncyCode;
+    IPrw.BankCurncy = CurncyCode;
+    IPrw.PayDate = IPr.TransDate;
+    IPrw.PayDate = IPr.TransDate;
+    MatRowPut(IPr,num,IPrw);
+    IPVc_PasteBankCurncy(IPr,num);
+    MatRowGet(IPr,num,IPrw);
+    IPrw.BankVal = credsum;
+    IPrw.RecVal = credsum;
+    IPrw.RecCurncy = CurncyCode;
+    IPrw.BankCurncy = CurncyCode;
+    IPrw.PayDate = IPr.TransDate;
+    IPrw.PayDate =IPr.TransDate;
+    MatRowPut(IPr,num,IPrw);
+    IPVc_PasteRecVal(IPr,num);
+  end;
+  remsum = remsum - credsum;
+
+LAddCredHistToIP:;
+  return;
+end;
+
+procedure OutputPaymentArr(array record ORVc arrORr)
+begin
+  Integer i,rwcnt,j;
+  record ORVc ORr;
+  row ORVc ORrw;
+  
+  for (i=0;i<arrORr.length;i=i+1) begin
+    ORr = arrORr[i];
+    rwcnt = MatRowCnt(ORr);
+    for (j=0;j<rwcnt;j=j+1) begin
+      MatRowGet(ORr,j,ORrw);
+      LogText(0,"DEBUG:: artcode=" & ORrw.ArtCode & ":sum=" & ORrw.Sum & ":RecordNr=" & ORrw.GroupOrdRow & ":priority=" & ORr.BuildOn & ":paid=" & ORrw.Price);
+    end;
+  end;
+
+  return;
+end;
+
+/*main function*/
+global
+procedure GetCustomerLoanAmounts(var record IPVc IPr,var integer k,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,var vector Boolean invused)
+begin
+  record ItemPriorityBlock IPb;
+  record ORVc ORr;
+  row ORVc ORrw;
+  record CredHistVc CredHistr;
+  Boolean TrHs;
+  array record ORVc arrORr;
+  Integer i,j,rwcnt,priority;
+  val paid;
+  Boolean debugf;
+
+  BlockLoad(IPb);
+
+  debugf = false;
+
+//Get all history record that are unpaid
+  CredHistr.CustCode = cucode;
+  CredHistr.PaidFlag = 0;
+  TrHs = true;
+  while (LoopKey("CustPaid",CredHistr,2,TrHs)) begin
+    if (CredHistr.CustCode!=cucode or CredHistr.PaidFlag!=0) then begin
+      TrHs = false;
+    end else begin
+      if (CredHistr.RecordType==0) then begin
+        priority = GetItemPriority(IPb,CredHistr.ArtCode);
+        InsertCredHistInArray(CredHistr,arrORr,priority);
+      end;
+    end;
+  end;
+
+  SortRecordArray(arrORr,"BuildOn");
+//get all paid amounts for each CredHistr
+  for (i=0;i<arrORr.length;i=i+1) begin
+    ORr = arrORr[i];
+    rwcnt = MatRowCnt(ORr);
+    for (j=0;j<rwcnt;j=j+1) begin
+      MatRowGet(ORr,j,ORrw);
+      paid = GetLoanItemPaidAmount(ORrw.CUServiceHistNr);
+      ORrw.Price = paid;
+      MatRowPut(ORr,j,ORrw);
+    end;
+    arrORr[i] = ORr;
+  end;
+  if (debugf) then begin
+    OutputPaymentArr(arrORr);
+  end;
+
+//Insert into receipts
+  for (i=0;i<arrORr.length;i=i+1) begin
+    ORr = arrORr[i];
+    SortRows(ORr,"Spec",true);
+    rwcnt = MatRowCnt(ORr);
+    for (j=0;j<rwcnt;j=j+1) begin
+      MatRowGet(ORr,j,ORrw);
+      if (remsum>0) then begin
+        AddCredHistToIP(ORrw,IPr,RecName,CurncyCode,remsum,cucode,cufnd,instr,origcomm,invused);
+      end else begin
+        goto LGetCustomerLoanAmounts;
+      end;
+    end;
+  end;
+
+LGetCustomerLoanAmounts:;
+  k = MatRowCnt(IPr);
+  return;
+end;
+
+/*Receipt Tools*/
+/*
+1. check all rows and find invoices
+2. find unpaid credhistr for invoices
+3. sort in priority and make payments history records
+*/
+global
+updating procedure FindUnpaidCredHist(record ItemPriorityBlock IPb,record IPVc IPr,row IPVc IPrw,var array val arrCredManr,Integer rectype)
+begin
+  record CredHistVc CredHistr;
+  Boolean TrHs;
+  Integer i,j,rwcnt,priority,mainf;
+  val paid,remsum,recval;
+  record ORVc ORr;
+  row ORVc ORrw;
+  array record ORVc arrORr;
+  Longint histnr,credmannr;
+  
+  TrHs = true;
+  CredHistr.RecordNr = IPrw.InvoiceNr;
+  CredHistr.RecordType = 0;
+  while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+    if (CredHistr.RecordNr!=IPrw.InvoiceNr or CredHistr.RecordType!=0) then begin
+      TrHs = false;
+    end else begin
+      priority = GetItemPriority(IPb,CredHistr.ArtCode);
+      InsertCredHistInArray(CredHistr,arrORr,priority);
+    end;
+  end;
+
+  SortRecordArray(arrORr,"BuildOn");
+ 
+ //get all paid amounts for each CredHistr
+  for (i=0;i<arrORr.length;i=i+1) begin
+    ORr = arrORr[i];
+    rwcnt = MatRowCnt(ORr);
+    for (j=0;j<rwcnt;j=j+1) begin
+      MatRowGet(ORr,j,ORrw);
+      paid = GetLoanItemPaidAmount(ORrw.CUServiceHistNr);
+      ORrw.Price = paid;
+      MatRowPut(ORr,j,ORrw);
+    end;
+    arrORr[i] = ORr;
+  end;
+
+ remsum = IPrw.RecVal;
+//we could do this more efficiently 
+  for (i=0;i<arrORr.length;i=i+1) begin
+    ORr = arrORr[i];
+    rwcnt = MatRowCnt(ORr);
+    for (j=0;j<rwcnt;j=j+1) begin
+      MatRowGet(ORr,j,ORrw);
+      paid = ORrw.Sum-ORrw.Price;
+      if (paid>0) then begin
+        if (remsum<paid) then begin
+          paid = remsum;
+        end;
+        remsum = remsum - paid;
+        mainf = 0;
+        recval = 0;
+        credmannr = ORrw.TAX2Reb;
+        if (arrCredManr[credmannr]>0) then begin
+          recval = arrCredManr[credmannr];
+          arrCredManr[credmannr] = 0;
+          //mainf = 1;
+        end;
+        CreateCredHist(IPr.SerNr,10,ORrw.VECode,paid,rectype,"",IPr.TransDate,ORrw.TAX2Reb,IPr.TransDate,histnr,"","",mainf,ORrw.CUServiceHistNr,recval,-1,0);
+      end;
+      if (remsum<=0) then begin
+        goto LFindUnpaidCredHist;
+      end;
+    end;
+  end;
+
+LFindUnpaidCredHist:;
+  return;
+end;
+
+global
+updating procedure SplitLoanPaymentsInReceipt(record IPVc IPr,Boolean okf)
+begin
+  record ItemPriorityBlock IPb;
+  Boolean TrHs;
+  Integer i,rwcnt;
+  row IPVc IPrw;
+  record IVVc IVr;
+  array val arrCredManr;
+  record CredHistVc CredHistr;
+
+  BlockLoad(IPb);
+
+  rwcnt = MatRowCnt(IPr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IPr,i,IPrw);
+    if (IPrw.InvoiceNr>-1) then begin
+      IVr.SerNr = IPrw.InvoiceNr;
+      if (ReadFirstMain(IVr,1,true)) then begin
+        arrCredManr[IVr.CustCredManNr] = arrCredManr[IVr.CustCredManNr] + IPrw.RecVal;
+      end;
+    end;
+  end;
+
+  if (okf) then begin
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(IPr,i,IPrw);
+      if (IPrw.InvoiceNr>-1) then begin
+        FindUnpaidCredHist(IPb,IPr,IPrw,arrCredManr,1);
+      end;
+    end;
+  end else begin
+    //unok
+    TrHs = true;
+    CredHistr.RecordNr = IPr.SerNr;
+    CredHistr.RecordType = 1;
+    while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+      if (CredHistr.RecordNr!=IPr.SerNr or CredHistr.RecordType!=1) then begin
+        TrHs = false;
+      end else begin
+        RecordRemove(CredHistr);
+        StepBack(CredHistr);
+      end;
+    end;  
+  end;
+  return;
+end;
+
+global
+updating procedure FindPaidCredHist(Longint recordnr,Integer rectype)
+begin
+  record CredHistVc CredHistr;
+  Boolean TrHs;
+  Integer i,j,rwcnt,priority;
+  val paid,remsum;
+  record ORVc ORr;
+  row ORVc ORrw;
+  array record ORVc arrORr;
+  Longint histnr;
+  
+  TrHs = true;
+  CredHistr.RecordNr = recordnr;
+  CredHistr.RecordType = rectype;
+  while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+    if (CredHistr.RecordNr!=recordnr or CredHistr.RecordType!=rectype) then begin
+      TrHs = false;
+    end else begin
+      RecordRemove(CredHistr);
+      StepBack(CredHistr);
+    end;
+  end;
+
+  return;
+end;
+
+global
+procedure UndoLoanPaymentsInReceipt(record IPVc IPr)
+begin
+  record ItemPriorityBlock IPb;
+  Boolean TrHs;
+  Integer i,rwcnt;
+  row IPVc IPrw;
+
+  BlockLoad(IPb);
+
+  rwcnt = MatRowCnt(IPr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IPr,i,IPrw);
+    if (IPrw.InvoiceNr>-1) then begin
+      qupdating.FindPaidCredHist(IPr.SerNr,1);
+    end;
+  end;
+
+  return;
+end;
+
+
+procedure PrepareIPRecord(record SMVc SMr,var record IPVc IPr)
+begin
+  
+    RecordClear(IPr);
+    RecordNew(IPr);
+    IPr.TransDate = SMr.RegDate;
+    IPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
+    IPr.RegDate = SMr.RegDate;
+    IPr.OKFlag = 0;
+    IPr.PayMode = SMr.Sign;
+    IPPastePayMode(IPr);
+
+  return;
+end;
+
+updating procedure StoreIPRecord(record IPVc IPr)
+begin
+  record IPVc oldIPr;
+
+  RecordInsert(IPr,true);
+  RecordCopy(oldIPr,IPr);
+  IPr.OKFlag = 1;
+  RecordUpdate(oldIPr,IPr,true);
+
+  return;
+end;
+
+global
+function Date GetLastInvoiceDate(record CredManVc CredManr,Date td)
+begin
+  Date res;
+  record CredHistVc CredHistr;
+
+  res = CredManr.FirstInvDate;
+  CredHistr.TransDate = td;  
+  while (LoopBackKey("CredManTransDate:" & CredManr.SerNr,CredHistr,2,true)) begin
+    if (CredHistr.RecordType==0) then begin
+      res = CredHistr.TransDate;
+      goto LGetLastInvoiceDate;
+    end;
+  end;
+
+LGetLastInvoiceDate:;
+  GetLastInvoiceDate = res;
+  return;
+end;
+
+global
+updating procedure ReceiptEntryCreateReceipts(record SMVc SMr,Boolean allf,var val totremsum)
+begin
+  record IPVc IPr;
+  row SMVc SMrw;
+  Integer i,rwcnt;
+  Boolean TrHs;
+  Integer latedays;
+  val lateamount,remsum;
+  record IVVc IVr,oldIVr;
+  Date invdate,sd;
+  record CredManVc CredManr;
+  record CUVc CUr;
+  string 255 instr;
+  record CredManSetBlock CMb;
+
+  PrepareIPRecord(SMr,IPr);
+
+  BlockLoad(CMb);
+  rwcnt = MatRowCnt(SMr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(SMr,i,SMrw);
+    ResetLoop(CredManr);
+    RecordClear(CredManr);
+    CredManr.CustCode = SMrw.Objects;
+    TrHs = true;
+    while (LoopKey("CustCode",CredManr,1,TrHs)) begin
+      if (CredManr.CustCode!=SMrw.Objects) then begin
+        TrHs = false;
+      end else begin
+        if (CredManr.OKFlag==1) then begin
+          latedays = 0;
+          lateamount = 0;
+          invdate = SMr.RegDate;
+          sd = GetLastInvoiceDate(CredManr,SMr.RegDate);
+          GetCredManOverdueInvoices(CredManr,CMb,invdate,sd,latedays,lateamount);
+          if (latedays>0 or lateamount>0) then begin
+            //Setup always new invoice
+            SetupLoanInvoice(CredManr,CMb,IVr,invdate,sd,invdate,true,false);
+            AddLateFees(CredManr,CMb,IVr,latedays,lateamount);
+            IVr.OKFlag = 1;
+            RecordInsert(IVr,true);
+          end;
+        end;
+      end;
+    end;
+
+
+    CUr.Code = SMrw.Objects;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      if (MatRowCnt(IPr)>100) then begin
+        StoreIPRecord(IPr);
+        PrepareIPRecord(SMr,IPr);
+      end;
+      instr = "";
+      remsum = SMrw.DebVal;
+      BankFillIProws(IPr,CUr.Name,SMrw.CurncyCode,remsum,CUr.Code,nonblank(CUr.Code),instr,"",allf);
+    end;
+  end;
+
+  if (MatRowCnt(IPr)>0) then begin
+    StoreIPRecord(IPr);
+  end;
+
+//this is needed for partial buy-out. In that case we will always have only one row/one customer
+  totremsum = remsum;
+
+  return;
+end;

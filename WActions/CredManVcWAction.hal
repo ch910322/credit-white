@@ -1,0 +1,1146 @@
+remote updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc);
+remote procedure PasteCustInAgreementRemote(var record CredManVc);
+remote updating procedure TerminateCredMan(var record CredManVc,var record IVVc);
+remote updating procedure DoBuyOutAgreement(record CredManVc,var record IVVc);
+remote procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
+remote inner procedure SetupCustPS2Rn(string,var record RcVc);
+remote procedure CredManSetDatesCust(var record CredManVc);
+remote procedure GetCredManEventList(record CredManVc,var record ORVc);
+external procedure GetCredManEventList2(Longint,var record ORVc);
+remote procedure DoPauseCredMan(var record CredManVc,val,val,Date,var Boolean);
+remote procedure PasteSuretyInCredMan(var record CredManVc,string,Integer);
+remote procedure GetRefinCredManData(Longint,Integer,var record RcVc,Boolean);
+remote updating function Boolean DoRefinCredMan(record RcVc,var string,var record CredManVc);
+external inner procedure ContactSClassOnOpen(Integer,string,var Array string,var Integer);
+remote procedure GetFactoringRecord(record CredManVc,var record CredManFactVc);
+remote procedure GetPayGrntRecord(record CredManVc,var record CredManPmtGrntVc);
+remote procedure PrepareAgreementDocSigningSession(record AgreementDocVc,var string,var Integer);
+remote function Boolean GetAgreementDoc(record CredManVc,Integer,var record AgreementDocVc);
+remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc);
+remote function Boolean GetAgreementDoc2(Longint,string,Integer,var record AgreementDocVc);
+remote updating procedure CredManPartialBuyoutDo(Date,val,Longint);
+remote function Date GetPauseCredManNextDate(record CredManVc);
+remote updating procedure RecreateAgreementSchedule(record CredManVc);
+remote function Boolean ContractHasInvoiceCreated(record CredManVc);
+remote updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
+
+procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
+begin
+  record RcVc RepSpec;
+  val calcfees;
+/*
+  PutWindowString(wn,"annualrate",(CredManr.IntRate*12) & " %");
+  calcfees = GetMonthlyFees(CredManr,0);
+  if (calcfees>0) then begin
+    PutWindowString(wn,"monthlycalcfees",calcfees & " %");
+  end else begin
+    PutWindowString(wn,"monthlycalcfees","");
+  end;
+  PutWindowString(wn,"monthlyfixedfees",GetMonthlyFees(CredManr,1));
+*/  
+  if (allf) then begin
+    RepSpec.d1 = CurrentDate;
+    CheckBuyOutAgreement(CredManr,RepSpec);
+    PutWindowString(wn,"buyoutvalue",RepSpec.vals2);
+    PutWindowString(wn,"remainingprinciple",RepSpec.f13);
+    PutWindowString(wn,"totaldue",RepSpec.vals4);
+    PutWindowString(wn,"acumpenalty",RepSpec.f12);
+  end;
+
+  return;
+end;
+function Boolean CredManDClassStdProlongFeeEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record CredManVc CredManr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    if (CredManr.StdProlongFee<0) then begin
+      CredManr.StdProlongFee = 0;
+    end;
+    if (CredManr.StdProlongFee>100) then begin
+      CredManr.StdProlongFee = 100;
+    end;
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassStdProlongFeeEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassStdProlongPrcEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record CredManVc CredManr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    if (CredManr.StdProlongPrc<0) then begin
+      CredManr.StdProlongPrc = 0;
+    end;
+    if (CredManr.StdProlongPrc>100) then begin
+      CredManr.StdProlongPrc = 100;
+    end;
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassStdProlongPrcEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassInstalmentMonthsEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record CredManVc CredManr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    if (CredManr.InstalmentType==4) then begin
+      CredManr.InstalmentMonths = 1;
+    end;
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassInstalmentMonthsEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassCustCodeEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record CredManVc CredManr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    PasteCustInAgreementRemote(CredManr);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassCustCodeEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassstartDateEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManVc CredManr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    CredManSetDatesCust(CredManr);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassstartDateEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassSuretyProviderEFAfter(Integer wn,Boolean changedf,Integer num)
+begin
+  record CredManVc CredManr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    PasteSuretyInCredMan(CredManr,GetFieldValueByName(CredManr,"SuretyProvider" & num,-1),num);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassSuretyProviderEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassLoanToValueEFAfter(Integer wn,Boolean changedf,Integer num)
+begin
+  record CredManVc CredManr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    if (CredManr.LoanToValue<0) then begin
+      CredManr.LoanToValue = 0;
+    end;
+    if (CredManr.LoanToValue>100) then begin
+      CredManr.LoanToValue = 100;
+    end;
+    //CalculateFactoringValue(CredManr);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassLoanToValueEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassDayValueEFAfter(Integer wn,Boolean changedf,string fieldname)
+begin
+  record CredManVc CredManr;
+  Integer value;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    value = StringToInt(GetFieldValueByName(CredManr,fieldname,-1));
+    if (value<1) then begin
+      value = 1;
+    end;
+    if (value>31) then begin
+      value = 31;
+    end;
+    SetFieldValueByName(CredManr,fieldname,value,-1);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassDayValueEFAfter = true;
+  return;
+end;
+
+global
+function Boolean CredManDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+  record CredManVc CredManr;
+
+  if (changed==0) then begin
+    goto LCredManDClassAfterEditField;
+  end;
+  if (fieldname=="InstalmentMonths" or fieldname=="InstalmentType") then begin//call standard function as well
+    res = CredManDClassInstalmentMonthsEFAfter(wn,rownr,changed!=0);
+  end;
+
+  switch (fieldname) begin
+    case "StdProlongFee":     res = CredManDClassStdProlongFeeEFAfter(wn,rownr,changed!=0);
+    case "StdProlongPrc":     res = CredManDClassStdProlongPrcEFAfter(wn,rownr,changed!=0);
+    case "startDate":         res = CredManDClassstartDateEFAfter(wn,changed!=0);
+    case "MonthlyPaymentDay": res = CredManDClassstartDateEFAfter(wn,changed!=0);
+    case "SuretyProvider1":   res = CredManDClassSuretyProviderEFAfter(wn,changed!=0,1);
+    case "SuretyProvider2":   res = CredManDClassSuretyProviderEFAfter(wn,changed!=0,2);
+    case "SuretyProvider3":   res = CredManDClassSuretyProviderEFAfter(wn,changed!=0,3);
+    case "LoanToValue":       res = CredManDClassLoanToValueEFAfter(wn,changed!=0,3);
+    case "PayGrntPayDate1":   res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
+    case "PayGrntPayDate2":   res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
+    case "PayGrntReportDate1":res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
+    case "PayGrntReportDate2":res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
+    otherwise 
+      res = inner.CredManDClassAfterEditField(wn,fieldname,fn,rownr,changed);
+  end;
+  if (fieldname=="CustCode") then begin//call standard function as well
+    res = CredManDClassCustCodeEFAfter(wn,rownr,changed!=0);
+  end;
+  if (fieldname=="InstalmentMonths") then begin//to update the dates correctly
+    res = CredManDClassstartDateEFAfter(wn,changed!=0);
+  end;
+/*
+  if (changed!=0) then begin
+    GetWindowRecord(wn,CredManr);
+    UpdateCredManSoftFields(wn,CredManr,false);
+  end;
+*/
+
+LCredManDClassAfterEditField:;
+  CredManDClassAfterEditField = res;
+  return;
+end;
+
+global
+procedure UpdateCredManStringList(Integer wn,record CredManVc CredManr)
+begin
+  string 255 tag;
+  Integer i,rwcnt;
+  record ORVc ORr;
+  row ORVc ORrw;
+  
+/*
+  threadremote.GetCredManEventList(CredManr,ORr);
+
+  ClearStringList(wn);
+  rwcnt = MatRowCnt(ORr);
+  for (i = 0; i<rwcnt; i = i + 1) begin
+    MatRowGet(ORr,i,ORrw);
+    tag = ORrw.RowOrderType & ":" & ORrw.GroupOrdRow;
+    AddListRow(wn,"credmanevents",1,tag,0);
+    AddListData(wn,"credmanevents","date",ORrw.PlanShipRowDate);
+    AddListData(wn,"credmanevents","duedate",ORrw.PickingDate);
+    if (ORrw.RowOrderType==0) then begin
+      AddListData(wn,"credmanevents","comment",ORrw.InloadingDate & ":" & ORrw.DespatchRowDate);
+    end;
+    AddListData(wn,"credmanevents","paid",ORrw.Sum-ORrw.TAX1Reb);
+    AddListData(wn,"credmanevents","balance",ORrw.rowGP);
+    AddListData(wn,"credmanevents","issued",ORrw.Sum);
+  end;
+*/
+
+  return;
+end;
+
+global
+updating procedure CreateCredManInvoiceDsm()
+begin
+  record CredManVc CredManr;
+  record IVVc IVr;
+  Integer wn;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  CreateSingleAgreementInvoice(CredManr,CurrentDate,IVr);
+
+  if (IVr.SerNr>0) then begin
+    CheckAndCreateAutoMailFromInvoice(IVr);
+    OpenWindow("IVDClass",1,0,"","",IVr);
+  end;
+  //UpdateCredManStringList(wn,CredManr);
+  RerunWindowDef(wn);
+
+  return;
+end;
+
+global
+updating procedure TerminateCredManDsm()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record IVVc IVr;
+
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_Normal) then begin
+    GetWindowRecord(wn,CredManr);
+    TerminateCredMan(CredManr,IVr);
+    PutWindowRecord(wn,CredManr);
+    SetWindowState(wn,Rs_Normal);
+    if (IVr.SerNr>0) then begin
+      OpenWindow("IVDClass",1,0,"","",IVr);
+    end;
+  end;
+
+  return;
+end;
+
+global
+updating procedure BuyOutCredManDsm()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record IVVc IVr;
+
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_Normal) then begin
+    GetWindowRecord(wn,CredManr);
+    DoBuyOutAgreement(CredManr,IVr);
+    if (IVr.SerNr>0) then begin
+      OpenWindow("IVDClass",1,0,"","",IVr);
+    end;
+  end;
+
+  return;
+end;
+
+global
+procedure CalculateBuyOutValue()
+begin
+  Integer wn;
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  CredManr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    CheckBuyOutAgreement(CredManr,RepSpec);
+    PutWindowRecord(wn,RepSpec);
+  end;
+  SelectWindow(wn);
+
+  return;
+end;
+
+global
+function Boolean CheckBuyoutValueWClassOnOpenWindow(Integer wn)
+begin
+  record RcVc RepSpec;
+
+  GetWindowRecord(wn,RepSpec);
+  RepSpec.d1 = CurrentDate;
+  PutWindowRecord(wn,RepSpec);
+  CalculateBuyOutValue;
+
+  CheckBuyoutValueWClassOnOpenWindow = false;
+  return;
+end;
+
+global
+procedure CheckBuyoutValueWindowDsm()
+begin
+  record RcVc RepSpec;
+  Integer wn;
+  record CredManVc CredManr;
+  
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  RepSpec.long1 = CredManr.SerNr;
+  OpenWindow("CheckBuyoutValueWClass",0,CurWindow,"","",RepSpec);
+
+  return;
+end;
+
+global
+procedure CUStatusCredManDsm()
+begin
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  Integer wn;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  SetupCustPS2Rn(CredManr.CustCode,RepSpec);
+  RepSpec.Media = mtScreen;
+  RunReport(RepSpec,0);
+  return;
+end;
+
+global
+updating procedure PaymentScheduleCredManDsm()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  if (WindowState(wn)==Rs_Normal) then begin
+    PrintDocument(CredManr,"CredManScheduleForm",false);//ActDocForm
+  end;
+
+  return;
+end;
+
+global
+procedure PauseCredManDsm()
+begin
+  Integer wn;
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  Date td;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  if (WindowState(wn)==Rs_Normal) then begin
+    if (nonblank(CredManr.PauseDate)) then begin
+      td = CredManr.PauseDate;
+    end else begin
+      td = GetPauseCredManNextDate(CredManr);
+    end;
+    if (CredManr.PauseMonths>0) then begin
+      RepSpec.vals0 = CredManr.PauseMonths;
+    end;
+    RepSpec.vals1 = CredManr.ProlongMonths;
+    RepSpec.d1 = td;
+    RepSpec.flags[1] = 1;
+    OpenWindow("PauseCredManWClass",0,wn,"","",RepSpec);
+  end;
+
+  return;
+end;
+
+global
+updating procedure PauseCredManWClassPause()
+begin
+  Integer wn,mwn;
+  record CredManVc CredManr;
+  record RcVc RepSpec;
+  Boolean res;
+
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  //if (RepSpec.long1>0) then begin
+    mwn = MotherWindow(wn);
+    if (WindowState(mwn)==Rs_Normal) then begin
+      GetWindowRecord(mwn,CredManr);
+      DoPauseCredMan(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res);
+      if (res) then begin
+        PutWindowRecord(mwn,CredManr);
+        if (WindowDoOK(mwn,0)) then begin
+          if (RepSpec.flags[1]==1) then begin
+            RecreateAgreementSchedule(CredManr);
+          end;
+        end;  
+      end else begin
+        MessageBox(200109,"");
+      end;
+      //SetWindowState(mwn,Rs_Normal);
+    end;
+    CloseWindow(wn);
+  //end;
+  return;
+end;
+
+global
+function Boolean CredManDClassOnOpenWindow(Integer wn)
+begin
+  Boolean res;
+  record CredManVc CredManr;
+
+  GetWindowRecord(wn,CredManr);
+  //res = inner.CredManDClassOnOpenWindow(wn);
+  //SetWindowSubset(wn,CredManr.SerNr);
+  //UpdateCredManStringList(wn,CredManr);
+  UpdateCredManSoftFields(wn,CredManr,true);
+
+  CredManDClassOnOpenWindow = false;
+  return;
+end;
+
+global
+procedure CredManDClassOnWindowRecordChange(Integer wn)
+begin
+  record CredManVc CredManr;
+
+  GetWindowRecord(wn,CredManr);
+  //SetWindowSubset(wn,CredManr.SerNr);
+  //logtext(0,"set subset" & CredManr.SerNr);
+  //UpdateCredManStringList(wn,CredManr);
+  UpdateCredManSoftFields(wn,CredManr,true);
+
+  return;
+end;
+
+global
+function Boolean CredManDClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  if (CredManr.SerNr>0) then begin
+    subsetname = CredManr.SerNr;
+  end else begin
+    subsetname = -9999999;
+  end;
+
+  CredManDClassUpdateWindowSubset = true;
+  return;
+end;
+
+global
+function Boolean CredManDClassListDblClick(Integer wn)
+begin
+  Integer line;
+  Longint pos,sernr;
+  record IVVc IVr;
+  record IPVc IPr;
+  string 255 tstr,tstr2,type;
+  record CredHistVc CredHistr;
+
+  ReadMarkedRecord(wn,CredHistr);
+  switch (CredHistr.RecordType) begin
+    case "0":
+      IVr.SerNr = CredHistr.RecordNr;
+      if (ReadFirstMain(IVr,1,true)) then begin
+        OpenWindow("IVDClass",1,0,"","",IVr);
+      end;
+    case "1":
+      IPr.SerNr = CredHistr.RecordNr;
+    case "2":
+      IVr.SerNr = CredHistr.RecordNr;
+      if (ReadFirstMain(IVr,1,true)) then begin
+        OpenWindow("IVDClass",1,0,"","",IVr);
+      end;
+    case "4":
+      OpenWindow("CredHistDClass",1,0,"","",CredHistr);
+  end;
+
+  return;
+end;
+
+//this allows to edit a field value in hal and use PutWindowRecord and not get "The record has changed" message
+//it was needed for TerminateCredManDsm. I combined it with "SetWindowState"
+global
+function LongInt CredManVcRecordProtectFields(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt long3,LongInt long4)
+begin
+  LongInt res;
+  
+  //CredManr.OrderClass = CredMan2r.OrderClass;
+  CredManr.PauseDate = CredMan2r.PauseDate;
+  CredManr.PauseMonths = CredMan2r.PauseMonths;
+  CredManr.ProlongDate = CredMan2r.ProlongDate;
+  CredManr.ProlongMonths = CredMan2r.ProlongMonths;
+  //CredManr.endDate = CredMan2r.endDate;
+  
+  CredManVcRecordProtectFields = res;
+  return;
+end;
+
+
+global
+procedure CredManInfoBuyOutDbl(string dblstr,string l,Integer currepwn)
+begin
+  Integer wn;
+  record RCVc RepSpec;
+
+  RepSpec.long1 = StringToLongint(l);
+  OpenWindow("CheckBuyoutValueWClass",0,0,"","",RepSpec);
+
+  return;
+end;
+
+function Boolean RefinCredMan2WClassd1EFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record RcVc RepSpec;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,RepSpec);
+    GetRefinCredManData(RepSpec.long1,RepSpec.ArtMode,RepSpec,true);
+    PutWindowRecord(wn,RepSpec);   
+  end; 
+  RefinCredMan2WClassd1EFAfter = true;
+  return;
+end;
+
+function Boolean RefinCredMan2WClassvals2EFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record RcVc RepSpec;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,RepSpec);
+    RepSpec.vals3 = RepSpec.vals0 + RepSpec.vals1 + RepSpec.vals2;
+    PutWindowRecord(wn,RepSpec);   
+  end; 
+  RefinCredMan2WClassvals2EFAfter = true;
+  return;
+end;
+
+function Boolean RefinCredMan2WClassvals3EFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record RcVc RepSpec;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,RepSpec);
+    if (RepSpec.vals3<(RepSpec.vals0 + RepSpec.vals1)) then begin
+      RepSpec.vals3 = StringToVal(WindEFStr(wn),M4Val);
+    end else begin
+      RepSpec.vals2 = RepSpec.vals3 - (RepSpec.vals0 + RepSpec.vals1);
+    end;
+    PutWindowRecord(wn,RepSpec);
+  end; 
+  RefinCredMan2WClassvals3EFAfter = true;
+  return;
+end;
+
+function Boolean RefinCredMan2WClassflags1EFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record RcVc RepSpec;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,RepSpec);
+    if (RepSpec.flags[1]>31) then begin
+      RepSpec.flags[1] = 31;
+    end;
+    if (RepSpec.flags[1]<1) then begin
+      RepSpec.flags[1] = 1;
+    end;
+    PutWindowRecord(wn,RepSpec);
+  end; 
+  RefinCredMan2WClassflags1EFAfter = true;
+  return;
+end;
+
+global
+function Boolean RefinCredMan2WClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+
+  switch (fieldname) begin
+    case "d1":
+      res = RefinCredMan2WClassd1EFAfter(wn,rownr,changed!=0);
+    case "vals2":
+      res = RefinCredMan2WClassvals2EFAfter(wn,rownr,changed!=0);
+    case "vals3":
+      res = RefinCredMan2WClassvals3EFAfter(wn,rownr,changed!=0);
+    case "flags[1]":
+      res = RefinCredMan2WClassflags1EFAfter(wn,rownr,changed!=0);
+  end;
+
+  RefinCredMan2WClassAfterEditField = res;
+  return;
+end;
+
+global
+function Boolean PauseCredManWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+  record RcVc RepSpec;
+
+  switch (fieldname) begin
+    case "vals0":
+      DeselectWindow(wn,true);
+      GetWindowRecord(wn,RepSpec);
+      RepSpec.vals1 = RepSpec.vals0;
+      PutWindowRecord(wn,RepSpec);
+  end;
+
+  PauseCredManWClassAfterEditField = res;
+  return;
+end;
+
+
+procedure RefinCredMan(Integer type)
+begin
+  Integer wn;
+  record RcVc RepSpec,RepSpec2;
+
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  
+  GetRefinCredManData(RepSpec.long1,type,RepSpec2,true);
+
+  CloseWindow(wn);
+  OpenWindow("RefinCredMan2WClass",0,0,"","",RepSpec2);
+
+  return;
+end;
+
+global
+procedure RefinCredManWClassRefinance()
+begin
+  RefinCredMan(0);
+  return;
+end;
+
+global
+procedure RefinCredManWClassProlong()
+begin
+  RefinCredMan(1);
+  return;
+end;
+
+global
+procedure RefinCredManWClassTransfer()
+begin
+  RefinCredMan(2);
+  return;
+end;
+
+global
+procedure RefinCredManWClassPartial()
+begin
+  Integer wn;
+  record RcVc RepSpec,RepSpec2;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,RepSpec);
+  
+  //GetRefinCredManData(RepSpec.long1,type,RepSpec2,true);
+
+  CloseWindow(wn);
+  OpenWindow("RefinCredManPartialWClass",0,0,"","",RepSpec);
+  return;
+end;
+
+global
+procedure RefinCredManDsm()
+begin
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  Integer wn;
+
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_Normal) then begin
+    GetWindowRecord(wn,CredManr);
+    RepSpec.long1 = CredManr.SerNr;
+    OpenWindow("RefinCredManWClass",0,0,"","",RepSpec);
+  end;
+
+  return;
+end;
+
+global
+updating procedure RefinCredManPartialWClassSubmit()
+begin
+  Integer wn;
+  record RcVc RepSpec;
+
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  
+  if (nonblank(RepSpec.d1) and RepSpec.vals0>0) then begin
+    CredManPartialBuyoutDo(RepSpec.d1,RepSpec.vals0,RepSpec.long1);
+    CloseWindow(wn);
+  end;
+
+  return;
+end;
+
+global
+updating procedure RefinCredMan2WClassSubmit()
+begin
+  Integer wn;
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  string 255 msg;
+
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  if (DoRefinCredMan(RepSpec,msg,CredManr)) then begin
+    CloseWindow(wn);
+    OpenWindow("CredManDClass",1,0,"","",CredManr);
+  end else begin
+    Stopalert(msg);
+  end;
+
+  return;
+end;
+
+function string 255 GetCredHistDetail(record ORVc ORr,Longint sernr,string fieldname)
+begin
+  string 255 res;
+  Integer i,rwcnt;
+  row ORVc ORrw;
+
+  rwcnt = MatRowCnt(ORr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(ORr,i,ORrw);
+    if (ORrw.GroupOrdRow==sernr) then begin
+      res = GetFieldValueByName(ORr,fieldname,i);
+      i = rwcnt;
+    end;
+  end;
+
+  GetCredHistDetail = res;
+  return;
+end;
+
+function string 255 GetCredHistDetail2(record ORVc ORr,Longint sernr)
+begin
+  string 255 res;
+  Integer i,rwcnt;
+  row ORVc ORrw;
+
+  rwcnt = MatRowCnt(ORr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(ORr,i,ORrw);
+    if (ORrw.GroupOrdRow==sernr) then begin
+      res = (ORrw.Sum-ORrw.TAX1Reb);
+      i = rwcnt;
+    end;
+  end;
+
+  GetCredHistDetail2 = res;
+  return;
+end;
+
+global
+procedure CredManVc_ContactSClass(Integer wn,Integer mwn)
+BEGIN
+  record CredManVc CredManr;
+  Array string 60 acontact;
+  Integer i,acnt;
+  LongInt pos;
+  string 255 namestr,titlestr,custcode;
+
+  GetWindowRecord(mwn,CredManr);
+  ContactSClassOnOpen(wn,CredManr.CustCode,acontact,acnt);
+  for (i=0;i<acnt;i=i+1) begin
+//     SetListString(wn,80,acontact[i],false);
+    pos = 0;    
+    GetNextSubstring(acontact[i],pos,"#",namestr);
+    GetNextSubstring(acontact[i],pos,"#",titlestr);
+    GetNextSubstring(acontact[i],pos,"#",custcode);
+    AddListRow(wn,"DLPasteContact",1,namestr,0);
+    AddListData(wn,"DLPasteContact","DLContactName",namestr);
+    AddListData(wn,"DLPasteContact","DLContactTitle",titlestr);    
+  end;
+  RETURN;
+END;
+
+
+global
+function Boolean ContactSClassOnOpenWindow(Integer wn)
+begin
+  Integer mwn;
+  Boolean res;
+
+  mwn = MotherWindow(wn);
+  switch (GetWindowFileName(mwn)) begin
+    case "CredManVc": CredManVc_ContactSClass(wn,mwn);
+    otherwise
+      res = inner.ContactSClassOnOpenWindow(wn);
+  end;
+  ContactSClassOnOpenWindow = false;
+  return;
+end;
+
+global
+updating procedure OpenCredManFactoringBtn()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record CredManFactVc CMFr;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  GetFactoringRecord(CredManr,CMFr);
+  OpenWindow("CredManFactDClass",1,0,"","",CMFr);
+
+  return;
+end;
+
+global
+updating procedure OpenCredManFactoringInvoicesBtn()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record RcVc RepSpec;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  OpenWindow("CustCredManFactInvoiceWClass",1,wn,"","",RepSpec);
+
+  return;
+end;
+
+global
+updating procedure OpenCredManPayGrntSellersBtn()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record CredManPmtGrntVc PGr;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  GetPayGrntRecord(CredManr,PGr);
+  OpenWindow("CredManPmtGrntDClass",1,0,"","",PGr);
+
+  return;
+end;
+
+global
+updating procedure OpenCredManPayGrntReportsBtn()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record RcVc RepSpec;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  OpenWindow("CredManGrntReportWClass",1,wn,"","",RepSpec);
+
+  return;
+end;
+
+global
+procedure AgreementDocDClassSign()
+begin
+  Integer nwn;
+  record RcVc RepSpec;
+
+  if (WindowState(CurWindow)==Rs_Normal) then begin
+    nwn = OpenWindow("DocSigningWClass",0,CurWindow,"","",RepSpec);
+  end;
+
+  return;
+end;
+
+
+global
+procedure DocumentSigningClientDone(string user,record AgreementDocVc ADr)
+begin
+  record AgreementDocVc tADr;
+  Integer wn,swn;
+
+  if (user==CurrentUser) then begin
+    swn = FindWindow("DocSigningWClass");
+    wn = MotherWindow(swn);
+    if (wn>0) then begin
+      GetWindowRecord(wn,tADr);
+      if (ADr.SerNr==tADr.SerNr) then begin
+        //PutWindowRecord(wn,ADr);
+        CloseWindow(wn);
+        OpenWindow("AgreementDocDClass",1,0,"","",ADr);
+      end;
+    end;
+    if (swn>0) then begin
+      CloseWindow(swn);
+    end;
+  end;
+
+  return;
+end;
+
+global
+function Boolean DocSigningWClassOnOpenWindow(Integer wn)
+begin
+  record AgreementDocVc ADr;
+  string 255 link;
+  record RcVc RepSpec;
+  Integer err;
+  string 255 html
+  
+  GetWindowRecord(MotherWindow(wn),ADr);
+ 
+  threadremote.PrepareAgreementDocSigningSession(ADr,link,err);
+  html = "<html><head>";//<!DOCTYPE html>
+  html = html & "<style>body{margin:0px;padding:0px;} iframe{border:none}</style>";//
+  html = html & "<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js'></script>";
+  //html = html & "<script src='http://localhost:1201/scripts/clientsign.js?ver=2'></script>";
+  //html = html & "<script>$(document).ready(function(){AddSingingIframe('" & link & "')});</script>";
+  html = html & "</head><body><iframe id='isign-gateway' width='100%' height='100%' src='" & link & "'></iframe>";
+/*
+  html = html & "<script src='https://gateway-sandbox.dokobit.com/js/isign.frame.js'></script>";
+  html = html & "<script>";
+//  html = html & "$.getScript('https://gateway-sandbox.dokobit.com/js/isign.frame.js', function(){";
+  html = html & "    $(document.body).append('aaaa '; ";
+  html = html & "    Isign.onSignSuccess = function(){ ";
+//  html = html & "        $(document.body).html('success');";
+//  html = html & "        HansaWorld.CallHal('RefreshAgreementDocWindow','true');";
+  html = html & "    };";
+  html = html & "    Isign.onSignError = function(errors){";
+//  html = html & "        alert('failed to sign ' + errors.join(', '));";
+  html = html & "    };";
+  html = html & "    Isign.adjustHeight = false;";
+//  html = html & "});  ";
+  html = html & "</script>";
+*/
+  html = html & "</body></html>";
+
+  SetWebPageData(wn,"$SIGNAREA",html);
+
+  DocSigningWClassOnOpenWindow = false;
+  return;
+end;
+
+global
+procedure CredManDClassSignAgreement()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record AgreementDocVc ADr;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  if (GetAgreementDoc(CredManr,1,ADr)) then begin
+    OpenWindow("AgreementDocDClass",1,0,"","",ADr);
+  end;
+
+  return;
+end;
+
+global
+procedure CredManDClassSignSchedule()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record AgreementDocVc ADr;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  if (GetAgreementDoc(CredManr,2,ADr)) then begin
+    OpenWindow("AgreementDocDClass",1,0,"","",ADr);
+  end;
+
+  return;
+end;
+
+global
+procedure CredManDClassSignVekselis()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record AgreementDocVc ADr;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  if (GetAgreementDoc(CredManr,6,ADr)) then begin
+    OpenWindow("AgreementDocDClass",1,0,"","",ADr);
+  end;
+
+  return;
+end;
+
+global
+procedure CredManDClassSignSurety()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record AgreementDocVc ADr;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  if (GetAgreementDoc(CredManr,3,ADr)) then begin
+    OpenWindow("AgreementDocDClass",1,0,"","",ADr);
+  end;
+
+  return;
+end;
+
+global
+updating procedure CredManMakePaymentDsm()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record VIVc VIr;
+    
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+
+  if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
+    CredManMakePaymentRemote(CredManr,VIr);
+    PutWindowRecord(wn,CredManr);
+    WindowDoOK(wn,0);
+    if (VIr.SerNr>0) then begin
+      OpenWindow("VIDClass",0,0,"","",VIr);
+    end;
+  end;
+
+  return;
+end;
+
+global
+procedure CredManPmtGrntOpenCertificateDsm()
+begin
+  Integer wn,rw;
+  record CredManPmtGrntVc PGr;
+  row CredManPmtGrntVc PGrw;
+  record AgreementDocVc ADr;
+
+  wn = CurWindow;
+
+  rw = WindowActiveRow(wn);
+  if (rw>-1) then begin
+    GetWindowRecord(wn,PGr);
+    MatRowGet(PGr,rw,PGrw); 
+    if (GetAgreementDoc2(PGr.CredManNr,PGrw.CustCode,rw,ADr)) then begin
+      OpenWindow("AgreementDocDClass",1,0,"","",ADr);
+    end;
+  end;
+
+  return;
+end;
+
+global
+function Boolean CredManDClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
+begin
+  Boolean res;
+  record CredManVc CredManr;
+
+  res = false;
+  if (wnst==2) then begin//Rs_update
+    switch (fieldname) begin
+      case "Classifications": res = true;
+    end;
+  end;
+  
+  if (!res) then begin
+    res = inner.CredManDClassActiveEditField(wn,fieldname,fn,wnst,rownr,changed);
+  end;
+
+  if (res) then begin
+    switch (fieldname) begin
+      case "InstalmentMonths": 
+        GetWindowRecord(wn,CredManr);
+        if (ContractHasInvoiceCreated(CredManr)) then begin
+          res = false;
+        end;
+    end;
+  end;
+
+  CredManDClassActiveEditField = res;
+  return;
+end;
+
+global
+procedure DblCredManVc(string dblstr,string l,Integer currepwn)
+begin
+
+  if (nonblank(l)) then begin
+    inner.DblCredManVc(l,l,currepwn);
+  end else begin
+    inner.DblCredManVc(dblstr,l,currepwn);
+  end;
+  return;
+end;

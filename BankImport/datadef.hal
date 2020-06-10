@@ -1,0 +1,51 @@
+
+begin
+  
+	BlockBegin(BankImportSetBlock,-,"");// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 10 September 2018 15:43:26
+		RecordField(ImpPaym,M4Int,0,0);
+		RecordField(ImpPaymOrd,M4Int,0,0);
+		RecordField(ImpCharges,M4Int,0,0);
+		RecordField(DefPayModeSW,M4Code,5,0);
+		RecordField(DefPayModeSEB,M4Code,5,0);
+		RecordField(DefPayModeLUM,M4Code,5,0);
+		RecordField(DefPayModeSIA,M4Code,5,0);
+		RecordField(DefSearchInv,M4Int,0,0);
+		RecordField(InvFIFO,M4Int,0,0);
+		RecordField(DefVEPayModeSW,M4Code,5,0);
+		RecordField(DefVEPayModeSEB,M4Code,5,0);
+		RecordField(DefVEPayModeLUM,M4Code,5,0);
+		RecordField(DefVEPayModeSIA,M4Code,5,0);
+	EndBlock;
+	
+
+  RecordBegin(IPConVc,-,"");
+  RecordField(SerNr,M4Long,0,0);//won't really need it
+  RecordField(Period,M4Str,255,0);
+  RecordField(PMCode,M4Code,5,0);
+  RecordField(CustCode,M4Code,20,0);
+  RecordField(IVNr,M4Long,0,0);
+  RecordField(Comment,M4Str,255,0);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(TransDate,M4Date,0,0);
+  ArrayField(CustCodeRow,M4Code,20,0);
+  ArrayField(CustName,M4Str,255,0);
+  ArrayField(CommentRow,M4Str,200,0);
+  ArrayField(Amount,M4Val,0,0);
+  ArrayField(CurncyCode,M4Code,20,0);
+  ArrayField(stp,M4Int,0,0);
+  ArrayField(IVNrRow,M4Long,0,0);
+  ArrayField(PrepayNr,M4Long,0,0);
+  ArrayField(BankTRNr,M4Long,0,0);
+  ArrayField(IPNr,M4Long,0,0);
+  EndArray;
+  MainKeyBegin(SerNr,0);
+  KeySegment(SerNr);
+  EndRecord;
+
+  RecordAddBegin(BankTRVc,"BankTRVcCust");
+  RecordField(PayCustCode,M4Code,20,0);
+  EndRecordAdd;
+  
+  return;
+end;

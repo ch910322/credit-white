@@ -1,0 +1,58 @@
+//<halrule>server-only</halrule>
+external inner updating procedure SendCustomerLetterWithDetails(record RCVc,string,string,string);
+
+global
+updating procedure SetCustomerPassword(var record CUVc CUr,var string link)
+begin
+  record CUVc oldCUr;
+  
+  if (ReadFirstMain(CUr,1,true)) then begin
+    RecordCOpy(oldCUr,CUr);
+    CUr.OldPassword = CUr.Password;
+    CUr.Password = CalcPassword("123123123",CUr.Code,0);
+    if (RecordUpdate(oldCUr,CUr,false)==0) then begin
+    end;
+  end;
+
+  return;
+end;
+
+global
+updating procedure ResetCustomerPassword(var record CUVc CUr)
+begin
+  record CUVc oldCUr;
+  
+  if (ReadFirstMain(CUr,1,true)) then begin
+    RecordCOpy(oldCUr,CUr);
+    CUr.Password = CUr.OldPassword;
+    RecordUpdate(oldCUr,CUr,false);
+  end;
+
+  return;
+end;
+
+global
+updating function Boolean SendNewUserInvite(record CUVc CUr)
+begin
+  record InvitationRequestVc IRr;
+  record CMApplicationSetBlock CMb;
+  record RcVc RepSpec;
+  Boolean res;
+  
+  BlockLoad(CMb);
+  RecordNew(IRr);
+  IRr.UUID = MakeUUID;
+  IRr.TransDate = CurrentDate;
+  IRr.TransTime = CurrentTime;
+  IRr.LoanAppNr = -1;
+  IRr.ContactCode = CUr.Code;
+  if (RecordInsert(IRr,true)) then begin
+    res = true;
+    RepSpec.searchstr = "?sess=" & IRr.UUID & "&cc=" & CUr.Code;
+    RepSpec.f1 = CUr.Code;
+    SendCustomerLetterWithDetails(RepSpec,CMb.ContactInviteLetter,"",CUr.eMail);
+  end;  
+
+  SendNewUserInvite = res;
+  return;
+end;

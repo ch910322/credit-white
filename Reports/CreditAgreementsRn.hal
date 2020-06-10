@@ -1,0 +1,236 @@
+//<halrule>server-only</halrule>
+external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
+external inner function Boolean SetInSet2(string,string);
+external procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
+
+SetLangMode(LangLithuanian,"LIT",2);
+
+function string 10 Checkbocout(boolean in)
+begin
+	string 10 res;
+	res = "";
+	
+	if(in)then begin
+		res = "Taip";
+	end;
+	Checkbocout = res;
+return;
+end;
+
+global
+function val GetFutureCredManBalance(record CredManVc CredManr,record CredManSetBlock CredManSetb,Date baldate)
+begin
+	val res;
+	record CredManPayPlanVc CredManPayr;
+	row CredManPayPlanVc CredManPayrw;
+	Integer rwcnt,i;
+  val open;
+
+	res = blankval;
+	BuildCredManPayPlanCust(CredManr,CredManPayr,CredManSetb,true,false);
+	rwcnt = MatRowCnt(CredManPayr);
+	for (i=rwcnt-1;i>=0;i=i-1) begin
+		MatRowGet(CredManPayr,i,CredManPayrw);
+    open = open + CredManPayrw.OpenAmount;
+		if (CredManPayrw.TransDate<=baldate and res==blankval and CredManSetb.InstalmentItem==CredManPayrw.ArtCode) then begin
+  		res = CredManPayrw.Bal;
+//			i = 0;
+		end;
+	end;
+	if (res==blankval) then begin
+    if (rwcnt==1) then begin
+      res = CredManr.InvSum4;
+    end else begin
+      MatRowGet(CredManPayr,0,CredManPayrw);
+      res = CredManPayrw.Bal;      
+    end;
+	end else begin
+    res = res + open;
+  end;
+
+	GetFutureCredManBalance = res;
+	return;
+end;
+
+function string 255 GetCustomerInvoicingEmails(record CUVc CUr)
+begin
+  record EmailRecipVc EmailRecipr;
+  row EmailRecipVc EmailReciprw;
+  Integer i,rwcnt;
+  string 255 res;
+  record CUVc CU2r;
+
+  res = CUr.eMail;
+  if (blank(res)) then begin
+    EmailRecipr.MainContactCode = CUr.Code;
+    if (ReadFirstMain(EmailRecipr,1,true)) then begin 
+      rwcnt = MatRowCnt(EmailRecipr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(EmailRecipr,i,EmailReciprw);
+        if (EmailReciprw.DocType==kMailInvoice) then begin
+          CU2r.Code = EmailReciprw.ContactCode;
+          if (ReadFirstMain(CU2r,1,true)) then begin
+            if (nonblank(CU2r.eMail)) then begin
+              res = CU2r.eMail;
+              i = rwcnt;
+            end;        
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  GetCustomerInvoicingEmails = res;
+  return;
+end;
+
+global procedure CreditAgreementsRn(record RcVc RepSpec)
+begin
+	record CredManVc CredManr;
+	boolean TrHs,testf;
+	record CredManEventVc CMEventr;
+	string 200 thekey;
+	val curbal,totamount,totdep,totmonth,totbal,totalbuyout;
+	record CredManSetBlock CredManSetb;
+	record CUVc CUr;
+  record RcVc tRepSpec;
+  array Integer rp;
+
+
+	BlockLoad(CredManSetb);
+	startreportjob(USetStr(1000005));
+	
+	endheader;
+
+  if (blank(RepSpec.d1)) then begin
+    RepSpec.d1 = CurrentDate;
+  end;
+
+  rp[2] = 50;
+  rp[3] = 130;
+  rp[4] = 200;
+  rp[5] = 330;
+  rp[6] = 400;
+  rp[7] = 470;
+  rp[8] = 530;
+  rp[9] = 600;
+  rp[10] = 650;
+  rp[11] = 710;
+  rp[12] = 860;
+  rp[13] = 930;
+  rp[14] = 1000;
+  
+	
+	StartFormat(15);
+		OutString(0,0,"Nr",false);
+		OutString(rp[2],0,"Agr. Type",false);
+		if(RepSpec.Media==mtExcel)then begin
+			OutString(35,0,"Sustabdytos",false);
+			OutString(70,0,"Nutrauktos",false);
+			OutString(70,0,"Nepatvirtintos",false);
+			OutString(70,0,"Be OK",false);
+			OutString(70,0,"Baigtos",false);
+		end;
+		OutString(rp[3],0,"Įmonės kd.",false);
+//		OutString(35,0,"Klientas",false);
+		OutString(rp[4],0,"Pavadinimas",false);
+		OutString(rp[5],0,"Pradžios data",false);
+		OutString(rp[6],0,"Pabaigos data",false);
+		OutString(rp[7],0,"Viso suma",false);//totoals
+    if (RepSpec.flags[6]==1) then begin
+		  OutString(rp[8],0,"El. paštas",false);//totoals
+    end else begin
+  		OutString(rp[8],0,"Užstato suma",false);//totals
+  		OutString(rp[9],0,"Užstato %",false);
+    end;
+		OutString(rp[10],0,"Mėnesiai",false);
+		OutString(rp[11],0,"Palūkanų %",false);
+		OutString(rp[12],0,"Mėnesiniai įnašai",true);//totals
+		OutString(rp[13],0,"Balansų vertė",true);//totals
+		OutString(rp[14],0,"Buy-out",true);//buyout value
+	EndFormat;
+	
+	TrHs = true;
+	CredManr.startDate = RepSpec.sStartDate;
+	while(loopkey("startDate",CredManr,1,TrHs))begin
+		testf = true;
+		if(nonblank(RepSpec.f1) and CredManr.CustCode!=RepSpec.f1)then begin testf = false; end;
+		if(nonblank(RepSpec.f2) and CredManr.Type!=RepSpec.f2)then begin testf = false; end;
+		if(nonblank(RepSpec.f3) and CredManr.OrderClass!=RepSpec.f3)then begin testf = false; end;
+		if(nonblank(RepSpec.f5) and CredManr.SalesMan!=RepSpec.f5)then begin testf = false; end;
+		if(RepSpec.flags[3]==0 and CredManr.Approved==0)then begin testf = false; end;
+		if(RepSpec.flags[4]==0 and CredManr.OKFlag==0)then begin testf = false; end;
+		if(CredManr.startDate<RepSpec.sStartDate)then begin testf = false; end;
+    if (nonblank(RepSpec.f4) and SetInSet2(RepSpec.f4,CredManr.Classifications)==false) then begin 
+      testf = false; 
+    end;
+		if(CredManr.startDate>RepSpec.sEndDate)then begin testf = false; TrHs = false; end;
+		
+		if (testf) then begin
+  		curbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.d1);
+			if(RepSpec.flags[5]==0 and curbal<=0)then begin testf = false; end;
+		end;
+		
+		if(testf)then begin
+		  CUr.Code = CredManr.CustCode;
+      tRepSpec.d1 = RepSpec.d1;
+      CheckBuyOutAgreement(CredManr,tRepSpec);
+
+		  ReadFirstMain(CUr,1,true);
+			StartFormat(15);
+      OutString(0,"DblCredManVc",CredManr.SerNr,false);
+      OutString(rp[2],"DblCredManTypeVc",CredManr.Type,false);
+      if(RepSpec.Media==mtExcel)then begin
+        OutString(70,0,Checkbocout(CredManr.Approved==0),false);
+        OutString(70,0,Checkbocout(CredManr.OKFlag==0),false);
+        OutString(70,0,Checkbocout(curbal==0),false);
+      end;
+      OutStringID(rp[3],"DblCUVc",CUr.RegNr1,false,CUr.Code);
+//      OutString(35,"DblCUVc",CredManr.CustCode,false);
+      OutString(rp[4],0,CredManr.Addr0,false);
+      OutString(rp[5],0,CredManr.startDate,false);
+      OutString(rp[6],0,CredManr.endDate,false);
+      OutString(rp[7],0,CredManr.InvSum4,false);
+      if (RepSpec.flags[6]==1) then begin
+        OutString(rp[8],0,GetCustomerInvoicingEmails(CUr),false);//totoals
+      end else begin
+        OutString(rp[8],0,CredManr.DepositSum,false);
+        OutString(rp[9],0,CredManr.DepositPrc,false);
+      end;
+      OutString(rp[10],0,CredManr.InstalmentMonths,false);
+      OutString(rp[11],0,CredManr.IntRate,false);
+      OutString(rp[12],0,CredManr.MonthlySum,true);
+      OutString(rp[13],0,curbal,true);
+      OutString(rp[14],0,tRepSpec.vals2,true);
+      totamount = totamount + CredManr.InvSum4;
+      totdep = totdep + CredManr.DepositSum;
+      totmonth = totmonth + CredManr.MonthlySum;
+      totbal = totbal + curbal;
+      totalbuyout = totalbuyout + tRepSpec.vals2;
+			EndFormat;
+		end;
+	end;
+  StartFormat(1);
+  Gray_divider(0,1);
+  EndFormat;
+  StartFormat(15);
+  OutString(0,0,"",false);
+  OutString(rp[2],0,"",false);
+  OutString(rp[3],0,"",false);
+  OutString(rp[4],0,"",false);
+  OutString(rp[5],0,"",false);
+  OutString(rp[6],0,"",false);
+  OutString(rp[7],0,totamount,false);
+  OutString(rp[8],0,totdep,false);
+  OutString(rp[9],0,"",false);
+  OutString(rp[10],0,"",false);
+  OutString(rp[11],0,"",false);
+  OutString(rp[12],0,totmonth,true);
+  OutString(rp[13],0,totbal,true);
+  OutString(rp[14],0,totalbuyout,true);
+  EndFormat;
+	
+	endjob;
+
+return;
+end;
