@@ -1839,6 +1839,8 @@ begin
   MatCol(1,354,"Fees",0,Fees,false,0);
   MatCol(1,434,"Total",0,Total,false,0);
   MatCol(1,-60,"Invoiced",0,Invoiced,false,SetSClass);
+  InsertRowTest;
+  DeleteRowTest;
   EndMatrix;
   EndWindow;
 end;

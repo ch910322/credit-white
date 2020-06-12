@@ -1145,6 +1145,7 @@ begin
   ArrayField(Invoiced,M4Set,432,0);
   ArrayField(FromDate,M4Date,0,0);
   ArrayField(ToDate,M4Date,0,0);
+  ArrayField(InvoiceNr,M4Str,60,0);
   EndArray;
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
@@ -1152,7 +1153,7 @@ begin
   KeySegment(CredManNr);
   KeySegment(SerNr);
   EndRecord;
-
+  
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Latvian", 0);

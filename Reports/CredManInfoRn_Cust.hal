@@ -303,41 +303,39 @@ end;
 procedure AddScheduleToList(row CredManSchedVc CSrw,var record SMVc SMr,var val calcbal)
 begin
   Integer i,rwcnt;
-  row IVVc IVrw;
   val inst,intrate,fees,pen;
   row SMVc SMrw;
+  record IVVc IVr;
+  row IVVc IVrw;
   
-  rwcnt = MatRowCnt(IVr);
-  for (i=0;i<rwcnt;i=i+1) begin
-    MatRowGet(IVr,i,IVrw);
-    switch (IVrw.ChargeType) begin
-      case 1: 
-        inst = IVrw.Sum; 
-        calcbal = calcbal - IVrw.Sum;
-      case 2: 
-        intrate = IVrw.Sum;
-      case 3: 
-        calcbal = calcbal - IVrw.Sum;
-      case 4: 
-        fees = fees + IVrw.Sum;
-      case 9: 
-        pen = pen + IVrw.Sum;
-    end;
-  end;
 
+  calcbal = calcbal - CSrw.Principle;
   ClearRow(SMr,SMrw,1);
-  SMrw.TransDate = IVr.InvDate;
+  SMrw.TransDate = CSrw.InvDate;
   SMrw.RowSimStat = 0;//type
-  SMrw.DebVal = inst;
-  SMrw.CredVal = intrate;
-  SMrw.DebVal2 = fees;
-  SMrw.CredVal2 = pen;
-  SMrw.CurDebVal = IVr.Sum4;
+  SMrw.DebVal = CSrw.Principle;
+  SMrw.CredVal = CSrw.Interest;
+  SMrw.DebVal2 = CSrw.Fees;
+  //SMrw.CredVal2 = pen;
+  SMrw.CurDebVal = CSrw.Total;
   SMrw.CurCredVal = calcbal;
-  SMrw.Objects = fromdate;
-  SMrw.Comment = todate;
-  if (IVr.SerNr>-1) then begin
-    SMrw.ExtraComment = IVr.SerNr;
+  SMrw.Objects = CSrw.FromDate;
+  SMrw.Comment = CSrw.ToDate;
+
+  if (CSrw.Invoiced==1) then begin
+    SMrw.ExtraComment = CSrw.InvoiceNr;
+    IVr.SerNr = CSrw.InvoiceNr;
+    if (ReadFirstMain(IVr,1,true)) then begin
+      SMrw.CurDebVal = IVr.Sum4;
+      rwcnt = MatRowCnt(IVr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(IVr,i,IVrw);
+        if (IVrw.ChargeType==9) then begin
+          pen = pen + IVrw.Sum;
+        end;
+      end;
+    end;
+    SMrw.CredVal2 = pen;
   end;
   MatRowPut(SMr,MatRowCnt(SMr),SMrw);
 
@@ -392,12 +390,20 @@ begin
   return;
 end;
 
+global
 function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc CredManr,record CredManSetBlock CredManSetb,var record SMVc SMr)
 begin
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  Integer i,rwcnt;
+  Boolean res;
+  val calcbal;
+ 
   
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstKey("CredManNr",CSr,1,true)) then begin
     res = true;
+    calcbal = CredManr.InvSum4;
     rwcnt = MatRowCnt(CSr);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CSr,i,CSrw);
