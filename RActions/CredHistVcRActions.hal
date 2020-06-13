@@ -1,3 +1,4 @@
+//<halrule>server-only</halrule>
 
 global
 function LongInt CredHistVcRecordInIndex(record CredHistVc CredHistr,string indexname)

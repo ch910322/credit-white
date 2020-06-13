@@ -1,3 +1,4 @@
+//<halrule>server-only</halrule>
 external inner function Boolean SetInSet2(string,string);
 external inner function Boolean ReadFirstItem(string,var record INVc,Boolean,Boolean);
 external inner procedure HTItemClass(string,var string);

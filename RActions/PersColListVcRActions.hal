@@ -1,3 +1,4 @@
+//<halrule>server-only</halrule>
 global
 function LongInt PersColListVcRecordDefaults(var record PersColListVc PersColListr,record PersColListVc PersColList2r,LongInt stat,LongInt long4)
 BEGIN

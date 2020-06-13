@@ -1,3 +1,4 @@
+//<halrule>server-only</halrule>
 global
 procedure MailingListRn(record RcVc RepSpec)
 begin

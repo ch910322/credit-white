@@ -1,4 +1,3 @@
-
 global
 function LongInt AgreementDocVcRecordCheck(var record AgreementDocVc ADr,record AgreementDocVc AD2r,LongInt stat,LongInt long4)
 begin

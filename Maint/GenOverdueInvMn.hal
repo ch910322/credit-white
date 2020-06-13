@@ -1,3 +1,4 @@
+//<halrule>server-only</halrule>
 external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val);
 external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var record IVVc,Date,Date,Date,Boolean,Boolean);
 external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val);
