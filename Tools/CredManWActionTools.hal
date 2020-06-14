@@ -32,7 +32,7 @@ external updating function Boolean ArchiveExistingDocument(record AgreementDocVc
 external updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
 external updating procedure GenerateAgreementSchedule(record CredManVc);
 external inner function Boolean ExternalDocumentEnabled(string);
-
+external updating procedure PrintCredManDocument(string,string,record CredManVc,Integer,Boolean,string);
 
 global
 procedure PasteCustInAgreementRemote(var record CredManVc CredManr)
