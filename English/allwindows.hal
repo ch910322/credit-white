@@ -11,7 +11,6 @@ external function string 60 UserDefined(string,string);
 external function Boolean HasExtTax();
 external function Boolean HasSalesGroup();
 external function Boolean HasTaxMatrix();
-external function real VATZoneButtonsLabelsLAT(real,real,real,real);
 external function Boolean HasWithholdingTax();
 external function Boolean HasCustomerStatusReport();
 external function Boolean HasSalesman();
