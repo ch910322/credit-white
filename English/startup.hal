@@ -12,17 +12,12 @@ begin
   Setting("Scoring Support",ScoringSupLClass,modCredMan);
   Setting("Order Classes",OrderClassLClass,modCredMan);
   Setting("Order Class Colors",OrderClassColorTClass,modCredMan);
-  Setting("Evaluation Constants",EvalConstTClass,modCredMan);
-  Setting("Evaluation Risk Classes",EvalRiskClassTClass,modCredMan);
   Setting("Item Priority",ItemPriorityTClass,modCredMan);
   Setting("Credit History Support",CredHistLClass,modCredMan);
-  Setting("Contact Credit Limits",CreditLimitLClass,modCredMan);
   Setting("Reminders",SMSReminderLClass,modCredMan);
   Setting("Factoring Invoices",CredManFactInvoiceLClass,modCredMan);
   //Setting("Seller's Reports",CredManGrntReportsLClass,modCredMan);
-  Setting("Multi Page Documents",MultiDocLClass,modCredMan);
   Setting("Agreement Documents",AgreementDocLClass,modCredMan);
-  Setting("Font Widths",FontWidthLClass,modCredMan);
   Setting("Invoicing Settings",CreditalInvoiceTClass,modCredMan);
   Setting("Automatic Tasks",CredManAutoTaskTClass,modCredMan);
   Setting("Automatically Closed Tasks",CredManCloseTaskTClass,modCredMan);
