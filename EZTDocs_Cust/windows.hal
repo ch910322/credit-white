@@ -1,0 +1,51 @@
+event startup
+begin
+  
+  SetLangMode(LangEnglish,"ENG",0);
+
+
+  StrSetAdd(31003);
+  StrSetText(CredManForm,"Credit Agreement");
+  StrSetText(CredManScheduleForm,"Schedule");
+  StrSetText(SuretyAgreementForm,"Surety Agreement");
+  StrSetText(VekselisForm,"Vekselis");
+  StrSetText(LoanAppForm,"Loan Application");
+  EndStrSet;
+
+  return;
+end;
+
+global
+procedure OuterGetExternalDocType(string docname,var string type)
+begin
+
+  switch (docname) begin
+    case "CredManForm": type = "CredMan";
+    case "CredManScheduleForm": type = "CredMan";
+    case "SuretyAgreementForm": type = "CredMan";
+    case "VekselisForm": type = "CredMan";
+  end;
+
+  return;
+end;
+  
+global
+procedure OuterShowExternalDocFilters(string docname,string type,var Integer v)
+begin
+
+  switch (type) begin
+    case "CredMan":
+      cnt = 2;
+      if (docname=="SuretyAgreementForm") then begin
+        cnt = 3;
+      end;
+      ButtonFrame(h,v+=50,280,2,"Filters");
+      
+      EditFieldTL(h+70,v,150,"Loan Type",M4Set,Normal,2001,IntVal1,false,SetSClass);
+      if (docname=="SuretyAgreementForm") then begin
+        EditFieldTL(h+70,v+=vs,60,"Surety Count",M4Int,Normal,0,IntVal3,false,0);
+      end;
+      CheckBox(h+70,v+=20,0,"With Max Monthly Payment",IntVal2);
+      v = v + 10;
+  end;
+end;

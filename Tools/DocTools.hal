@@ -1,0 +1,11 @@
+global
+updating procedure PrintCredManDocument(string docname,string fn,record CredManVc CredManr,Integer type,Boolean maxmonthlyf,string langcode)
+begin
+
+  SetDocumentFilename(fn);
+  SetMedia(mtPdf);
+  PrintDocument(CredManr,docname,false);
+  SetDocumentFIleName("");
+
+  return;
+end;

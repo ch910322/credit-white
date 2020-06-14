@@ -1,0 +1,3 @@
+[submodule "Integrations/EZT"]
+	path = Integrations/EZT
+	url = https://github.com/ch910322/EZT_Docs.git

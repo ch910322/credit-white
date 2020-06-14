@@ -1,0 +1,60 @@
+//<halrule>server-only</halrule>
+external procedure ExternalPrintLoanAppForm(record B2BLoanApplicationVc,var vector string);
+external procedure ExternalPrintSuretyAppForm(record B2BLoanApplicationVc,var vector string);
+external procedure ExternalPrintCredManForm(record CredManVc,var vector string);
+external procedure ExternalPrintCredManScheduleForm(record CredManVc,var vector string);
+external procedure ExternalPrintVekselisForm(record CredManVc,var vector string);
+external procedure ExternalPrintSuretyAgreementForm(record CredManVc,var vector string);
+
+global
+procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,var vector string vVals)
+begin
+  record CredManVc CredManr;
+  record B2BLoanApplicationVc LAr;
+
+  switch (docname) begin
+    case "LoanAppForm":
+      LAr.SerNr = StringToLongint(id);
+      printf = (ReadFirstMain(LAr,1,true) or id=="-2");
+      if (printf) then begin
+        vVals["SPEC_CUSTCODE"] = RepSpec.f10;
+        ExternalPrintLoanAppForm(LAr,vVals);
+      end;
+    case "SuretyApplicationForm":
+      LAr.SerNr = StringToLongint(id);
+      printf = (ReadFirstMain(LAr,1,true) or id=="-2");
+      if (id=="-2") then begin
+        LAr.SuretyCnt = 1;
+      end;
+      if (printf) then begin
+        ExternalPrintSuretyAppForm(LAr,vVals);
+      end;
+    case "CredManForm":
+      CredManr.SerNr = StringToLongint(id);
+      printf = (ReadFirstMain(CredManr,1,true) or id=="-2");
+      if (printf) then begin
+        ExternalPrintCredManForm(CredManr,vVals);
+      end;
+    case "CredManScheduleForm":
+      CredManr.SerNr = StringToLongint(id);
+      printf = (ReadFirstMain(CredManr,1,true) or id=="-2");
+      if (printf) then begin
+        ExternalPrintCredManScheduleForm(CredManr,vVals);
+      end;
+    case "SuretyAgreementForm":
+      CredManr.SerNr = StringToLongint(id);
+      printf = (ReadFirstMain(CredManr,1,true) or id=="-2");
+      if (printf) then begin
+        ExternalPrintSuretyAgreementForm(CredManr,vVals)
+      end;
+    case "VekselisForm":
+      CredManr.SerNr = StringToLongint(id);
+      printf = (ReadFirstMain(CredManr,1,true) or id=="-2");
+      if (printf) then begin
+        ExternalPrintVekselisForm(CredManr,vVals);
+      end;
+
+  end;
+
+  return;
+end;

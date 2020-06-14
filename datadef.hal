@@ -1055,6 +1055,7 @@ begin
   SourceFile("halcust\\LoanApp\\Maint", 3);
   SourceFile("halcust\\LoanApp\\RActions", 3);
   SourceFile("halcust\\LoanApp\\Reports", 3);
+  SourceFile("halcust\\LoanApp\\EZT", 3);
   SourceFile("halcust\\LoanApp\\Tools", 3);
   SourceFile("halcust\\LoanApp\\WActions", 3);
   SourceFile("halcust\\LoanApp\\WebNG", 3);
@@ -1095,11 +1096,15 @@ begin
   Exec_file("halcust\\LoanApp\\Integrations\\LandingPages\\datadef.hal");
   SourceFile("halcust\\LoanApp\\Integrations\\LandingPages", 3);
 
-/*External docs*/
-  Exec_file("halcust\\LoanApp\\Integrations\\ExternalDocs\\datadef.hal");
-  SourceFile("halcust\\LoanApp\\Integrations\\ExternalDocs", 3);
 
 /*External docs*/
+/*
+  Exec_file("halcust\\LoanApp\\Integrations\\ExternalDocs\\datadef.hal");
+  SourceFile("halcust\\LoanApp\\Integrations\\ExternalDocs", 3);
+*/
+  Exec_file("halcust\\LoanApp\\Integrations\\EZT\\datadef.hal");
+
+/*Bank statement*/
   SourceFile("halcust\\LoanApp\\Integrations\\BankStatement", 3);
 
 /*Bank import*/
