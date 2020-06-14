@@ -246,12 +246,6 @@ begin
   EndMatrix;
   EndWindow;
 
-  WindowBegin("B2B Application Evaluation",B2BLoanEvalRClass,CGRcW,RcType);
-  SetWRect(20,80,400,200);
-  h = 150; v=6; vs=20;
-  EditFieldTL(h,v=6,-40,"B2B Loan Application No.",M4Long,Normal,20,long1,false,B2BLoanApplicationSClass);
-  EndWindow;
-
   WindowBegin("Credit History",CredHistLClass,CGmList,-);
   Sizeable(-1,-1,0,0);
   SetWRect(64,80,800,298);

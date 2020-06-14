@@ -201,7 +201,6 @@ begin
   record AgreementDocVc ADr,oldADr;
   row AgreementDocVc ADrw;
   record RcVc RepSpec;
-  record ExternalFormBlock EFb;
   string 255 fn,langcode;
   Integer i,rwcnt;
 
@@ -224,7 +223,6 @@ begin
     end;
     if (RecordUpdate(oldADr,ADr,true)==0) then begin
       //should move this out to a function
-      BlockLoad(EFb);
       fn = "Schedule.pdf";
       GenerateAgreementSchedule(CredManr);
       langcode = GetDocumentLangCode(CredManr,2);
@@ -677,7 +675,6 @@ begin
   row AgreementDocVc ADrw;
   area filearea;
   record RcVc RepSpec;
-  record ExternalFormBlock EFb;
   Boolean flags1,flags2,flags3;
   
   RecordNew(ADr);
@@ -699,7 +696,6 @@ begin
   end;
   if (RecordInsert(ADr,true)) then begin
     scnt = GetSuretyCnt(CredManr);
-    BlockLoad(EFb);
     switch (ADr.Type) begin
       case 1://agreement
         fn = "Agreement.pdf";
