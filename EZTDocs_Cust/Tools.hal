@@ -7,7 +7,7 @@ external procedure ExternalPrintVekselisForm(record CredManVc,var vector string)
 external procedure ExternalPrintSuretyAgreementForm(record CredManVc,var vector string);
 
 global
-procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,var vector string vVals)
+procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
 begin
   record CredManVc CredManr;
   record B2BLoanApplicationVc LAr;
