@@ -735,7 +735,7 @@ begin
           RepSpec.flags[11] = scnt;
           PrintEBSDocument("SuretyAgreementForm",fn,RepSpec,CredManr.SerNr,langcode);
         end else begin
-          PrintCredManDocument("SuretyAgreementForm",fn,CredManr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
+          PrintCredManDocument("SuretyAgreementForm",fn,CredManr,scnt,(CredManr.MaxMonthlyPayment>0),langcode);
           //PrintMultiDocDocument("SuretyAgreementForm" & scnt,fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
         end;
       case 6://vekselis
@@ -748,7 +748,7 @@ begin
           end;
           PrintEBSDocument("VekselisForm",fn,RepSpec,CredManr.SerNr,langcode);
         end else begin
-          PrintCredManDocument("VekselisForm",fn,CredManr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
+          PrintCredManDocument("VekselisForm",fn,CredManr,scnt,(CredManr.MaxMonthlyPayment>0),langcode);
           //PrintMultiDocDocument("VekselisForm" & scnt,fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
         end;
     end;
