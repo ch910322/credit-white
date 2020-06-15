@@ -181,6 +181,13 @@ begin
   StrSetText(B2BLoanApplicationVc,"B2B Loan Applications");
   EndStrSet;
 
+  StrSetAdd(3);
+  StrSetText(CredManNoDelete,"Don't allow removing Credit Agreement");
+  StrSetText(CredManChangeManager,"Don't allow changing Manager on Credit Agreement");
+  StrSetText(LoanAppNoDelete,"Don't allow removing Loan Application");
+  StrSetText(LoanAppChangeManager,"Don't allow changing Manager on Loan Application");
+  EndStrSet;
+
   SetBegin(2000);
   SetText(kRowColorNone,"None");
   SetText(kRowColorGreen,"Green");

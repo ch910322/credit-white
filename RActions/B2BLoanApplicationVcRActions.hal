@@ -83,6 +83,15 @@ begin
     LAr.CreatedDate = CurrentDate;
   end;
 
+  if (LAr.Manager!=LA2r.Manager and LA2r.Manager!=CurrentUser) then begin
+    if (UserCanAction("LoanAppChangeManager",false)==true) then begin
+      RecordCheckError(28615,"",-1,"Manager");
+      res = -1;
+      goto LB2BLoanApplicationVcRecordCheck;
+    end;
+  end;
+
+LB2BLoanApplicationVcRecordCheck:;
 
   B2BLoanApplicationVcRecordCheck = res;
   return;
@@ -139,5 +148,20 @@ begin
   ClearAgreementDocRecords(LAr.SerNr,1);
   
   B2BLoanApplicationVcRecordRemoveAfter = res;
+  return;
+end;
+
+global
+updating function LongInt B2BLoanApplicationVcRecordRemoveTest(var record B2BLoanApplicationVc LAr,record B2BLoanApplicationVc LA2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+
+  res = 1;
+  
+  if (UserCanAction("LoanAppNoDelete",false)==true) then begin
+    res = 0;
+  end;
+  
+  B2BLoanApplicationVcRecordRemoveTest = res;
   return;
 end;

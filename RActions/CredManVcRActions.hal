@@ -179,6 +179,14 @@ BEGIN
     end;
   end;
 
+  if (CredManr.SalesMan!=CredMan2r.SalesMan and CredMan2r.SalesMan!=CurrentUser) then begin
+    if (UserCanAction("CredManChangeManager",false)==true) then begin
+      RecordCheckError(28615,"",-1,"SalesMan");
+      res = -1;
+      goto LCredManVcRecordCheck;
+    end;
+  end;
+
   res = inner.CredManVcRecordCheck(CredManr,CredMan2r,stat,long4);
   
 LCredManVcRecordCheck:;
@@ -380,6 +388,12 @@ BEGIN
 
   if (res!=0) then begin
     if (ContractHasHistory(CredManr)) then begin
+      res = 0;
+    end;
+  end;
+
+  if (res!=0) then begin
+    if (UserCanAction("CredManNoDelete",false)==true) then begin
       res = 0;
     end;
   end;
