@@ -1,7 +1,7 @@
 begin
   transaction string 255 gModFolder;
   
-  gModFolder = "halcust/LoanApp/Integrations";
+  gModFolder = "halcust/LoanApp/Integrations/EZT";
   
   BlockBegin(B2BLoanAppSerBlock,-,"");
   RecordField(Math,M4Matrix,0,0);
