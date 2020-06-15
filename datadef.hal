@@ -1094,10 +1094,6 @@ begin
   Exec_file("halcust\\LoanApp\\Integrations\\AddressLookup\\datadef.hal");
   SourceFile("halcust\\LoanApp\\Integrations\\AddressLookup", 0);
 
-/*Landing Pages*/
-  Exec_file("halcust\\LoanApp\\Integrations\\LandingPages\\datadef.hal");
-  SourceFile("halcust\\LoanApp\\Integrations\\LandingPages", 3);
-
 
 /*External docs*/
 /*
