@@ -32,6 +32,9 @@ end;
 global
 procedure OuterShowExternalDocFilters(string docname,string type,var Integer v)
 begin
+  Integer cnt;
+  real vs,h;
+  h = 120; vs = 20;
 
   switch (type) begin
     case "CredMan":
