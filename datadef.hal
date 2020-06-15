@@ -1105,6 +1105,7 @@ begin
   Exec_file("halcust\\LoanApp\\Integrations\\ExternalDocs\\datadef.hal");
   SourceFile("halcust\\LoanApp\\Integrations\\ExternalDocs", 3);
 */
+  SourceFile("halcust\\LoanApp\\Integrations\\EZT", 3);
   Exec_file("halcust\\LoanApp\\Integrations\\EZT\\datadef.hal");
 /*Bank statement*/
   SourceFile("halcust\\LoanApp\\Integrations\\BankStatement", 3);
