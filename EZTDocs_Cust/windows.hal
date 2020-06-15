@@ -30,12 +30,13 @@ begin
 end;
   
 global
-procedure OuterShowExternalDocFilters(string docname,string type,var Integer v)
+function Integer OuterShowExternalDocFilters(string docname,string type,real tv)
 begin
   Integer cnt;
-  real vs,h;
+  real vs,h,v;
   h = 120; vs = 20;
 
+  v = tv;
   switch (type) begin
     case "CredMan":
       cnt = 2;
@@ -51,4 +52,6 @@ begin
       CheckBox(h+70,v+=20,0,"With Max Monthly Payment",IntVal2);
       v = v + 10;
   end;
+
+  OuterShowExternalDocFilters = v;
 end;

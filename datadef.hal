@@ -1058,7 +1058,6 @@ begin
   SourceFile("halcust\\LoanApp\\Maint", 3);
   SourceFile("halcust\\LoanApp\\RActions", 3);
   SourceFile("halcust\\LoanApp\\Reports", 3);
-  SourceFile("halcust\\LoanApp\\EZTDocs_Cust", 3);
   SourceFile("halcust\\LoanApp\\Tools", 3);
   SourceFile("halcust\\LoanApp\\WActions", 3);
   SourceFile("halcust\\LoanApp\\WebNG", 3);
@@ -1117,6 +1116,7 @@ begin
   SourceFile("halcust\\LoanApp\\BankImport\\lithuanian", 3);
   SourceFile("halcust\\LoanApp\\BankImport\\Tools", 3);
   SourceFile("halcust\\LoanApp\\BankImport\\Level0", 0);
+  SourceFile("halcust\\LoanApp\\EZTDocs_Cust", 3);
 
   return;
 end;
