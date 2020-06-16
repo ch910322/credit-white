@@ -28,7 +28,7 @@ begin
 
   return;
 end;
-  
+   
 global
 function Integer OuterShowExternalDocFilters(string docname,string type,real tv)
 begin
