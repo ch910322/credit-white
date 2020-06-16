@@ -6,6 +6,7 @@ external function Boolean HasStandardCommunicator();
 external function Boolean CUVATNrColumn;
 external function Boolean HasLimitedAccess();
 external function Boolean HasCustomerStatusReport();
+external outer function Boolean HasB2BCreateOffer();
 
 event DefineWindows
 begin
@@ -82,6 +83,12 @@ begin
   EditField(h,v+=vs,100,"New Customer Email",Normal,NewCustLetter,false,0);
   EditField(h,v+=vs,100,"Surety Invitation Email",Normal,SuretyInviteLetter,false,0);
   EditField(h,v+=vs,100,"New User Invitation Email",Normal,ContactInviteLetter,false,0);
+  if (HasB2BCreateOffer) then begin  
+    EditField(h,v+=vs,100,"Offer Email Text",Normal,EmailOfferText,false,LTxtSClass);
+    EditField(h,v+=vs,100,"Offer Email Row Text",Normal,EmailOfferTextRow,false,LTxtSClass);
+
+  end;
+
 
   EditField(h,v+=vs,100,"Mailing List",Normal,MailingList,false,PersColSClass);
 
@@ -875,6 +882,9 @@ begin
   SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0); 
   SpecialMenu("E-mail",' ',1,""); 
   SpecialMenu("Credit Agreement",' ',1,"B2BLoanAppCreateCredManDsm"); 
+  if (HasB2BCreateOffer) then begin  
+    SpecialMenu("Offer Email",' ',1,"B2BLoanApplicationMakeEmailOffer"); 
+  end;
 
   EndWindow;
 end;

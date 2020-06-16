@@ -1,14 +1,8 @@
 //<halrule>server-only</halrule>
 external inner function LongInt DateTimeDiff(date,time,date,time);
 external inner function Boolean CheckAttachedFilesSizeToLetter(record LetVc);
-external inner function string 255 LetVcDoReplaceToken(record RcVc,string);
 external function string 255 NovitiGetEmailSender();
 
-global
-function string 255 LtxtVcReplaceToken(record LTxtVc LTxtr,record RcVc RepSpec,string token)
-begin
-  LtxtVcReplaceToken = LetVcDoReplaceToken(RepSpec,token);
-end;
 
 global
 updating procedure SendEmailWithStdText(string txt,record RCVc RepSpec,string mailbox)

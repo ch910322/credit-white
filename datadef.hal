@@ -268,6 +268,8 @@ begin
   RecordField(OverdueItemClass,M4UStr,255,0);
   RecordField(AutoInvoiceSend,M4Int,0,0);
   RecordField(AutoMailsFromInvoices,M4Int,0,0);
+  RecordField(EmailOfferText,M4Code,20,LTxtVc);
+  RecordField(EmailOfferTextRow,M4Code,20,LTxtVc);
   EndBlock;
   
   RecordAddBegin(CUVc,"CredCUVc");

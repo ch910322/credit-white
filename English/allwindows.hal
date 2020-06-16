@@ -29,7 +29,9 @@ external function Boolean HasModRent();
 external function Boolean HasModSVO();
 external function Boolean HasMultiCurrency();
 external function Boolean HasObjects();
-
+//CUST-BEGIN TAG TOOLS
+external outer function Boolean HasMoneyTransferDate();
+//CUST-END
 
 window CUDClass:14
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
@@ -651,8 +653,14 @@ begin
   EditField(h3,v+=vs,82,"Surety Interest Rate",Normal,SuretyInterestRate,false,0);
   EditField(h3,v+=vs,82,"Std Prolongation Fee",Normal,StdProlongFee,false,0);
   EditField(h3,v+=vs,82,"Std Prolongation Fee %",Normal,StdProlongPrc,false,0);
-
-  EditField(h4,v=vm,-40,"Money Transfer Date",Normal,MoneyTransferDate,false,PasteCurDate);
+  
+//CUST-BEGIN
+  if (HasMoneyTransferDate) then begin
+    EditField(h4,v=vm,-40,"Money Transfer Date",Normal,MoneyTransferDate,false,PasteCurDate);
+  end else begin
+    v = vm-vs;
+  end;
+//CUST-END
   EditField(h4,v+=vs,-40,"Max Monthly Payment",Normal,MaxMonthlyPayment,false,0);
   EditField(h4,v+=vs,-40,"Princ. Delay Months",Normal,PrincipleDelayMonths,false,0);
   EditField(h4,v+=vs,-40,"Princ. Delay Interest %",Normal,PrincipleDelayInterest,false,0);

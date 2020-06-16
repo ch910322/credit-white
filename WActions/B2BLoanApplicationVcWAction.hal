@@ -7,7 +7,7 @@ external inner procedure PasteFromSysList2(Integer,Integer);
 remote function Boolean InsertSuretyInB2BApplication(var record B2BLoanApplicationVc,Integer);
 external inner procedure SetupCustPS2Rn(string,var record RcVc);
 remote inner function Boolean PasteCustInCredMan(var record CredManVc);
-remote updating function Boolean B2BLoanAppCreateCredMan(var record B2BLoanApplicationVc,var record CredManVc);
+remote updating function Boolean B2BLoanAppCreateCredMan(var record B2BLoanApplicationVc,var record CredManVc,Boolean);
 external inner procedure ActVcRecordDefClient(var record ActVc);
 external updating function Boolean MakeActFromB2BLoanApp(var record B2BLoanApplicationVc,var record ActVc);
 remote inner procedure SetupCustPS2Rn(string,var record RcVc);
@@ -15,6 +15,8 @@ remote procedure GetCreditInfo(var record B2BLoanApplicationVc,var Integer,var s
 external inner function LongInt DateDiff(Date,Date);
 remote updating function Boolean SendSuretyInvitation(record RcVc,var record B2BLoanApplicationVc);
 remote procedure GetCreditInfoHistory(var record B2BLoanApplicationVc,var Integer,var string,Integer,Longint);
+remote procedure B2BLoanApplicationMakeEmailOffer_Remote(record B2BLoanApplicationVc,var record MailVc);
+
 
 function Boolean B2BLoanApplicationDClassCustCodeEFAfter(Integer wn,Integer changed)
 begin
@@ -845,7 +847,7 @@ begin
   DeselectWindow(wn,true);
   GetWindowRecord(wn,LAr);
   if (WindowState(wn)==Rs_normal) then begin
-    if (B2BLoanAppCreateCredMan(LAr,CredManr)) then begin
+    if (B2BLoanAppCreateCredMan(LAr,CredManr,true)) then begin
       PutWindowRecord(wn,LAr);
       WindowDoOK(wn,0);
       nwn = OpenWindow("CredManDClass",0,0,"","",CredManr);
@@ -1423,5 +1425,24 @@ begin
   
   MessageBox(200108,"");
   CMApplicationSetTClassAutoInvoiceFlagButtonAction = true;
+  return;
+end;
+
+global
+procedure B2BLoanApplicationMakeEmailOffer()
+begin
+  Integer wn;
+  record B2BLoanApplicationVc LAr;
+  record MailVc Mailr;
+  
+  wn = CurWindow;
+  GetWindowRecord(wn,LAr);
+  if (WindowState(wn)==Rs_Normal) then begin
+    B2BLoanApplicationMakeEmailOffer_Remote(LAr,Mailr);
+    if (Mailr.SerNr>0) then begin
+      OpenWindow("MailDClass",0,0,"","",Mailr);
+    end;
+  end;
+
   return;
 end;
