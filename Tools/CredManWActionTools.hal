@@ -22,7 +22,7 @@ external inner procedure IVVc_PasteInvDate(var record IVVc,record LocalMachineBl
 external updating procedure ReceiptEntryCreateReceipts(record SMVc,Boolean,var val);
 external updating procedure CreateCredHist(Longint,Integer,string,val,Integer,string,Date,Longint,Date,var Longint,Date,Date,Integer,Longint,val,Longint,val);
 external updating procedure UpdateCredHistBalancePartialBuyout(Longint,Longint);
-external inner procedure PrintEBSDocument(string,string,record RcVc,string,string);
+external inner procedure PrintEBSDocument(string,string,record RcVc,string,string,var area);
 external inner procedure OPPastePayMode(var record OPVc);
 external inner function Boolean PasteInvIn2OPr(var record OPVc,Integer,Date,Integer,val,var string,Boolean,var Boolean);
 external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var val,Boolean,var Boolean);
@@ -203,6 +203,7 @@ begin
   record RcVc RepSpec;
   string 255 fn,langcode;
   Integer i,rwcnt;
+  area filearea;
 
   ADr.RecordType = 0;
   ADr.RecordNr = CredManr.SerNr;
@@ -231,7 +232,7 @@ begin
         if (CredManr.MaxMonthlyPayment>0) then begin
           RepSpec.flags[10] = 1;
         end;
-        PrintEBSDocument("CredManScheduleForm",fn,RepSpec,CredManr.SerNr,langcode);
+        PrintEBSDocument("CredManScheduleForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
       end else begin
         PrintCredManDocument("CredManScheduleForm",fn,CredManr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
         //PrintMultiDocDocument("CredManScheduleForm",fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
@@ -705,7 +706,7 @@ begin
           if (CredManr.MaxMonthlyPayment>0) then begin
             RepSpec.flags[10] = 1;
           end;
-          PrintEBSDocument("CredManForm",fn,RepSpec,CredManr.SerNr,langcode);
+          PrintEBSDocument("CredManForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
         end else begin
           PrintCredManDocument("CredManForm",fn,CredManr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
           //PrintMultiDocDocument("CredManLongForm",fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
@@ -719,7 +720,7 @@ begin
           if (CredManr.MaxMonthlyPayment>0) then begin
             RepSpec.flags[10] = 1;
           end;
-          PrintEBSDocument("CredManScheduleForm",fn,RepSpec,CredManr.SerNr,langcode);
+          PrintEBSDocument("CredManScheduleForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
         end else begin
           PrintCredManDocument("CredManScheduleForm",fn,CredManr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
           //PrintMultiDocDocument("CredManScheduleForm",fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
@@ -733,7 +734,7 @@ begin
             RepSpec.flags[10] = 1;
           end;
           RepSpec.flags[11] = scnt;
-          PrintEBSDocument("SuretyAgreementForm",fn,RepSpec,CredManr.SerNr,langcode);
+          PrintEBSDocument("SuretyAgreementForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
         end else begin
           PrintCredManDocument("SuretyAgreementForm",fn,CredManr,scnt,(CredManr.MaxMonthlyPayment>0),langcode);
           //PrintMultiDocDocument("SuretyAgreementForm" & scnt,fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
@@ -746,7 +747,7 @@ begin
           if (CredManr.MaxMonthlyPayment>0) then begin
             RepSpec.flags[10] = 1;
           end;
-          PrintEBSDocument("VekselisForm",fn,RepSpec,CredManr.SerNr,langcode);
+          PrintEBSDocument("VekselisForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
         end else begin
           PrintCredManDocument("VekselisForm",fn,CredManr,scnt,(CredManr.MaxMonthlyPayment>0),langcode);
           //PrintMultiDocDocument("VekselisForm" & scnt,fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
