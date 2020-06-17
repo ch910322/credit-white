@@ -1020,12 +1020,6 @@ begin
   RecordField(TransDate,M4Date,0,0);
   EndRecordAdd;
 
-  RecordBegin(DummyAttachVc,-,"");
-  RecordField(SerNr,M4Long,0,0);
-  MainKeyBegin(SerNr,0);
-  KeySegment(SerNr);
-  EndRecord;
-
   RecordBegin(CredManSchedVc,-,"");
   RecordField(SerNr,M4Long,0,0);
   RecordField(CredManNr,M4Long,0,CredManVc);

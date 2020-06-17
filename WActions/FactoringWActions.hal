@@ -401,10 +401,11 @@ LFactInvoiceUploadFile:;
 end;
 
 global
-updating procedure FactInvoiceUploadFileCallBack(Longint credmannr,Longint sernr,vector string vVals)
+updating procedure DocScanClientUploadFileCallBack(Longint credmannr,Longint sernr,vector string vVals)
 begin
   record CUVc CUr;
   record RcVc RepSpec;
+  record DummyAttachVc DAr;
 
   RepSpec.long1 = credmannr;
   CUr.RegNr1 = vVals["102"];
@@ -417,7 +418,9 @@ begin
   RepSpec.d2 = DateFromString(vVals["8"],"YYYY-MM-DD");
   RepSpec.vals0 = StringToVal(vVals["5"],M4Val);
   OpenWindow("NewCredManFactInvoiceWClass",1,CurWindow,"","",RepSpec);
-  //RecordRemove(DAr);
-
+  DAr.SerNr = sernr;
+  if (ReadFirstMain(DAr,1,true)) then begin
+    RecordRemove(DAr);
+  end;
   return;
 end;
