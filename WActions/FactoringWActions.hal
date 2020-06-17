@@ -5,7 +5,7 @@ remote updating procedure GenerateSLAndPLInvoices(record CredManFactInvoiceVc);
 remote procedure FillCredManBuyers(var record CredManFactVc,var val);
 remote procedure CredManFactInsertCustCode(var record CredManFactVc,Integer);
 remote updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc);
-remote procedure SendScanDocFile2(record DummyAttachVc,record RcVc,Integer);
+remote inner procedure SendScanDocFile2(record DummyAttachVc,record RcVc,Integer);
 external inner function Date DateFromString(string,string);
 
 global
