@@ -321,3 +321,27 @@ begin
   AgreementDocVcRecordUpdateClient = res;
   return;
 end;
+
+global
+function LongInt AgreementDocVcRecordRemoveTest(var record AgreementDocVc ADr,record AgreementDocVc AD2r,LongInt stat,LongInt long4)
+begin
+  Integer res;
+
+  res = 1;
+  if (ADr.Type==1 and UserCanAction("RemoveAgreementDocAgreementAttach",true)==false) then begin
+    res = 0;
+  end;
+  if (ADr.Type==2 and UserCanAction("RemoveAgreementDocSchedAttach",true)==false) then begin
+    res = 0;
+  end;
+  if (ADr.Type==3 and UserCanAction("RemoveAgreementDocSuretyAgreementAttach",true)==false) then begin
+    res = 0;
+  end;
+  if (ADr.Type==6 and UserCanAction("RemoveAgreementDocVekselisAttach",true)==false) then begin
+    res = 0;
+  end;
+
+  AgreementDocVcRecordRemoveTest = res;
+  return;
+end;
+
