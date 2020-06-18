@@ -1,10 +1,10 @@
 remote procedure B2BLoanApp_ContactSClassOnOpenRemote(string,var Array string,var Integer);
 remote procedure BankAccountSClassOnOpenWindowRemote(string,var array string);
 remote function Boolean InsertContactName(var record B2BLoanApplicationVc);
-remote function Boolean InsertCustomerInB2BApplication(var record B2BLoanApplicationVc);
+remote function Boolean InsertCustomerInB2BApplication(var record B2BLoanApplicationVc,var string);
 remote function Boolean InsertManagerInB2BApplication(var record B2BLoanApplicationVc);
 external inner procedure PasteFromSysList2(Integer,Integer);
-remote function Boolean InsertSuretyInB2BApplication(var record B2BLoanApplicationVc,Integer);
+remote function Boolean InsertSuretyInB2BApplication(var record B2BLoanApplicationVc,Integer,var string);
 external inner procedure SetupCustPS2Rn(string,var record RcVc);
 remote inner function Boolean PasteCustInCredMan(var record CredManVc);
 remote updating function Boolean B2BLoanAppCreateCredMan(var record B2BLoanApplicationVc,var record CredManVc,Boolean);
@@ -22,9 +22,13 @@ function Boolean B2BLoanApplicationDClassCustCodeEFAfter(Integer wn,Integer chan
 begin
   Boolean res;
   record B2BLoanApplicationVc LAr;
+  string 255 warning;
   
   GetWindowRecord(wn,LAr);
-  if (InsertCustomerInB2BApplication(LAr)) then begin
+  if (InsertCustomerInB2BApplication(LAr,warning)) then begin
+    if (nonblank(warning)) then begin
+      MessageBox(0,warning);
+    end;
     PutWindowRecord(wn,LAr);
   end;
   
@@ -126,10 +130,14 @@ function Boolean B2BLoanApplicationDClassSuretyProviderEFAfter(Integer wn,Intege
 begin
   Boolean res;
   record B2BLoanApplicationVc LAr;
+  string 255 warning;
   
   GetWindowRecord(wn,LAr);
 
-  if (InsertSuretyInB2BApplication(LAr,num)) then begin
+  if (InsertSuretyInB2BApplication(LAr,num,warning)) then begin
+    if (nonblank(warning)) then begin
+      MessageBox(0,warning);
+    end;
     PutWindowRecord(wn,LAr);    
   end;
   
@@ -808,11 +816,12 @@ begin
   record B2BLoanApplicationVc LAr;
   record CUVc CUr;
   Integer nwn;
+  string 255 warning;
   
   RecordNew(LAr);
   GetWindowRecord(CurWindow,CUr);
   LAr.CustCode = CUr.Code;
-  if (InsertCustomerInB2BApplication(LAr)) then begin
+  if (InsertCustomerInB2BApplication(LAr,warning)) then begin
     nwn = OpenWindow("B2BLoanApplicationDClass",0,0,"","",LAr);
   end;
 

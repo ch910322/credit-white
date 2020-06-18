@@ -46,7 +46,7 @@ begin
       ButtonFrame(h,v+=50,280,2,"Filters");
       
       EditFieldTL(h+70,v,150,"Loan Type",M4Set,Normal,2001,IntVal1,false,SetSClass);
-      if (docname=="SuretyAgreementForm") then begin
+      if (docname=="SuretyAgreementForm" or docname=="VekselisForm") then begin
         EditFieldTL(h+70,v+=vs,60,"Surety Count",M4Int,Normal,0,IntVal3,false,0);
       end;
       CheckBox(h+70,v+=20,0,"With Max Monthly Payment",IntVal2);
