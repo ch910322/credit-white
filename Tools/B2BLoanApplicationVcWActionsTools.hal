@@ -511,6 +511,7 @@ begin
           MatRowGet(SMr,i,SMrw);
           curbal = curbal - SMrw.DebVal;
           line = StrReplace(templ,"F_ROWNR",i+1);
+          line = StrReplace(templ,"F_INVDATE",SMrw.TransDate);
           line = StrReplace(line,"F_CREDBAL",curbal);
           line = StrReplace(line,"F_CREDINSTAL",SMrw.DebVal);
           line = StrReplace(line,"F_CREDFEES",SMrw.DebVal2);
