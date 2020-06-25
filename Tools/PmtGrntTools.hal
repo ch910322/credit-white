@@ -76,7 +76,7 @@ end;
 global
 updating procedure GeneratePmtGrntSLAndPLInvoices(record CredManGrntReportVc GRr,row CredManPmtGrntVc PGrw)
 begin
-  record CreditalInvoiceBlock CIb;
+  record CMInvoicingBlock CIb;
   record CredManGrntReportVc oldGRr;
   record IVVc IVr;
   record VIVc VIr;

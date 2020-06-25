@@ -50,7 +50,7 @@ begin
   record IVVc IVr;
   row IVVc IVrw;
   record CredManVc CredManr;
-  record CreditalInvoiceBlock CIb;
+  record CMInvoicingBlock CIb;
   record CredManSetBlock CMSb;
   record LocalMachineBlock LMb;
   Integer sernrf;
