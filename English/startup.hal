@@ -20,7 +20,7 @@ begin
   Setting("Factoring Invoices",CredManFactInvoiceLClass,modCredMan);
   //Setting("Seller's Reports",CredManGrntReportsLClass,modCredMan);
   Setting("Agreement Documents",AgreementDocLClass,modCredMan);
-  Setting("Factoring Invoice Settings",CreditalInvoiceTClass,modCredMan);
+  //Setting("Factoring Invoice Settings",CreditalInvoiceTClass,modCredMan);
   Setting("Automatic Tasks",CredManAutoTaskTClass,modCredMan);
   Setting("Automatically Closed Tasks",CredManCloseTaskTClass,modCredMan);
   Setting("Invitation Requests",InvitationRequestLClass,modCredMan);

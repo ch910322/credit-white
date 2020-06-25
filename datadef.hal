@@ -925,6 +925,7 @@ begin
   KeySegment(SerNr);
   EndRecord;
 
+//Not used anymore
   BlockBegin(CreditalInvoiceBlock,-,"");
   RecordField(PGSellerAccount,M4Code,10,AccVc);
   RecordField(PGSellerVATCode,M4Code,10,0);
@@ -1073,6 +1074,30 @@ begin
   RecordField(OverdueItemClass,M4UStr,255,0);
   RecordField(AutoInvoiceSend,M4Int,0,0);
   RecordField(AutoMailsFromInvoices,M4Int,0,0);
+
+  RecordField(PGSellerAccount,M4Code,10,AccVc);
+  RecordField(PGSellerVATCode,M4Code,10,0);
+  RecordField(PGBuyerItem,M4Code,20,INVc);
+  RecordField(PGBuyerSecurityItem,M4Code,20,INVc);
+  RecordField(PGBuyerSecurityPrc,M45Val,0,0);
+  RecordField(PGBuyerPayDeal,M4Code,5,PDVc);
+
+  RecordField(FSellerPayDeal,M4Code,5,PDVc);
+  RecordField(FSellerAccount,M4Code,10,AccVc);
+  RecordField(FSellerVATCode,M4Code,10,0);
+  RecordField(FSellerObject,M4Code,20,ObjVc);
+  RecordField(FBuyerItem,M4Code,20,INVc);
+  RecordField(FBuyerPayDeal,M4Code,5,PDVc);
+  RecordField(FBuyerObject,M4Code,20,ObjVc);
+  RecordField(FSellerFeeAccount,M4Code,10,AccVc);
+
+  RecordField(PaymentObject,M4Code,20,ObjVc);
+  RecordField(PaymentPayDeal,M4Code,5,PDVc);
+  RecordField(PaymentAccount,M4Code,10,AccVc);
+  RecordField(PaymentVATCode,M4Code,10,0);
+  RecordField(PaymentMode,M4Code,10,0);
+  RecordField(FVIPaymentMode,M4Code,10,0);
+  RecordField(FIVPaymentMode,M4Code,10,0);
 
   EndBlock;
   
