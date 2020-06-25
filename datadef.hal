@@ -1072,7 +1072,7 @@ begin
   SourceFile("halcust\\LoanApp\\Integrations\\Mesente", 0);
 
 /*SmartID*/
-  Exec_file("halcust\\LoanApp\\Integrations\\SmartID\\datadef.hal");
+  Exec_file("halcust\\LoanApp\\Integrations\\SmartID\\datadef.hal"); 
   SourceFile("halcust\\LoanApp\\Integrations\\SmartID", 3);
 
 /*Paysera*/
