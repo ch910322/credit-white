@@ -1,0 +1,68 @@
+event startup
+begin
+  
+  SetLangMode(LangEnglish,"ENG",0);
+
+  Maintenance("Compress Register Attachments",CollectAttachVClass,CollectAttachMn,modTC);
+
+  return;
+end;
+
+window CollectAttachVClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs;
+  WindowBegin("Specify Credit Agreement Invoices",CollectAttachVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 150; v = 6; vs = 20;
+  ButtonFrame(h,v=40,150,2,"Type");
+  RadioButton(h,v,0,0,"Web",flags[0]);
+  RadioButton(h,v+=16,1,0,"Contracts",flags[0]);  
+  EndWindow;
+
+  return;
+end;
+
+global
+procedure CollectAttachMn(record RcVc RepSpec)
+begin
+  string 255 typename,origname;
+  Integer cnt;
+  record Attach2Vc Attachr;
+  record WebNGStructVc WSr;
+  record WebNGContentVc WCr;
+  record RLinkVc RLr; 
+  record AgreementDocVc ADr;
+  
+  switch (RepSpec.flags[0]) begin
+    case 0: typename = "__WebAttach";
+    case 1: typename = "__DocAttach";
+  end;
+
+  origname = typename;
+  cnt = 1;
+  while (DirExists(typename)) begin
+    typename = origname & cnt;
+    cnt = cnt + 1;
+  end;
+
+  CreateFolder(typename);
+
+  while (LoopMain(Attachr,1,true)) begin
+    if (RepSpec.flags[0]==0) then begin
+      if (ReadRecordToLink(Attachr,1,WSr,RLr)) then begin
+        CopyFile("Attach/" & Attachr.UUID,typename & "/" & Attachr.UUID);
+      end;
+      if (ReadRecordToLink(Attachr,1,WCr,RLr)) then begin
+        CopyFile("Attach/" & Attachr.UUID,typename & "/" & Attachr.UUID);
+      end;
+    end;
+    if (RepSpec.flags[0]==1) then begin
+      if (ReadRecordToLink(Attachr,1,ADr,RLr)) then begin
+        CopyFile("Attach/" & Attachr.UUID,typename & "/" & Attachr.UUID);
+      end;
+    end;
+  end;
+
+  return;
+end;
