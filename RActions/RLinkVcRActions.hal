@@ -1,0 +1,46 @@
+//<halrule>server-only</halrule>
+
+
+
+global
+function LongInt RLinkVcRecordRemoveTest(var record RLinkVc RLr,record RLinkVc RL2r,LongInt stat,LongInt long4)
+begin
+  Integer compnr;
+  string 255 tovcname,fromvcname;
+  Integer res;
+  record AgreementDocVc ADr;
+
+  res = 1;
+  compnr = GetRecordLinkFields(RLr.ToRecidStr,tovcname);
+  compnr = GetRecordLinkFields(RLr.FromRecidStr,fromvcname);
+  if (tovcname=="Attach2Vc" and fromvcname=="AgreementDocVc") then begin
+    compnr = UnpackRecordLink(RLr.FromRecidStr,ADr);
+    ReadFirstMain(ADr,1,true);
+    if (ADr.Type==1 and UserCanAction("RemoveAgreementDocAgreementAttach",true)==false) then begin
+      res = 0;
+    end;
+    if (ADr.Type==2 and UserCanAction("RemoveAgreementDocSchedAttach",true)==false) then begin
+      res = 0;
+    end;
+    if (ADr.Type==3 and UserCanAction("RemoveAgreementDocSuretyAgreementAttach",true)==false) then begin
+      res = 0;
+    end;
+    if (ADr.Type==6 and UserCanAction("RemoveAgreementDocVekselisAttach",true)==false) then begin
+      res = 0;
+    end;
+
+  end;
+  if (tovcname=="Attach2Vc" and fromvcname=="CredManVc") then begin
+    if (UserCanAction("RemoveCredManAttach",true)==false) then begin
+      res = 0;
+    end;
+  end;
+  if (tovcname=="Attach2Vc" and fromvcname=="CredManVc") then begin
+    if (UserCanAction("RemoveLoanAppAttach",true)==false) then begin
+      res = 0;
+    end;
+  end;
+  RLinkVcRecordRemoveTest = res;
+  return;
+end;
+

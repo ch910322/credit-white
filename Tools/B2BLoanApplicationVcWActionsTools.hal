@@ -61,7 +61,7 @@ begin
 end;
 
 global
-function Boolean InsertCustomerInB2BApplication(var record B2BLoanApplicationVc LAr)
+function Boolean InsertCustomerInB2BApplication(var record B2BLoanApplicationVc LAr,var string warning)
 begin
   record CUVc CUr;
   Boolean res;
@@ -84,7 +84,7 @@ begin
       LAr.BankName = Bankr.Name;
     end;
     LAr.BankAccount = CUr.BankAccount;
-  
+    warning = CUr.WarnText1;
     InsertContactName(LAr);
     InsertAdditionalContacts(LAr);
     res = true;
@@ -95,7 +95,7 @@ begin
 end;
 
 global
-function Boolean InsertSuretyInB2BApplication(var record B2BLoanApplicationVc LAr,Integer num)
+function Boolean InsertSuretyInB2BApplication(var record B2BLoanApplicationVc LAr,Integer num,var string warning)
 begin
   record CUVc CUr;
   Boolean res;
@@ -114,6 +114,7 @@ begin
     SetFieldValueByName(LAr,"Surety" & num & "Addr3",CUr.InvAddr3,-1);
     SetFieldValueByName(LAr,"Surety" & num & "Addr4",CUr.InvAddr4,-1);
     CalculateSuretyAge(LAr,num);
+    warning = CUr.WarnText1;
     //UpdateSuretyScoring(LAr,CUr.Code);
 
     res = true;
@@ -203,10 +204,11 @@ begin
 end;
 
 global
-procedure PasteSuretyInCredMan(var record CredManVc CredManr,string code,Integer num)
+procedure PasteSuretyInCredMan(var record CredManVc CredManr,string code,Integer num,var string warning)
 begin
   record CUVc CUr;
   
+  warning = "";
   CUr.Code = code;
   if (ReadFirstMain(CUr,1,true)) then begin
     SetFieldValueByName(CredManr,"SuretyProvider" & num,CUr.Code,-1);
@@ -221,6 +223,7 @@ begin
     SetFieldValueByName(CredManr,"Surety" & num & "Addr2",CUr.InvAddr2,-1);
     SetFieldValueByName(CredManr,"Surety" & num & "Addr3",CUr.InvAddr3,-1);
     SetFieldValueByName(CredManr,"Surety" & num & "Addr4",CUr.InvAddr4,-1);
+    warning = CUr.WarnText1;
   end;
 
   return;
@@ -233,6 +236,7 @@ begin
   Boolean res;
   record CMOrderClassBlock OCb;
   record CredManTypeVc CMTr;
+  string 255 warning;
 
   CUr.Code = LAr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
@@ -269,9 +273,9 @@ begin
     CredManr.MaxMonthlyPayment = LAr.MaxMonthlyPayment;
     CredManr.LoanApplication = LAr.SerNr;
 //Pasting sureties
-    PasteSuretyInCredMan(CredManr,GetFieldValueByName(LAr,"SuretyProvider" & 1,-1),1);
-    PasteSuretyInCredMan(CredManr,GetFieldValueByName(LAr,"SuretyProvider" & 2,-1),2);
-    PasteSuretyInCredMan(CredManr,GetFieldValueByName(LAr,"SuretyProvider" & 3,-1),3);
+    PasteSuretyInCredMan(CredManr,GetFieldValueByName(LAr,"SuretyProvider" & 1,-1),1,warning);
+    PasteSuretyInCredMan(CredManr,GetFieldValueByName(LAr,"SuretyProvider" & 2,-1),2,warning);
+    PasteSuretyInCredMan(CredManr,GetFieldValueByName(LAr,"SuretyProvider" & 3,-1),3,warning);
     if (storef) then begin
       if (RecordInsert(CredManr,true)) then begin
         LAr.OrderClass = OCb.AcceptedAppOrderClass;
@@ -378,6 +382,7 @@ begin
   Boolean res;
   Integer scnt;
   record CMOrderClassBlock OCb;
+  string 255 warning;
   
   if (nonblank(contactcode)) then begin
     scnt = 1;
@@ -387,7 +392,7 @@ begin
     if (scnt<4) then begin
       BlockLoad(OCb);//loading this block twice....sorry, I know
       SetFieldValueByName(LAr,"SuretyProvider" & scnt,contactcode,-1);
-      InsertSuretyInB2BApplication(LAr,scnt);
+      InsertSuretyInB2BApplication(LAr,scnt,warning);
       LAr.SuretyCnt = scnt;
       LAr.OrderClass = OCb.OtherWebAppClass;
       res = true;
@@ -506,6 +511,7 @@ begin
           MatRowGet(SMr,i,SMrw);
           curbal = curbal - SMrw.DebVal;
           line = StrReplace(templ,"F_ROWNR",i+1);
+          line = StrReplace(templ,"F_INVDATE",SMrw.TransDate);
           line = StrReplace(line,"F_CREDBAL",curbal);
           line = StrReplace(line,"F_CREDINSTAL",SMrw.DebVal);
           line = StrReplace(line,"F_CREDFEES",SMrw.DebVal2);

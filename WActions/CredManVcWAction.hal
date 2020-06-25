@@ -1,5 +1,5 @@
 remote updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc);
-remote procedure PasteCustInAgreementRemote(var record CredManVc);
+remote procedure PasteCustInAgreementRemote(var record CredManVc,var string);
 remote updating procedure TerminateCredMan(var record CredManVc,var record IVVc);
 remote updating procedure DoBuyOutAgreement(record CredManVc,var record IVVc);
 remote procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
@@ -8,7 +8,7 @@ remote procedure CredManSetDatesCust(var record CredManVc);
 remote procedure GetCredManEventList(record CredManVc,var record ORVc);
 external procedure GetCredManEventList2(Longint,var record ORVc);
 remote procedure DoPauseCredMan(var record CredManVc,val,val,Date,var Boolean);
-remote procedure PasteSuretyInCredMan(var record CredManVc,string,Integer);
+remote procedure PasteSuretyInCredMan(var record CredManVc,string,Integer,var string);
 remote procedure GetRefinCredManData(Longint,Integer,var record RcVc,Boolean);
 remote updating function Boolean DoRefinCredMan(record RcVc,var string,var record CredManVc);
 external inner procedure ContactSClassOnOpen(Integer,string,var Array string,var Integer);
@@ -103,10 +103,14 @@ end;
 function Boolean CredManDClassCustCodeEFAfter(Integer wn,Integer rownr,Boolean changedf)
 begin
   record CredManVc CredManr;
+  string 255 warning;
 
   if (changedf) then begin  
     GetWindowRecord(wn,CredManr);
-    PasteCustInAgreementRemote(CredManr);
+    PasteCustInAgreementRemote(CredManr,warning);
+    if (nonblank(warning)) then begin
+      MessageBox(0,warning);
+    end;
     PutWindowRecord(wn,CredManr);   
   end; 
   CredManDClassCustCodeEFAfter = true;
@@ -129,10 +133,14 @@ end;
 function Boolean CredManDClassSuretyProviderEFAfter(Integer wn,Boolean changedf,Integer num)
 begin
   record CredManVc CredManr;
+  string 255 warning;
 
   if (changedf) then begin  
     GetWindowRecord(wn,CredManr);
-    PasteSuretyInCredMan(CredManr,GetFieldValueByName(CredManr,"SuretyProvider" & num,-1),num);
+    PasteSuretyInCredMan(CredManr,GetFieldValueByName(CredManr,"SuretyProvider" & num,-1),num,warning);
+    if (nonblank(warning)) then begin
+      MessageBox(0,warning);
+    end;
     PutWindowRecord(wn,CredManr);   
   end; 
   CredManDClassSuretyProviderEFAfter = true;
@@ -178,6 +186,7 @@ begin
   CredManDClassDayValueEFAfter = true;
   return;
 end;
+
 
 global
 function Boolean CredManDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)

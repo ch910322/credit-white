@@ -33,9 +33,10 @@ external updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
 external updating procedure GenerateAgreementSchedule(record CredManVc);
 external inner function Boolean ExternalDocumentEnabled(string);
 external updating procedure PrintCredManDocument(string,string,record CredManVc,Integer,Boolean,string);
+external inner procedure GetCurUser(var record UserVc);
 
 global
-procedure PasteCustInAgreementRemote(var record CredManVc CredManr)
+procedure PasteCustInAgreementRemote(var record CredManVc CredManr,var string warning)
 begin
   record BankVc Bankr;
   record CUVc CUr;
@@ -57,6 +58,8 @@ begin
       CredManr.CurncyCode = BCb.BaseCur1;
     end;
     CredManVc_PasteCurncyCode(CredManr);
+    warning = CUr.WarnText1;
+
   end;
   
   return;
@@ -747,7 +750,8 @@ begin
           if (CredManr.MaxMonthlyPayment>0) then begin
             RepSpec.flags[10] = 1;
           end;
-          PrintEBSDocument("VekselisForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
+           RepSpec.flags[11] = scnt;
+           PrintEBSDocument("VekselisForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
         end else begin
           PrintCredManDocument("VekselisForm",fn,CredManr,scnt,(CredManr.MaxMonthlyPayment>0),langcode);
           //PrintMultiDocDocument("VekselisForm" & scnt,fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
@@ -1088,3 +1092,4 @@ begin
   ContractHasInvoiceCreated = res;
   return;
 end;
+

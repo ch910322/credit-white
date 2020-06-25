@@ -176,8 +176,6 @@ begin
   SString(200231,"Email");
   SString(200232,"Date");
 
-  SString(1808,"Noviti Nr. ");
-
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");
   StrSetText(B2BLoanApplicationVc,"B2B Loan Applications");
@@ -188,6 +186,12 @@ begin
   StrSetText(CredManChangeManager,"Don't allow changing Manager on Credit Agreement");
   StrSetText(LoanAppNoDelete,"Don't allow removing Loan Application");
   StrSetText(LoanAppChangeManager,"Don't allow changing Manager on Loan Application");
+  StrSetText(RemoveAgreementDocAgreementAttach,"Allow removing Agreement document Attachments");
+  StrSetText(RemoveAgreementDocSchedAttach,"Allow removing Schedule Attachments");
+  StrSetText(RemoveAgreementDocSuretyAgreementAttach,"Allow removing Surety Agreement Attachments");
+  StrSetText(RemoveAgreementDocVekselisAttach,"Allow removing Vekselis Attachments");
+  StrSetText(RemoveCredManAttach,"Allow removing Agreement Attachments");
+  StrSetText(RemoveLoanAppAttach,"Allow removing Loan Application Attachments");
   EndStrSet;
 
   SetBegin(2000);
