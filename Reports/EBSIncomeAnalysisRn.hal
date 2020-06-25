@@ -70,6 +70,7 @@ begin
   Boolean testf,TrHs;
   array val amonth,atotmonth;
   val itemtot;
+  record CredManVc CredManr;
   
   StartReportJob("Income Analysis");
   rw = 1;
@@ -163,7 +164,20 @@ begin
               testf = false;
             end;
           end;
-        end;    
+        end;  
+        if (testf) then begin
+          if (nonblank(RepSpec.f8) or nonblank(RepSpec.f9)) then begin
+            CredManr.SerNr = CredHistr.CredManNr;
+            if (ReadFirstMain(CredManr,1,true)) then begin
+              if (nonblank(RepSpec.f8) and SetInSet(CredManr.Type,RepSpec.f8)==false) then begin
+                testf = false;
+              end;
+              if (nonblank(RepSpec.f9) and SetInSet2(RepSpec.f9,CredManr.Classifications)==false) then begin
+                testf = false;
+              end;
+            end;
+          end;
+        end;  
         if (testf) then begin
           tCredHistr.SerNr = CredHistr.PreviousNr;
           if (ReadFirstMain(tCredHistr,1,true)) then begin
