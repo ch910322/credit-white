@@ -324,6 +324,11 @@ begin
   EditFieldTL(h,v,120,"Agreement",M4Long,Normal,0,long1,false,CredManSClass);
   EndWindow;
 
+  WindowBegin("Specify Agreement Schedules",CreateCredManScheduleVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 150; v = 6; vs = 20;
+  EndWindow;
+
 
 
   WindowBegin("Additional Bank Accounts",CUBankAccDClass,CGView,-);
