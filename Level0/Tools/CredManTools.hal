@@ -166,7 +166,7 @@ BEGIN
   RETURN;
 END;
 
-procedure AddLineToCredMan(var record CredManVc CredManr,string artcode,val qty,string comment,val price,val vreb,val sum,Integer typ,Integer rw)
+procedure AddLineToCredMan(var record CredManVc CredManr,string artcode,val qty,string comment,val price,val vreb,val sum,Integer typ,Integer rw,val minsum,val maxsum)
 begin
   row CredManVc CredManrw;
   record INVc INr;
@@ -184,6 +184,8 @@ begin
     MatRowGet(CredManr,rw,CredManrw);
 //CUST-BEGIN
 //    if (CredManrw.Sum!=sum) then begin
+      CredManrw.MinSum = minsum;
+      CredManrw.MaxSum = maxsum;
 //CUST-END
       CredManrw.Price = sum;
       CredManrw.vRebate = vreb;
@@ -219,7 +221,7 @@ begin
   rwcnt = MatRowCnt(CredManTyper);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManTyper,i,CredManTyperw);
-    AddLineToCredMan(CredManr,CredManTyperw.ArtCode,CredManTyperw.Quant,CredManTyperw.Comment,CredManTyperw.Price,CredManTyperw.vRebate,CredManTyperw.Sum,CredManTyperw.ChargeType,MatRowCnt(CredManr));
+    AddLineToCredMan(CredManr,CredManTyperw.ArtCode,CredManTyperw.Quant,CredManTyperw.Comment,CredManTyperw.Price,CredManTyperw.vRebate,CredManTyperw.Sum,CredManTyperw.ChargeType,MatRowCnt(CredManr),CredManTyperw.MinSum,CredManTyperw.MaxSum);//CUST added min sum, max sum
   end;
   return;
 end;

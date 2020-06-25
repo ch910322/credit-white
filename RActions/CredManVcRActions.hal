@@ -18,6 +18,7 @@ BEGIN
   BlockLoad(OCb);
   CredManr.CurncyCode = BCb.BaseCur1;
   CredManr.MonthlyPaymentDay = CMb.InvDay;
+  CredManr.FirstIntDate = CurrentDate;
 
   res = inner.CredManVcRecordDefaults(CredManr,CredMan2r,stat,long4);
   CredManVc_PasteType(CredManr);

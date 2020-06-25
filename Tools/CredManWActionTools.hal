@@ -890,7 +890,7 @@ end;
 
 updating procedure CreateCredmanPurchaseInvoice(record CredManVc CredManr,val credsum,var record VIVc VIr)
 begin
-  record CreditalInvoiceBlock CIb;
+  record CMInvoicingBlock CIb;
   record VIVc oldVIr;
   row VIVc VIrw;
   val ct;
@@ -936,7 +936,7 @@ begin
   Boolean installmentf;
   record IPVc IPr,oldIPr;
   row IPVc IPrw;
-  record CreditalInvoiceBlock CIb;
+  record CMInvoicingBlock CIb;
 
   BlockLoad(CIb);
   IPr.TransDate = IVr.InvDate;
@@ -967,7 +967,7 @@ begin
   val chk;
   Boolean installmentf;
   string 255 warning;
-  record CreditalInvoiceBlock CIb;
+  record CMInvoicingBlock CIb;
 
   BlockLoad(CIb);
   RecordNew(OPr);

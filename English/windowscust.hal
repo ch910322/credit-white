@@ -101,18 +101,8 @@ begin
   RadioButton(h,v,0,0,"30",DaysInMonth);
   RadioButton(h,v+=16,1,0,"Actual",DaysInMonth); 
   
-  CheckBox(h,v+=30,0,"Details on Invoice",DetailedInvoice);
-  CheckBox(h,v+=20,0,"Automatically connect Prepayments to Invoices",AddPrepayments);
-
-  EditField(h,v+=30,100,"Time",Normal,AutoInvoiceTime,false,PasteCurTime);
-  CheckBox(h+120,v,0,"Automatically issue and send Invoices",AutoInvoiceFlag);
-  CheckBox(h+120,v+=16,0,"Mark Emails as sent",AutoInvoiceSend);
-  CheckBox(h+120,v+=16,0,"Automatically send Invoices created from Contracts",AutoMailsFromInvoices);
-
-  EditField(h,v,100,"Additional Comment",Normal,InvoiceCommentStr,false,0);
-  EditField(h,v+=vs,100,"Document Signer",Normal,DocumentSigner,false,UserSClass);
+  EditField(h,v+=30,100,"Document Signer",Normal,DocumentSigner,false,UserSClass);
   EditField(h,v+=vs,100,"Signer's Job Description",Normal,DocumentSignerPosition,false,0);
-  EditField(h,v+=vs,100,"Overdue Item Class",Normal,OverdueItemClass,false,DISClass);
   
 
   EndWindow;
@@ -1330,7 +1320,7 @@ begin
   EndWindow;
 end;
 
-
+/*
 window CreditalInvoiceTClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
@@ -1383,6 +1373,7 @@ begin
 
   EndWindow;
 end;
+*/
 
 window CredManAutoTaskTClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
@@ -1512,7 +1503,7 @@ window CMOrderClassTClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm,h2,tilenr;
-  WindowBegin("Invoice Settings",CMOrderClassTClass,CGSbl,-);
+  WindowBegin("Automatic Order Classes",CMOrderClassTClass,CGSbl,-);
   SetBlid(CMOrderClassBlock);
   h = 200;
   SetWRect(20,80,550,298);
@@ -1539,6 +1530,7 @@ begin
   EditField(h,v+=vs,100,"Termination Class",Normal,TerminatedOrderClass,false,OrderClassSClass);
   EditField(h,v+=vs,100,"Refinance Class",Normal,RefinClass,false,OrderClassSClass);
   EditField(h,v+=vs,100,"Active Class",Normal,ActiveCredOrderClass,false,OrderClassSClass);
+  EditField(h,v+=vs,100,"Finished Class",Normal,FinishCredOrderClass,false,OrderClassSClass);
 
   EndWindow;
 end;
@@ -1694,4 +1686,96 @@ begin
   DeleteRowTest;
   EndMatrix;
   EndWindow;
+end;
+
+window CMInvoicingTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,vs2,hm;
+  Integer tilenr;
+  vs = 20;
+  WindowBegin("Invoicing Settings",CMInvoicingTClass,CGSbl,SRType);
+  SetBlid(CMInvoicingBlock);
+  SetWRect(20,80,670,298);
+  Sizeable(-1,-1,0,0);
+  
+  tilenr = 1;
+  Tile(0,20,false,"",DetailedInvoice);
+  TileButton(tilenr,"General"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Factoring"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Payment Guarantee"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Payments"); tilenr = tilenr + 1;
+
+  Tile(1,700,false,"1",DetailedInvoice);
+  CheckBox(h=180,v=6,0,"Details on Invoice",DetailedInvoice);
+  CheckBox(h,v+=16,0,"Automatically connect Prepayments to Invoices",AddPrepayments);
+  CheckBox(h,v+=16,0,"Interest on due Principle",IntDuePrinciple);
+
+  CheckBox(h,v+=30,0,"Automatically issue and send Invoices",AutoInvoiceFlag);
+  EditField(h,v+=20,100,"Time",Normal,AutoInvoiceTime,false,PasteCurTime);
+  CheckBox(h,v+=20,0,"Mark Emails as sent",AutoInvoiceSend);
+  CheckBox(h,v+=16,0,"Automatically send Invoices created from Contracts",AutoMailsFromInvoices);
+
+  EditField(h,v+=vs,100,"Additional Comment",Normal,InvoiceCommentStr,false,0);
+  EditField(h,v+=vs,100,"Overdue Item Class",Normal,OverdueItemClass,false,DISClass);
+  
+  ButtonFrame(h,v+=40,400,4,"Interest Invoicing");
+  RadioButton(h,v,0,0,"With Principle, same Invoice",InterestIVType);
+  RadioButton(h,v+=16,1,0,"With Principle, separate Invoice",InterestIVType);  
+  RadioButton(h,v+=16,2,0,"Separately for actual Period, on Day",InterestIVType);  
+  RadioButton(h,v+=16,3,0,"Separately for previous Calendar Month, on Day",InterestIVType);  
+  EditField(h+360,v,30,"Day of Month",Normal,InterestIVDay,false,0);
+
+  ButtonFrame(h,v+=40,400,3,"Overdue Invoicing");
+  RadioButton(h,v,0,0,"With Principle, same Invoice",OverdueIVType);
+  RadioButton(h,v+=16,1,0,"With Principle, separate Invoice",OverdueIVType);  
+  RadioButton(h,v+=16,2,0,"Separately for previous Calendar Month, on Day",OverdueIVType);  
+  EditField(h+360,v,30,"Day of Month",Normal,OverdueIVDay,false,0);
+
+  EditField(h,v+=30,100,"Overdue Months",Normal,OverdueMonths,false,0);
+
+  ButtonFrame(h,v+=40,250,2,"Invoice Date");
+  RadioButton(h,v,0,0,"Payment Day",InvoiceDay);
+  RadioButton(h,v+=16,1,0,"Payment Day - Days of Payment Term",InvoiceDay);  
+
+
+  Tile(2,95,false,"2",FBuyerPayDeal);
+  vs=20; h=160; vs2=16; hm=-100;
+  ButtonFrame(h-100,v=30,250,5,"Buyer's Invoice");
+  EditField(h,v,100,"Payment Terms",Normal,FBuyerPayDeal,false,PDSClass);
+  EditField(h,v+=vs,100,"Object",Normal,FBuyerObject,false,ObjSClass);
+  EditField(h,v+=vs,100,"Item",Normal,FBuyerItem,false,INSClass);
+  EditField(h,v+=vs,100,"Payment Mode",Normal,FVIPaymentMode,false,PMSClass);
+
+  ButtonFrame(h-100,v+=50,250,7,"Seller's Invoice");
+  EditField(h,v,100,"Payment Terms",Normal,FSellerPayDeal,false,PDSClass);
+  EditField(h,v+=vs,100,"Account",Normal,FSellerAccount,false,AccSClass);
+  EditField(h,v+=vs,100,"Fee Account",Normal,FSellerFeeAccount,false,AccSClass);
+  EditField(h,v+=vs,100,"VAT Code",Normal,FSellerVATCode,false,VATCodeSClass);
+  EditField(h,v+=vs,100,"Object",Normal,FSellerObject,false,ObjSClass);
+  EditField(h,v+=vs,100,"Payment Mode",Normal,FIVPaymentMode,false,PMSClass);
+  
+  Tile(3,95,false,"3",PGBuyerSecurityItem);
+ 
+  ButtonFrame(h-100,v=30,250,5,"Buyer's Invoice");
+  EditField(h,v,100,"Security Item",Normal,PGBuyerSecurityItem,false,INSClass);
+  EditField(h,v+=vs,100,"Security Prc",Normal,PGBuyerSecurityPrc,false,0);
+  EditField(h,v+=vs,100,"PayDeal",Normal,PGBuyerPayDeal,false,PDSClass);
+  EditField(h,v+=vs,100,"Item",Normal,PGBuyerItem,false,INSClass);
+
+  ButtonFrame(h-100,v+=50,250,2,"Seller's Invoice");
+  EditField(h,v,100,"Account",Normal,PGSellerAccount,false,AccSClass);
+  EditField(h,v+=vs,100,"VAT Code",Normal,PGSellerVATCode,false,VATCodeSClass);
+
+  Tile(4,95,false,"4",PaymentPayDeal);
+
+  EditField(h,v=6,100,"Payment Terms",Normal,PaymentPayDeal,false,PDSClass);
+  EditField(h,v+=vs,100,"Account",Normal,PaymentAccount,false,AccSClass);
+  EditField(h,v+=vs,100,"VAT Code",Normal,PaymentVATCode,false,VATCodeSClass);
+  EditField(h,v+=vs,100,"Object",Normal,PaymentObject,false,ObjSClass);
+  EditField(h,v+=vs,100,"Payment Mode",Normal,PaymentMode,false,PMSClass);
+
+
+  EndWindow;
+  return;
 end;

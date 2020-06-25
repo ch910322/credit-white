@@ -22,7 +22,7 @@ external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
 global
 updating procedure GenerateSLAndPLInvoices(record CredManFactInvoiceVc CMIr)
 begin
-  record CreditalInvoiceBlock CIb;
+  record CMInvoicingBlock CIb;
   record CredManFactInvoiceVc oldCMIr;
   record IVVc IVr;
   record VIVc VIr;
@@ -357,7 +357,7 @@ begin
   val chk;
   Boolean installmentf;
   string 255 warning;
-  record CreditalInvoiceBlock CIb;
+  record CMInvoicingBlock CIb;
 
   BlockLoad(CIb);
   RecordNew(OPr);
@@ -421,7 +421,7 @@ begin
   Integer i,rwcnt;
   record VIVc VIr;
   row VIVc VIrw;
-  record CreditalInvoiceBlock CIb;
+  record CMInvoicingBlock CIb;
   record CredManFactInvoiceVc CMIr;
   record CredManVc CredManr;
   string 255 warning;
