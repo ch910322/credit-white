@@ -707,17 +707,17 @@ begin
   SoftEditField(-120,-41,80,"Remaining Principle Part",ViewOnly,"remainingprinciple",true,0,M4Val,0);
   SoftEditField(-120,-21,80,"Total Due Amount",ViewOnly,"totaldue",true,0,M4Val,0);
 
-  CheckBox(110,-41,0,"Sign Agreement",SignAgreement);
-  CheckBox(110,-21,0,"Sign Schedule",SignSchedule);
+  CheckBox(110,-41,0,"Agreement signed",SignAgreement);
+  CheckBox(110,-21,0,"Schedule signed",SignSchedule);
 
   HalPushButton(230,-47,280,-27,"CredManDClassSignAgreement","Open");
   HalPushButton(230,-25,280,-5,"CredManDClassSignSchedule","Open");
 
-  CheckBox(300,-41,0,"Sign Surety",SignSurety);
-  CheckBox(300,-21,0,"Sign Vekselis",SignVekselis);
+  CheckBox(300,-41,0,"Surety signed",SignSurety);
+  CheckBox(300,-21,0,"Vekselis signed",SignVekselis);
 
-  HalPushButton(400,-47,450,-27,"CredManDClassSignSurety","Open");
-  HalPushButton(400,-25,450,-5,"CredManDClassSignVekselis","Open");
+  HalPushButton(410,-47,460,-27,"CredManDClassSignSurety","Open");
+  HalPushButton(410,-25,460,-5,"CredManDClassSignVekselis","Open");
 
 /*
   DataList(10,10,-50,-285,"credmanevents");
@@ -768,10 +768,16 @@ begin
   MatCol(t,-300,"Invoice No.",0,InvoicedOn,false,0);
   MatCol(t,-200,"Invoiced Sum",0,InvoicedSum,true,0);
   MatCol(t,-100,"Sum",0,Sum,true,0);
+//CUST-BEGIN
+  Flip(3);
+  MatCol(t,-200,"Min Sum",0,MinSum,true,0);
+  MatCol(t,-100,"Max Sum",0,MaxSum,true,0);
+//CUST-END
   EndMatrix;
   vs = 22;
   v = 24; VTab(-35,v,-16,v+vs,ToolFlip,1,"A");
   v=v+ vs; VTab(-35,v,-16,v+vs,ToolFlip,2,"B");
+  v=v+ vs; VTab(-35,v,-16,v+vs,ToolFlip,3,"C");
   InsertRowTest;
   DeleteRowTest;
   Tile(3,70,false,"3",FrRate);
@@ -975,15 +981,25 @@ begin
   RadioButton(h,v+=16,1,0,"Floating",RateType);
 */
 
-  MatrixBegin(20,vm=(vm2+=40),-30,-10,-,99);
+  MatrixBegin(20,vm=(vm2+=40),-50,-10,-,99);
+  Flip(0);
   MatCol(t=1,32,"Item",0,ArtCode,false,INSClass);
   MatCol(t,100,"Qty",0,Quant,true,0);
   MatCol(t,140,"Type",0,ChargeType,false,SetSClass);
   MatCol(t,220,"Description",0,Comment,false,0);
+  Flip(1);
   MatCol(t,-210,"Unit Price",0,Price,true,0);
   MatCol(t,-120,"%",0,vRebate,true,0);
   MatCol(t,-90,"Sum",0,Sum,true,0);
+//CUST-BEGIN
+  Flip(2);
+  MatCol(t,-210,"Min Sum",0,MinSum,true,0);
+  MatCol(t,-100,"Max Sum",0,MaxSum,true,0);
+//CUST-END
   EndMatrix;
+  vs = 22;
+  v = 24; VTab(-35,v,-16,v+vs,ToolFlip,1,"A");
+  v=v+ vs; VTab(-35,v,-16,v+vs,ToolFlip,2,"B");
 
 //CUST-BEGIN
   Tile(2,400,false,"2",CredManCEO1);

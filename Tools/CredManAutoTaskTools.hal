@@ -189,7 +189,7 @@ begin
   Integer i;
   Longint invfr,invto;
   record IVVc nIVr,IVr;
-  record CMApplicationSetBlock CMSb;
+  record CMInvoicingBlock CIb;
   Date td,datefr,dateto;
   Time tt;
   
@@ -204,7 +204,7 @@ begin
     
   end;
 */
-  BlockLoad(CMSb);
+  BlockLoad(CIb);
   RecordClear(RepSpec);
   ReportDefaults(RepSpec,"IVToMailVClass");
   if (GetInvoiceSequence(aIVr,invfr,invto,datefr,dateto)) then begin
@@ -212,7 +212,7 @@ begin
     RepSpec.sStartDate = datefr;
     RepSpec.sEndDate = dateto;
     RepSpec.ArtMode = 0;
-    if (CMSb.AutoInvoiceSend==1) then begin
+    if (CIb.AutoInvoiceSend==1) then begin
       RepSpec.flags[1] = 1;
     end else begin
       RepSpec.flags[1] = 0;
@@ -225,7 +225,7 @@ begin
     qupdating.IVToMailMn(RepSpec);
   end else begin
     RepSpec.ArtMode = 0;
-    if (CMSb.AutoInvoiceSend==1) then begin
+    if (CIb.AutoInvoiceSend==1) then begin
       RepSpec.flags[1] = 1;
     end else begin
       RepSpec.flags[1] = 0;
@@ -253,15 +253,15 @@ end;
 global
 procedure InitAutoInvoiceTask(string args)
 begin
-  record CMApplicationSetBlock CMSb;
+  record CMInvoicingBlock CIb;
   Date td;
   Time tt;
 
-  BlockLoad(CMSb);
-  if (CMSb.AutoInvoiceFlag==1) then begin
+  BlockLoad(CIb);
+  if (CIb.AutoInvoiceFlag==1) then begin
     RemoveTask("CredManAutoInvoiceTask");
     td = CurrentDate;
-    tt = CMSb.AutoInvoiceTime;
+    tt = CIb.AutoInvoiceTime;
     if (tt<CurrentTime) then begin
       td = AddDay(td,1);
     end;
@@ -275,10 +275,10 @@ global
 updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc IVr)
 begin
   record RcVc RepSpec;
-  record CMApplicationSetBlock CMSb;
+  record CMInvoicingBlock CIb;
 
-  BlockLoad(CMSb);
-  if (CMSb.AutoMailsFromInvoices==1) then begin
+  BlockLoad(CIb);
+  if (CIb.AutoMailsFromInvoices==1) then begin
     RecordClear(RepSpec);
     ReportDefaults(RepSpec,"IVToMailVClass");
     RepSpec.ArtMode = 0;

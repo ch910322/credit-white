@@ -241,11 +241,11 @@ begin
   RecordField(DefOrderClass,M4Code,5,OrderClassVc)
   RecordField(DaysInYear,M4Int,0,0);
   RecordField(DaysInMonth,M4Int,0,0);
-  RecordField(DetailedInvoice,M4Int,0,0);
+  RecordField(DetailedInvoice,M4Int,0,0);//Moved to CMInvoicingBlock
   RecordField(TerminatedOrderClass,M4Code,5,OrderClassVc);
-  RecordField(InvoiceCommentStr,M4Str,255,0);
+  RecordField(InvoiceCommentStr,M4Str,255,0);//Moved to CMInvoicingBlock
   RecordField(RefinClass,M4Code,5,OrderClassVc);
-  RecordField(AddPrepayments,M4Int,0,0);
+  RecordField(AddPrepayments,M4Int,0,0);//Moved to CMInvoicingBlock
   RecordField(WebAppClass,M4Code,5,OrderClassVc);
   RecordField(SuretyLetter,M4Str,255,0);
   RecordField(VerWebAppClass,M4Code,5,OrderClassVc);
@@ -263,11 +263,11 @@ begin
   RecordField(DocumentSignerPosition,M4Str,255,0);
   RecordField(SuretyInviteLetter,M4Str,255,0);
   RecordField(ContactInviteLetter,M4Str,255,0);
-  RecordField(AutoInvoiceFlag,M4Int,0,0);
-  RecordField(AutoInvoiceTime,M4Time,0,0);
-  RecordField(OverdueItemClass,M4UStr,255,0);
-  RecordField(AutoInvoiceSend,M4Int,0,0);
-  RecordField(AutoMailsFromInvoices,M4Int,0,0);
+  RecordField(AutoInvoiceFlag,M4Int,0,0);//Moved to CMInvoicingBlock
+  RecordField(AutoInvoiceTime,M4Time,0,0);//Moved to CMInvoicingBlock
+  RecordField(OverdueItemClass,M4UStr,255,0);//Moved to CMInvoicingBlock
+  RecordField(AutoInvoiceSend,M4Int,0,0);//Moved to CMInvoicingBlock
+  RecordField(AutoMailsFromInvoices,M4Int,0,0);//Moved to CMInvoicingBlock
   RecordField(EmailOfferText,M4Code,20,LTxtVc);
   RecordField(EmailOfferTextRow,M4Code,20,LTxtVc);
   EndBlock;
@@ -478,6 +478,10 @@ begin
   RecordField(AnnualRate,M4Int,0,0);
   ChangeField(IntRate,M4Rate,0,0);
   ChangeField(PrincipleDelayInterest,M4Rate,0,0);
+
+  ArrayField(MinSum,M4Val,0,0);
+  ArrayField(MaxSum,M4Val,0,0);
+
   KeyBegin(OrderClass);
   KeySegment(OrderClass);
   KeySegment(SerNr);  
@@ -554,6 +558,10 @@ begin
   RecordField(Classifications,M4UStr,255,0);
   RecordField(OwnBankAccount,M4UStr,255,0);
   RecordField(AnnualRate,M4Int,0,0);
+
+  ArrayField(MinSum,M4Val,0,0);
+  ArrayField(MaxSum,M4Val,0,0);
+
   KeyBegin(ActCode);
   KeySegment(Code);
   KeyBegin(ActComment);
@@ -1005,6 +1013,7 @@ begin
   RecordField(CMUsSignedOrderClass,M4Code,5,OrderClassVc);
   RecordField(CMDefOrderClass,M4Code,5,OrderClassVc);
   RecordField(ActiveCredOrderClass,M4Code,5,OrderClassVc);
+  RecordField(FinishCredOrderClass,M4Code,5,OrderClassVc);
   
   EndBlock;
 
@@ -1046,6 +1055,26 @@ begin
   KeySegment(CredManNr);
   KeySegment(SerNr);
   EndRecord;
+
+  BlockBegin(CMInvoicingBlock,-,"");
+  RecordField(InterestIVType,M4Int,0,0);
+  RecordField(InterestIVDay,M4Qty,0,0);
+  RecordField(OverdueIVType,M4Int,0,0);
+  RecordField(OverdueIVDay,M4Qty,0,0);
+  RecordField(OverdueMonths,M4Qty,0,0);
+  RecordField(IntDuePrinciple,M4Int,0,0);
+  RecordField(InvoiceDay,M4Int,0,0);
+
+  RecordField(DetailedInvoice,M4Int,0,0);
+  RecordField(InvoiceCommentStr,M4Str,255,0);
+  RecordField(AddPrepayments,M4Int,0,0);
+  RecordField(AutoInvoiceFlag,M4Int,0,0);
+  RecordField(AutoInvoiceTime,M4Time,0,0);
+  RecordField(OverdueItemClass,M4UStr,255,0);
+  RecordField(AutoInvoiceSend,M4Int,0,0);
+  RecordField(AutoMailsFromInvoices,M4Int,0,0);
+
+  EndBlock;
   
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);

@@ -9,6 +9,8 @@ begin
 
   Setting("Number Series - B2B Loan Applications",B2BLoanAppSerTClass,modCredMan);
   Setting("Credit Management Settings",CMApplicationSetTClass,modCredMan);
+  Setting("Invoicing Settings",CMInvoicingTClass,modCredMan);
+  
   Setting("Scoring Support",ScoringSupLClass,modCredMan);
   Setting("Order Classes",OrderClassLClass,modCredMan);
   Setting("Order Class Colors",OrderClassColorTClass,modCredMan);
@@ -18,7 +20,7 @@ begin
   Setting("Factoring Invoices",CredManFactInvoiceLClass,modCredMan);
   //Setting("Seller's Reports",CredManGrntReportsLClass,modCredMan);
   Setting("Agreement Documents",AgreementDocLClass,modCredMan);
-  Setting("Invoicing Settings",CreditalInvoiceTClass,modCredMan);
+  Setting("Factoring Invoice Settings",CreditalInvoiceTClass,modCredMan);
   Setting("Automatic Tasks",CredManAutoTaskTClass,modCredMan);
   Setting("Automatically Closed Tasks",CredManCloseTaskTClass,modCredMan);
   Setting("Invitation Requests",InvitationRequestLClass,modCredMan);
