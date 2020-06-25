@@ -713,11 +713,11 @@ begin
   HalPushButton(230,-47,280,-27,"CredManDClassSignAgreement","Open");
   HalPushButton(230,-25,280,-5,"CredManDClassSignSchedule","Open");
 
-  CheckBox(300,-41,0,"Surety signed",SignSurety);
-  CheckBox(300,-21,0,"Vekselis signed",SignVekselis);
+  CheckBox(285,-41,0,"Surety signed",SignSurety);
+  CheckBox(285,-21,0,"Bill of Exchange signed",SignVekselis);
 
-  HalPushButton(410,-47,460,-27,"CredManDClassSignSurety","Open");
-  HalPushButton(410,-25,460,-5,"CredManDClassSignVekselis","Open");
+  HalPushButton(430,-47,480,-27,"CredManDClassSignSurety","Open");
+  HalPushButton(430,-25,480,-5,"CredManDClassSignVekselis","Open");
 
 /*
   DataList(10,10,-50,-285,"credmanevents");
