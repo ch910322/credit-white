@@ -1063,7 +1063,7 @@ begin
   RecordField(OverdueIVDay,M4Qty,0,0);
   RecordField(OverdueMonths,M4Qty,0,0);
   RecordField(IntDuePrinciple,M4Int,0,0);
-  RecordField(InvoiceDay,M4Int,0,0);
+  RecordField(InvoiceDay,M4Int,0,0); 
 
   RecordField(DetailedInvoice,M4Int,0,0);
   RecordField(InvoiceCommentStr,M4Str,255,0);
