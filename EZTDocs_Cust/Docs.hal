@@ -25,7 +25,7 @@ external inner procedure ItemBCEAN13(string,var string);
 external inner procedure GetLangNr(string,var record LangNrVc);
 /* Tools*/
 external inner procedure Ext_PrintValue(var vector string,string,val,Integer,record LangNrVc,record SysFormatBlock,Boolean);
-external inner procedure Ext_PrintDocumentSigner(var vector string);
+external procedure Ext_PrintDocumentSigner(var vector string);
 external inner procedure Ext_PrintCurrencyCode(var vector string,string,string);
 external inner procedure Ext_PrintCountryCode(var vector string,string,string);
 external inner procedure Ext_OutAddress(var vector string,string,string,string,string,string,string,string);
