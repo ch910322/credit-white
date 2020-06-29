@@ -777,11 +777,14 @@ begin
   record CredManSetBlock CMb;
   record CredManPayPlanVc CredManPayPlanr;
   record IVVc IVr,oldIVr;
+  record CMInvoicingBlock CIb;
 
   if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
     BlockLoad(CMb);
+    BlockLoad(CIb);
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,CurrentDate,IVr);
+    AddPrepayments(IVr,CIb);
     if (IVr.SerNr>0) then begin
       if (IVr.SerNr>-1) then begin
         if (RecordInsert(IVr,true)) then begin
