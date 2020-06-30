@@ -47,28 +47,53 @@ begin
   return;
 end;
 
+function Boolean FindContactWithJobTitle(string custcode,var record CUVc CUr,string title)
+begin
+  record ContactRelVc CRr;
+  Boolean res;
+ 
+  while (LoopKey("CustContactCode:" & custcode,CRr,1,true)) begin
+    CUr.Code = CRr.ContactCode;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      if (SetInSet(title,CUr.JobDesc)) then begin
+        res = true;
+        goto LFindContactWithJobTitle;
+      end;
+    end;
+  end;
+
+LFindContactWithJobTitle:;
+  FindContactWithJobTitle = res;
+  return;
+end;
+
 global
 function Boolean FindCEOContact(string custcode,var record CUVc CUr)
 begin
   record CMApplicationSetBlock ASb;
-  record ContactRelVc CRr;
   Boolean res;
   
   BlockLoad(ASb);
   if (nonblank(ASb.CEOTitle)) then begin
-    while (LoopKey("CustContactCode:" & custcode,CRr,1,true)) begin
-      CUr.Code = CRr.ContactCode;
-      if (ReadFirstMain(CUr,1,true)) then begin
-        if (SetInSet(ASb.CEOTitle,CUr.JobDesc)) then begin
-          res = true;
-          goto LFindCEOContact;
-        end;
-      end;
-    end;
+    res = FindContactWithJobTitle(custcode,CUr,ASb.CEOTitle);
   end;  
 
-LFindCEOContact:;
   FindCEOContact = res;
+  return;
+end;
+
+global
+function Boolean FindCFOContact(string custcode,var record CUVc CUr)
+begin
+  record CMApplicationSetBlock ASb;
+  Boolean res;
+  
+  BlockLoad(ASb);
+  if (nonblank(ASb.CFOTitle)) then begin
+    res = FindContactWithJobTitle(custcode,CUr,ASb.CFOTitle);
+  end;  
+
+  FindCFOContact = res;
   return;
 end;
 
