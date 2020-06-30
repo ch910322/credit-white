@@ -281,6 +281,13 @@ begin
     vVals["F_FIXFEES"] = fixfees;
   end;
 
+  RecordCLear(CUr);
+  if (FindCEOContact(CredManr.CustCode,CUr)) then begin
+    vVals["F_CEONAME"] = CUr.Name;
+    vVals["F_CEOID"] = CUr.RegNr1;
+  end;
+
+
   return;
 end;
 
@@ -502,6 +509,12 @@ begin
   ValToText((CredManr.InvSum4*1.5),M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
   vVals["F_CREDMULSUMTEXT"] = tstr;
   vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(CredManr.SerNr);
+
+  RecordCLear(CUr);
+  if (FindCEOContact(CredManr.CustCode,CUr)) then begin
+    vVals["F_CEONAME"] = CUr.Name;
+    vVals["F_CEOID"] = CUr.RegNr1;
+  end;
 
   return;
 end;
