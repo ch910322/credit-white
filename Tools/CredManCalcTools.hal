@@ -676,13 +676,14 @@ begin
   end;  
   delaymonths = inCredManr.PrincipleDelayMonths;
   basemonths = usemonths - delaymonths;
+//logtext(0,"start dev");
   for(i=calculatedmonths;i<months;i=i+1) begin
     if (calcbal>0) then begin
       CalcCredManCurrentPeriod(inCredManr,CIb,i-1,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
       if (i==0 and firstinvf==false and inCredManr.InstalmentType!=4) then begin//Not for factoring
         AddInitialInvoice(inCredManr,CredManPayPlanr,CredManSetb,acumint,calcbal,"","");
       end;
-//      logtext(0,"l1 " & invdat & ":" & i & ":" & curmonth & ":" & usemonths & ":" & months & ":" & usesum & ":" & prolongstartmonths);
+      //logtext(0,"l1 " & invdat & ":" & i & ":" & curmonth & ":" & usemonths & ":" & months & ":" & usesum & ":" & prolongstartmonths);
       if (nonblank(InCredManr.ProlongDate) and InCredManr.ProlongMonths>0) then begin
         if (InCredManr.ProlongDate<=invdat and prolongf==false) then begin
           if (prolongbal>0) then begin
@@ -692,10 +693,13 @@ begin
           end;
 
           months = months + InCredManr.ProlongMonths;
+          /*
           usemonths = basemonths + InCredManr.ProlongMonths - (prolongstartmonths-delaymonths);
           if (pausef) then begin
             usemonths = usemonths - InCredManr.PauseMonths;
           end;
+          */
+          usemonths = months - i;
           prolongf = true;
         end;
       end;
@@ -708,10 +712,17 @@ begin
             usesum = calcbal;
           end;
           //months = months;
+          /*
           usemonths = basemonths - InCredManr.PauseMonths - (pausestartmonths-delaymonths);
           if (prolongf) then begin
             usemonths = usemonths + InCredManr.ProlongMonths;
           end;
+          */
+          usemonths = months - i;
+          if (i < pausestartmonths + InCredManr.PauseMonths) then begin
+            usemonths = months - (pausestartmonths + InCredManr.PauseMonths);
+          end;
+
           pausef = true;
         end;
       end;
