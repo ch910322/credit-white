@@ -73,6 +73,7 @@ begin
   EditField(h,v+=vs,100,"Ownership Years",Normal,OwnershipYears,false,0);
 
   EditField(h,v+=vs,100,"CEO Title",Normal,CEOTitle,false,JobTitleSClass);
+  EditField(h,v+=vs,100,"CFO Title",Normal,CFOTitle,false,JobTitleSClass);
   EditField(h,v+=vs,100,"Years to access private data",Normal,PrivateDataYears,false,0);
 
   EditField(h,v+=vs,100,"Request Signature Class",Normal,SignOrderClass,false,OrderClassSClass);

@@ -17,6 +17,7 @@ external inner procedure M4PadString(string,Integer,string,Boolean,var string);
 external function Boolean GetLoanAppContact(string,string,var record CUVc);
 external inner procedure HT2Per(Date, Date , var string);
 external function Boolean FindCEOContact(string,var record CUVc);
+external function Boolean FindCFOContact(string,var record CUVc);
 external inner procedure GetUnitStr(string,string,var string);
 external inner procedure ItemBC39(string,var string);
 external inner procedure GetItemGroup(string,var string);
@@ -286,6 +287,11 @@ begin
     vVals["F_CEONAME"] = CUr.Name;
     vVals["F_CEOID"] = CUr.RegNr1;
   end;
+  RecordCLear(CUr);
+  if (FindCFOContact(CredManr.CustCode,CUr)) then begin
+    vVals["F_CFONAME"] = CUr.Name;
+    vVals["F_CFOID"] = CUr.RegNr1;
+  end;
 
 
   return;
@@ -420,6 +426,11 @@ begin
     vVals["F_CEONAME"] = CUr.Name;
     vVals["F_CEOID"] = CUr.RegNr1;
   end;
+  RecordCLear(CUr);
+  if (FindCFOContact(CredManr.CustCode,CUr)) then begin
+    vVals["F_CFONAME"] = CUr.Name;
+    vVals["F_CFOID"] = CUr.RegNr1;
+  end;
 
   Ext_PrintDocumentSigner(vVals);
   vVals["F_CREDHALFSUM"] = (CredManr.InvSum4/2);
@@ -514,6 +525,11 @@ begin
   if (FindCEOContact(CredManr.CustCode,CUr)) then begin
     vVals["F_CEONAME"] = CUr.Name;
     vVals["F_CEOID"] = CUr.RegNr1;
+  end;
+  RecordCLear(CUr);
+  if (FindCFOContact(CredManr.CustCode,CUr)) then begin
+    vVals["F_CFONAME"] = CUr.Name;
+    vVals["F_CFOID"] = CUr.RegNr1;
   end;
 
   return;
