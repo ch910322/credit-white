@@ -479,7 +479,6 @@ begin
   RecordField(AnnualRate,M4Int,0,0);
   ChangeField(IntRate,M4Rate,0,0);
   ChangeField(PrincipleDelayInterest,M4Rate,0,0);
-  RecordFIeld(SkipOverDue,M4Int,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);

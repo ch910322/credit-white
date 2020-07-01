@@ -326,17 +326,15 @@ begin
   record INVc INr;
   Date overduetd;
 
-  if (CredManr.SkipOverDue==0) then begin
-    BlockLoad(CIb);
+  BlockLoad(CIb);
 
-    latedays = 0;
-    lateamount = 0;
-    overduetd = GetLastOverdueInvoiceDate(CredManr.SerNr,CMb.LateFeeItem);
-    //we should go through the history and check for late payments
-    if (nonblank(CIb.OverdueItemClass)) then begin
-      while (LoopKey("DICode:" & CIb.OverdueItemClass,INr,1,true)) begin
-        CheckOverdueInvoicesForItem(CredManr,CMb,CIb.OverdueMonths,invdate,prevtd,latedays,lateamount,INr.Code,overduetd);
-      end;
+  latedays = 0;
+  lateamount = 0;
+  overduetd = GetLastOverdueInvoiceDate(CredManr.SerNr,CMb.LateFeeItem);
+  //we should go through the history and check for late payments
+  if (nonblank(CIb.OverdueItemClass)) then begin
+    while (LoopKey("DICode:" & CIb.OverdueItemClass,INr,1,true)) begin
+      CheckOverdueInvoicesForItem(CredManr,CMb,CIb.OverdueMonths,invdate,prevtd,latedays,lateamount,INr.Code,overduetd);
     end;
   end;
   return;

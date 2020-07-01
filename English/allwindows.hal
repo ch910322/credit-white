@@ -823,8 +823,6 @@ begin
   RadioButton(h2,v+=16,1,0,"Trans. Date",LateRateOption);
 
 //CUST-BEGIN
-  CheckBox(h2,v+=30,0,"No Overdue Fees",SkipOverDue);
-  
   Tile(5,290,true,"5",SuretyProvider1); 
 
   label1 = UserDefined("CUVc","InvAddr0");
