@@ -211,9 +211,14 @@ end;
 global
 procedure AddInterest(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Integer monthtypef,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,Longint factinv)
 begin
+  Integer sendmonthtypef;
   
   if (nonblank(frdate)) then begin
-    AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.IntRate,monthtypef,frdate,todate,calcbal,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
+    sendmonthtypef = monthtypef;
+    if (CredManr.ChargeMethod==1) then begin
+      sendmonthtypef = kMonthTypeLast;
+    end;
+    AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.IntRate,sendmonthtypef,frdate,todate,calcbal,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
   end;
 
   return;
@@ -222,8 +227,13 @@ end;
 global
 procedure AddInterestDelay(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Integer monthtypef,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,Longint factinv)
 begin
+  Integer sendmonthtypef;
 
-  AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.PrincipleDelayInterest,monthtypef,frdate,todate,calcbal,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
+  sendmonthtypef = monthtypef;
+  if (CredManr.ChargeMethod==1) then begin
+    sendmonthtypef = kMonthTypeLast;
+  end;
+  AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.PrincipleDelayInterest,sendmonthtypef,frdate,todate,calcbal,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
 
   return;
 end;
@@ -740,8 +750,8 @@ begin
       monthtype = GetMonthType(i,months);
 //      logtext(0,"l4 " & i & ":" & curmonth & ":" & usemonths & ":" & months & ":" & usesum & ":" & monthtype);
       switch (inCredManr.InstalmentType) begin
-        case 0://Annuity
 /*
+        case 0://Annuity
           monthtype2 = monthtype;
           monthtype3 = monthtype;
           if (monthtype2==kMonthTypeLast) then begin
@@ -756,9 +766,6 @@ begin
             AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,2,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,frdat,todat,acumint,calcbal);
-*/
-        case 1://Linear
-/*
         case 2://Linear with Service Fee - bullet with linear or just Same, Same
           monthtype2 = monthtype;
           if (monthtype2==kMonthTypeLast) then begin
@@ -771,7 +778,7 @@ begin
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
 */
-        case 0://annuity with delay
+        case 0://annuity
           if (setdelf==false and inCredManr.PrincipleDelayMonths>0) then begin
             delaymonths = inCredManr.PrincipleDelayMonths;
             usemonths = usemonths - inCredManr.PrincipleDelayMonths;

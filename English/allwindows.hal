@@ -974,9 +974,11 @@ begin
   ButtonFrame(h2,v=vm,150,2,"Late Interest Based On");
   RadioButton(h2,v,0,0,"Due Date",LateRateOption);
   RadioButton(h2,v+=16,1,0,"Trans. Date",LateRateOption);
-  ButtonFrame(h2,v+=40,150,2,"Charge Method");
-  RadioButton(h2,v,0,0,"Running Balance",ChargeMethod);
-  RadioButton(h2,v+=16,1,0,"Monthly Invoices",ChargeMethod);
+//CUST-BEGIN chaning labels
+  ButtonFrame(h2,v+=40,150,2,"Interest Calculation");
+  RadioButton(h2,v,1,0,"Running Principle",ChargeMethod);
+  RadioButton(h2,v+=16,0,0,"Initial Principle",ChargeMethod);
+//CUST-END
 /*
   ButtonFrame(h=50,vm=(v+=45),140,2,"Default Interest Type");
   RadioButton(h,v,0,0,"Fixed",RateType);
