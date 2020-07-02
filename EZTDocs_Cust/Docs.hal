@@ -76,6 +76,7 @@ begin
   record B2BLoanApplicationVc LAr;
   record RLinkVc RLr;
   Boolean foundf;
+  record UserVc Userr;
   
 
   CUr.Code = CredManr.CustCode;
@@ -254,14 +255,17 @@ begin
       end;
     end;
   end;
+/*
   if (foundf) then begin
     CEOCUr.Code = LAr.CEOCustCode;
     if (ReadFirstMain(CEOCUr,1,true)) then begin
       vVals["F_CEONAME"] = CEOCUr.Name;
       vVals["F_CEOID"] = CEOCUr.RegNr1;
+      vVals["F_CEOPHONE"] = CUr.Phone;
+      vVals["F_CEOEMAIL"] = CUr.eMail;
     end;
   end;
-
+*/
 
   amt = GetMonthlyPaymentAmount(CredManr,2);
   vVals["F_INTEREST"] = amt;
@@ -286,13 +290,24 @@ begin
   if (FindCEOContact(CredManr.CustCode,CUr)) then begin
     vVals["F_CEONAME"] = CUr.Name;
     vVals["F_CEOID"] = CUr.RegNr1;
+    vVals["F_CEOPHONE"] = CUr.Phone;
+    vVals["F_CEOEMAIL"] = CUr.eMail;
   end;
   RecordCLear(CUr);
   if (FindCFOContact(CredManr.CustCode,CUr)) then begin
     vVals["F_CFONAME"] = CUr.Name;
     vVals["F_CFOID"] = CUr.RegNr1;
+    vVals["F_CFOPHONE"] = CUr.Phone;
+    vVals["F_CFOEMAIL"] = CUr.eMail;
   end;
 
+  Userr.Code = CredManr.SalesMan;
+  if (ReadFirstMain(Userr,1,true)) then begin
+    vVals["F_SALESMANPHONE"] = Userr.Phone1;
+    vVals["F_SALESMANEMAIL"] = Userr.emailAddr;
+  end;
+
+  vVals["F_FIRSTINVDATE"] = CredManr.FirstInvDate;
 
   return;
 end;
@@ -425,11 +440,15 @@ begin
   if (FindCEOContact(CredManr.CustCode,CUr)) then begin
     vVals["F_CEONAME"] = CUr.Name;
     vVals["F_CEOID"] = CUr.RegNr1;
+    vVals["F_CEOPHONE"] = CUr.Phone;
+    vVals["F_CEOEMAIL"] = CUr.eMail;
   end;
   RecordCLear(CUr);
   if (FindCFOContact(CredManr.CustCode,CUr)) then begin
     vVals["F_CFONAME"] = CUr.Name;
     vVals["F_CFOID"] = CUr.RegNr1;
+    vVals["F_CFOPHONE"] = CUr.Phone;
+    vVals["F_CFOEMAIL"] = CUr.eMail;
   end;
 
   Ext_PrintDocumentSigner(vVals);
@@ -525,11 +544,15 @@ begin
   if (FindCEOContact(CredManr.CustCode,CUr)) then begin
     vVals["F_CEONAME"] = CUr.Name;
     vVals["F_CEOID"] = CUr.RegNr1;
+    vVals["F_CEOPHONE"] = CUr.Phone;
+    vVals["F_CEOEMAIL"] = CUr.eMail;
   end;
   RecordCLear(CUr);
   if (FindCFOContact(CredManr.CustCode,CUr)) then begin
     vVals["F_CFONAME"] = CUr.Name;
     vVals["F_CFOID"] = CUr.RegNr1;
+    vVals["F_CFOPHONE"] = CUr.Phone;
+    vVals["F_CFOEMAIL"] = CUr.eMail;
   end;
 
   return;
@@ -629,6 +652,8 @@ begin
   if (ReadFirstMain(CUr,1,true)) then begin
     vVals["F_CEONAME"] = CUr.Name;
     vVals["F_CEOID"] = CUr.RegNr1;
+    vVals["F_CEOPHONE"] = CUr.Phone;
+    vVals["F_CEOEMAIL"] = CUr.eMail;
   end;
   CUr.Code = LAr.SuretyProvider1;
   if (ReadFirstMain(CUr,1,true)) then begin
