@@ -75,3 +75,29 @@ begin
 
   return;
 end;
+
+
+global
+procedure Ext_PrintInvoiceSigner(var vector string vVals)
+begin
+  record CMApplicationSetBlock ASb;
+  record UserVc Userr;
+  
+  BlockLoad(ASb);
+  Userr.Code = ASb.InvoiceSigner;
+  if (ReadFIrstMain(Userr,1,true)) then begin
+    vVals["F_INVOICESIGNERNAME"] = Userr.Name;
+    vVals["F_INVOICESIGNERPOSITION"] = ASb.DocumentSignerPosition;
+    vVals["F_INVOICESIGNERCODE"] = Userr.Code;
+  end;
+
+  return;
+end;
+
+
+global
+procedure Ext_PrintCustomInvoiceFields(var vector string vVals,record IVVc IVr)
+begin
+  Ext_PrintInvoiceSigner(vVals);
+  return;
+end;
