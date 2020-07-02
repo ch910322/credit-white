@@ -271,6 +271,7 @@ begin
   RecordField(EmailOfferText,M4Code,20,LTxtVc);
   RecordField(EmailOfferTextRow,M4Code,20,LTxtVc);
   RecordField(CFOTitle,M4Str,100,0);
+  RecordField(InvoiceSigner,M4Code,20,UserVc);
   EndBlock;
   
   RecordAddBegin(CUVc,"CredCUVc");
