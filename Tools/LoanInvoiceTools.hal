@@ -329,7 +329,7 @@ begin
 
   CUr.Code = CredManr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
-    if (CUr.InterestFlag==0) then begin
+    if (CUr.InterestFlag==1) then begin
       BlockLoad(CIb);
 
       latedays = 0;
