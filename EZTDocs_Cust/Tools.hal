@@ -5,6 +5,7 @@ external procedure ExternalPrintCredManForm(record CredManVc,var vector string);
 external procedure ExternalPrintCredManScheduleForm(record CredManVc,var vector string);
 external procedure ExternalPrintVekselisForm(record CredManVc,var vector string);
 external procedure ExternalPrintSuretyAgreementForm(record CredManVc,var vector string);
+external inner function string 255 CredManOwnBankAccount(Longint);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -99,5 +100,8 @@ global
 procedure Ext_PrintCustomInvoiceFields(var vector string vVals,record IVVc IVr)
 begin
   Ext_PrintInvoiceSigner(vVals);
+
+  vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(IVr.CustCredManNr);
+
   return;
 end;
