@@ -1,4 +1,3 @@
-//<halrule>client-restart</halrule>
 begin
   transaction string 255 gModFolder;
   
