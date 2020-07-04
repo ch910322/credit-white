@@ -23,6 +23,7 @@ remote function Date GetPauseCredManNextDate(record CredManVc);
 remote updating procedure RecreateAgreementSchedule(record CredManVc);
 remote function Boolean ContractHasInvoiceCreated(record CredManVc);
 remote updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
+remote updating procedure GenerateAgreementSchedule(record CredManVc);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -1084,6 +1085,23 @@ begin
     if (VIr.SerNr>0) then begin
       OpenWindow("VIDClass",0,0,"","",VIr);
     end;
+  end;
+
+  return;
+end;
+
+global
+updating procedure CredManGenScheduleDsm()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record VIVc VIr;
+    
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+
+  if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
+    GenerateAgreementSchedule(CredManr);
   end;
 
   return;

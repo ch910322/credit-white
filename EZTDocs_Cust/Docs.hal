@@ -17,6 +17,7 @@ external inner procedure M4PadString(string,Integer,string,Boolean,var string);
 external function Boolean GetLoanAppContact(string,string,var record CUVc);
 external inner procedure HT2Per(Date, Date , var string);
 external function Boolean FindCEOContact(string,var record CUVc);
+external function Boolean FindCFOContact(string,var record CUVc);
 external inner procedure GetUnitStr(string,string,var string);
 external inner procedure ItemBC39(string,var string);
 external inner procedure GetItemGroup(string,var string);
@@ -25,7 +26,7 @@ external inner procedure ItemBCEAN13(string,var string);
 external inner procedure GetLangNr(string,var record LangNrVc);
 /* Tools*/
 external inner procedure Ext_PrintValue(var vector string,string,val,Integer,record LangNrVc,record SysFormatBlock,Boolean);
-external inner procedure Ext_PrintDocumentSigner(var vector string);
+external procedure Ext_PrintDocumentSigner(var vector string);
 external inner procedure Ext_PrintCurrencyCode(var vector string,string,string);
 external inner procedure Ext_PrintCountryCode(var vector string,string,string);
 external inner procedure Ext_OutAddress(var vector string,string,string,string,string,string,string,string);
@@ -281,6 +282,18 @@ begin
     vVals["F_FIXFEES"] = fixfees;
   end;
 
+  RecordCLear(CUr);
+  if (FindCEOContact(CredManr.CustCode,CUr)) then begin
+    vVals["F_CEONAME"] = CUr.Name;
+    vVals["F_CEOID"] = CUr.RegNr1;
+  end;
+  RecordCLear(CUr);
+  if (FindCFOContact(CredManr.CustCode,CUr)) then begin
+    vVals["F_CFONAME"] = CUr.Name;
+    vVals["F_CFOID"] = CUr.RegNr1;
+  end;
+
+
   return;
 end;
 
@@ -413,6 +426,11 @@ begin
     vVals["F_CEONAME"] = CUr.Name;
     vVals["F_CEOID"] = CUr.RegNr1;
   end;
+  RecordCLear(CUr);
+  if (FindCFOContact(CredManr.CustCode,CUr)) then begin
+    vVals["F_CFONAME"] = CUr.Name;
+    vVals["F_CFOID"] = CUr.RegNr1;
+  end;
 
   Ext_PrintDocumentSigner(vVals);
   vVals["F_CREDHALFSUM"] = (CredManr.InvSum4/2);
@@ -502,6 +520,17 @@ begin
   ValToText((CredManr.InvSum4*1.5),M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
   vVals["F_CREDMULSUMTEXT"] = tstr;
   vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(CredManr.SerNr);
+
+  RecordCLear(CUr);
+  if (FindCEOContact(CredManr.CustCode,CUr)) then begin
+    vVals["F_CEONAME"] = CUr.Name;
+    vVals["F_CEOID"] = CUr.RegNr1;
+  end;
+  RecordCLear(CUr);
+  if (FindCFOContact(CredManr.CustCode,CUr)) then begin
+    vVals["F_CFONAME"] = CUr.Name;
+    vVals["F_CFOID"] = CUr.RegNr1;
+  end;
 
   return;
 end;

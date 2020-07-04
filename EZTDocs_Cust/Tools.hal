@@ -58,3 +58,20 @@ begin
 
   return;
 end;
+
+global
+procedure Ext_PrintDocumentSigner(var vector string vVals)
+begin
+  record CMApplicationSetBlock ASb;
+  record UserVc Userr;
+  
+  BlockLoad(ASb);
+  Userr.Code = ASb.DocumentSigner;
+  if (ReadFIrstMain(Userr,1,true)) then begin
+    vVals["F_DOCUMENTSIGNERNAME"] = Userr.Name;
+    vVals["F_DOCUMENTSIGNERPOSITION"] = ASb.DocumentSignerPosition;
+    vVals["F_DOCUMENTSIGNERCODE"] = Userr.Code;
+  end;
+
+  return;
+end;

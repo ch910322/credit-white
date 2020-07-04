@@ -713,11 +713,11 @@ begin
   HalPushButton(230,-47,280,-27,"CredManDClassSignAgreement","Open");
   HalPushButton(230,-25,280,-5,"CredManDClassSignSchedule","Open");
 
-  CheckBox(300,-41,0,"Surety signed",SignSurety);
-  CheckBox(300,-21,0,"Vekselis signed",SignVekselis);
+  CheckBox(285,-41,0,"Surety signed",SignSurety);
+  CheckBox(285,-21,0,"Bill of Exchange signed",SignVekselis);
 
-  HalPushButton(410,-47,460,-27,"CredManDClassSignSurety","Open");
-  HalPushButton(410,-25,460,-5,"CredManDClassSignVekselis","Open");
+  HalPushButton(430,-47,480,-27,"CredManDClassSignSurety","Open");
+  HalPushButton(430,-25,480,-5,"CredManDClassSignVekselis","Open");
 
 /*
   DataList(10,10,-50,-285,"credmanevents");
@@ -910,6 +910,8 @@ begin
   SpecialMenu("Pause/prolong Agreement",' ',8,"PauseCredManDsm");
   SpecialMenu("Credit Agreement Info",'I',0,"CredManInfoDsm");
   SpecialMenu("Refinance Agreement",' ',9,"RefinCredManDsm");
+  SpecialMenu("Generate Schedule",' ',9,"CredManGenScheduleDsm");
+  
   
 //CUST-END
   SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0);
@@ -998,7 +1000,7 @@ begin
 //CUST-END
   EndMatrix;
   vs = 22;
-  v = 24; VTab(-35,v,-16,v+vs,ToolFlip,1,"A");
+  v = vm; VTab(-35,v,-16,v+vs,ToolFlip,1,"A");
   v=v+ vs; VTab(-35,v,-16,v+vs,ToolFlip,2,"B");
 
 //CUST-BEGIN
