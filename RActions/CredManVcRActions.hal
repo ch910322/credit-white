@@ -3,6 +3,7 @@ external inner procedure CredManVc_PasteType(var record CredManVc);
 external inner procedure CUCreditLimit(record CUVc,Date,string,var val,var LongInt);
 external function val GetMonthlyPaymentAmount(record CredManVc,Integer);
 external updating procedure ClearAgreementDocRecords(Longint,Integer);
+external procedure RecalcCredManFees(var record CredManVc);
 
 
 global
@@ -22,6 +23,8 @@ BEGIN
 
   res = inner.CredManVcRecordDefaults(CredManr,CredMan2r,stat,long4);
   CredManVc_PasteType(CredManr);
+  RecalcCredManFees(CredManr);
+
 
   CredManr.OrderClass = OCb.CMDefOrderClass;
 
