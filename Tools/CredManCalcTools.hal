@@ -82,6 +82,7 @@ begin
   return;
 end;
 
+global
 function val GetRateAmount(record CredManVc CredManr,val trate,Integer monthtypef,Date frdate,Date todate,val calcbal,Boolean ignoref)
 begin
   record CMApplicationSetBlock CMb;

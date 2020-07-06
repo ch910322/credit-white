@@ -24,6 +24,7 @@ remote updating procedure RecreateAgreementSchedule(record CredManVc);
 remote function Boolean ContractHasInvoiceCreated(record CredManVc);
 remote updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
 remote updating procedure GenerateAgreementSchedule(record CredManVc);
+remote function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -50,6 +51,27 @@ begin
 
   return;
 end;
+
+global
+procedure RecalcCredManFees(var record CredManVc CredManr)
+begin
+  Date frdate,todate;
+  val calcbal;
+  row CredManVc CredManrw;
+  Integer i,rwcnt;
+  
+  rwcnt = MatRowCnt(CredManr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(CredManr,i,CredManrw);
+    if (CredManrw.ChargeType>=2) then begin
+      CredManrw.Sum = GetRateAmount(CredManr,CredManrw.vRebate,1,frdate,todate,calcbal,true);  
+      MatRowPut(CredManr,i,CredManrw);    
+    end;
+  end;
+
+  return;
+end;
+
 function Boolean CredManDClassStdProlongFeeEFAfter(Integer wn,Integer rownr,Boolean changedf)
 begin
   record CredManVc CredManr;
@@ -128,6 +150,19 @@ begin
     PutWindowRecord(wn,CredManr);   
   end; 
   CredManDClassstartDateEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassInvSumEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManVc CredManr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    RecalcCredManFees(CredManr);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassInvSumEFAfter = true;
   return;
 end;
 
@@ -223,6 +258,9 @@ begin
   end;
   if (fieldname=="InstalmentMonths") then begin//to update the dates correctly
     res = CredManDClassstartDateEFAfter(wn,changed!=0);
+  end;
+  if (fieldname=="InvSum4" or fieldname=="vRebate" or fieldname=="Type") then begin//to update the fees
+    res = CredManDClassInvSumEFAfter(wn,changed!=0);
   end;
 /*
   if (changed!=0) then begin
