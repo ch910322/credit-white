@@ -1,7 +1,7 @@
 //<halrule>server-only</halrule>
 external inner procedure IPPastePayMode(var record IPVc);
 external procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
-external updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc);
+external updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc,string);
 
 procedure GetReceipts(record IVVc IVr,var array record IPVc aIPr)
 begin
@@ -165,14 +165,12 @@ begin
     tIVr.CurncyCode = CredManr.CurncyCode;
     CheckAndCreateReceiptForDate(CredManr,ORr,CredManr.startDate,tIVr);
     RecordClear(tIVr);
-    logtext(0,"Creating Invoice for " & CredManr.SerNr & ":" & CredManr.startDate);
-    CreateSingleAgreementInvoice(CredManr,CredManr.startDate,tIVr);
+    CreateSingleAgreementInvoice(CredManr,CredManr.startDate,tIVr,"");
     CheckAndCreateReceiptForDate(CredManr,ORr,CredManr.FirstInvDate,tIVr);
     td = CredManr.FirstInvDate;
     while (td<CurrentDate) begin
       RecordClear(tIVr);
-      logtext(0,"Creating Invoice for " & CredManr.SerNr & ":" & td);
-      CreateSingleAgreementInvoice(CredManr,td,tIVr);
+      CreateSingleAgreementInvoice(CredManr,td,tIVr,"");
       td = AddMonth(td,1);
       CheckAndCreateReceiptForDate(CredManr,ORr,td,tIVr);
     end;
