@@ -406,6 +406,18 @@ BEGIN
   return;
 END;
 
+updating
+procedure RemoveCredManSchedule(Longint sernr)
+begin
+  record CredManSchedVc CSr;
+
+  CSr.CredManNr = sernr;
+  if (ReadFirstKey("CredManNr",CSr,1,true)) then begin
+    RecordRemove(CSr);
+  end;
+
+  return;
+end;
 
 global
 updating function LongInt CredManVcRecordRemoveAfter(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
@@ -415,6 +427,7 @@ begin
   res = 0;
   
   ClearAgreementDocRecords(CredManr.SerNr,0);
+  RemoveCredManSchedule(CredManr.SerNr);
   
   CredManVcRecordRemoveAfter = res;
   return;
