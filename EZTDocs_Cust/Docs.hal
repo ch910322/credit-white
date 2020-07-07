@@ -554,6 +554,7 @@ begin
     vVals["F_CFOPHONE"] = CUr.Phone;
     vVals["F_CFOEMAIL"] = CUr.eMail;
   end;
+  Ext_PrintDocumentSigner(vVals);
 
   return;
 end;
