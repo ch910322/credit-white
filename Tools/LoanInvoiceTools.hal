@@ -83,7 +83,7 @@ end;
 
 
 global
-procedure SetupLoanInvoice(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Date invdate,Date fromdate,Date todate,Boolean sernrf,Boolean forcecustf)
+procedure SetupLoanInvoice(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Date invdate,Date fromdate,Date todate,Boolean sernrf,Boolean forcecustf,string ivno)
 begin
   record LocalMachineBlock LMb;
   string 255 warning,errstr,prepstr,invdatewarn,transdatewarn;
@@ -107,6 +107,9 @@ begin
   IVVc_PasteSalesMan(IVr,"");
   IVr.CredFromDate = fromdate;
   IVr.CredToDate = todate; 
+  if (nonblank(ivno)) then begin
+    IVr.OfficialSerNr = ivno;
+  end;
   if (sernrf) then begin
     IVr.SerNr = NextSerNr("IVVc",IVr.InvDate,-1,false,"");
   end;
@@ -450,7 +453,7 @@ begin
   return;
 end;
 
-updating procedure CreateInvoicesFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date ed,var record IVVc firstIVr)
+updating procedure CreateInvoicesFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date ed,var record IVVc firstIVr,string ivno)
 begin
   Integer i,rwcnt;
   row CredManPayPlanVc CredManPayPlanrw;
@@ -477,7 +480,7 @@ begin
           switch (CIb.OverdueIVType) begin
             case 0: AddLateFees(CredManr,CMb,IVr,latedays,lateamount);
             case 1: 
-              SetupLoanInvoice(CredManr,CMb,oIVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false);
+              SetupLoanInvoice(CredManr,CMb,oIVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno);
               AddLateFees(CredManr,CMb,oIVr,latedays,lateamount);
               StoreLoanInvoice(oIVr);
           end;
@@ -495,7 +498,7 @@ begin
         end;
         lastd2 = AddDay(lastd,1);//to get the start date for penalty calculation.
         lastd = CredManPayPlanrw.TransDate;
-        SetupLoanInvoice(CredManr,CMb,IVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false);
+        SetupLoanInvoice(CredManr,CMb,IVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno);
 
       end;
       SetupInvoiceRowAndAdd(IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
@@ -511,7 +514,7 @@ begin
     switch (CIb.OverdueIVType) begin
       case 0: AddLateFees(CredManr,CMb,IVr,latedays,lateamount);
       case 1: 
-        SetupLoanInvoice(CredManr,CMb,oIVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false);
+        SetupLoanInvoice(CredManr,CMb,oIVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno);
         AddLateFees(CredManr,CMb,oIVr,latedays,lateamount);
         StoreLoanInvoice(oIVr);
     end;
@@ -557,7 +560,7 @@ begin
         end;
         lastd2 = AddDay(lastd,1);//to get the start date for penalty calculation.
         lastd = CredManPayPlanrw.TransDate;
-        SetupLoanInvoice(CredManr,CMb,IVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,false,false);
+        SetupLoanInvoice(CredManr,CMb,IVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,false,false,"");
 
       end;
       SetupInvoiceRowAndAdd(IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
@@ -633,7 +636,7 @@ begin
   BlockLoad(CIb);
   RecordClear(IVr);
   RecordNew(IVr);
-  SetupLoanInvoice(CredManr,CMb,IVr,CSrw.InvDate,CSrw.FromDate,CSrw.ToDate,true,false);
+  SetupLoanInvoice(CredManr,CMb,IVr,CSrw.InvDate,CSrw.FromDate,CSrw.ToDate,true,false,"");
   if (CSrw.Principle>0) then begin
     GetItemName(CMb.RateItem,spec);
     SetupInvoiceRowAndAdd(IVr,CMb.InstalmentItem,spec,1,CSrw.Principle,blankval,kEventTypeCalcInstalment,-1);
@@ -651,7 +654,7 @@ begin
   switch (CIb.OverdueIVType) begin
     case 0: AddLateFees(CredManr,CMb,IVr,latedays,lateamount);
     case 1: 
-      SetupLoanInvoice(CredManr,CMb,oIVr,CSrw.InvDate,CSrw.FromDate,CSrw.ToDate,true,false);
+      SetupLoanInvoice(CredManr,CMb,oIVr,CSrw.InvDate,CSrw.FromDate,CSrw.ToDate,true,false,"");
       AddLateFees(CredManr,CMb,oIVr,latedays,lateamount);
       StoreLoanInvoice(oIVr);
   end;
@@ -708,7 +711,7 @@ begin
 end;
 
 global
-updating procedure CreateSingleAgreementInvoice(record CredManVc CredManr,Date ed,var record IVVc IVr)
+updating procedure CreateSingleAgreementInvoice(record CredManVc CredManr,Date ed,var record IVVc IVr,string ivno)
 begin
   record CredManSetBlock CMb;
   record CredManPayPlanVc CredManPayPlanr;
@@ -719,7 +722,7 @@ begin
     if (CreateInvoiceBasedOnSchedule(CredManr,ed,IVr)==false) then begin
       BlockLoad(CMb);
       BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
-      CreateInvoicesFromPlan(CredManr,CMb,CredManPayPlanr,ed,IVr);
+      CreateInvoicesFromPlan(CredManr,CMb,CredManPayPlanr,ed,IVr,ivno);
     end;
     ResetCompanyLanguage(oldlang);
   end;
@@ -761,7 +764,7 @@ begin
   end;
   
   if (balance>0) then begin
-    SetupLoanInvoice(CredManr,CMb,IVr,td,lastinv,td,true,false);
+    SetupLoanInvoice(CredManr,CMb,IVr,td,lastinv,td,true,false,"");
     AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td);
     AddInterest(CredManr,CredManPayPlan2r,CMb,kMonthTypeFirst,td,cumint,balance,lastinv,td,-1);
     AddPlannedFees(CredManr,CredManPayPlan2r,CMb,kPlannedFeesMonthly,kMonthTypeFirst,td,cumint,balance,lastinv,td,-1);

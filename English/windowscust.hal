@@ -347,6 +347,15 @@ begin
   HalPushButton(h,v+=vs,h+120,v+20,"CalculateBuyOutValue","Calculate");
   EndWindow;
 
+  WindowBegin("Create Invoice",CredManInvNoWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,400,150);
+  h = 150; h2 = 250; v=450;
+  EditFieldTL(h,v=6,120,"Invoice No.",M4Str,Normal,255,f1,false,0);
+
+  HalPushButton(h,v+=vs,h+120,v+20,"CredManInvNoWClassProceed","Create");
+  EndWindow;
+
   WindowBegin("Specify Credit Agreement Schedule",CredManScheduleRClass,CGRcW,RcType);
   SetWRect(20,80,400,220);
   vs=20;
@@ -1717,6 +1726,7 @@ begin
   CheckBox(h=180,v=6,0,"Details on Invoice",DetailedInvoice);
   CheckBox(h,v+=16,0,"Automatically connect Prepayments to Invoices",AddPrepayments);
   CheckBox(h,v+=16,0,"Interest on due Principle",IntDuePrinciple);
+  CheckBox(h,v+=16,0,"Manual Contract Fee Invoice Number",ManualInvoiceNumber);
 
   CheckBox(h,v+=30,0,"Automatically issue Invoices",AutoInvoiceFlag);
   EditField(h,v+=20,100,"Time",Normal,AutoInvoiceTime,false,PasteCurTime);

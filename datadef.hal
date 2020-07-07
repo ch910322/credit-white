@@ -1101,6 +1101,8 @@ begin
   RecordField(FVIPaymentMode,M4Code,10,0);
   RecordField(FIVPaymentMode,M4Code,10,0);
 
+  RecordField(ManualInvoiceNumber,M4Int,0,0);
+
   EndBlock;
   
   SourceFile("halcust\\LoanApp\\English", 0);
