@@ -706,11 +706,11 @@ begin
 //      logtext(0,"l2 " & i & ":" & curmonth & ":" & usemonths & ":" & months & ":" & usesum & ":" & prolongstartmonths);
       if (nonblank(InCredManr.PauseDate) and InCredManr.PauseMonths>0) then begin
         if (InCredManr.PauseDate<=invdat and pausef==false) then begin
-          if (pausebal>0) then begin
-            usesum = pausebal;
-          end else begin
+          //if (pausebal>0) then begin
+          //  usesum = pausebal;
+          //end else begin
             usesum = calcbal;
-          end;
+          //end;
           //months = months;
           /*
           usemonths = basemonths - InCredManr.PauseMonths - (pausestartmonths-delaymonths);
