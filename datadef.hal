@@ -1103,6 +1103,7 @@ begin
 
   RecordField(ManualInvoiceNumber,M4Int,0,0);
   RecordField(HiddenPrinciple,M4Int,0,0);
+  RecordField(AddOverdueDetails,M4Int,0,0);
 
   EndBlock;
   

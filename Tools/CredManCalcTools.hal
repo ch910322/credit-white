@@ -2,7 +2,7 @@ external inner function val GetCredManRate(Integer,string,val,Date);
 external inner function LongInt DateDiff(Date,Date);
 external inner function roundmode SetRoundModeD(Integer);
 external inner function LongInt MonthDiff(Date,Date);
-external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val);
+external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string);
 
 enum begin
   kEventTypeNone = 0,
@@ -628,13 +628,14 @@ begin
   val lateamount;
   Date invdat2;
   Date sd,ed;
+  array string 255 lateformula;
   
   if (CIb.OverdueIVType==2) then begin
     sd = AddMonth(frdate,-1);
     ed = AddDay(AddMonth(sd,1),-1);
     invdat2 = invdat;
     invdat2.Day = CIb.OverdueIVDay;
-    GetCredManOverdueInvoices(CredManr,CredManSetb,ed,sd,latedays,lateamount);
+    GetCredManOverdueInvoices(CredManr,CredManSetb,ed,sd,latedays,lateamount,lateformula);
     AddCredPayPlanLine(CredManPayPlanr,invdat2,CredManSetb.LateRateItem,"",kEventTypeIssueLateFees,lateamount,0,acumint,calcbal,frdate,todate,-1,-1,0);
   end;
 
