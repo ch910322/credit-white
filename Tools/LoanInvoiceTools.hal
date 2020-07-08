@@ -207,14 +207,14 @@ begin
   
   paysum = CredHistr.Sum;
   tempsd = sd;//this is the start date when this item should have been paid since
+  if (nonblank(overduetd)) then begin
+    tempsd = overduetd;
+  end;
   if (tempsd<=CredHistr.PayDate) then begin
     tempsd = AddDay(CredHistr.PayDate,1);
   end;
   tempsd2 = tempsd;
 
-  if (nonblank(overduetd)) then begin
-    tempsd = overduetd;
-  end;
   /*
   if (CredManr.LateFeeDays>0) then begin
     tempsd = AddDay(tempsd,CredManr.LateFeeDays);
