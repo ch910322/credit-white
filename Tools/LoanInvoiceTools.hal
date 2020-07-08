@@ -453,6 +453,39 @@ begin
   return;
 end;
 
+procedure CheckAndAddHiddenPrinciple(var record IVVc IVr,record CMInvoicingBlock CIb)
+begin
+  row IVVc IVrw,hiddenIVrw;
+  Integer i,rwcnt;
+  Boolean foundf;
+  
+  if (CIb.HiddenPrinciple==1) then begin
+    rwcnt = MatRowCnt(IVr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(IVr,i,IVrw);
+      if (IVrw.ChargeType>0 and IVrw.ChargeType!=kEventTypeCalcInterest) then begin
+        foundf = true;
+        i = rwcnt;
+      end;
+    end;
+    if (foundf) then begin
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(IVr,i,IVrw);
+        if (IVrw.ChargeType==kEventTypeCalcInterest) then begin
+          MatRowDelete(IVr,i);
+          ClearRow(IVr,hiddenIVrw,kInvoiceRowTypeHidden);
+          MatRowPut(IVr,MatRowCnt(IVr),hiddenIVrw);
+          MatRowPut(IVr,MatRowCnt(IVr),IVrw);
+          goto LCheckAndAddHiddenPrinciple;
+        end;
+      end;
+    end;
+  end;
+
+LCheckAndAddHiddenPrinciple:;
+  return;
+end;
+
 updating procedure CreateInvoicesFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date ed,var record IVVc firstIVr,string ivno)
 begin
   Integer i,rwcnt;
@@ -486,6 +519,7 @@ begin
           end;
           AddPrepayments(IVr,CIb);
           if (IVr.SerNr>-1) then begin
+            CheckAndAddHiddenPrinciple(IVr,CIb);
             StoreLoanInvoice(IVr);
             if (firstf==false) then begin
               RecordCopy(firstIVr,IVr);
@@ -520,6 +554,7 @@ begin
     end;
     AddPrepayments(IVr,CIb);
     if (IVr.SerNr>-1) then begin
+      CheckAndAddHiddenPrinciple(IVr,CIb);
       StoreLoanInvoice(IVr);
       if (firstf==false) then begin
         RecordCopy(firstIVr,IVr);

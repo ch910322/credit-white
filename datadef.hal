@@ -1102,6 +1102,7 @@ begin
   RecordField(FIVPaymentMode,M4Code,10,0);
 
   RecordField(ManualInvoiceNumber,M4Int,0,0);
+  RecordField(HiddenPrinciple,M4Int,0,0);
 
   EndBlock;
   
