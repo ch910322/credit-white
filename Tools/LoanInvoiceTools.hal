@@ -286,6 +286,8 @@ begin
         GetLatePaymentPlan(CredManr,CredHistr,AddDay(prevtd,1),invdate,overduetd,amounts);
         for (i=0;i<amounts.length;i=i+1) begin
           latefee = latefee + (amounts[i]*(overdueprc/100));
+          Logtext(0,"Credit agreement " & CredManr.SerNr & " - Day " & i & " - " & item & " - " & amounts[i] & " * " & (overdueprc/100) & "=" & (amounts[i]*(overdueprc/100)));//temp solution;
+
         end;
       end;
     end;
