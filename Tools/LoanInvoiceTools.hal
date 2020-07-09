@@ -511,7 +511,7 @@ begin
     rwcnt = MatRowCnt(IVr);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(IVr,i,IVrw);
-      if (IVrw.ChargeType>0 and IVrw.ChargeType!=kEventTypeCalcInterest) then begin
+      if (IVrw.ChargeType>0 and IVrw.ChargeType!=kEventTypeCalcInstalment) then begin
         foundf = true;
         i = rwcnt;
       end;
@@ -519,7 +519,7 @@ begin
     if (foundf) then begin
       for (i=0;i<rwcnt;i=i+1) begin
         MatRowGet(IVr,i,IVrw);
-        if (IVrw.ChargeType==kEventTypeCalcInterest) then begin
+        if (IVrw.ChargeType==kEventTypeCalcInstalment) then begin
           MatRowDelete(IVr,i);
           if (InvoiceHasHiddenLine(IVr)==false) then begin
             ClearRow(IVr,hiddenIVrw,kInvoiceRowTypeHidden);
