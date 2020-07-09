@@ -62,6 +62,49 @@ begin
   return;
 end;
 
+function string 255 AddToList(string tstr,string astr)
+begin
+  string 255 res;
+  
+  res = tstr;
+  if (nonblank(astr)) then begin
+    if (nonblank(tstr)) then begin
+      res = res & ", ";
+    end;
+    res = res & astr;
+  end;
+
+  AddToList = res;
+  return;
+end;
+
+function string 255 GetDelAddr(string custcode)
+begin
+  record CUVc CUr;
+  string 255 res;
+  
+  Cur.Code = custcode;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    if (blank(CUr.DelAddr0)) then begin
+      res = AddToList(res,CUr.InvAddr0);
+      res = AddToList(res,CUr.InvAddr1);
+      res = AddToList(res,CUr.InvAddr2);
+      res = AddToList(res,CUr.InvAddr3);
+      res = AddToList(res,CUr.InvAddr4);
+    end else begin
+      res = AddToList(res,CUr.DelAddr0);
+      res = AddToList(res,CUr.DelAddr1);
+      res = AddToList(res,CUr.DelAddr2);
+      res = AddToList(res,CUr.DelAddr3);
+      res = AddToList(res,CUr.DelAddr4);
+    end;
+  end;
+
+  GetDelAddr = res;
+  return;
+end;
+
+
 procedure CredManHeader(var vector string vVals,record CredManVc CredManr)
 begin
   record CUVc CUr;
@@ -270,6 +313,8 @@ begin
   amt = GetMonthlyPaymentAmount(CredManr,2);
   vVals["F_INTEREST"] = amt;
   Ext_PrintDocumentSigner(vVals);
+  vVals["F_DELADDRESS"] = GetDelAddr(CredManr.CustCode);;
+
   vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(CredManr.SerNr);
   if (CredManr.AnnualRate==1) then begin
     vVals["F_ANNUALRATE"] = Round(CredManr.IntRate,SetRoundModeD(2)) & " %";
@@ -354,6 +399,7 @@ begin
     vVals["ROW_" & strnum & "_F_CREDINTEREST2"] = (SMrw.CredVal+SMrw.DebVal2);//interest+fees   
     vVals["ROW_" & strnum & "_F_CREDINSTAL"] = SMrw.DebVal;//instalment
     vVals["ROW_" & strnum & "_F_CREDBAL"] = SMrw.CurCredVal;//Balance
+    vVals["ROW_" & strnum & "_F_DUEDATE"] = SMrw.DueDate;//Due date
     vVals["ROW_" & strnum & "_F_CREDINVTOT"] = (SMrw.CredVal+SMrw.DebVal2+SMrw.DebVal);//Balance
     vVals["ROW_" & strnum & "_F_ROWNR"] = num;
     totinterest = totinterest + (SMrw.CredVal+SMrw.DebVal2);

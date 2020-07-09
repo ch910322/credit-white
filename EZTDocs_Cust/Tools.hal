@@ -6,6 +6,7 @@ external procedure ExternalPrintCredManScheduleForm(record CredManVc,var vector 
 external procedure ExternalPrintVekselisForm(record CredManVc,var vector string);
 external procedure ExternalPrintSuretyAgreementForm(record CredManVc,var vector string);
 external inner function string 255 CredManOwnBankAccount(Longint);
+external inner procedure FindVATCodeRow(string,record VATCodeBlock,var row VATCodeBlock);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -97,58 +98,51 @@ begin
   return;
 end;
 
-function string 255 AddToList(string tstr,string astr)
-begin
-  string 255 res;
-  
-  res = tstr;
-  if (nonblank(astr)) then begin
-    if (nonblank(tstr)) then begin
-      res = res & ",";
-    end;
-    res = res & astr;
-  end;
-
-  AddToList = res;
-  return;
-end;
-
-function string 255 GetDelAddr(record IVVc IVr)
-begin
-  record CUVc CUr;
-  string 255 res;
-  
-  Cur.Code = IVr.CustCode;
-  if (ReadFirstMain(CUr,1,true)) then begin
-    if (blank(CUr.DelAddr0)) then begin
-      res = AddToList(res,CUr.InvAddr0);
-      res = AddToList(res,CUr.InvAddr1);
-      res = AddToList(res,CUr.InvAddr2);
-      res = AddToList(res,CUr.InvAddr3);
-      res = AddToList(res,CUr.InvAddr4);
-    end else begin
-      res = AddToList(res,CUr.DelAddr0);
-      res = AddToList(res,CUr.DelAddr1);
-      res = AddToList(res,CUr.DelAddr2);
-      res = AddToList(res,CUr.DelAddr3);
-      res = AddToList(res,CUr.DelAddr4);
-    end;
-  end;
-
-  GetDelAddr = res;
-  return;
-end;
-
 global
 procedure Ext_PrintCustomInvoiceFields(var vector string vVals,record IVVc IVr)
 begin
-  string 255 deladdr;
 
   Ext_PrintInvoiceSigner(vVals);
 
   vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(IVr.CustCredManNr);
 
-  deladdr = GetDelAddr(IVr);
-  vVals["F_DELADDRESS"] = deladdr;
+  vVals["F_LOANPERIOD"] = IVr.CredFromDate & ":" & IVr.CredToDate;
+
+  return;
+end;
+
+global
+procedure Ext_PrintCustomInvoiceRowFields(var vector string vVals,record IVVc IVr,row IVVc IVrw,Integer rowno,string strnum)
+begin
+  record VATCodeBlock VATb;
+  row VATCodeBlock VATbrw;
+  record TaxRulesVc TRr;
+  record NotePadVc Noter;
+  record RLinkVc RLr;
+  Longint pos,l;
+  string 255 tstr;
+
+  BlockLoad(VATb);
+
+  //vVals["ROW_" & strnum & "_F_ROWNAME"] = 
+  if (IVrw.stp==kInvoiceRowTypeNormal) then begin
+    FindVATCodeRow(IVrw.VATCode,VATb,VATbrw);
+    if (nonblank(VATbrw.TaxRules)) then begin
+      TRr.Code = VATbrw.TaxRules;
+      if (ReadFirstMain(TRr,1,true)) then begin
+        if (ReadRecordLink(TRr,1,Noter,RLr)) begin
+          pos = 0;
+          l = SizeTextCnt(Noter);
+          tstr = "";
+          while (pos<l) begin
+            tstr = tstr & StringFromText(Noter,pos,255);
+            pos = pos + 255;
+          end;
+          vVals["ROW_" & strnum & "_F_TAXRULE"] = tstr;
+        end;
+      end;
+    end;
+  end;
+
   return;
 end;

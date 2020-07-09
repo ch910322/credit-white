@@ -9,10 +9,10 @@ external inner procedure IPVc_PasteRecCurncy(var record IPVc,Integer);
 external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
 external inner procedure IPVc_PasteBankCurncy(var record IPVc,Integer);
 external updating procedure CreateCredHist(Longint,Integer,string,val,Integer,string,Date,Longint,Date,var Longint,Date,Date,Integer,Longint,val,Longint,val);
-external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val);
+external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string);
 external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var record IVVc,Date,Date,Date,Boolean,Boolean,string);
 external inner procedure IPPastePayMode(var record IPVc);
-external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val);
+external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val,array string);
 external procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
 
 
@@ -495,6 +495,7 @@ begin
   record CUVc CUr;
   string 255 instr;
   record CredManSetBlock CMb;
+  array string 255 lateformula;
 
   PrepareIPRecord(SMr,IPr);
 
@@ -515,11 +516,11 @@ begin
           lateamount = 0;
           invdate = SMr.RegDate;
           sd = GetLastInvoiceDate(CredManr,SMr.RegDate);
-          GetCredManOverdueInvoices(CredManr,CMb,invdate,sd,latedays,lateamount);
+          GetCredManOverdueInvoices(CredManr,CMb,invdate,sd,latedays,lateamount,lateformula);
           if (latedays>0 or lateamount>0) then begin
             //Setup always new invoice
             SetupLoanInvoice(CredManr,CMb,IVr,invdate,sd,invdate,true,false,"");
-            AddLateFees(CredManr,CMb,IVr,latedays,lateamount);
+            AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
             IVr.OKFlag = 1;
             RecordInsert(IVr,true);
           end;

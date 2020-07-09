@@ -462,10 +462,7 @@ begin
     switch (field) begin
       case "Sum":        res = LAr.Sum;
       case "Months":     res = LAr.Months;
-      case "CurncyCode": 
-        if (qupdating.B2BLoanAppCreateCredMan(LAr,CredManr,false)) then begin
-          res = CredManr.CurncyCode;
-        end;
+      case "CurncyCode": res = RepSpec.f3;
     end;
   end;
 
@@ -529,36 +526,14 @@ end;
 function string 255 GetScheduleTotalAmount(record RcVc RepSpec,string token)
 begin
   string 255 templ,line,res;
-  record B2BLoanApplicationVc LAr;
-  record CredManVc CredManr;
-  record CredManSetBlock CredManSetb;
-  record CredManPayPlanVc CredManPayPlanr;
-  LongInt i,rwcnt;
-  record SMVc SMr;
-  row SMVc SMrw;
-  val tot,interest,fees;
   
   templ = right(token,len(token)-11);
-  LAr.SerNr = RepSpec.long1;
-  if (ReadFirstMain(LAr,1,true)) then begin
-    if (qupdating.B2BLoanAppCreateCredMan(LAr,CredManr,true)) then begin
-      BlockLoad(CredManSetb);
-      BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
-      BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
-      rwcnt = MatRowCnt(SMr);
-      for (i=0;i<rwcnt;i=i+1) begin
-        MatRowGet(SMr,i,SMrw);
-        fees = fees + SMrw.DebVal2;
-        interest = interest + SMrw.CredVal;
-        tot = tot + SMrw.CurDebVal;
-      end;
-      switch (token) begin
-        case "interest": res = interest;
-        case "fees":     res = fees;
-        case "tot":      res = tot;
-      end;
-    end;
+  switch (token) begin
+    case "interest": res = RepSpec.vals1;
+    case "fees":     res = RepSpec.vals0;
+    case "tot":      res = RepSpec.vals2;
   end;
+
   GetScheduleTotalAmount = res;
   return;
 end;
@@ -627,7 +602,7 @@ begin
 end;
 
 global
-procedure SendEmailWithStdTextFromUser(string txt,record RCVc RepSpec,string email,var record MailVc Mailr)
+procedure SendEmailWithStdTextFromUser(string txt,record RCVc RepSpec,string email,var record MailVc Mailr,record B2BLoanApplicationVc LAr)
 begin
   row MailVc Mailrw;
   string 255 tstr;
@@ -637,6 +612,13 @@ begin
   record LTxtVc LTxtr;
   string 255 mailboxnr,mailboxname;
   record IVMailBlock IVMailr;
+  record CredManVc CredManr;
+  record CredManSetBlock CredManSetb;
+  record CredManPayPlanVc CredManPayPlanr;
+  LongInt rwcnt;
+  record SMVc SMr;
+  row SMVc SMrw;
+  val tot,interest,fees;
   
   LTxtr.Code = txt;
   if (ReadFirstMain(LTxtr,1,true)) then begin
@@ -662,6 +644,25 @@ begin
     MatRowPut(Mailr,1,Mailrw);
 
     if (LTxtr.HtmlFlag==0) then begin
+      if (qupdating.B2BLoanAppCreateCredMan(LAr,CredManr,false)) then begin
+        BlockLoad(CredManSetb);
+        BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+        BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+        rwcnt = MatRowCnt(SMr);
+        for (i=0;i<rwcnt;i=i+1) begin
+          MatRowGet(SMr,i,SMrw);
+          fees = fees + SMrw.DebVal2;
+          interest = interest + SMrw.CredVal;
+          tot = tot + SMrw.CurDebVal;
+        end;
+        RepSpec.f3 = CredManr.CurncyCode;
+        RepSpec.vals0 = fees;
+        RepSpec.vals1 = interest;
+        RepSpec.vals2 = tot;
+      end;
+
+
+
       ParseTextField(a,LTxtr,RepSpec,"LtxtVcReplaceToken");
       l = GetAreaLength(a);
       pos = 0;
@@ -700,7 +701,7 @@ begin
   if (nonblank(email)) then begin
     BlockLoad(CMb);
     if (nonblank(CMb.EmailOfferText)) then begin
-      SendEmailWithStdTextFromUser(CMb.EmailOfferText,RepSpec,email,Mailr);
+      SendEmailWithStdTextFromUser(CMb.EmailOfferText,RepSpec,email,Mailr,LAr);
     end;
   end;
 
