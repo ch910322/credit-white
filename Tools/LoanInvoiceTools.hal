@@ -305,6 +305,7 @@ begin
   return;
 end;
 
+global
 procedure CheckOverdueInvoicesForItem(record CredManVc CredManr,record CredManSetBlock CMb,val maxmonths,Date invdate,Date prevtd,var Integer latedays,var val lateamount,string item,Date overduetd,var array string lateformula)
 begin
   record CredHistVc CredHistr;
