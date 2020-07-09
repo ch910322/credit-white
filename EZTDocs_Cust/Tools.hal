@@ -117,6 +117,10 @@ begin
   record VATCodeBlock VATb;
   row VATCodeBlock VATbrw;
   record TaxRulesVc TRr;
+  record NotePadVc Noter;
+  record RLinkVc RLr;
+  Longint pos,l;
+  string 255 tstr;
 
   BlockLoad(VATb);
 
@@ -126,7 +130,16 @@ begin
     if (nonblank(VATbrw.TaxRules)) then begin
       TRr.Code = VATbrw.TaxRules;
       if (ReadFirstMain(TRr,1,true)) then begin
-        vVals["ROW_" & strnum & "_F_TAXRULE"] = TRr.Comment;
+        if (ReadRecordLink(TRr,1,Noter,RLr)) begin
+          pos = 0;
+          l = SizeTextCnt(Noter);
+          tstr = "";
+          while (pos<l) begin
+            tstr = tstr & StringFromText(Noter,pos,255);
+            pos = pos + 255;
+          end;
+          vVals["ROW_" & strnum & "_F_TAXRULE"] = tstr;
+        end;
       end;
     end;
   end;
