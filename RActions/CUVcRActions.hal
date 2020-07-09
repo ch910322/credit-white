@@ -1,0 +1,16 @@
+//<halrule>server-only</halrule>
+
+global
+updating function LongInt CUVcRecordCheck(var record CUVc CUr,record CUVc CU2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+
+  res = 0;     
+  if (CUr.CUType==1) then begin
+    CUr.VEType = 1;
+  end;
+  res = inner.CUVcRecordCheck(CUr,CU2r,stat,long4);
+
+  CUVcRecordCheck = res;
+  RETURN;
+END;
