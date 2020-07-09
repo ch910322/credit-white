@@ -1,4 +1,21 @@
 //<halrule>server-only</halrule>
+external inner procedure CUVc_PasteCountryCode(var record CUVc,string);
+
+global
+function LongInt CUVcRecordDefaults(var record CUVc CUr,record CUVc CU2r,LongInt stat,LongInt long4)
+begin
+  Longint res;
+  record CYBlock CYb;
+
+  res = inner.CUVcRecordDefaults(CUr,CU2r,stat,long4);
+
+  BlockLoad(CYb);
+  CUr.CountryCode = CYb.CountryCode;
+  CUVc_PasteCountryCode(CUr,"");
+
+  CUVcRecordDefaults = res; 
+  return;
+end;
 
 global
 updating function LongInt CUVcRecordCheck(var record CUVc CUr,record CUVc CU2r,LongInt stat,LongInt long4)
