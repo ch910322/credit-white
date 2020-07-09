@@ -260,6 +260,7 @@ begin
 
   ClearRow(SMr,SMrw,1);
   SMrw.TransDate = IVr.InvDate;
+  SMrw.DueDate = IVr.PayDate;
   SMrw.RowSimStat = 0;//type
   SMrw.DebVal = inst;
   SMrw.CredVal = intrate;
@@ -312,6 +313,7 @@ begin
   calcbal = calcbal - CSrw.Principle;
   ClearRow(SMr,SMrw,1);
   SMrw.TransDate = CSrw.InvDate;
+  SMrw.DueDate = CSrw.PayDate;
   SMrw.RowSimStat = 0;//type
   SMrw.DebVal = CSrw.Principle;
   SMrw.CredVal = CSrw.Interest;

@@ -1462,6 +1462,7 @@ begin
     MatRowGet(SMr,i,SMrw);
     ClearRow(CSr,CSrw,1);
     CSrw.InvDate = SMrw.TransDate;
+    CSrw.PayDate = SMrw.DueDate;
     CSrw.Type = SMrw.RowSimStat;
     if (CSrw.Type==4) then begin
       CSrw.Total = SMrw.CurDebVal;

@@ -399,6 +399,7 @@ begin
     vVals["ROW_" & strnum & "_F_CREDINTEREST2"] = (SMrw.CredVal+SMrw.DebVal2);//interest+fees   
     vVals["ROW_" & strnum & "_F_CREDINSTAL"] = SMrw.DebVal;//instalment
     vVals["ROW_" & strnum & "_F_CREDBAL"] = SMrw.CurCredVal;//Balance
+    vVals["ROW_" & strnum & "_F_DUEDATE"] = SMrw.DueDate;//Due date
     vVals["ROW_" & strnum & "_F_CREDINVTOT"] = (SMrw.CredVal+SMrw.DebVal2+SMrw.DebVal);//Balance
     vVals["ROW_" & strnum & "_F_ROWNR"] = num;
     totinterest = totinterest + (SMrw.CredVal+SMrw.DebVal2);

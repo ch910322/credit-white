@@ -6,6 +6,7 @@ external procedure ExternalPrintCredManScheduleForm(record CredManVc,var vector 
 external procedure ExternalPrintVekselisForm(record CredManVc,var vector string);
 external procedure ExternalPrintSuretyAgreementForm(record CredManVc,var vector string);
 external inner function string 255 CredManOwnBankAccount(Longint);
+external inner procedure FindVATCodeRow(string,record VATCodeBlock,var row VATCodeBlock);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -106,6 +107,29 @@ begin
   vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(IVr.CustCredManNr);
 
   vVals["F_LOANPERIOD"] = IVr.CredFromDate & ":" & IVr.CredToDate;
+
+  return;
+end;
+
+global
+procedure Ext_PrintCustomInvoiceRowFields(var vector string vVals,record IVVc IVr,row IVVc IVrw,Integer rowno,string strnum)
+begin
+  record VATCodeBlock VATb;
+  row VATCodeBlock VATbrw;
+  record TaxRulesVc TRr;
+
+  BlockLoad(VATb);
+
+  //vVals["ROW_" & strnum & "_F_ROWNAME"] = 
+  if (IVrw.stp==kInvoiceRowTypeNormal) then begin
+    FindVATCodeRow(IVrw.VATCode,VATb,VATbrw);
+    if (nonblank(VATbrw.TaxRules)) then begin
+      TRr.Code = VATbrw.TaxRules;
+      if (ReadFirstMain(TRr,1,true)) then begin
+        vVals["ROW_" & strnum & "_F_TAXRULE"] = TRr.Comment;
+      end;
+    end;
+  end;
 
   return;
 end;
