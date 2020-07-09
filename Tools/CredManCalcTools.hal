@@ -94,11 +94,10 @@ begin
   if (CredManr.AnnualRate==1 and ignoref==false) then begin
     rate = rate/12;
   end;
-
+  days = DateDiff(todate,frdate);
+  BlockLoad(CMb);
   switch (monthtypef) begin
     case kMonthTypeFirst:
-      BlockLoad(CMb);
-      days = DateDiff(todate,frdate);
       months = MonthDiff(frdate,todate);
       if (frdate.Day!=todate.Day) then begin
         months = months - 1;//MonthDiff returns +1 if there are extra days
@@ -111,9 +110,17 @@ begin
         res = GetAmount(CredManr)*(rate/100)*12/CMb.DaysInYear*days;
       end;
     case kMonthTypeRegular:
-      res = GetAmount(CredManr)*(rate/100);    
+      if (CMB.DaysInMonth==0) then begin
+        res = GetAmount(CredManr)*(rate/100);
+      end else begin
+        res = GetAmount(CredManr)*(rate/100)*12/CMb.DaysInYear*days;
+      end;   
     case kMonthTypeLast:
-      res = calcbal*(rate/100);    
+      if (CMB.DaysInMonth==0) then begin
+        res = calcbal*(rate/100);    
+      end else begin
+        res = calcbal*(rate/100)*12/CMb.DaysInYear*days;
+      end;
   end;
 
   GetRateAmount = res;
