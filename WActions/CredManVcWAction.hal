@@ -1175,6 +1175,7 @@ begin
       OpenWindow("VIDClass",0,0,"","",VIr);
     end;
   end;
+  CloseWindow(wn);
 
   return;
 end;
