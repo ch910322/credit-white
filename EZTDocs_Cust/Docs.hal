@@ -349,6 +349,7 @@ begin
   Userr.Code = CredManr.SalesMan;
   if (ReadFirstMain(Userr,1,true)) then begin
     vVals["F_SALESMANPHONE"] = Userr.Phone1;
+    vVals["F_SALESMANNAME"] = Userr.Name;
     vVals["F_SALESMANEMAIL"] = Userr.emailAddr;
   end;
 
