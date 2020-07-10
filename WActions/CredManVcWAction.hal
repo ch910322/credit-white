@@ -16,7 +16,7 @@ remote procedure GetFactoringRecord(record CredManVc,var record CredManFactVc);
 remote procedure GetPayGrntRecord(record CredManVc,var record CredManPmtGrntVc);
 remote procedure PrepareAgreementDocSigningSession(record AgreementDocVc,var string,var Integer);
 remote function Boolean GetAgreementDoc(record CredManVc,Integer,var record AgreementDocVc);
-remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc);
+remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc,string);
 remote function Boolean GetAgreementDoc2(Longint,string,Integer,var record AgreementDocVc);
 remote updating procedure CredManPartialBuyoutDo(Date,val,Longint);
 remote function Date GetPauseCredManNextDate(record CredManVc);
@@ -341,22 +341,6 @@ begin
   return;
 end;
 
-global
-updating procedure CredManInvNoWClassProceed()
-begin
-  record CredManVc CredManr;
-  record RcVc RepSpec;
-  Integer wn,mwn;
-  
-  wn = CurWindow;
-  DeselectWindow(wn,true);
-  GetWindowRecord(wn,RepSpec);
-  mwn = MotherWindow(wn);
-  GetWindowRecord(mwn,CredManr);
-  CreateCredManInvoiceDo(CredManr,RepSpec.f1,mwn);
-
-  return;
-end;
 
 global
 updating procedure TerminateCredManDsm()
@@ -1141,17 +1125,52 @@ end;
 global
 updating procedure CredManMakePaymentDsm()
 begin
-  Integer wn;
+  Integer wn,nwn;
   record CredManVc CredManr;
   record VIVc VIr;
+  record CMInvoicingBlock CIb;
+  record RcVc RepSpec;
     
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
 
   if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
-    CredManMakePaymentRemote(CredManr,VIr);
-    PutWindowRecord(wn,CredManr);
-    WindowDoOK(wn,0);
+    BlockLoad(CIb);
+    if (CIb.ManualInvoiceNumber==1) then begin
+      RepSpec.ArtMode = 1;
+      nwn = OpenWindow("CredManInvNoWClass",0,wn,"","",RepSpec);
+    end else begin
+      CredManMakePaymentRemote(CredManr,VIr,"");
+      PutWindowRecord(wn,CredManr);
+      WindowDoOK(wn,0);
+      if (VIr.SerNr>0) then begin
+        OpenWindow("VIDClass",0,0,"","",VIr);
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+global
+updating procedure CredManInvNoWClassProceed()
+begin
+  record CredManVc CredManr;
+  record RcVc RepSpec;
+  Integer wn,mwn;
+  record VIVc VIr;
+  
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  mwn = MotherWindow(wn);
+  GetWindowRecord(mwn,CredManr);
+  if (RepSpec.ArtMode==0) then begin
+    CreateCredManInvoiceDo(CredManr,RepSpec.f1,mwn);
+  end else begin
+    CredManMakePaymentRemote(CredManr,VIr,RepSpec.f1);
+    PutWindowRecord(mwn,CredManr);
+    WindowDoOK(mwn,0);
     if (VIr.SerNr>0) then begin
       OpenWindow("VIDClass",0,0,"","",VIr);
     end;

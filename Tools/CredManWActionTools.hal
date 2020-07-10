@@ -998,13 +998,13 @@ begin
 end;
 
 global
-updating procedure CredManMakePaymentRemote(var record CredManVc CredManr,var record VIVc VIr)
+updating procedure CredManMakePaymentRemote(var record CredManVc CredManr,var record VIVc VIr,string invno)
 begin
   record IVVc IVr;
   record CMOrderClassBlock OCb;
 
   if (CredManr.InstalmentType!=4 and CredManr.InstalmentType!=5) then begin
-    CreateSingleAgreementInvoice(CredManr,CredManr.startDate,IVr,"");
+    CreateSingleAgreementInvoice(CredManr,CredManr.startDate,IVr,invno);
     CheckAndCreateAutoMailFromInvoice(IVr);
     
     //CredManCreditAllInvoices(CredManr);
