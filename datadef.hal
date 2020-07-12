@@ -513,7 +513,7 @@ begin
   KeySegment(VINr);
   KeySegment(SerNr); 
 
-  KeyBegin2(inner,8533);
+  KeyBegin2(OfficialSerNr,8533);
   KeySegment(OfficialSerNr);
   KeySegment(SerNr); 
 
