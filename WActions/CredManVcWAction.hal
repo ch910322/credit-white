@@ -1157,7 +1157,7 @@ updating procedure CredManInvNoWClassProceed()
 begin
   record CredManVc CredManr;
   record RcVc RepSpec;
-  Integer wn,mwn;
+  Integer wn,mwn,twn;
   record VIVc VIr;
   
   wn = CurWindow;
@@ -1165,6 +1165,7 @@ begin
   GetWindowRecord(wn,RepSpec);
   mwn = MotherWindow(wn);
   GetWindowRecord(mwn,CredManr);
+  CloseWindow(wn);
   if (RepSpec.ArtMode==0) then begin
     CreateCredManInvoiceDo(CredManr,RepSpec.f1,mwn);
   end else begin
@@ -1172,10 +1173,9 @@ begin
     PutWindowRecord(mwn,CredManr);
     WindowDoOK(mwn,0);
     if (VIr.SerNr>0) then begin
-      OpenWindow("VIDClass",0,0,"","",VIr);
+      twn = OpenWindow("VIDClass",0,0,"","",VIr);
     end;
   end;
-  CloseWindow(wn);
 
   return;
 end;

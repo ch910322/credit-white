@@ -1799,3 +1799,30 @@ begin
   EndWindow;
   return;
 end;
+
+window CredLegalInvNrTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h1,h2,v,vs;
+  Integer f,flipnr;
+  
+  WindowBegin("Legal Record Numbers",CredLegalInvNrTClass,CGHbl,HBlRecType);
+  SetBlid(CredLegalInvNrBlock);
+  SetWRect(20,80,900,457);
+  Sizeable(-1,-1,0,0);
+  h = 8; v = 20;
+  h1=28;
+  MatrixBegin(h,v+=60,-50,-20,-,499);
+  Flip(0);
+  MatCol(1,h1,"From Date",0,PurchDate,false,PasteCurDate);
+  MatCol(1,h1+=80,"To Date",0,EndDate,false,PasteCurDate);
+  MatCol(1,h1+=80,"Serie",0,Serie,false,0);
+  MatCol(1,h1+=80,"From",0,TSerStart,false,0);
+  MatCol(1,h1+=85,"To",0,TSerEnd,false,0);
+  MatCol(1,h1+=125,"Agr. Type",0,CredManType,false,CredManTypeSClass);
+  MatCol(1,h1+=125,"Agr. Type Class",0,CredManClass,false,CredManClassSClass);
+  MatCol(1,h1+=85,"Register",0,RegType,false,SetSClass);
+  MatCol(1,h1+=85,"Selection",0,SelectionType,false,SetSClass);
+  EndMatrix;
+  EndWindow;
+end;
