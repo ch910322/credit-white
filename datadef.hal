@@ -1133,6 +1133,9 @@ begin
   EndArray;
   EndBlock;
   
+  RecordAddBegin(MailTextVc,"MailTextVc_Cred");
+  ChangeField(Header,M4Str,200,0);
+  EndRecordAdd;
   
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
