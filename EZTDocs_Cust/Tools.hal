@@ -8,6 +8,8 @@ external procedure ExternalPrintSuretyAgreementForm(record CredManVc,var vector 
 external inner function string 255 CredManOwnBankAccount(Longint);
 external inner procedure FindVATCodeRow(string,record VATCodeBlock,var row VATCodeBlock);
 external inner function string 255 StrReplace(string,string,string);
+external function val GetCredManItemValue(record IVVc,string);
+external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -102,12 +104,44 @@ end;
 global
 procedure Ext_PrintCustomInvoiceFields(var vector string vVals,record IVVc IVr)
 begin
+  record CredManSetBlock CMb;
+  row IVVc IVrw;
+  Integer i,rwcnt;
+  val abovehiddenbase,abovehiddenvat,rowbase;
+  val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
 
   Ext_PrintInvoiceSigner(vVals);
 
   vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(IVr.CustCredManNr);
 
   vVals["F_LOANPERIOD"] = IVr.CredFromDate & ":" & IVr.CredToDate;
+
+  rwcnt = MatRowCnt(IVr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    if (IVrw.stp==kInvoiceRowTypeHidden) then begin
+      i = rwcnt;
+    end else begin
+      InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+
+      if (IVr.InclVAT==0) then begin
+        rowbase = IVrw.Sum;
+      end else begin
+        rowbase = IVrw.Sum - vatval;
+      end;
+
+      abovehiddenvat = abovehiddenvat + vatval;
+      abovehiddenbase = abovehiddenbase + rowbase;
+    end;
+  end;
+
+  vVals["F_ABOVEHIDDENBASE"] = abovehiddenbase;
+  vVals["F_ABOVEHIDDENVAT"] = abovehiddenvat;
+  vVals["F_ABOVEHIDDENFULL"] = abovehiddenbase + abovehiddenvat;
+
+  BlockLoad(CMb);
+  vVals["F_PRINCVAL"] = GetCredManItemValue(IVr,CMb.InstalmentItem);
+
 
   return;
 end;

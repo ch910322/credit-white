@@ -1544,7 +1544,8 @@ begin
   return;
 end;
 
-function val GetItemValue(record IVVc IVr,string item)
+global
+function val GetCredManItemValue(record IVVc IVr,string item)
 begin
   Integer i,rwcnt;
   val res;
@@ -1558,7 +1559,7 @@ begin
     end;
   end;
 
-  GetItemValue = res;
+  GetCredManItemValue = res;
   return;
 end;
 
@@ -1584,9 +1585,9 @@ begin
   RepSpec.f6 = CompYear.VATNr;//F_EGETMOMSNR
 
   BlockLoad(CMb);
-  RepSpec.vals1 = GetItemValue(IVr,CMb.RateItem);
-  RepSpec.vals2 = GetItemValue(IVr,CMb.InstalmentItem);
-  RepSpec.vals3 = GetItemValue(IVr,CMb.LateFeeItem);
+  RepSpec.vals1 = GetCredManItemValue(IVr,CMb.RateItem);
+  RepSpec.vals2 = GetCredManItemValue(IVr,CMb.InstalmentItem);
+  RepSpec.vals3 = GetCredManItemValue(IVr,CMb.LateFeeItem);
 
   return;
 end;
