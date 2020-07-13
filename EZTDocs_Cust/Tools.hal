@@ -139,7 +139,7 @@ begin
             tstr = tstr & StringFromText(Noter,pos,255);
             pos = pos + 255;
           end;
-          //vVals["ROW_" & strnum & "_F_TAXRULE"] = StrReplace(tstr,"'","\\'");
+          vVals["ROW_" & strnum & "_F_TAXRULE"] = StrReplace(tstr,chr(13),"\\n");
         end;
       end;
     end;
