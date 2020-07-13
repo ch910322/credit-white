@@ -142,7 +142,6 @@ begin
   BlockLoad(CMb);
   vVals["F_PRINCVAL"] = GetCredManItemValue(IVr,CMb.InstalmentItem);
 
-
   return;
 end;
 
