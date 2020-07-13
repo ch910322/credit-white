@@ -56,7 +56,7 @@ global
 procedure RecalcCredManFees(var record CredManVc CredManr)
 begin
   Date frdate,todate;
-  val calcbal;
+  val calcbal,tmp;
   row CredManVc CredManrw;
   Integer i,rwcnt;
   
@@ -64,7 +64,14 @@ begin
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManr,i,CredManrw);
     if (CredManrw.ChargeType>=2) then begin
-      CredManrw.Sum = GetRateAmount(CredManr,CredManrw.vRebate,1,frdate,todate,calcbal,true);  
+      tmp = GetRateAmount(CredManr,CredManrw.vRebate,1,frdate,todate,calcbal,true);
+      if (CredManrw.MinSum>0 and tmp<CredManrw.MinSum) then begin
+        tmp = CredManrw.MinSum;
+      end;
+      if (CredManrw.MaxSum>0 and tmp>CredManrw.MaxSum) then begin
+        tmp = CredManrw.MaxSum;
+      end;
+      CredManrw.Sum = tmp;
       MatRowPut(CredManr,i,CredManrw);    
     end;
   end;
