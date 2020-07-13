@@ -7,6 +7,7 @@ external procedure ExternalPrintVekselisForm(record CredManVc,var vector string)
 external procedure ExternalPrintSuretyAgreementForm(record CredManVc,var vector string);
 external inner function string 255 CredManOwnBankAccount(Longint);
 external inner procedure FindVATCodeRow(string,record VATCodeBlock,var row VATCodeBlock);
+external inner function string 255 StrReplace(string,string,string);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -138,7 +139,7 @@ begin
             tstr = tstr & StringFromText(Noter,pos,255);
             pos = pos + 255;
           end;
-          vVals["ROW_" & strnum & "_F_TAXRULE"] = tstr;
+          //vVals["ROW_" & strnum & "_F_TAXRULE"] = StrReplace(tstr,"'","\\'");
         end;
       end;
     end;
