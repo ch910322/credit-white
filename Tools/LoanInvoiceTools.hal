@@ -721,6 +721,9 @@ begin
   record CMInvoicingBlock CIb;
   record IVVc oIVr;
   array string 255 lateformula;
+  record CredFeesMatrixVc FMr;
+  row CredFeesMatrixVc FMrw;
+  Integer i,rwcnt;
 
   BlockLoad(CIb);
   RecordClear(IVr);
@@ -735,8 +738,13 @@ begin
     SetupInvoiceRowAndAdd(IVr,CMb.RateItem,spec,1,CSrw.Interest,blankval,kEventTypeCalcInterest,-1);
   end;
   if (CSrw.Fees>0) then begin
-    GetItemName("CONTRACT",spec);
-    SetupInvoiceRowAndAdd(IVr,"CONTRACT",spec,1,CSrw.Fees,blankval,kEventTypeCalcFees,-1);
+    UnpackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
+    rwcnt = MatRowCnt(FMr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(FMr,i,FMrw);
+      GetItemName(FMrw.ArtCode,spec);
+      SetupInvoiceRowAndAdd(IVr,FMrw.ArtCode,spec,1,FMrw.Sum,blankval,kEventTypeCalcFees,-1);
+    end;
   end;
   MergeItemsInInvoice(IVr);
   GetCredManOverdueInvoices(CredManr,CMb,CSrw.InvDate,lastd,latedays,lateamount,lateformula);
@@ -1435,6 +1443,7 @@ begin
   row CredManSchedVc CSrw;
   Integer i,rwcnt,rw;
   Boolean updf;
+  record CredFeesMatrixVc FMr;
   
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstKey("CredManNr",CSr,1,true)) then begin
@@ -1473,6 +1482,8 @@ begin
       CSrw.Principle = SMrw.DebVal;
       CSrw.Interest = SMrw.CredVal;
       CSrw.Fees = SMrw.DebVal2;
+      UnpackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
+      PackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
       CSrw.Total = CSrw.Principle + CSrw.Interest + CSrw.Fees;
       if (nonblank(SMrw.ExtraComment)) then begin
         CSrw.Invoiced = 1;

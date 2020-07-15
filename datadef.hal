@@ -1033,6 +1033,16 @@ begin
   RecordField(TransDate,M4Date,0,0);
   EndRecordAdd;
 
+  RecordBegin(CredFeesMatrixVc,-,"");
+  VirtualRegister;
+  RecordField(SerNr,M4Long,0,0);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(ArtCode,M4Code,20,INVc);
+  ArrayField(Sum,M4Val,0,0);
+  EndArray;
+  EndRecord;
+
   RecordBegin(CredManSchedVc,-,"");
   RecordField(SerNr,M4Long,0,0);
   RecordField(CredManNr,M4Long,0,CredManVc);
@@ -1053,6 +1063,7 @@ begin
   ArrayField(ToDate,M4Date,0,0);
   ArrayField(InvoiceNr,M4Str,60,0);
   ArrayField(PayDate,M4Date,0,0);
+  ArrayField(FeesMatrix,M4PackedMatrix,0,CredFeesMatrixVc);
   EndArray;
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
@@ -1111,6 +1122,7 @@ begin
 
   RecordAddBegin(SMVc,"SMVc_FIN");
   ArrayField(DueDate,M4Date,0,0);
+  ArrayField(FeesMatrix,M4PackedMatrix,0,CredFeesMatrixVc);
   EndRecordAdd;
   
   SourceFile("halcust\\LoanApp\\English", 0);
