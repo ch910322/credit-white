@@ -102,13 +102,13 @@ begin
       if (frdate.Day!=todate.Day) then begin
         months = months - 1;//MonthDiff returns +1 if there are extra days
       end;
-      if (months>0 and CMB.DaysInMonth==0) then begin
-        days = DateDiff(todate,AddMonth(frdate,months));
-        res = GetAmount(CredManr)*(rate/100)*months;
-        res = res + (GetAmount(CredManr)*(rate/100)*12/CMb.DaysInYear*days);
-      end else begin
+      //if (months>0 and CMB.DaysInMonth==0) then begin
+      //  days = DateDiff(todate,AddMonth(frdate,months));
+      //  res = GetAmount(CredManr)*(rate/100)*months;
+      //  res = res + (GetAmount(CredManr)*(rate/100)*12/CMb.DaysInYear*days);
+      //end else begin
         res = GetAmount(CredManr)*(rate/100)*12/CMb.DaysInYear*days;
-      end;
+      //end;
     case kMonthTypeRegular:
       if (CMB.DaysInMonth==0) then begin
         res = GetAmount(CredManr)*(rate/100);
