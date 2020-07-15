@@ -592,6 +592,7 @@ begin
     case "F_EGETNAMN": res = RepSpec.f4;
     case "F_EGETORGNR": res = RepSpec.f5;
     case "F_EGETMOMSNR": res = RepSpec.f6;
+    case "F_EGENADRESS": res = RepSpec.f7;
     case "F_RATEVAL": res = RepSpec.vals1;
     case "F_PRINCVAL": res = RepSpec.vals2;
     case "F_LATEFEEVAL": res = RepSpec.vals3;

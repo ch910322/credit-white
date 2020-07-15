@@ -1594,6 +1594,7 @@ begin
   RepSpec.f4 = CompYear.CompName;//F_EGETNAMN
   RepSpec.f5 = CompYear.OrgNr;//F_EGETORGNR
   RepSpec.f6 = CompYear.VATNr;//F_EGETMOMSNR
+  RepSpec.f7 = CompYear.Addr0;//F_EGENADRESS
 
   BlockLoad(CMb);
   RepSpec.vals1 = GetCredManItemValue(IVr,CMb.RateItem);
