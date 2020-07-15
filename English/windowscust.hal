@@ -1701,6 +1701,9 @@ begin
   InsertRowTest;
   DeleteRowTest;
   EndMatrix;
+  SpecialMenu("Open Fees Matrix",' ',1,"OpenCredFeesMatrixSchedDsm");
+
+  
   EndWindow;
 end;
 
@@ -1823,6 +1826,27 @@ begin
   MatCol(1,h1+=125,"Agr. Type Class",0,CredManClass,false,CredManClassSClass);
   MatCol(1,h1+=85,"Register",0,RegType,false,SetSClass);
   MatCol(1,h1+=85,"Selection",0,SelectionType,false,SetSClass);
+  EndMatrix;
+  EndWindow;
+end;
+
+
+
+window CredFeesMatrixVClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h1,v;
+  WindowBegin("Tax Matrix",CredFeesMatrixVClass,CGother,-);
+  UseView(CredFeesMatrixVc);
+  SetWRect(20,80,400,357);
+  Sizeable(-1,-1,0,0);
+  AutoSizeWindow(false);
+  h = 8; v = 20;
+  h1=24;
+  MatrixBegin(h,v,-25,-10,-,20);
+  Flip(0);
+  MatCol(1,h1,"Item",0,ArtCode,false,0);
+  MatCol(1,-60,"Sum",0,Sum,false,0);
   EndMatrix;
   EndWindow;
 end;
