@@ -8,7 +8,7 @@ external procedure ExternalPrintSuretyAgreementForm(record CredManVc,var vector 
 external inner function string 255 CredManOwnBankAccount(Longint);
 external inner procedure FindVATCodeRow(string,record VATCodeBlock,var row VATCodeBlock);
 external inner function string 255 StrReplace(string,string,string);
-external function val GetCredManItemValue(record IVVc,string);
+external function val GetCredManItemValue(record IVVc,string,Boolean);
 external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
 
 global
@@ -109,6 +109,13 @@ begin
   Integer i,rwcnt;
   val abovehiddenbase,abovehiddenvat,rowbase;
   val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
+  record VATCodeBlock VATb;
+  row VATCodeBlock VATbrw;
+  record TaxRulesVc TRr;
+  record NotePadVc Noter;
+  record RLinkVc RLr;
+  Longint pos,l;
+  string 255 tstr;
 
   Ext_PrintInvoiceSigner(vVals);
 
@@ -140,7 +147,31 @@ begin
   vVals["F_ABOVEHIDDENFULL"] = abovehiddenbase + abovehiddenvat;
 
   BlockLoad(CMb);
-  vVals["F_PRINCVAL"] = GetCredManItemValue(IVr,CMb.InstalmentItem);
+  vVals["F_PRINCVAL"] = GetCredManItemValue(IVr,CMb.InstalmentItem,true);
+
+  rwcnt = MatRowCnt(IVr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    if (IVrw.stp==kInvoiceRowTypeNormal) then begin
+      FindVATCodeRow(IVrw.VATCode,VATb,VATbrw);
+      if (nonblank(VATbrw.TaxRules)) then begin
+        TRr.Code = VATbrw.TaxRules;
+        if (ReadFirstMain(TRr,1,true)) then begin
+          if (ReadRecordLink(TRr,1,Noter,RLr)) begin
+            pos = 0;
+            l = SizeTextCnt(Noter);
+            tstr = "";
+            while (pos<l) begin
+              tstr = tstr & StringFromText(Noter,pos,255);
+              pos = pos + 255;
+            end;
+            vVals["F_TAXRULE"] = StrReplace(tstr,chr(13),"\\n");
+            i = rwcnt;
+          end;
+        end;
+      end;
+    end;
+  end;
 
   return;
 end;
@@ -172,7 +203,7 @@ begin
             tstr = tstr & StringFromText(Noter,pos,255);
             pos = pos + 255;
           end;
-          vVals["ROW_" & strnum & "_F_TAXRULE"] = StrReplace(tstr,chr(13),"\\n");
+          vVals["ROW_" & strnum & "_F_TAXRULEROW"] = StrReplace(tstr,chr(13),"\\n");
         end;
       end;
     end;

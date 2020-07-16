@@ -998,6 +998,7 @@ begin
   CheckUnpaidInvoices(CredManr,dueamount,openamount);
   sd = GetLastInvoiceDate(CredManr,RepSpec.d1);
   GetCredManOverdueInvoices(CredManr,CMb,RepSpec.d1,sd,latedays,lateamount,lateformula);
+logtext(0,"dd " & IVr.Sum4 & ":" & dueamount & ":" & lateamount);
   RepSpec.vals1 = IVr.Sum4;
   RepSpec.vals0 = dueamount;//should this be openamount?
   RepSpec.vals2 = dueamount + IVr.Sum4;
@@ -1556,11 +1557,15 @@ begin
 end;
 
 global
-function val GetCredManItemValue(record IVVc IVr,string item)
+function val GetCredManItemValue(record IVVc IVr,string item,Boolean setzerof)
 begin
   Integer i,rwcnt;
   val res;
   row IVVc IVrw;
+
+  if (setzerof) then begin
+    res = 0;
+  end;
   
   rwcnt = MatRowCnt(IVr);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -1597,9 +1602,9 @@ begin
   RepSpec.f7 = CompYear.Addr0;//F_EGENADRESS
 
   BlockLoad(CMb);
-  RepSpec.vals1 = GetCredManItemValue(IVr,CMb.RateItem);
-  RepSpec.vals2 = GetCredManItemValue(IVr,CMb.InstalmentItem);
-  RepSpec.vals3 = GetCredManItemValue(IVr,CMb.LateFeeItem);
+  RepSpec.vals1 = GetCredManItemValue(IVr,CMb.RateItem,false);
+  RepSpec.vals2 = GetCredManItemValue(IVr,CMb.InstalmentItem,false);
+  RepSpec.vals3 = GetCredManItemValue(IVr,CMb.LateFeeItem,false);
 
   return;
 end;
