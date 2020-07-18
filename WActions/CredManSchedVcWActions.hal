@@ -1,0 +1,58 @@
+global
+procedure OpenCredFeesMatrixSchedDsm()
+begin
+  record CredFeesMatrixVc FMr;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  longint nwn,wn,rowno;
+  
+  wn = CurWindow;
+  GetWindowRecord(wn,CSr);
+  rowno = WindowActiveRow(wn);
+  
+  if (rowno>=0) then begin
+    MatRowGet(CSr,rowno,CSrw);
+    UnpackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
+  end;
+  
+  nwn = OpenWindow("CredFeesMatrixVClass",0,wn,"","",FMr);
+  
+  PutWindowRecord(nwn,FMr);
+  PutWindowPrevRecord(nwn,FMr);
+  PutWindowString(nwn,"TaxMatrixActiveRow",rowno)
+  SetWindowState(nwn,Rs_normal);
+  
+  return;
+end;
+
+global
+function Boolean CredFeesMatrixVClassOnOKWindow(Integer wn)
+begin
+  record CredFeesMatrixVc FMr;
+  record CredManSchedVc SCr;
+  row CredManSchedVc SCrw;
+  longint mwn,rowno;
+  
+  //wn = CurWindow;
+  mwn = MotherWindow(wn);
+  
+  GetWindowRecord(wn,FMr);
+  GetWindowRecord(mwn,SCr);
+  
+  rowno = StringToInt(GetWindowString(wn,"TaxMatrixActiveRow"));
+  if (rowno>=0) then begin
+    MatRowGet(SCr,rowno,SCrw);
+    PackRowFieldMatrix(SCrw,"FeesMatrix",FMr);
+    MatRowPut(SCr,rowno,SCrw);
+  end;
+  
+  CloseWindow(wn);
+
+  PutWindowRecord(mwn,SCr);
+  if (WindowState(mwn)==Rs_normal) then begin
+    SetWindowState(mwn,Rs_update);
+  end;
+  
+  CredFeesMatrixVClassOnOKWindow = false;
+  return;
+end;
