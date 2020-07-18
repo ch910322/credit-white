@@ -3,6 +3,7 @@ external inner procedure CredManVc_PasteType(var record CredManVc);
 external inner procedure CUCreditLimit(record CUVc,Date,string,var val,var LongInt);
 external function val GetMonthlyPaymentAmount(record CredManVc,Integer);
 external updating procedure ClearAgreementDocRecords(Longint,Integer);
+external procedure RecalcCredManFees(var record CredManVc);
 
 
 global
@@ -22,6 +23,8 @@ BEGIN
 
   res = inner.CredManVcRecordDefaults(CredManr,CredMan2r,stat,long4);
   CredManVc_PasteType(CredManr);
+  RecalcCredManFees(CredManr);
+
 
   CredManr.OrderClass = OCb.CMDefOrderClass;
 
@@ -403,6 +406,18 @@ BEGIN
   return;
 END;
 
+updating
+procedure RemoveCredManSchedule(Longint sernr)
+begin
+  record CredManSchedVc CSr;
+
+  CSr.CredManNr = sernr;
+  if (ReadFirstKey("CredManNr",CSr,1,true)) then begin
+    RecordRemove(CSr);
+  end;
+
+  return;
+end;
 
 global
 updating function LongInt CredManVcRecordRemoveAfter(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
@@ -412,6 +427,7 @@ begin
   res = 0;
   
   ClearAgreementDocRecords(CredManr.SerNr,0);
+  RemoveCredManSchedule(CredManr.SerNr);
   
   CredManVcRecordRemoveAfter = res;
   return;

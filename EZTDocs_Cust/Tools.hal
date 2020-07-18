@@ -5,6 +5,8 @@ external procedure ExternalPrintCredManForm(record CredManVc,var vector string);
 external procedure ExternalPrintCredManScheduleForm(record CredManVc,var vector string);
 external procedure ExternalPrintVekselisForm(record CredManVc,var vector string);
 external procedure ExternalPrintSuretyAgreementForm(record CredManVc,var vector string);
+external inner function string 255 CredManOwnBankAccount(Longint);
+external inner procedure FindVATCodeRow(string,record VATCodeBlock,var row VATCodeBlock);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -71,6 +73,75 @@ begin
     vVals["F_DOCUMENTSIGNERNAME"] = Userr.Name;
     vVals["F_DOCUMENTSIGNERPOSITION"] = ASb.DocumentSignerPosition;
     vVals["F_DOCUMENTSIGNERCODE"] = Userr.Code;
+    vVals["F_DOCUMENTSIGNEREMAIL"] = Userr.emailAddr;
+    vVals["F_DOCUMENTSIGNERPHONE"] = Userr.Phone1;
+  end;
+
+  return;
+end;
+
+
+global
+procedure Ext_PrintInvoiceSigner(var vector string vVals)
+begin
+  record CMApplicationSetBlock ASb;
+  record UserVc Userr;
+  
+  BlockLoad(ASb);
+  Userr.Code = ASb.InvoiceSigner;
+  if (ReadFIrstMain(Userr,1,true)) then begin
+    vVals["F_INVOICESIGNERNAME"] = Userr.Name;
+    vVals["F_INVOICESIGNERPOSITION"] = ASb.DocumentSignerPosition;
+    vVals["F_INVOICESIGNERCODE"] = Userr.Code;
+  end;
+
+  return;
+end;
+
+global
+procedure Ext_PrintCustomInvoiceFields(var vector string vVals,record IVVc IVr)
+begin
+
+  Ext_PrintInvoiceSigner(vVals);
+
+  vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(IVr.CustCredManNr);
+
+  vVals["F_LOANPERIOD"] = IVr.CredFromDate & ":" & IVr.CredToDate;
+
+  return;
+end;
+
+global
+procedure Ext_PrintCustomInvoiceRowFields(var vector string vVals,record IVVc IVr,row IVVc IVrw,Integer rowno,string strnum)
+begin
+  record VATCodeBlock VATb;
+  row VATCodeBlock VATbrw;
+  record TaxRulesVc TRr;
+  record NotePadVc Noter;
+  record RLinkVc RLr;
+  Longint pos,l;
+  string 255 tstr;
+
+  BlockLoad(VATb);
+
+  //vVals["ROW_" & strnum & "_F_ROWNAME"] = 
+  if (IVrw.stp==kInvoiceRowTypeNormal) then begin
+    FindVATCodeRow(IVrw.VATCode,VATb,VATbrw);
+    if (nonblank(VATbrw.TaxRules)) then begin
+      TRr.Code = VATbrw.TaxRules;
+      if (ReadFirstMain(TRr,1,true)) then begin
+        if (ReadRecordLink(TRr,1,Noter,RLr)) begin
+          pos = 0;
+          l = SizeTextCnt(Noter);
+          tstr = "";
+          while (pos<l) begin
+            tstr = tstr & StringFromText(Noter,pos,255);
+            pos = pos + 255;
+          end;
+          vVals["ROW_" & strnum & "_F_TAXRULE"] = tstr;
+        end;
+      end;
+    end;
   end;
 
   return;

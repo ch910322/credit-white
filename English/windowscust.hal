@@ -104,6 +104,7 @@ begin
   
   EditField(h,v+=30,100,"Document Signer",Normal,DocumentSigner,false,UserSClass);
   EditField(h,v+=vs,100,"Signer's Job Description",Normal,DocumentSignerPosition,false,0);
+  EditField(h,v+=30,100,"Invoice Signer",Normal,InvoiceSigner,false,UserSClass);
   
 
   EndWindow;
@@ -344,6 +345,15 @@ begin
   EditFieldTL(h,v+=vs,120,"Expected Payment",M4Val,ViewOnly,0,vals2,true,0);
 
   HalPushButton(h,v+=vs,h+120,v+20,"CalculateBuyOutValue","Calculate");
+  EndWindow;
+
+  WindowBegin("Create Invoice",CredManInvNoWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,400,150);
+  h = 150; h2 = 250; v=450;
+  EditFieldTL(h,v=6,120,"Invoice No.",M4Str,Normal,255,f1,false,0);
+
+  HalPushButton(h,v+=vs,h+120,v+20,"CredManInvNoWClassProceed","Create");
   EndWindow;
 
   WindowBegin("Specify Credit Agreement Schedule",CredManScheduleRClass,CGRcW,RcType);
@@ -1691,6 +1701,9 @@ begin
   InsertRowTest;
   DeleteRowTest;
   EndMatrix;
+  SpecialMenu("Open Fees Matrix",' ',1,"OpenCredFeesMatrixSchedDsm");
+
+  
   EndWindow;
 end;
 
@@ -1716,6 +1729,10 @@ begin
   CheckBox(h=180,v=6,0,"Details on Invoice",DetailedInvoice);
   CheckBox(h,v+=16,0,"Automatically connect Prepayments to Invoices",AddPrepayments);
   CheckBox(h,v+=16,0,"Interest on due Principle",IntDuePrinciple);
+  CheckBox(h,v+=16,0,"Manual Contract Fee Invoice Number",ManualInvoiceNumber);
+  CheckBox(h,v+=16,0,"Principle below hidden Line",HiddenPrinciple);
+  CheckBox(h,v+=16,0,"Overdue Calculation below hidden Line",AddOverdueDetails);
+
 
   CheckBox(h,v+=30,0,"Automatically issue Invoices",AutoInvoiceFlag);
   EditField(h,v+=20,100,"Time",Normal,AutoInvoiceTime,false,PasteCurTime);
@@ -1784,4 +1801,52 @@ begin
 
   EndWindow;
   return;
+end;
+
+window CredLegalInvNrTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h1,h2,v,vs;
+  Integer f,flipnr;
+  
+  WindowBegin("Legal Record Numbers",CredLegalInvNrTClass,CGHbl,HBlRecType);
+  SetBlid(CredLegalInvNrBlock);
+  SetWRect(20,80,900,457);
+  Sizeable(-1,-1,0,0);
+  h = 8; v = 20;
+  h1=28;
+  MatrixBegin(h,v+=60,-50,-20,-,499);
+  Flip(0);
+  MatCol(1,h1,"From Date",0,PurchDate,false,PasteCurDate);
+  MatCol(1,h1+=80,"To Date",0,EndDate,false,PasteCurDate);
+  MatCol(1,h1+=80,"Serie",0,Serie,false,0);
+  MatCol(1,h1+=80,"From",0,TSerStart,false,0);
+  MatCol(1,h1+=85,"To",0,TSerEnd,false,0);
+  MatCol(1,h1+=125,"Agr. Type",0,CredManType,false,CredManTypeSClass);
+  MatCol(1,h1+=125,"Agr. Type Class",0,CredManClass,false,CredManClassSClass);
+  MatCol(1,h1+=85,"Register",0,RegType,false,SetSClass);
+  MatCol(1,h1+=85,"Selection",0,SelectionType,false,SetSClass);
+  EndMatrix;
+  EndWindow;
+end;
+
+
+
+window CredFeesMatrixVClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h1,v;
+  WindowBegin("Tax Matrix",CredFeesMatrixVClass,CGother,-);
+  UseView(CredFeesMatrixVc);
+  SetWRect(20,80,400,357);
+  Sizeable(-1,-1,0,0);
+  AutoSizeWindow(false);
+  h = 8; v = 20;
+  h1=24;
+  MatrixBegin(h,v,-25,-10,-,20);
+  Flip(0);
+  MatCol(1,h1,"Item",0,ArtCode,false,0);
+  MatCol(1,-60,"Sum",0,Sum,false,0);
+  EndMatrix;
+  EndWindow;
 end;

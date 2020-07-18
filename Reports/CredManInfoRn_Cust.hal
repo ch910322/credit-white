@@ -239,7 +239,10 @@ begin
   row IVVc IVrw;
   val inst,intrate,fees,pen;
   row SMVc SMrw;
+  record CredFeesMatrixVc FMr;
+  row CredFeesMatrixVc FMrw;
   
+  RecordNew(FMr);
   rwcnt = MatRowCnt(IVr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(IVr,i,IVrw);
@@ -253,6 +256,10 @@ begin
         calcbal = calcbal - IVrw.Sum;
       case 4: 
         fees = fees + IVrw.Sum;
+        ClearRow(FMr,FMrw,1);
+        FMrw.ArtCode = IVrw.ArtCode;
+        FMrw.Sum = IVrw.Sum;
+        MatRowPut(FMr,MatRowCnt(FMr),FMrw);
       case 9: 
         pen = pen + IVrw.Sum;
     end;
@@ -260,6 +267,7 @@ begin
 
   ClearRow(SMr,SMrw,1);
   SMrw.TransDate = IVr.InvDate;
+  SMrw.DueDate = IVr.PayDate;
   SMrw.RowSimStat = 0;//type
   SMrw.DebVal = inst;
   SMrw.CredVal = intrate;
@@ -269,6 +277,9 @@ begin
   SMrw.CurCredVal = calcbal;
   SMrw.Objects = fromdate;
   SMrw.Comment = todate;
+  if (MatRowCnt(FMr)>0) then begin
+    PackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
+  end;
   if (IVr.SerNr>-1) then begin
     SMrw.ExtraComment = IVr.SerNr;
   end;
@@ -312,6 +323,7 @@ begin
   calcbal = calcbal - CSrw.Principle;
   ClearRow(SMr,SMrw,1);
   SMrw.TransDate = CSrw.InvDate;
+  SMrw.DueDate = CSrw.PayDate;
   SMrw.RowSimStat = 0;//type
   SMrw.DebVal = CSrw.Principle;
   SMrw.CredVal = CSrw.Interest;

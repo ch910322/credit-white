@@ -22,7 +22,7 @@ begin
 
   SetLangMode(LangEnglish,"ENG",0);
 
-  WindowBegin("Company registration date WEB service",EBSAddrLookupTClass,CGHbl,SRType);
+  WindowBegin("Company registration data WEB service",EBSAddrLookupTClass,CGHbl,SRType);
   SetBlid(EBSAddrLookupBlock);
   SetWRect(80,80,400,280);
   MatrixBegin(10,20,-30,-10,-,99);

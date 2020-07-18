@@ -271,6 +271,7 @@ begin
   RecordField(EmailOfferText,M4Code,20,LTxtVc);
   RecordField(EmailOfferTextRow,M4Code,20,LTxtVc);
   RecordField(CFOTitle,M4Str,100,0);
+  RecordField(InvoiceSigner,M4Code,20,UserVc);
   EndBlock;
   
   RecordAddBegin(CUVc,"CredCUVc");
@@ -479,6 +480,7 @@ begin
   RecordField(AnnualRate,M4Int,0,0);
   ChangeField(IntRate,M4Rate,0,0);
   ChangeField(PrincipleDelayInterest,M4Rate,0,0);
+  RecordFIeld(SkipOverDue,M4Int,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -1031,6 +1033,16 @@ begin
   RecordField(TransDate,M4Date,0,0);
   EndRecordAdd;
 
+  RecordBegin(CredFeesMatrixVc,-,"");
+  VirtualRegister;
+  RecordField(SerNr,M4Long,0,0);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(ArtCode,M4Code,20,INVc);
+  ArrayField(Sum,M4Val,0,0);
+  EndArray;
+  EndRecord;
+
   RecordBegin(CredManSchedVc,-,"");
   RecordField(SerNr,M4Long,0,0);
   RecordField(CredManNr,M4Long,0,CredManVc);
@@ -1050,6 +1062,8 @@ begin
   ArrayField(FromDate,M4Date,0,0);
   ArrayField(ToDate,M4Date,0,0);
   ArrayField(InvoiceNr,M4Str,60,0);
+  ArrayField(PayDate,M4Date,0,0);
+  ArrayField(FeesMatrix,M4PackedMatrix,0,CredFeesMatrixVc);
   EndArray;
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
@@ -1100,7 +1114,16 @@ begin
   RecordField(FVIPaymentMode,M4Code,10,0);
   RecordField(FIVPaymentMode,M4Code,10,0);
 
+  RecordField(ManualInvoiceNumber,M4Int,0,0);
+  RecordField(HiddenPrinciple,M4Int,0,0);
+  RecordField(AddOverdueDetails,M4Int,0,0);
+
   EndBlock;
+
+  RecordAddBegin(SMVc,"SMVc_FIN");
+  ArrayField(DueDate,M4Date,0,0);
+  ArrayField(FeesMatrix,M4PackedMatrix,0,CredFeesMatrixVc);
+  EndRecordAdd;
   
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
