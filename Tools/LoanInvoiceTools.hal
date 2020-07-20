@@ -15,6 +15,9 @@ external updating procedure FindUnpaidCredHist(record ItemPriorityBlock,record I
 external inner function Boolean IVVc_PasteSum(var record IVVc,Integer,var Boolean,Integer);
 external function Date GetLastInvoiceDate(record CredManVc,Date);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
+external inner procedure SumNoDownPay(record IVVc,var val,var val,var val,var val,var val,var val);
+external function string 255 GetCredManNr(Longint);
+external procedure GetHiddenInvoiceValues(record IVVc,var val,var val);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -125,7 +128,11 @@ begin
   //we should always have in the plan first row instalment or interest where we have start and end date
   if (CIb.DetailedInvoice==1) then begin
     ClearRow(IVr,IVrw,1);
-    IVrw.Spec = CIb.InvoiceCommentStr & USetStr(200080) & CredManr.SerNr;
+    if (nonblank(CredManr.OfficialSerNr)) then begin
+      IVrw.Spec = CIb.InvoiceCommentStr & USetStr(200080) & CredManr.OfficialSerNr;
+    end else begin
+      IVrw.Spec = CIb.InvoiceCommentStr & USetStr(200080) & CredManr.SerNr;
+    end;
     MatRowPut(IVr,0,IVrw);
     if (nonblank(fromdate)) then begin
       ClearRow(IVr,IVrw,1);
@@ -512,7 +519,7 @@ begin
     rwcnt = MatRowCnt(IVr);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(IVr,i,IVrw);
-      if (IVrw.ChargeType>0 and IVrw.ChargeType!=kEventTypeCalcInterest) then begin
+      if (IVrw.ChargeType>0 and IVrw.ChargeType!=kEventTypeCalcInstalment) then begin
         foundf = true;
         i = rwcnt;
       end;
@@ -520,7 +527,7 @@ begin
     if (foundf) then begin
       for (i=0;i<rwcnt;i=i+1) begin
         MatRowGet(IVr,i,IVrw);
-        if (IVrw.ChargeType==kEventTypeCalcInterest) then begin
+        if (IVrw.ChargeType==kEventTypeCalcInstalment) then begin
           MatRowDelete(IVr,i);
           if (InvoiceHasHiddenLine(IVr)==false) then begin
             ClearRow(IVr,hiddenIVrw,kInvoiceRowTypeHidden);
@@ -993,6 +1000,7 @@ begin
   CheckUnpaidInvoices(CredManr,dueamount,openamount);
   sd = GetLastInvoiceDate(CredManr,RepSpec.d1);
   GetCredManOverdueInvoices(CredManr,CMb,RepSpec.d1,sd,latedays,lateamount,lateformula);
+logtext(0,"dd " & IVr.Sum4 & ":" & dueamount & ":" & lateamount);
   RepSpec.vals1 = IVr.Sum4;
   RepSpec.vals0 = dueamount;//should this be openamount?
   RepSpec.vals2 = dueamount + IVr.Sum4;
@@ -1547,5 +1555,121 @@ begin
   end;
   
 
+  return;
+end;
+
+global
+function val GetCredManItemValue(record IVVc IVr,string item,Boolean setzerof)
+begin
+  Integer i,rwcnt;
+  val res;
+  row IVVc IVrw;
+
+  if (setzerof) then begin
+    res = 0;
+  end;
+  
+  rwcnt = MatRowCnt(IVr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    if (IVrw.ArtCode==item) then begin
+      res = res + IVrw.Sum;
+    end;
+  end;
+
+  GetCredManItemValue = res;
+  return;
+end;
+
+procedure FillInvoiceData(record IVVc IVr,var record RcVc RepSpec)
+begin
+  record CYBlock CompYear;
+  record CredManSetBlock CMb;
+  val t,v,t1,t2,t3,t4;
+  val abovehiddenbase,abovehiddenvat;
+
+  BlockLoad(CompYear);
+
+  SumNoDownPay(IVr,t,v,t1,t2,t3,t4);
+  GetHiddenInvoiceValues(IVr,abovehiddenbase,abovehiddenvat);
+
+  RepSpec.sStartDate = CurrentDate;//F_DATUM
+  RepSpec.f8 = GetCredManNr(IVr.CustCredManNr);//F_NUMMER
+  RepSpec.f9 = IVr.OfficialSerNr;
+  RepSpec.vals0 = t2;//F_ORGATTBETALA
+  RepSpec.f1 = IVr.CurncyCode;//F_VALUTA
+  RepSpec.long2 = IVr.SerNr;//F_FAKTURANUMMER
+  RepSpec.f2 = CompYear.emailAddr;//F_EGENEMAIL
+  RepSpec.f3 = CompYear.Phone;//F_EGENTEL
+  RepSpec.f4 = CompYear.CompName;//F_EGETNAMN
+  RepSpec.f5 = CompYear.OrgNr;//F_EGETORGNR
+  RepSpec.f6 = CompYear.VATNr;//F_EGETMOMSNR
+  RepSpec.f7 = CompYear.Addr0;//F_EGENADRESS
+  RepSpec.vals4 = abovehiddenbase + abovehiddenvat;
+  RepSpec.f10 = IVr.Sum4;
+
+  BlockLoad(CMb);
+  RepSpec.vals1 = GetCredManItemValue(IVr,CMb.RateItem,true);
+  RepSpec.vals2 = GetCredManItemValue(IVr,CMb.InstalmentItem,true);
+  RepSpec.vals3 = GetCredManItemValue(IVr,CMb.LateFeeItem,true);
+
+  return;
+end;
+
+
+global
+updating function Boolean Ext_CreateInvoiceText(record IVVc IVr,row MailTextVc MTrw,var record MailVc IVMailr,record Mailr oldMailr)
+begin
+  record LTxtVc LTxtr;
+  Longint pos,l;
+  string 255 tstr;
+  record RcVc RepSpec;
+  area a;
+  record Attach2Vc Attachr;
+  record RLinkVc RLr;
+
+  FillInvoiceData(IVr,RepSpec);
+  
+  if (IVMailr.HtmlFlag==0) then begin
+    LTxtr.Code = MTrw.FirstTxt;
+    if (ReadFirstMain(LTxtr,1,true)) then begin
+      ParseTextField(a,LTxtr,RepSpec,"InvLtxtVcReplaceToken");
+      l = GetAreaLength(a);
+      pos = 0;
+      while (pos<l) begin
+        tstr = GetStringFromArea(a,pos,255);
+        AddToText(tstr,IVMailr); 
+        pos = pos+255;
+      end;
+    end;
+  end else begin
+    LTxtr.Code = MTrw.FirstTxt;
+    if (ReadFirstMain(LTxtr,1,true)) then begin
+    if (ReadRecordLink(IVMailr,1,Attachr,RLr)) begin
+      RecordRemove(RLr);
+    end;
+     CopyRecordLinks(LTxtr,IVMailr);
+     if (LTxtr.HtmlFlag==1) then begin
+        ParseHtmlField(IVMailr,RepSpec,"InvMailVcReplaceToken");
+      end;
+    end;
+  end;
+
+  SetAreaZeroSize(a);
+  RecordClear(LTxtr);
+  AddToText(MTrw.Header,LTxtr);
+  ParseTextField(a,LTxtr,RepSpec,"InvLtxtVcReplaceToken");
+  l = GetAreaLength(a);
+  pos = 0;
+  tstr = "";
+  while (pos<l) begin
+    tstr = GetStringFromArea(a,pos,255);
+    pos = pos+255;
+  end;
+  IVMailr.Header = tstr;
+
+  RecordUpdate(oldMailr,IVMailr,false);
+
+  Ext_CreateInvoiceText = true;
   return;
 end;

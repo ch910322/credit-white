@@ -104,6 +104,34 @@ begin
   return;
 end;
 
+procedure PrintFirstPrincipleDueDate(var vector string vVals,record CredManVc CredManr)
+begin
+  record CredManSetBlock CredManSetb;
+  record CredManPayPlanVc CredManPayPlanr;
+  row CredManPayPlanVc CredManPayPlanrw;
+  Date res;
+  Integer i,rwcnt;
+  record SMVc SMr;
+  row SMVc SMrw;
+ 
+  BlockLoad(CredManSetb);
+  if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+    BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+  end;
+
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(SMr,i,SMrw);
+    if (SMrw.DebVal!=0) then begin
+      res = SMrw.DueDate;
+      i = rwcnt;
+    end;
+  end;
+
+  vVals["F_INSTALMENTDUEDATE"] = res;
+
+  return;
+end;
 
 procedure CredManHeader(var vector string vVals,record CredManVc CredManr)
 begin
@@ -349,10 +377,13 @@ begin
   Userr.Code = CredManr.SalesMan;
   if (ReadFirstMain(Userr,1,true)) then begin
     vVals["F_SALESMANPHONE"] = Userr.Phone1;
+    vVals["F_SALESMANNAME"] = Userr.Name;
     vVals["F_SALESMANEMAIL"] = Userr.emailAddr;
   end;
 
   vVals["F_FIRSTINVDATE"] = CredManr.FirstInvDate;
+
+  PrintFirstPrincipleDueDate(vVals,CredManr);
 
   return;
 end;

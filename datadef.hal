@@ -481,6 +481,7 @@ begin
   ChangeField(IntRate,M4Rate,0,0);
   ChangeField(PrincipleDelayInterest,M4Rate,0,0);
   RecordFIeld(SkipOverDue,M4Int,0,0);
+  RecordField(OfficialSerNr,M4Str,100,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -511,7 +512,11 @@ begin
 
   KeyBegin(VINr);
   KeySegment(VINr);
-  KeySegment(SerNr);  
+  KeySegment(SerNr); 
+
+  KeyBegin2(OfficialSerNr,8533);
+  KeySegment(OfficialSerNr);
+  KeySegment(SerNr); 
 
   EndRecordAdd;
 
@@ -1118,11 +1123,41 @@ begin
   RecordField(HiddenPrinciple,M4Int,0,0);
   RecordField(AddOverdueDetails,M4Int,0,0);
 
+  RecordField(SendToMainContact,M4Int,0,0);
+  RecordField(SendToCompany,M4Int,0,0);
+  RecordField(SendToCompNoContact,M4Int,0,0);
+  RecordField(SendToAddRecip,M4Int,0,0);
+  RecordField(SendToJobDescr,M4Str,255,0);
+  RecordField(ReplaceVATNr,M4Str,255,0);
+  RecordField(ReplaceVATNrWith,M4Str,255,0);
+
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
   ArrayField(DueDate,M4Date,0,0);
   ArrayField(FeesMatrix,M4PackedMatrix,0,CredFeesMatrixVc);
+  EndRecordAdd;
+
+  BlockBegin(CredLegalInvNrBlock,-,"");
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(StartDate,M4Date,0,0);
+  ArrayField(EndDate,M4Date,0,0);
+  ArrayField(Serie,M4Str,30,0);
+  ArrayField(TSerStart,M4Str,30,0);
+  ArrayField(TSerEnd,M4Str,30,0);
+  ArrayField(TSerCom,M4Str,100,0);
+  ArrayField(CredManType,M4Str,20,CredManTypeVc);
+  ArrayField(CredManClass,M4Str,20,CredManClassVc);
+  ArrayField(RegType,M4Set,2028,0);
+  ArrayField(SelectionType,M4Set,2029,0);
+  EndArray;
+  EndBlock;
+  
+  RecordAddBegin(MailTextVc,"MailTextVc_Cred");
+  ChangeField(Header,M4Str,200,0);
+  ChangeMatrixField(Header,M4Str,200,0);
+
   EndRecordAdd;
   
   SourceFile("halcust\\LoanApp\\English", 0);

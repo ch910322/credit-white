@@ -387,5 +387,17 @@ begin
   SetText(4,"Buy-out");
   EndSet;
 
+  SetBegin(2028);
+  SetText(0,"Credit Agreement");
+  SetText(1,"B2B Loan Applications");
+  EndSet;
+
+  SetBegin(2029);
+  SetText(0,"Manual");
+  SetText(1,"At Insert");
+  SetText(2,"At OK");
+  SetText(3,"At Printout");
+  EndSet;
+
   return;
 end;

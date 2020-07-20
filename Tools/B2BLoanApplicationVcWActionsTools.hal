@@ -577,6 +577,44 @@ begin
 end;
 
 global
+function string 255 InvLtxtVcReplaceToken(record LTxtVc LTxtr,record RcVc RepSpec,string token)
+begin
+  string 255 res;
+
+  switch (token) begin
+    case "F_DATUM": res = RepSpec.sStartDate;
+    case "F_NUMMER": res = RepSpec.f8;
+    case "F_OFFICIALSERNO": res = RepSpec.f9;
+    case "F_ORGATTBETALA": res = RepSpec.vals0;
+    case "F_VALUTA": res = RepSpec.f1;
+    case "F_FAKTURANUMMER": res = RepSpec.long2;
+    case "F_EGENEMAIL": res = RepSpec.f2;
+    case "F_EGENTEL": res = RepSpec.f3;
+    case "F_EGETNAMN": res = RepSpec.f4;
+    case "F_EGETORGNR": res = RepSpec.f5;
+    case "F_EGETMOMSNR": res = RepSpec.f6;
+    case "F_EGENADRESS": res = RepSpec.f7;
+    case "F_RATEVAL": res = RepSpec.vals1;
+    case "F_PRINCVAL": res = RepSpec.vals2;
+    case "F_LATEFEEVAL": res = RepSpec.vals3;
+    case "F_ABOVEHIDDENFULL": res = RepSpec.vals4;
+    case "F_TOPAY": res = RepSpec.f10;
+    otherwise
+      res = LetVcReplaceTokenCust(RepSpec,token);
+  end;
+
+  InvLtxtVcReplaceToken = res;
+end;
+
+global
+function string 255 InvMailVcReplaceToken(record MailVc Mailr,record RcVc RepSpec,string token)
+begin
+  record LTxtVc LTxtr;
+  InvMailVcReplaceToken = InvLtxtVcReplaceToken(LTxtr,RepSpec,token);
+end;
+
+
+global
 updating function Boolean StoreEmailRecord(record LTxtVc LTxtr,var record MailVc Mailr,record RcVc RepSpec)
 begin
   Boolean res;
