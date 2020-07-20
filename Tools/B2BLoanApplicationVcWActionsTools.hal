@@ -583,7 +583,8 @@ begin
 
   switch (token) begin
     case "F_DATUM": res = RepSpec.sStartDate;
-    case "F_NUMMER": res = RepSpec.long1;
+    case "F_NUMMER": res = RepSpec.f8;
+    case "F_OFFICIALSERNO": res = RepSpec.f9;
     case "F_ORGATTBETALA": res = RepSpec.vals0;
     case "F_VALUTA": res = RepSpec.f1;
     case "F_FAKTURANUMMER": res = RepSpec.long2;

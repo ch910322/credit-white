@@ -16,6 +16,7 @@ external inner function Boolean IVVc_PasteSum(var record IVVc,Integer,var Boolea
 external function Date GetLastInvoiceDate(record CredManVc,Date);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 external inner procedure SumNoDownPay(record IVVc,var val,var val,var val,var val,var val,var val);
+external function string 255 GetCredManNr(Longint);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -1590,7 +1591,8 @@ begin
   SumNoDownPay(IVr,t,v,t1,t2,t3,t4);
 
   RepSpec.sStartDate = CurrentDate;//F_DATUM
-  RepSpec.long1 = IVr.CustCredManNr;//F_NUMMER
+  RepSpec.f8 = GetCredManNr(IVr.CustCredManNr);//F_NUMMER
+  RepSpec.f9 = IVr.OfficialSerNr;
   RepSpec.vals0 = t2;//F_ORGATTBETALA
   RepSpec.f1 = IVr.CurncyCode;//F_VALUTA
   RepSpec.long2 = IVr.SerNr;//F_FAKTURANUMMER

@@ -1122,6 +1122,12 @@ begin
   RecordField(HiddenPrinciple,M4Int,0,0);
   RecordField(AddOverdueDetails,M4Int,0,0);
 
+  RecordField(SendToMainContact,M4Int,0,0);
+  RecordField(SendToCompany,M4Int,0,0);
+  RecordField(SendToCompNoContact,M4Int,0,0);
+  RecordField(SendToAddRecip,M4Int,0,0);
+  RecordField(SendToJobDescr,M4Str,255,0);
+
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
