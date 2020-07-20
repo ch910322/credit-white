@@ -718,7 +718,7 @@ begin
             usemonths = usemonths - InCredManr.PauseMonths;
           end;
           */
-          usemonths = months - i;
+          usemonths = months - i + delaymonths;
           prolongf = true;
         end;
       end;
@@ -737,7 +737,7 @@ begin
             usemonths = usemonths + InCredManr.ProlongMonths;
           end;
           */
-          usemonths = months - i;
+          usemonths = months - i + delaymonths;
           if (i < pausestartmonths + InCredManr.PauseMonths) then begin
             usemonths = months - (pausestartmonths + InCredManr.PauseMonths);
           end;
