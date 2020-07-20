@@ -903,13 +903,13 @@ begin
   HalPushButton(h,v,h+100,v+20,"OpenCredManPayGrntReportsBtn","Reports");v = v + 30;
 
   SpecialMenu("Open #NL# Transaction",'t',2,"OpenTRFromCredMan");
-  SpecialMenu("Open Subsystem Record",' ',3,"OpenSubsysCredManDsm");
+  //SpecialMenu("Open Subsystem Record",' ',3,"OpenSubsysCredManDsm");//CUST-REMOVED
 //CUST-BEGIN
   SpecialMenu("Terminate Agreement",' ',4,"TerminateCredManDsm");
   SpecialMenu("Buy-out Agreement",' ',5,"BuyOutCredManDsm");
   SpecialMenu("Check Buy-out Value",' ',6,"CheckBuyoutValueWindowDsm");
   SpecialMenu("Customer Status",'e',7,"CUStatusCredManDsm");
-  SpecialMenu("Print Payment Schedule",' ',8,"PaymentScheduleCredManDsm");
+  //SpecialMenu("Print Payment Schedule",' ',8,"PaymentScheduleCredManDsm");
   SpecialMenu("Pause/prolong Agreement",' ',8,"PauseCredManDsm");
   SpecialMenu("Credit Agreement Info",'I',0,"CredManInfoDsm");
   SpecialMenu("Refinance Agreement",' ',9,"RefinCredManDsm");
@@ -924,7 +924,7 @@ begin
   SpecialMenu("Invoice",'F',1,"CreateCredManInvoiceDsm");
   SpecialMenu("Payment",' ',1,"CredManMakePaymentDsm");
 //CUST-END
-  SpecialMenu("Receipt",'r',1,"ReceiptCredManDsm");
+  //SpecialMenu("Receipt",'r',1,"ReceiptCredManDsm");
   EndWindow;
 end;
 
