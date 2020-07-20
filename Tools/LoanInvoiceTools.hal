@@ -862,8 +862,10 @@ begin
       CredHistr.SerNr = CredManPayPlanrw.IssuedNr;
       if (ReadFirstMain(CredHistr,1,true)) then begin
         if (CredManPayPlanrw.ArtCode!=CMb.LateFeeItem and CredManPayPlanrw.ArtCode!=CMb.LateRateItem and CredHistr.RecordType==0) then begin
-          balance = CredManPayPlanrw.Bal;
-          lastinv = AddDay(CredManPayPlanrw.TransDate,1);
+          if (CredManPayPlanrw.Bal<balance or balance==0) then begin
+            balance = CredManPayPlanrw.Bal;
+            lastinv = AddDay(CredManPayPlanrw.TransDate,1);
+          end;
         end;
       end;
     end;
