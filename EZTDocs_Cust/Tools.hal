@@ -168,6 +168,7 @@ begin
   record CMInvoicingBlock CIb;
   string 255 vatnr;
   record CUVc CUr;
+  record CredManVc CredManr;
 
   Ext_PrintInvoiceSigner(vVals);
 
@@ -181,6 +182,10 @@ begin
   vVals["F_ABOVEHIDDENVAT"] = abovehiddenvat;
   vVals["F_ABOVEHIDDENFULL"] = abovehiddenbase + abovehiddenvat;
   vVals["F_NUMMER"] = GetCredManNr(IVr.CustCredManNr);
+  CredManr.SerNr = IVr.CustCredManNr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    vVals["F_CREDMANCREATEDATE"] = CredManr.CreatedDate;
+  end;
 
   BlockLoad(CMb);
   vVals["F_PRINCVAL"] = GetCredManItemValue(IVr,CMb.InstalmentItem,true);
