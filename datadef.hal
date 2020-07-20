@@ -1127,6 +1127,8 @@ begin
   RecordField(SendToCompNoContact,M4Int,0,0);
   RecordField(SendToAddRecip,M4Int,0,0);
   RecordField(SendToJobDescr,M4Str,255,0);
+  RecordField(ReplaceVATNr,M4Str,255,0);
+  RecordField(ReplaceVATNrWith,M4Str,255,0);
 
   EndBlock;
 

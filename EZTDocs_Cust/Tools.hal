@@ -136,6 +136,9 @@ begin
   record RLinkVc RLr;
   Longint pos,l;
   string 255 tstr;
+  record CMInvoicingBlock CIb;
+  string 255 vatnr;
+  record CUVc CUr;
 
   Ext_PrintInvoiceSigner(vVals);
 
@@ -194,6 +197,23 @@ begin
       end;
     end;
   end;
+  
+  if (blank(IVr.VATNr)) then begin
+    CUr.Code = IVr.CustCode;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      vatnr = CUr.VATNr;   
+    end;   
+  end else begin
+    vatnr = IVr.VATNr;      
+  end;
+
+  BlockLoad(CIb);
+  if (nonblank(CIb.ReplaceVATNr)) then begin
+    if (CIb.ReplaceVATNr==vatnr) then begin
+      vatnr = CIb.ReplaceVATNrWith;
+    end;
+  end;
+  vVals["F_KUNDMOMSNR2"] = vatnr;
 
   return;
 end;
