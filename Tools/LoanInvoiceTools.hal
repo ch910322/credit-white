@@ -1604,9 +1604,9 @@ begin
   RepSpec.f7 = CompYear.Addr0;//F_EGENADRESS
 
   BlockLoad(CMb);
-  RepSpec.vals1 = GetCredManItemValue(IVr,CMb.RateItem,false);
-  RepSpec.vals2 = GetCredManItemValue(IVr,CMb.InstalmentItem,false);
-  RepSpec.vals3 = GetCredManItemValue(IVr,CMb.LateFeeItem,false);
+  RepSpec.vals1 = GetCredManItemValue(IVr,CMb.RateItem,true);
+  RepSpec.vals2 = GetCredManItemValue(IVr,CMb.InstalmentItem,true);
+  RepSpec.vals3 = GetCredManItemValue(IVr,CMb.LateFeeItem,true);
 
   return;
 end;
