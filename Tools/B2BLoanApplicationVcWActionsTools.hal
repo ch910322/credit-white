@@ -597,6 +597,8 @@ begin
     case "F_RATEVAL": res = RepSpec.vals1;
     case "F_PRINCVAL": res = RepSpec.vals2;
     case "F_LATEFEEVAL": res = RepSpec.vals3;
+    case "F_ABOVEHIDDENFULL": res = RepSpec.vals4;
+    case "F_TOPAY": res = RepSpec.f10;
     otherwise
       res = LetVcReplaceTokenCust(RepSpec,token);
   end;

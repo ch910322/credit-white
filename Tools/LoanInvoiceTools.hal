@@ -17,6 +17,7 @@ external function Date GetLastInvoiceDate(record CredManVc,Date);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 external inner procedure SumNoDownPay(record IVVc,var val,var val,var val,var val,var val,var val);
 external function string 255 GetCredManNr(Longint);
+external procedure GetHiddenInvoiceValues(record IVVc,var val,var val);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -1585,10 +1586,12 @@ begin
   record CYBlock CompYear;
   record CredManSetBlock CMb;
   val t,v,t1,t2,t3,t4;
+  val abovehiddenbase,abovehiddenvat;
 
   BlockLoad(CompYear);
 
   SumNoDownPay(IVr,t,v,t1,t2,t3,t4);
+  GetHiddenInvoiceValues(IVr,abovehiddenbase,abovehiddenvat);
 
   RepSpec.sStartDate = CurrentDate;//F_DATUM
   RepSpec.f8 = GetCredManNr(IVr.CustCredManNr);//F_NUMMER
@@ -1602,6 +1605,8 @@ begin
   RepSpec.f5 = CompYear.OrgNr;//F_EGETORGNR
   RepSpec.f6 = CompYear.VATNr;//F_EGETMOMSNR
   RepSpec.f7 = CompYear.Addr0;//F_EGENADRESS
+  RepSpec.vals4 = abovehiddenbase + abovehiddenvat;
+  RepSpec.f10 = IVr.Sum4;
 
   BlockLoad(CMb);
   RepSpec.vals1 = GetCredManItemValue(IVr,CMb.RateItem,true);
