@@ -718,7 +718,11 @@ begin
             usemonths = usemonths - InCredManr.PauseMonths;
           end;
           */
-          usemonths = months - i + delaymonths;
+          usemonths = months - i;
+          if (setdelf==false) then begin
+            usemonths = usemonths + delaymonths;
+          end; 
+
           prolongf = true;
         end;
       end;
@@ -737,7 +741,10 @@ begin
             usemonths = usemonths + InCredManr.ProlongMonths;
           end;
           */
-          usemonths = months - i + delaymonths;
+          usemonths = months - i;
+          if (setdelf==false) then begin
+            usemonths = usemonths + delaymonths;
+          end; 
           if (i < pausestartmonths + InCredManr.PauseMonths) then begin
             usemonths = months - (pausestartmonths + InCredManr.PauseMonths);
           end;
@@ -789,8 +796,7 @@ begin
 */
         case 0://annuity
           if (setdelf==false and inCredManr.PrincipleDelayMonths>0) then begin
-            delaymonths = inCredManr.PrincipleDelayMonths;
-            usemonths = usemonths - inCredManr.PrincipleDelayMonths;
+            usemonths = usemonths - delaymonths;
             if (prolongf) then begin
               curmonth = curmonth + delaymonths;
             end;
@@ -819,8 +825,7 @@ begin
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
         case 1://linear with delay
           if (setdelf==false and inCredManr.PrincipleDelayMonths>0) then begin
-            delaymonths = inCredManr.PrincipleDelayMonths;
-            usemonths = usemonths - inCredManr.PrincipleDelayMonths;
+            usemonths = usemonths - delaymonths;
             if (prolongf) then begin
               curmonth = curmonth + delaymonths;
             end;
