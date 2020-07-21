@@ -342,7 +342,6 @@ begin
   Boolean res;
 
   BlockLoad(CIb);
-  stopalert("ee");
   CUr.Code = IVr.CustCode;
   ReadFirstMain(CUr,1,true);
 
