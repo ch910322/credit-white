@@ -1,0 +1,22 @@
+global
+procedure SendScheduleEmailsMn(record RcVc RepSpec)
+begin
+  record CredManVc CredManr;
+  Boolean TrHs,testf;
+
+  TrHs = true;
+  CredManr.startDate = RepSpec.sStartDate;
+  while (LoopKey("startDate",CredManr,1,TrHs)) begin
+    if (CredManr.startDate>RepSpec.sEndDate) then begin
+      TrHs = false;
+    end else begin
+      testf = true;
+      if (testf) then begin
+        
+
+      end;
+    end;
+  end;  
+
+  return;
+end;

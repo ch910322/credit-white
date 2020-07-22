@@ -1131,6 +1131,7 @@ begin
   RecordField(ReplaceVATNr,M4Str,255,0);
   RecordField(ReplaceVATNrWith,M4Str,255,0);
   RecordField(ProlongItem,M4Code,20,INVc);
+  RecordField(ScheduleText,M4Code,10,LTxtVc);
 
   EndBlock;
 
