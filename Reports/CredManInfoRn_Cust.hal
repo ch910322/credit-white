@@ -11,6 +11,7 @@ external inner procedure CalcCredManSums(record CredManVc,record CredManPayPlanV
 external inner function LongInt DateDiff(Date,Date);
 external procedure TestCredManInvoicesFromPlan(record CredManVc,record CredManSetBlock,record CredManPayPlanVc,Date,var array record IVVc);
 external procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
+external procedure TestInvoiceBasedOnSchedule(record CredManVc,record CredManSchedVc,Date,var array record IVVc);
 
 procedure PrintLeft(string col1str,string col1val,string col2str,string col2val)
 begin
@@ -410,6 +411,8 @@ begin
   Integer i,rwcnt;
   Boolean res;
   val calcbal;
+  array record IVVc aIVr;
+  record IVVc IVr;
  
   
   CSr.CredManNr = CredManr.SerNr;
@@ -420,10 +423,18 @@ begin
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CSr,i,CSrw);
       if (CSrw.Type==0) then begin
-        AddScheduleToList(CSrw,SMr,calcbal)
+        if (CSrw.Invoiced==1) then begin
+          AddScheduleToList(CSrw,SMr,calcbal);
+        end;
       end else begin
         AddBuyOutToList(CSrw.Total,CSrw.InvDate,SMr,calcbal);
       end;
+    end;
+    TestInvoiceBasedOnSchedule(CredManr,CSr,CredManr.endDate,aIVr);
+    for (i=0;i<aIVr.length;i=i+1) begin
+      IVr = aIVr[i];
+      IVr.SerNr = -1;
+      AddInvoiceToList(IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate);
     end;
   end;
 
