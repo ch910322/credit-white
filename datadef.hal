@@ -1130,6 +1130,7 @@ begin
   RecordField(SendToJobDescr,M4Str,255,0);
   RecordField(ReplaceVATNr,M4Str,255,0);
   RecordField(ReplaceVATNrWith,M4Str,255,0);
+  RecordField(ProlongItem,M4Code,20,INVc);
 
   EndBlock;
 
@@ -1159,6 +1160,27 @@ begin
   ChangeMatrixField(Header,M4Str,200,0);
 
   EndRecordAdd;
+
+  RecordBegin(ProlongSessionVc,-,"");
+  RecordField(SerNr,M4Long,0,0);
+  RecordField(TransDate,M4Date,0,0);
+  RecordField(TransTime,M4Time,0,0);
+  RecordField(SalesMan,M4Code,20,UserVc);
+  RecordField(PauseDate,M4Date,0,0);
+  RecordField(ProlongDate,M4Date,0,0);
+  RecordField(PauseMonths,M4Qty,0,0);
+  RecordField(ProlongMonths,M4Qty,0,0);
+  RecordField(ProlongWhenPaid,M4Int,0,0);
+  RecordField(PaidFlag,M4Int,0,0);
+  RecordField(CredManNr,M4Long,0,0);
+  RecordField(RecalcSchedule,M4Int,0,0);
+  MainKeyBegin(SerNr,0);
+  KeySegment(SerNr);
+  KeyBegin(CredManPaid);
+  KeySegment(CredManNr);
+  KeySegment(PaidFlag);
+  KeySegment(SerNr);
+  EndRecord;
   
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);

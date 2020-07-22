@@ -28,6 +28,7 @@ begin
   Setting("Automatic Order Classes",CMOrderClassTClass,modCredMan);
   Setting("Receipt Entry",ReceiptEntryWClass,modSL);
   Setting("Agreement Classifications",CredManClassLClass,modCredMan);
+  Setting("Prolong Sessions",ProlongSessionLClass,modCredMan);
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
 	Report("Application Overview",LoanApplicationListRClass,LoanApplicationListRn,0,modCredMan);
@@ -177,6 +178,7 @@ begin
   SString(200230,"Mailing List");
   SString(200231,"Email");
   SString(200232,"Date");
+  SString(200233,"Another Prolongation Pending");
 
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");

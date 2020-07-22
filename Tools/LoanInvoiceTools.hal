@@ -926,6 +926,40 @@ begin
 end;
 
 global
+updating procedure CreateProlongInvoice(record CredManVc CredManr)
+begin
+  record CMInvoicingBlock CIb;
+  record CredManSetBlock CMb;
+  record IVVc IVr,oldIVr;
+  val rate,sum;
+  string 255 spec;
+
+  BlockLoad(CIb);
+  BlockLoad(CMb);
+
+  SetupLoanInvoice(CredManr,CMb,IVr,CurrentDate,"","",true,false,"");
+  rate = CredManr.StdProlongPrc;
+  if (CredManr.AnnualRate==1) then begin
+    rate = rate/12;
+  end;
+  sum = (CredManr.InvSum4 - CredManr.DepositSum) *(rate/100);
+  sum = sum + CredManr.StdProlongFee;
+  GetItemName(CIb.ProlongItem,spec);
+  SetupInvoiceRowAndAdd(IVr,CIb.ProlongItem,spec,1,sum,blankval,14,-1);
+  AddPrepayments(IVr,CIb);
+
+  if (IVr.SerNr>-1) then begin
+    if (RecordInsert(IVr,true)) then begin
+      RecordCopy(oldIVr,IVr);
+      IVr.OKFlag = 1;
+      RecordUpdate(oldIVr,IVr,true);
+    end;  
+  end;
+
+  return;
+end;
+
+global
 updating procedure DoBuyOutAgreement(record CredManVc CredManr,var record IVVc firstIVr)
 begin
   record CredManSetBlock CMb;
@@ -1039,7 +1073,6 @@ begin
   CheckUnpaidInvoices(CredManr,dueamount,openamount);
   sd = GetLastInvoiceDate(CredManr,RepSpec.d1);
   GetCredManOverdueInvoices(CredManr,CMb,RepSpec.d1,sd,latedays,lateamount,lateformula);
-logtext(0,"dd " & IVr.Sum4 & ":" & dueamount & ":" & lateamount);
   RepSpec.vals1 = IVr.Sum4;
   RepSpec.vals0 = dueamount;//should this be openamount?
   RepSpec.vals2 = dueamount + IVr.Sum4;
@@ -1062,6 +1095,7 @@ begin
     case 9:  res = type;
     case 10: res = type;
     case 11: res = type;
+    case 14: res = type;
     otherwise
       res = type + 4;
   end;
