@@ -278,6 +278,7 @@ begin
   SMrw.CurCredVal = calcbal;
   SMrw.Objects = fromdate;
   SMrw.Comment = todate;
+  SMrw.FrRate = IVr.Sum3;
   if (MatRowCnt(FMr)>0) then begin
     PackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
   end;

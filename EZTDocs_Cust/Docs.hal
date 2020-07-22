@@ -399,7 +399,7 @@ begin
   LongInt i,rwcnt;
   record SMVc SMr;
   row SMVc SMrw;
-  val totpayment,totinterest;
+  val totpayment,totinterest,totfullpayment,totfullvat;
   record CredManSetBlock CredManSetb;
   record CUVc CUr;
   Integer num;
@@ -436,13 +436,19 @@ begin
     vVals["ROW_" & strnum & "_F_DUEDATE"] = SMrw.DueDate;//Due date
     vVals["ROW_" & strnum & "_F_CREDINVTOT"] = (SMrw.CredVal+SMrw.DebVal2+SMrw.DebVal);//Balance
     vVals["ROW_" & strnum & "_F_ROWNR"] = num;
+    vVals["ROW_" & strnum & "_F_VATSUM"] = SMrw.FrRate;//vat amount;
+    vVals["ROW_" & strnum & "_F_TOTROWSUM"] = SMrw.CurDebVal;//total amount;
     totinterest = totinterest + (SMrw.CredVal+SMrw.DebVal2);
     totpayment = totpayment + (SMrw.CredVal+SMrw.DebVal2) + SMrw.DebVal;
+    totfullpayment = totfullpayment + SMrw.CurDebVal;
+    totfullvat = totfullvat + SMrw.FrRate;
 LNextRow:;
   end;
 
   vVals["F_CREDTOTINT"] = totinterest;
   vVals["F_CREDTOTPAY"] = totpayment;
+  vVals["F_CREDFULLTOTPAY"] = totfullpayment;
+  vVals["F_CREDTOTVAT"] = totfullvat;
 
   return;
 end;
