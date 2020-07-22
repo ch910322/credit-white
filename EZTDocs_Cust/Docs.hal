@@ -47,6 +47,7 @@ external inner function string 255 CredManOwnBankAccount(Longint);
 external inner function string 255 CredManCustEmail(record CUVc);
 external inner function val GetMonthlyFees(record CredManVc,Integer);
 external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,record CredManSetBlock,var record SMVc);
+external function string 255 GetCredManNr(Longint);
 
 procedure GetCredManCustContact(record CredManVc CredManr,var string contactid,var string contactname)
 begin
@@ -161,6 +162,8 @@ begin
   vVals["F_KUNDNR"] = CredManr.CustCode;
   vVals["F_KUNDNAMN"] = CredManr.Addr0;
   vVals["F_NUMMER"] = CredManr.SerNr;
+  vVals["F_NUMMER2"] = GetCredManNr(CredManr.SerNr);
+  
   //Ext_OutAddress("F_ADRESS",IVr.Addr0,IVr.Addr1,IVr.Addr2,IVr.Addr3,IVr.InvAddr3,IVr.InvAddr4);//CUST-REMOVED
   vVals["F_ADDR2"] = IVr.Addr1;
   vVals["F_ADDR3"] = IVr.Addr2;
@@ -534,6 +537,7 @@ begin
   vVals["F_CREDHALFSUMTEXT"] = tstr;
 
   vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(CredManr.SerNr);
+  vVals["F_NUMMER2"] = GetCredManNr(CredManr.SerNr);
 
   return;
 end;
@@ -631,6 +635,8 @@ begin
     vVals["F_CFOPHONE"] = CUr.Phone;
     vVals["F_CFOEMAIL"] = CUr.eMail;
   end;
+  vVals["F_NUMMER2"] = GetCredManNr(CredManr.SerNr);
+
   Ext_PrintDocumentSigner(vVals);
 
   return;
