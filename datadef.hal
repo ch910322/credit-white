@@ -565,6 +565,7 @@ begin
   RecordField(Classifications,M4UStr,255,0);
   RecordField(OwnBankAccount,M4UStr,255,0);
   RecordField(AnnualRate,M4Int,0,0);
+  RecordField(MinOverdueFee,M4Val,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);

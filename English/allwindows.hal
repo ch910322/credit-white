@@ -972,7 +972,8 @@ begin
   EditField(h,v+=vs,262,"Classifications",Normal,Classifications,false,CredManClassSClass);
   CheckBox(h2,v,0,"Annual Rate",AnnualRate);
   EditField(h,vm2=(v+=vs),262,"Bank Account",Normal,OwnBankAccount,false,0);
-  
+  EditField(h2+150,v=vm-20,-40,"Minimum Overdue Fee",Normal,MinOverdueFee,false,0);
+  vm = vm + 20;
   //CUST-END
   ButtonFrame(h2,v=vm,150,2,"Late Interest Based On");
   RadioButton(h2,v,0,0,"Due Date",LateRateOption);

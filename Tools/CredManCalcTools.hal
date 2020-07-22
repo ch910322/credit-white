@@ -636,6 +636,8 @@ begin
   Date invdat2;
   Date sd,ed;
   array string 255 lateformula;
+  Boolean addf;
+  record CredManTypeVc CMTr;
   
   if (CIb.OverdueIVType==2) then begin
     sd = AddMonth(frdate,-1);
@@ -643,7 +645,16 @@ begin
     invdat2 = invdat;
     invdat2.Day = CIb.OverdueIVDay;
     GetCredManOverdueInvoices(CredManr,CredManSetb,ed,sd,latedays,lateamount,lateformula);
-    AddCredPayPlanLine(CredManPayPlanr,invdat2,CredManSetb.LateRateItem,"",kEventTypeIssueLateFees,lateamount,0,acumint,calcbal,frdate,todate,-1,-1,0);
+    addf = true;
+    CMTr.Code = CredManr.Type;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      if (CMTr.MinOverdueFee>0 and lateamount<CMTr.MinOverdueFee) then begin
+        addf = false;
+      end;
+    end;
+    if (addf) then begin
+      AddCredPayPlanLine(CredManPayPlanr,invdat2,CredManSetb.LateRateItem,"",kEventTypeIssueLateFees,lateamount,0,acumint,calcbal,frdate,todate,-1,-1,0);
+    end;
   end;
 
   return;
