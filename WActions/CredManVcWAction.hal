@@ -25,6 +25,7 @@ remote function Boolean ContractHasInvoiceCreated(record CredManVc);
 remote updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
 remote updating procedure GenerateAgreementSchedule(record CredManVc);
 remote function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
+remote updating procedure CreateManualExtraInvoice(record RcVc,var record IVVc);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -545,6 +546,58 @@ begin
     end;
     CloseWindow(wn);
   //end;
+  return;
+end;
+
+global
+updating procedure ManualExtraFeeWClassCreate()
+begin
+  record RcVc RepSpec;
+  Boolean testf;
+  Integer wn;
+  record IVVc IVr;
+
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  testf = true;
+  if (blank(RepSpec.d1)) then begin
+    testf = false;
+  end;
+  if (blank(RepSpec.f1)) then begin
+    testf = false;
+  end;
+  if (RepSpec.vals0<=0) then begin
+    testf = false;
+  end;
+  if (testf) then begin
+    CreateManualExtraInvoice(RepSpec,IVr);
+    if (IVr.SerNr>-1) then begin
+      OpenWindow("IVDCLass",0,0,"","",IVr);
+    end;
+    UpdateBrowses("CredManVc");
+    CloseWindow(wn);
+  end else begin
+    MessageBox(32683,"");
+  end;
+
+  return;
+end;
+
+global
+procedure ManualExtraFeeDsm()
+begin
+  Integer wn;
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_Normal) then begin
+    GetWindowRecord(wn,CredManr);
+    RepSpec.long1 = CredManr.SerNr;
+    OpenWindow("ManualExtraFeeWClass",0,0,"","",RepSpec);
+  end;
+
   return;
 end;
 

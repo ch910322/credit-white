@@ -923,6 +923,8 @@ begin
 //  SpecialMenu("Invoice",'F',1,"InvoiceCredManDsm");
   SpecialMenu("Invoice",'F',1,"CreateCredManInvoiceDsm");
   SpecialMenu("Payment",' ',1,"CredManMakePaymentDsm");
+  SpecialMenu("Extra Fee Invoice",' ',1,"ManualExtraFeeDsm");
+  
 //CUST-END
   //SpecialMenu("Receipt",'r',1,"ReceiptCredManDsm");
   EndWindow;

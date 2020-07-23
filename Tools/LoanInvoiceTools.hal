@@ -948,12 +948,47 @@ begin
   SetupInvoiceRowAndAdd(IVr,CIb.ProlongItem,spec,1,sum,blankval,14,-1);
   AddPrepayments(IVr,CIb);
 
+  IVr.SerNr = NextSerNr("IVVc",IVr.InvDate,-1,false,"");
   if (IVr.SerNr>-1) then begin
     if (RecordInsert(IVr,true)) then begin
       RecordCopy(oldIVr,IVr);
       IVr.OKFlag = 1;
       RecordUpdate(oldIVr,IVr,true);
     end;  
+  end;
+
+  return;
+end;
+
+
+global
+updating procedure CreateManualExtraInvoice(record RcVc RepSpec,var record IVVc IVr)
+begin
+  record CMInvoicingBlock CIb;
+  record CredManSetBlock CMb;
+  record IVVc oldIVr;
+  val rate,sum;
+  string 255 spec;
+  record CredManVc CredManr;
+
+  CredManr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    BlockLoad(CIb);
+    BlockLoad(CMb);
+
+    SetupLoanInvoice(CredManr,CMb,IVr,RepSpec.d1,"","",true,false,"");
+    GetItemName(RepSpec.f1,spec);
+    SetupInvoiceRowAndAdd(IVr,RepSpec.f1,spec,1,RepSpec.vals0,blankval,kEventTypeCalcFees,-1);
+    AddPrepayments(IVr,CIb);
+
+    IVr.SerNr = NextSerNr("IVVc",IVr.InvDate,-1,false,"");
+    if (IVr.SerNr>-1) then begin
+      if (RecordInsert(IVr,true)) then begin
+        RecordCopy(oldIVr,IVr);
+        IVr.OKFlag = 1;
+        RecordUpdate(oldIVr,IVr,true);
+      end;  
+    end;
   end;
 
   return;
