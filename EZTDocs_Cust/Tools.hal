@@ -306,8 +306,7 @@ begin
     if (CRr.Invalid==0) then begin
       ContactCUr.Code = CRr.ContactCode;
       if (ReadFirstMain(ContactCUr,1,true)) then begin
-        if (SetInSet(jobdescr,ContactCUr.JobDesc)) then begin
-
+        if (SetInSet(ContactCUr.JobDesc,jobdescr)) then begin
           AddSingleRecipient(Mailr,ContactCUr.eMail);
         end;
       end;
@@ -317,19 +316,17 @@ begin
   return;
 end;
 
-function Boolean CompanyHasNoContactPersons(record CUVc CUr)
+function Boolean CompanyHasNoMainContact(record CUVc CUr)
 begin
   record ContactRelVc CRr;
   Boolean res;
 
-  res = true;
-  while (LoopKey("CustContactCode:" & CUr.Code,CRr,1,true)) begin
-    if (CRr.Invalid==0) then begin
-      res = false;
-    end;
+  res = false;
+  if (blank(CUr.Person)) then begin
+    res = true;
   end;
 
-  CompanyHasNoContactPersons = res;
+  CompanyHasNoMainContact = res;
   return;
 end;
 
@@ -356,7 +353,7 @@ begin
     end;
   end;
   if (CIb.SendToCompany==1) then begin
-    if (CIb.SendToCompNoContact==0 or CompanyHasNoContactPersons(CUr)) then begin
+    if (CIb.SendToCompNoContact==0 or CompanyHasNoMainContact(CUr)) then begin
       AddSingleRecipient(Mailr,Cur.eMail);
       res = true;
     end;
