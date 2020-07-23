@@ -550,6 +550,7 @@ begin
     case "F_CREDTOTPAY":       res = GetScheduleTotalAmount(RepSpec,"tot");
     case "F_CREDTOTFEES":      res = GetScheduleTotalAmount(RepSpec,"fees");
     case "schedulerow":        res = ConvertScheduleRow(RepSpec,token);
+    case "F_NUMMER":           res = RepSpec.f8;
     
   otherwise
     res = LetVcDoReplaceToken(RepSpec,token);

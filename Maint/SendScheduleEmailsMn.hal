@@ -2,6 +2,7 @@ external updating procedure RecreateAgreementSchedule(record CredManVc);
 external inner procedure FindUserMailboxName(string,var string,var string);
 external function Boolean Ext_AddCustomMailRecipients(record IVVc,var record MailVc);
 external inner function Boolean CheckAttachedFilesSizeToLetter(record LetVc);
+external function string 255 GetCredManNr(Longint);
 
 
 function Boolean ScheduleDocumentExists(record CredManVc CredManr,var record Attach2Vc docAttachr)
@@ -74,6 +75,7 @@ begin
         MatRowPut(Mailr,1,Mailrw);
       end;
       tRepSpec.f1 = CredManr.CustCode;
+      tRepSpec.f8 = GetCredManNr(CredManr.SerNr);
       if (LTxtr.HtmlFlag==0) then begin
         ParseTextField(a,LTxtr,tRepSpec,"LtxtVcReplaceToken");
         l = GetAreaLength(a);
