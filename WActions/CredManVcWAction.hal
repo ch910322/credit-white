@@ -7,7 +7,7 @@ remote inner procedure SetupCustPS2Rn(string,var record RcVc);
 remote procedure CredManSetDatesCust(var record CredManVc);
 remote procedure GetCredManEventList(record CredManVc,var record ORVc);
 external procedure GetCredManEventList2(Longint,var record ORVc);
-remote procedure DoPauseCredMan(var record CredManVc,val,val,Date,var Boolean);
+remote updating procedure DoPauseCredMan(var record CredManVc,val,val,Date,var Boolean,var Boolean,record RcVc);
 remote procedure PasteSuretyInCredMan(var record CredManVc,string,Integer,var string);
 remote procedure GetRefinCredManData(Longint,Integer,var record RcVc,Boolean);
 remote updating function Boolean DoRefinCredMan(record RcVc,var string,var record CredManVc);
@@ -25,6 +25,7 @@ remote function Boolean ContractHasInvoiceCreated(record CredManVc);
 remote updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
 remote updating procedure GenerateAgreementSchedule(record CredManVc);
 remote function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
+remote updating procedure CreateManualExtraInvoice(record RcVc,var record IVVc);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -468,6 +469,21 @@ begin
   return;
 end;
 
+function Boolean ProlongInProgress(record CredManVc CredManr)
+begin
+  record ProlongSessionVc PSr;
+  Boolean res;
+  
+  PSr.CredManNr = CredManr.SerNr;
+  PSr.PaidFlag = 0;
+  if (ReadFirstKey("CredManPaid",PSr,2,true)) then begin
+    res = true;
+  end;
+
+  ProlongInProgress = res;
+  return;
+end;
+
 global
 procedure PauseCredManDsm()
 begin
@@ -479,18 +495,22 @@ begin
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
   if (WindowState(wn)==Rs_Normal) then begin
-    if (nonblank(CredManr.PauseDate)) then begin
-      td = CredManr.PauseDate;
+    if (ProlongInProgress(CredManr)) then begin
+      MessageBox(200233,"");
     end else begin
-      td = GetPauseCredManNextDate(CredManr);
+      if (nonblank(CredManr.PauseDate)) then begin
+        td = CredManr.PauseDate;
+      end else begin
+        td = GetPauseCredManNextDate(CredManr);
+      end;
+      if (CredManr.PauseMonths>0) then begin
+        RepSpec.vals0 = CredManr.PauseMonths;
+      end;
+      RepSpec.vals1 = CredManr.ProlongMonths;
+      RepSpec.d1 = td;
+      RepSpec.flags[1] = 1;
+      OpenWindow("PauseCredManWClass",0,wn,"","",RepSpec);
     end;
-    if (CredManr.PauseMonths>0) then begin
-      RepSpec.vals0 = CredManr.PauseMonths;
-    end;
-    RepSpec.vals1 = CredManr.ProlongMonths;
-    RepSpec.d1 = td;
-    RepSpec.flags[1] = 1;
-    OpenWindow("PauseCredManWClass",0,wn,"","",RepSpec);
   end;
 
   return;
@@ -502,7 +522,7 @@ begin
   Integer wn,mwn;
   record CredManVc CredManr;
   record RcVc RepSpec;
-  Boolean res;
+  Boolean res,setf;
 
   wn = CurWindow;
   DeselectWindow(wn,true);
@@ -511,11 +531,11 @@ begin
     mwn = MotherWindow(wn);
     if (WindowState(mwn)==Rs_Normal) then begin
       GetWindowRecord(mwn,CredManr);
-      DoPauseCredMan(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res);
+      DoPauseCredMan(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec);
       if (res) then begin
         PutWindowRecord(mwn,CredManr);
         if (WindowDoOK(mwn,0)) then begin
-          if (RepSpec.flags[1]==1) then begin
+          if (setf and RepSpec.flags[1]==1) then begin
             RecreateAgreementSchedule(CredManr);
           end;
         end;  
@@ -526,6 +546,58 @@ begin
     end;
     CloseWindow(wn);
   //end;
+  return;
+end;
+
+global
+updating procedure ManualExtraFeeWClassCreate()
+begin
+  record RcVc RepSpec;
+  Boolean testf;
+  Integer wn;
+  record IVVc IVr;
+
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  testf = true;
+  if (blank(RepSpec.d1)) then begin
+    testf = false;
+  end;
+  if (blank(RepSpec.f1)) then begin
+    testf = false;
+  end;
+  if (RepSpec.vals0<=0) then begin
+    testf = false;
+  end;
+  if (testf) then begin
+    CreateManualExtraInvoice(RepSpec,IVr);
+    if (IVr.SerNr>-1) then begin
+      OpenWindow("IVDCLass",0,0,"","",IVr);
+    end;
+    UpdateBrowses("CredManVc");
+    CloseWindow(wn);
+  end else begin
+    MessageBox(32683,"");
+  end;
+
+  return;
+end;
+
+global
+procedure ManualExtraFeeDsm()
+begin
+  Integer wn;
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_Normal) then begin
+    GetWindowRecord(wn,CredManr);
+    RepSpec.long1 = CredManr.SerNr;
+    OpenWindow("ManualExtraFeeWClass",0,0,"","",RepSpec);
+  end;
+
   return;
 end;
 

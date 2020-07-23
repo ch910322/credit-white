@@ -28,12 +28,38 @@ external inner function Boolean PasteInvIn2OPr(var record OPVc,Integer,Date,Inte
 external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var val,Boolean,var Boolean);
 external inner procedure IPPastePayMode(var record IPVc);
 external inner procedure OPVc_PasteRecVal(var record OPVc,Integer);
-external updating function Boolean ArchiveExistingDocument(record AgreementDocVc);
 external updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
 external updating procedure GenerateAgreementSchedule(record CredManVc);
 external inner function Boolean ExternalDocumentEnabled(string);
 external updating procedure PrintCredManDocument(string,string,record CredManVc,Integer,Boolean,string);
 external inner procedure GetCurUser(var record UserVc);
+external updating procedure CreateProlongInvoice(record CredManVc);
+
+global
+updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr)
+begin
+  record RLinkVc RLr,RL2r;
+  record Attach2Vc Attachr;
+  record ArchiveVc Archiver;
+  Boolean res;
+  
+  if (ReadRecordLink(ADr,1,Attachr,RLr)) then begin
+    if (ReadRecordLink(ADr,1,Archiver,RL2r)==false) then begin
+      RecordNew(Archiver);
+      Archiver.SerNr = NextSerNr("ArchiveVc",CurrentDate,-1,false,"");
+      Archiver.FolderName = "OLD";
+      if (RecordStore(Archiver,true)) then begin
+        CreateRecordLink(ADr,CurrentCompany,Archiver,CurrentCompany);
+      end;
+    end;
+    res = true;
+    CreateRecordLink(Archiver,CurrentCompany,Attachr,CurrentCompany);
+    RecordRemove(RLr);
+  end;
+
+  ArchiveExistingDocument = res;
+  return;
+end;
 
 global
 procedure PasteCustInAgreementRemote(var record CredManVc CredManr,var string warning)
@@ -248,20 +274,48 @@ begin
   return;
 end;
 
+updating procedure CreateProlongSession(record CredManVc CredManr,Date td,val months,val prolongmonths,Integer prolongf,Integer recalcshedf)
+begin
+  record ProlongSessionVc PSr;
+
+  RecordNew(PSr);
+  PSr.SerNr = NextSerNr("ProlongSessionVc",CurrentDate,-1,false,"");
+  PSr.TransDate = CurrentDate;
+  PSr.TransTime = CurrentTime;
+  PSr.SalesMan = CurrentUser;
+  PSr.PauseDate = td;
+  PSr.ProlongDate = td;
+  PSr.PauseMonths = months;
+  PSr.ProlongMonths = prolongmonths;
+  PSr.ProlongWhenPaid = prolongf;
+  PSr.RecalcSchedule = recalcshedf;
+  PSr.CredManNr = CredManr.SerNr;
+  RecordInsert(PSr,true);
+
+  return;
+end;
+
 global
-procedure DoPauseCredMan(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res)
+updating procedure DoPauseCredMan(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res,var Boolean setf,record RcVc RepSpec)
 begin
   res = false;
 //  if (nonblank(td)) then begin
     //RecordCopy(oldCredManr,CredManr);
     if (CanPauseAgreement(CredManr,td,months)) then begin
-      CredManr.PauseDate = td;
-      CredManr.PauseMonths = months;
-      if (prolongmonths>=0) then begin
-        CredManr.ProlongDate = td;
-        CredManr.ProlongMonths = prolongmonths;
+      if (RepSpec.flags[2]==1) then begin
+        CreateProlongSession(CredManr,td,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1]);
+        CreateProlongInvoice(CredManr);
       end;
-      CredManSetDatesCust(CredManr);
+      if (RepSpec.flags[3]==0) then begin
+        CredManr.PauseDate = td;
+        CredManr.PauseMonths = months;
+        if (prolongmonths>=0) then begin
+          CredManr.ProlongDate = td;
+          CredManr.ProlongMonths = prolongmonths;
+        end;
+        CredManSetDatesCust(CredManr);
+        setf = true;
+      end;
       res = true;      
     end;
     //RecordUpdate(oldCredManr,CredManr,true);

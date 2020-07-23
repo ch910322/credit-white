@@ -168,6 +168,7 @@ begin
   record CMInvoicingBlock CIb;
   string 255 vatnr;
   record CUVc CUr;
+  record CredManVc CredManr;
 
   Ext_PrintInvoiceSigner(vVals);
 
@@ -181,6 +182,10 @@ begin
   vVals["F_ABOVEHIDDENVAT"] = abovehiddenvat;
   vVals["F_ABOVEHIDDENFULL"] = abovehiddenbase + abovehiddenvat;
   vVals["F_NUMMER"] = GetCredManNr(IVr.CustCredManNr);
+  CredManr.SerNr = IVr.CustCredManNr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    vVals["F_CREDMANCREATEDATE"] = CredManr.CreatedDate;
+  end;
 
   BlockLoad(CMb);
   vVals["F_PRINCVAL"] = GetCredManItemValue(IVr,CMb.InstalmentItem,true);
@@ -301,8 +306,7 @@ begin
     if (CRr.Invalid==0) then begin
       ContactCUr.Code = CRr.ContactCode;
       if (ReadFirstMain(ContactCUr,1,true)) then begin
-        if (SetInSet(jobdescr,ContactCUr.JobDesc)) then begin
-
+        if (SetInSet(ContactCUr.JobDesc,jobdescr)) then begin
           AddSingleRecipient(Mailr,ContactCUr.eMail);
         end;
       end;
@@ -312,19 +316,17 @@ begin
   return;
 end;
 
-function Boolean CompanyHasNoContactPersons(record CUVc CUr)
+function Boolean CompanyHasNoMainContact(record CUVc CUr)
 begin
   record ContactRelVc CRr;
   Boolean res;
 
-  res = true;
-  while (LoopKey("CustContactCode:" & CUr.Code,CRr,1,true)) begin
-    if (CRr.Invalid==0) then begin
-      res = false;
-    end;
+  res = false;
+  if (blank(CUr.Person)) then begin
+    res = true;
   end;
 
-  CompanyHasNoContactPersons = res;
+  CompanyHasNoMainContact = res;
   return;
 end;
 
@@ -337,7 +339,6 @@ begin
   Boolean res;
 
   BlockLoad(CIb);
-  stopalert("ee");
   CUr.Code = IVr.CustCode;
   ReadFirstMain(CUr,1,true);
 
@@ -352,7 +353,7 @@ begin
     end;
   end;
   if (CIb.SendToCompany==1) then begin
-    if (CIb.SendToCompNoContact==0 or CompanyHasNoContactPersons(CUr)) then begin
+    if (CIb.SendToCompNoContact==0 or CompanyHasNoMainContact(CUr)) then begin
       AddSingleRecipient(Mailr,Cur.eMail);
       res = true;
     end;

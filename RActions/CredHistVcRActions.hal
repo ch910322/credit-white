@@ -1,4 +1,6 @@
 //<halrule>server-only</halrule>
+external  procedure CredManSetDatesCust(var record CredManVc);
+external updating procedure RecreateAgreementSchedule(record CredManVc);
 
 global
 function LongInt CredHistVcRecordInIndex(record CredHistVc CredHistr,string indexname)
@@ -15,6 +17,38 @@ begin
   CredHistVcRecordInIndex = res;
   return;
 end; 
+
+updating procedure FinishProlongSession(Longint sernr)
+begin
+  record ProlongSessionVc PSr,oldPSr;
+  record CredManVc CredManr,oldCredManr;
+  
+  PSr.CredManNr = sernr;
+  PSr.PaidFlag = 0;
+  if (ReadFirstKey("CredManPaid",PSr,2,true)) then begin
+    if (PSr.ProlongWhenPaid==1) then begin
+      CredManr.SerNr = sernr;
+      if (ReadFirstMain(CredManr,1,true)) then begin
+        RecordCopy(oldCredManr,CredManr);
+        CredManr.PauseDate = PSr.PauseDate;
+        CredManr.ProlongDate = PSr.ProlongDate;
+        CredManr.PauseMonths = PSr.PauseMonths;
+        CredManr.ProlongMonths = PSr.ProlongMonths;
+        CredManSetDatesCust(CredManr);
+        if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
+          if (PSr.RecalcSchedule == 1) then begin
+            RecreateAgreementSchedule(CredManr);
+          end;
+        end;
+      end;
+    end;
+    RecordCopy(oldPSr,PSr);
+    PSr.PaidFlag = 1;
+    RecordUpdate(oldPSr,PSr,true);
+  end;
+
+  return;
+end;
 
 updating procedure UpdateInvoicedCredHist(Longint prevnr)
 begin
@@ -38,6 +72,9 @@ begin
       CredHist2r.PaidSum = CredHist2r.InvSum - ARr.RVal;
       if (ARr.RVal==0) then begin
         CredHist2r.PaidFlag = 1;
+        if (CredHist2r.ChargeType==14) then begin//prolong session
+          FinishProlongSession(CredHist2r.CredManNr);
+        end;
       end else begin
         CredHist2r.PaidFlag = 0;
       end;
@@ -88,12 +125,20 @@ global
 updating function LongInt CredHistVcRecordRemoveAfter(var record CredHistVc CredHistr,record CredHistVc CredHist2r,LongInt stat,LongInt long4)
 begin
   LongInt res;
+  record ProlongSessionVc PSr;
 
   res = 0;
 
   //if this is payment then we have to update invoice history as well
   if (CredHistr.RecordType==1 or CredHistr.RecordType==2 or CredHistr.RecordType==3) then begin
     UpdateInvoicedCredHist(CredHistr.PreviousNr);
+  end;
+  if (CredHistr.ChargeType==14) then begin
+    PSr.CredManNr = CredHistr.CredManNr;
+    PSr.PaidFlag = 0;
+    if (ReadFirstKey("CredManPaid",PSr,2,true)) then begin
+      RecordRemove(PSr);
+    end;
   end;
 
   CredHistVcRecordRemoveAfter = res;
