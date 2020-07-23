@@ -38,7 +38,7 @@ BEGIN
   GetWindowRecord(wn,RepSpec);
   ReportDefaults(RepSpec,"LoanApplicationListRClass");  
   RepSpec.Scaling = 0;
-  RepSpec.BaseWidth = 1100;
+  RepSpec.BaseWidth = 1240;
   PutWindowRecord(wn,RepSpec);
   SelectWindow(wn);
   RETURN;

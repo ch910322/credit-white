@@ -7,7 +7,7 @@ begin
   Integer totcnt;
   val totamount;
   record CUVc CUr;
-  Integer c11,c12,c13;
+  Integer c11,c12,c13,c14;
   
   StartReportJob(UsetStr(200210));
 
@@ -23,9 +23,10 @@ begin
 //  SetRepCol(12,420);
   SetRepCol(6,650);
   SetRepCol(7,660);
-  SetRepCol(8,700);
-  SetRepCol(9,980);
-  c11 = 1030;
+  c14 = 700;
+  SetRepCol(8,830);
+  SetRepCol(9,1110);
+  c11 = 1160;
 //  SetRepCol(11,890);
 
   StartFormat(15);
@@ -38,6 +39,7 @@ begin
   OutString(c12,0,USetStr(200217),false);
   OutString(6,0,USetStr(200218),true);
   OutString(7,0,USetStr(200219),false);
+  OutString(c14,0,USetStr(200223),false);
   OutString(8,0,USetStr(200220),false);
   OutString(9,0,USetStr(200221),false);
   OutString(c11,0,USetStr(200222),false);
@@ -82,6 +84,7 @@ begin
         OutString(c12,0,CUr.Name,false);
         OutString(6,0,LAr.Sum,true);
         OutString(7,0,LAr.Months,false);
+        OutString(c14,0,CUr.BankAccount,false);
         OutString(8,0,LAr.Source,false);
         OutString(9,0,LAr.InterfaceLanguage,false);
         OutString(c11,0,LAr.BrowserOS,false);

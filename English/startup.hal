@@ -173,6 +173,7 @@ begin
   SString(200220,"Source");
   SString(200221,"Interface");
   SString(200222,"OS");
+  SString(200223,"Bank Acc.");
 
   SString(200230,"Mailing List");
   SString(200231,"Email");
