@@ -28,13 +28,38 @@ external inner function Boolean PasteInvIn2OPr(var record OPVc,Integer,Date,Inte
 external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var val,Boolean,var Boolean);
 external inner procedure IPPastePayMode(var record IPVc);
 external inner procedure OPVc_PasteRecVal(var record OPVc,Integer);
-external updating function Boolean ArchiveExistingDocument(record AgreementDocVc);
 external updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
 external updating procedure GenerateAgreementSchedule(record CredManVc);
 external inner function Boolean ExternalDocumentEnabled(string);
 external updating procedure PrintCredManDocument(string,string,record CredManVc,Integer,Boolean,string);
 external inner procedure GetCurUser(var record UserVc);
 external updating procedure CreateProlongInvoice(record CredManVc);
+
+global
+updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr)
+begin
+  record RLinkVc RLr,RL2r;
+  record Attach2Vc Attachr;
+  record ArchiveVc Archiver;
+  Boolean res;
+  
+  if (ReadRecordLink(ADr,1,Attachr,RLr)) then begin
+    if (ReadRecordLink(ADr,1,Archiver,RL2r)==false) then begin
+      RecordNew(Archiver);
+      Archiver.SerNr = NextSerNr("ArchiveVc",CurrentDate,-1,false,"");
+      Archiver.FolderName = "OLD";
+      if (RecordStore(Archiver,true)) then begin
+        CreateRecordLink(ADr,CurrentCompany,Archiver,CurrentCompany);
+      end;
+    end;
+    res = true;
+    CreateRecordLink(Archiver,CurrentCompany,Attachr,CurrentCompany);
+    RecordRemove(RLr);
+  end;
+
+  ArchiveExistingDocument = res;
+  return;
+end;
 
 global
 procedure PasteCustInAgreementRemote(var record CredManVc CredManr,var string warning)
