@@ -1,22 +1,149 @@
+external updating procedure RecreateAgreementSchedule(record CredManVc);
+external inner procedure FindUserMailboxName(string,var string,var string);
+external function Boolean Ext_AddCustomMailRecipients(record IVVc,var record MailVc);
+external inner function Boolean CheckAttachedFilesSizeToLetter(record LetVc);
+
+
+function Boolean ScheduleDocumentExists(record CredManVc CredManr,var record Attach2Vc docAttachr)
+begin
+  record Attach2Vc Attachr;
+  record RLinkVc RLr;
+  record AgreementDocVc ADr;
+  Boolean res;
+
+  ADr.RecordType = 0;
+  ADr.RecordNr = CredManr.SerNr;
+  ADr.Type = 2;
+  if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
+    if (ReadRecordLink(ADr,1,Attachr,RLr)) then begin
+      RecordCopy(docAttachr,Attachr);
+      res = true;
+    end;
+  end;
+
+  ScheduleDocumentExists = res;
+  return;
+end;
+
+global
+updating procedure SendSingleScheduleEmail(record CredManVc CredManr,string txt,record RcVc RepSpec)
+begin
+  record IVVc dummyIVr;
+  record MailVc Mailr,oldMailr;
+  row MailVc Mailrw;
+  record LTxtVc LTxtr;
+  record Attach2Vc Attachr,docAttachr;
+  record RLinkVc RLr;
+  area a;
+  Longint pos,l;
+  string 255 mailboxname,mailboxnr,tstr;
+  record MailSettingsBlock MSb;
+  record CUVc CUr;
+  record RcVc tRepSpec;
+  
+  if (RepSpec.flags[1]==1) then begin
+    RecreateAgreementSchedule(CredManr);
+  end;   
+  if (ScheduleDocumentExists(CredManr,docAttachr)) then begin
+    LTxtr.Code = txt;
+    if (ReadFirstMain(LTxtr,1,true)) then begin
+      RecordNew(Mailr);
+      Mailr.Header = LTxtr.Comment;    
+      FindUserMailboxName(CurrentUser,mailboxnr,mailboxname);
+      if (nonblank(mailboxname)) then begin
+        ClearRow(Mailr,Mailrw,1);
+        Mailrw.RowTyp = kMailRowTypeFrom;
+        Mailrw.AddrCode = mailboxname;
+        mailrw.Mailbox = StringToLongInt(mailboxnr);
+        MatRowPut(Mailr,0,Mailrw);
+      end else begin
+        BlockLoad(MSb);
+        ClearRow(Mailr,Mailrw,0);
+        Mailrw.RowTyp = 1;
+        Mailrw.AddrCode = MSb.FromSystem;
+        MatRowPut(Mailr,0,Mailrw);
+      end;
+      
+      dummyIVr.CustCode = CredManr.CustCode;
+      if (Ext_AddCustomMailRecipients(dummyIVr,Mailr)==false) then begin
+        CUr.Code = CredManr.CustCode;
+        ReadFirstMain(CUr,1,true);
+        ClearRow(Mailr,Mailrw,1);
+        Mailrw.RowTyp = kMailRowTypeTo;
+        Mailrw.AddrCode = CUr.eMail;
+        MatRowPut(Mailr,1,Mailrw);
+      end;
+      tRepSpec.f1 = CredManr.CustCode;
+      if (LTxtr.HtmlFlag==0) then begin
+        ParseTextField(a,LTxtr,tRepSpec,"LtxtVcReplaceToken");
+        l = GetAreaLength(a);
+        pos = 0;
+        while (pos<l) begin
+          tstr = GetStringFromArea(a,pos,255);
+          AddToText(tstr,Mailr); 
+          pos = pos+255;
+        end;
+      end else begin
+        Mailr.HtmlFlag = 1;
+      end;
+
+      if (CheckAttachedFilesSizeToLetter(LTxtr)) then begin
+        if (RecordInsert(Mailr,true)) then begin
+          if (ReadRecordLink(Mailr,1,Attachr,RLr)) begin
+            RecordRemove(RLr);
+          end;    
+          CopyRecordLinks(LTxtr,Mailr);
+          if (Mailr.HtmlFlag==1) then begin
+            ParseHtmlField(Mailr,tRepSpec,"MailVcReplaceToken");
+          end;
+          CreateRecordLink(Mailr,CurrentCompany,docAttachr,CurrentCompany);
+          if (RepSpec.flags[2]==1) then begin
+            RecordCopy(oldMailr,Mailr);
+            Mailr.SendFlag = 1;
+            RecordUpdate(oldMailr,Mailr,true);
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
 global
 procedure SendScheduleEmailsMn(record RcVc RepSpec)
 begin
   record CredManVc CredManr;
   Boolean TrHs,testf;
+  record CMApplicationSetBlock CMb;
 
-  TrHs = true;
-  CredManr.startDate = RepSpec.sStartDate;
-  while (LoopKey("startDate",CredManr,1,TrHs)) begin
-    if (CredManr.startDate>RepSpec.sEndDate) then begin
-      TrHs = false;
-    end else begin
-      testf = true;
-      if (testf) then begin
-        
-
+  BlockLoad(CMb);
+  if (nonblank(CMb.ScheduleText)) then begin
+    TrHs = true;
+    CredManr.startDate = RepSpec.sStartDate;
+    while (LoopKey("startDate",CredManr,1,TrHs)) begin
+      if (CredManr.startDate>RepSpec.sEndDate) then begin
+        TrHs = false;
+      end else begin
+        testf = true;
+        if (RepSpec.long1>-1 and RepSpec.long1!=CredManr.SerNr) then begin
+          testf = false;
+        end;
+        if (nonblank(RepSpec.f1) and RepSpec.f1!=CredManr.CustCode) then begin
+          testf = false;
+        end;
+        if (nonblank(RepSpec.f2) and RepSpec.f2!=CredManr.SalesMan) then begin
+          testf = false;
+        end;
+        if (nonblank(RepSpec.f3) and RepSpec.f3!=CredManr.Type) then begin
+          testf = false;
+        end;
+        if (testf) then begin
+          qupdating.SendSingleScheduleEmail(CredManr,CMb.ScheduleText,RepSpec);
+        end;
       end;
-    end;
-  end;  
+    end; 
+  end;
 
   return;
 end;

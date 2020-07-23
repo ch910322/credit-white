@@ -272,6 +272,7 @@ begin
   RecordField(EmailOfferTextRow,M4Code,20,LTxtVc);
   RecordField(CFOTitle,M4Str,100,0);
   RecordField(InvoiceSigner,M4Code,20,UserVc);
+  RecordField(ScheduleText,M4Code,10,LTxtVc);
   EndBlock;
   
   RecordAddBegin(CUVc,"CredCUVc");
@@ -1131,7 +1132,6 @@ begin
   RecordField(ReplaceVATNr,M4Str,255,0);
   RecordField(ReplaceVATNrWith,M4Str,255,0);
   RecordField(ProlongItem,M4Code,20,INVc);
-  RecordField(ScheduleText,M4Code,10,LTxtVc);
 
   EndBlock;
 

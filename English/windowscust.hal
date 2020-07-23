@@ -89,6 +89,8 @@ begin
     EditField(h,v+=vs,100,"Offer Email Row Text",Normal,EmailOfferTextRow,false,LTxtSClass);
 
   end;
+  EditField(h,v+=vs,100,"Schudule Text",Normal,ScheduleText,false,LTxtSClass);
+
 
 
   EditField(h,v+=vs,100,"Mailing List",Normal,MailingList,false,PersColSClass);
@@ -1757,8 +1759,7 @@ begin
   EditField(h,v+=vs,100,"Overdue Item Class",Normal,OverdueItemClass,false,DISClass);
   EditField(h,v+=vs,140,"Replace VAT Nr.",Normal,ReplaceVATNr,false,0);
   EditField(h+200,v,140,"with",Normal,ReplaceVATNrWith,false,0);
-  EditField(h,v+=vs,100,"Prolong Item",Normal,ProlongItem,false,INSClass);
-  
+  EditField(h,v+=vs,100,"Prolong Item",Normal,ProlongItem,false,INSClass);  
   
   ButtonFrame(h,v+=40,400,4,"Interest Invoicing");
   RadioButton(h,v,0,0,"With Principle, same Invoice",InterestIVType);
