@@ -273,6 +273,7 @@ begin
   RecordField(CFOTitle,M4Str,100,0);
   RecordField(InvoiceSigner,M4Code,20,UserVc);
   RecordField(ScheduleText,M4Code,10,LTxtVc);
+  RecordField(CMInfoReportDate,M4Int,0,0);
   EndBlock;
   
   RecordAddBegin(CUVc,"CredCUVc");

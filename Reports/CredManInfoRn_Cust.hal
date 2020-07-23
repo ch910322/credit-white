@@ -447,6 +447,7 @@ procedure PrintCredManInfo(record CredManVc CredManr,record CredManSetBlock Cred
 begin
   record CredManPayPlanVc CredManPayPlanr;
   row CredManPayPlanVc CredManPayPlanrw;
+  record CMApplicationSetBlock CMb;
   LongInt i,rwcnt;
   string 40 dblstr;
   Integer prevtype;
@@ -478,12 +479,16 @@ begin
   if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
     BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
   end;
-  
+  BlockLoad(CMb);
   rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(SMr,i,SMrw);
     StartFormat(15);
-    OutString(0,0,SMrw.TransDate,false);
+    if (CMb.CMInfoReportDate==0) then begin
+      OutString(0,0,SMrw.TransDate,false);
+    end else begin
+      OutString(0,0,SMrw.DueDate,false);
+    end;
     if (nonblank(SMrw.ExtraComment)) then begin
       OutStringID(2,"DblIVVc",StringFromSet(2011,SMrw.RowSimStat),false,SMrw.ExtraComment);
     end else begin
