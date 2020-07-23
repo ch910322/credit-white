@@ -978,7 +978,7 @@ begin
 
     SetupLoanInvoice(CredManr,CMb,IVr,RepSpec.d1,"","",true,false,"");
     GetItemName(RepSpec.f1,spec);
-    SetupInvoiceRowAndAdd(IVr,RepSpec.f1,spec,1,RepSpec.vals0,blankval,kEventTypeCalcFees,-1);
+    SetupInvoiceRowAndAdd(IVr,RepSpec.f1,spec,1,RepSpec.vals0,blankval,15,-1);
     AddPrepayments(IVr,CIb);
 
     IVr.SerNr = NextSerNr("IVVc",IVr.InvDate,-1,false,"");
@@ -1130,7 +1130,8 @@ begin
     case 9:  res = type;
     case 10: res = type;
     case 11: res = type;
-    case 14: res = type;
+    case 14: res = type;//prolong fee
+    case 15: res = type;//extra fee
     otherwise
       res = type + 4;
   end;
