@@ -376,7 +376,8 @@ begin
     BTRr.CurncyCode = XmlGetAttribute(xdata,ntrykey & "Amt","Ccy");
     BTRr.Sum = ValFromString(XmlGet(xdata,ntrykey & "Amt"),".","");
     BTRr.TypeRef = XmlGet(xdata,ntrykey & "CdtDbtInd");
-    BTRr.TransDate = DateFromString(XmlGet(xdata,ntrykey & "BookgDt/DtTm"),"YYYY-MM-DD");
+//    BTRr.TransDate = DateFromString(XmlGet(xdata,ntrykey & "BookgDt/DtTm"),"YYYY-MM-DD");
+    BTRr.TransDate = DateFromString(XmlGet(xdata,ntrykey & "BookgDt/Dt"),"YYYY-MM-DD");//CUST
 
     BTRr.TRNumber = XmlGet(xdata,ntrykey & "AcctSvcrRef");
     BTRr.Comment = XmlGet(xdata,ntrykey & "NtryDtls/TxDtls/RmtInf/Ustrd");
