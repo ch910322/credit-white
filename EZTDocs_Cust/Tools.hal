@@ -7,6 +7,11 @@ external procedure ExternalPrintVekselisForm(record CredManVc,var vector string)
 external procedure ExternalPrintSuretyAgreementForm(record CredManVc,var vector string);
 external inner function string 255 CredManOwnBankAccount(Longint);
 external inner procedure FindVATCodeRow(string,record VATCodeBlock,var row VATCodeBlock);
+external inner function string 255 StrReplace(string,string,string);
+external function val GetCredManItemValue(record IVVc,string,Boolean);
+external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
+external inner function boolean AddEMailRecipients(var record MailVc,string,string,integer);
+external inner function Boolean FindCustomerRelation(string,string,var record CUVc);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -99,14 +104,133 @@ begin
 end;
 
 global
+function string 255 GetCredManNr(Longint sernr)
+begin
+  record CredManVc CredManr;
+  string 255 res;
+
+  res = sernr;
+  CredManr.SerNr = sernr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    if (nonblank(CredManr.OfficialSerNr)) then begin
+      res = CredManr.OfficialSerNr;
+    end;
+  end;
+
+  GetCredManNr = res;
+  return;
+end;
+
+global
+procedure GetHiddenInvoiceValues(record IVVc IVr,var val abovehiddenbase,var val abovehiddenvat)
+begin
+  Integer i,rwcnt;
+  row IVVc IVrw;
+  val rowbase;
+  val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
+  
+  rwcnt = MatRowCnt(IVr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    if (IVrw.stp==kInvoiceRowTypeHidden) then begin
+      i = rwcnt;
+    end else begin
+      InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+
+      if (IVr.InclVAT==0) then begin
+        rowbase = IVrw.Sum;
+      end else begin
+        rowbase = IVrw.Sum - vatval;
+      end;
+
+      abovehiddenvat = abovehiddenvat + vatval;
+      abovehiddenbase = abovehiddenbase + rowbase;
+    end;
+  end;
+
+  return;
+end;
+
+global
 procedure Ext_PrintCustomInvoiceFields(var vector string vVals,record IVVc IVr)
 begin
+  record CredManSetBlock CMb;
+  row IVVc IVrw;
+  Integer i,rwcnt;
+  val abovehiddenbase,abovehiddenvat,rowbase;
+  record VATCodeBlock VATb;
+  row VATCodeBlock VATbrw;
+  record TaxRulesVc TRr;
+  record NotePadVc Noter;
+  record RLinkVc RLr;
+  Longint pos,l;
+  string 255 tstr;
+  record CMInvoicingBlock CIb;
+  string 255 vatnr;
+  record CUVc CUr;
+  record CredManVc CredManr;
 
   Ext_PrintInvoiceSigner(vVals);
 
   vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(IVr.CustCredManNr);
 
   vVals["F_LOANPERIOD"] = IVr.CredFromDate & ":" & IVr.CredToDate;
+
+  GetHiddenInvoiceValues(IVr,abovehiddenbase,abovehiddenvat);
+
+  vVals["F_ABOVEHIDDENBASE"] = abovehiddenbase;
+  vVals["F_ABOVEHIDDENVAT"] = abovehiddenvat;
+  vVals["F_ABOVEHIDDENFULL"] = abovehiddenbase + abovehiddenvat;
+  vVals["F_NUMMER"] = GetCredManNr(IVr.CustCredManNr);
+  CredManr.SerNr = IVr.CustCredManNr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    vVals["F_CREDMANCREATEDATE"] = CredManr.CreatedDate;
+  end;
+
+  BlockLoad(CMb);
+  vVals["F_PRINCVAL"] = GetCredManItemValue(IVr,CMb.InstalmentItem,true);
+
+  rwcnt = MatRowCnt(IVr);
+  BlockLoad(VATb);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    if (IVrw.stp==kInvoiceRowTypeNormal) then begin
+      FindVATCodeRow(IVrw.VATCode,VATb,VATbrw);
+      if (nonblank(VATbrw.TaxRules)) then begin
+        TRr.Code = VATbrw.TaxRules;
+        if (ReadFirstMain(TRr,1,true)) then begin
+          if (ReadRecordLink(TRr,1,Noter,RLr)) begin
+            pos = 0;
+            l = SizeTextCnt(Noter);
+            tstr = "";
+            while (pos<l) begin
+              tstr = tstr & StringFromText(Noter,pos,255);
+              pos = pos + 255;
+            end;
+            vVals["F_TAXRULE"] = StrReplace(tstr,chr(13),"\\n");
+            i = rwcnt;
+          end;
+        end;
+      end;
+    end;
+  end;
+  
+  if (blank(IVr.VATNr)) then begin
+    CUr.Code = IVr.CustCode;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      vatnr = CUr.VATNr;   
+    end;   
+  end else begin
+    vatnr = IVr.VATNr;      
+  end;
+
+  BlockLoad(CIb);
+  if (nonblank(CIb.ReplaceVATNr)) then begin
+    if (CIb.ReplaceVATNr==vatnr) then begin
+      vatnr = CIb.ReplaceVATNrWith;
+    end;
+  end;
+  vVals["F_KUNDMOMSNR2"] = vatnr;
 
   return;
 end;
@@ -138,11 +262,110 @@ begin
             tstr = tstr & StringFromText(Noter,pos,255);
             pos = pos + 255;
           end;
-          vVals["ROW_" & strnum & "_F_TAXRULE"] = tstr;
+          vVals["ROW_" & strnum & "_F_TAXRULEROW"] = StrReplace(tstr,chr(13),"\\n");
         end;
       end;
     end;
   end;
 
+  return;
+end;
+
+
+procedure AddSingleRecipient(var record MailVc Mailr,string email)
+begin
+  row MailVc Mailrw;
+  Integer i,rwcnt;
+  Boolean foundf;
+  
+  if (nonblank(email)) then begin 
+    rwcnt = MatRowCnt(Mailr);
+    for (i=1;i<rwcnt;i=i+1) begin
+      MatRowGet(Mailr,i,Mailrw);
+      if (Mailrw.AddrCode==email) then begin
+        foundf = true;
+        i = rwcnt;
+      end;
+    end;
+    if (!foundf) then begin
+      ClearRow(Mailr,Mailrw,1);
+      Mailrw.RowTyp = 0;
+      Mailrw.AddrCode = email;
+      MatRowPut(Mailr,MatRowCnt(Mailr),Mailrw);
+    end;
+  end; 
+
+  return;
+end;
+
+procedure AddContactsByJobDescription(record MailVc Mailr,record CUVc CUr,string jobdescr)
+begin
+  record CUVc ContactCUr;
+  record ContactRelVc CRr;
+  while (LoopKey("CustContactCode:" & CUr.Code,CRr,1,true)) begin
+    if (CRr.Invalid==0) then begin
+      ContactCUr.Code = CRr.ContactCode;
+      if (ReadFirstMain(ContactCUr,1,true)) then begin
+        if (SetInSet(ContactCUr.JobDesc,jobdescr)) then begin
+          AddSingleRecipient(Mailr,ContactCUr.eMail);
+        end;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+function Boolean CompanyHasNoMainContact(record CUVc CUr)
+begin
+  record ContactRelVc CRr;
+  Boolean res;
+
+  res = false;
+  if (blank(CUr.Person)) then begin
+    res = true;
+  end;
+
+  CompanyHasNoMainContact = res;
+  return;
+end;
+
+global
+function Boolean Ext_AddCustomMailRecipients(record IVVc IVr,var record MailVc Mailr)
+begin
+  record CMInvoicingBlock CIb;
+  record CUVc CUr;
+  record CUVc ContactCUr;
+  Boolean res;
+
+  BlockLoad(CIb);
+  CUr.Code = IVr.CustCode;
+  ReadFirstMain(CUr,1,true);
+
+  if (CIb.SendToMainContact==1) then begin
+    if (nonblank(CUr.Person)) then begin
+      if (FindCustomerRelation(CUr.Code,CUr.Person,ContactCUr)) then begin
+        if (nonblank(ContactCUr.eMail)) then begin
+          AddSingleRecipient(Mailr,ContactCUr.eMail);
+          res = true;
+        end;
+      end;
+    end;
+  end;
+  if (CIb.SendToCompany==1) then begin
+    if (CIb.SendToCompNoContact==0 or CompanyHasNoMainContact(CUr)) then begin
+      AddSingleRecipient(Mailr,Cur.eMail);
+      res = true;
+    end;
+  end;
+  if (CIb.SendToAddRecip==1) then begin
+    AddEMailRecipients(Mailr,CUr.Code,"",kMailInvoice); 
+    res = true;
+  end;
+  if (nonblank(CIb.SendToJobDescr)) then begin
+    AddContactsByJobDescription(Mailr,CUr,CIb.SendToJobDescr);
+    res = true;
+  end;
+  Ext_AddCustomMailRecipients = res;
   return;
 end;

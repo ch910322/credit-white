@@ -47,6 +47,7 @@ external inner function string 255 CredManOwnBankAccount(Longint);
 external inner function string 255 CredManCustEmail(record CUVc);
 external inner function val GetMonthlyFees(record CredManVc,Integer);
 external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,record CredManSetBlock,var record SMVc);
+external function string 255 GetCredManNr(Longint);
 
 procedure GetCredManCustContact(record CredManVc CredManr,var string contactid,var string contactname)
 begin
@@ -104,6 +105,34 @@ begin
   return;
 end;
 
+procedure PrintFirstPrincipleDueDate(var vector string vVals,record CredManVc CredManr)
+begin
+  record CredManSetBlock CredManSetb;
+  record CredManPayPlanVc CredManPayPlanr;
+  row CredManPayPlanVc CredManPayPlanrw;
+  Date res;
+  Integer i,rwcnt;
+  record SMVc SMr;
+  row SMVc SMrw;
+ 
+  BlockLoad(CredManSetb);
+  if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+    BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+  end;
+
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(SMr,i,SMrw);
+    if (SMrw.DebVal!=0) then begin
+      res = SMrw.DueDate;
+      i = rwcnt;
+    end;
+  end;
+
+  vVals["F_INSTALMENTDUEDATE"] = res;
+
+  return;
+end;
 
 procedure CredManHeader(var vector string vVals,record CredManVc CredManr)
 begin
@@ -133,6 +162,9 @@ begin
   vVals["F_KUNDNR"] = CredManr.CustCode;
   vVals["F_KUNDNAMN"] = CredManr.Addr0;
   vVals["F_NUMMER"] = CredManr.SerNr;
+  vVals["F_NUMMER2"] = GetCredManNr(CredManr.SerNr);
+  vVals["F_CREDMANCREATEDATE"] = CredManr.CreatedDate;
+  
   //Ext_OutAddress("F_ADRESS",IVr.Addr0,IVr.Addr1,IVr.Addr2,IVr.Addr3,IVr.InvAddr3,IVr.InvAddr4);//CUST-REMOVED
   vVals["F_ADDR2"] = IVr.Addr1;
   vVals["F_ADDR3"] = IVr.Addr2;
@@ -349,10 +381,13 @@ begin
   Userr.Code = CredManr.SalesMan;
   if (ReadFirstMain(Userr,1,true)) then begin
     vVals["F_SALESMANPHONE"] = Userr.Phone1;
+    vVals["F_SALESMANNAME"] = Userr.Name;
     vVals["F_SALESMANEMAIL"] = Userr.emailAddr;
   end;
 
   vVals["F_FIRSTINVDATE"] = CredManr.FirstInvDate;
+
+  PrintFirstPrincipleDueDate(vVals,CredManr);
 
   return;
 end;
@@ -365,7 +400,7 @@ begin
   LongInt i,rwcnt;
   record SMVc SMr;
   row SMVc SMrw;
-  val totpayment,totinterest;
+  val totpayment,totinterest,totfullpayment,totfullvat;
   record CredManSetBlock CredManSetb;
   record CUVc CUr;
   Integer num;
@@ -402,13 +437,19 @@ begin
     vVals["ROW_" & strnum & "_F_DUEDATE"] = SMrw.DueDate;//Due date
     vVals["ROW_" & strnum & "_F_CREDINVTOT"] = (SMrw.CredVal+SMrw.DebVal2+SMrw.DebVal);//Balance
     vVals["ROW_" & strnum & "_F_ROWNR"] = num;
+    vVals["ROW_" & strnum & "_F_VATROWSUM"] = SMrw.FrRate;//vat amount;
+    vVals["ROW_" & strnum & "_F_TOTROWSUM"] = SMrw.CurDebVal;//total amount;
     totinterest = totinterest + (SMrw.CredVal+SMrw.DebVal2);
     totpayment = totpayment + (SMrw.CredVal+SMrw.DebVal2) + SMrw.DebVal;
+    totfullpayment = totfullpayment + SMrw.CurDebVal;
+    totfullvat = totfullvat + SMrw.FrRate;
 LNextRow:;
   end;
 
   vVals["F_CREDTOTINT"] = totinterest;
   vVals["F_CREDTOTPAY"] = totpayment;
+  vVals["F_CREDFULLTOTPAY"] = totfullpayment;
+  vVals["F_CREDTOTVAT"] = totfullvat;
 
   return;
 end;
@@ -503,6 +544,8 @@ begin
   vVals["F_CREDHALFSUMTEXT"] = tstr;
 
   vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(CredManr.SerNr);
+  vVals["F_NUMMER2"] = GetCredManNr(CredManr.SerNr);
+  vVals["F_CREDMANCREATEDATE"] = CredManr.CreatedDate;
 
   return;
 end;
@@ -600,6 +643,9 @@ begin
     vVals["F_CFOPHONE"] = CUr.Phone;
     vVals["F_CFOEMAIL"] = CUr.eMail;
   end;
+  vVals["F_NUMMER2"] = GetCredManNr(CredManr.SerNr);
+  vVals["F_CREDMANCREATEDATE"] = CredManr.CreatedDate;
+
   Ext_PrintDocumentSigner(vVals);
 
   return;

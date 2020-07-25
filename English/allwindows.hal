@@ -616,7 +616,10 @@ begin
   h = 120; h2 = 320; h3 = 550; h4 = 760; vs = 20;
   Tile(0,230,false,"",SerNr);
   EditField(h,vm=(v=6), 82,"No.",St_i,SerNr,false,TSerSClass);
+//CUST-BEGIn
   EditField(h+90,v,50,"",ViewOnly,VersionNo,false,0);
+  EditField(h2,v,150,"Legal No.",Normal,OfficialSerNr,false,0);
+//CUST-END
   EditField(h,v+=vs,82,"Type",Normal,Type,false,CredManTypeSClass);
   EditField(h2,v,-40,"Interest",Normal,InstalmentType,false,SetSClass);
   EditField(h,v+=vs,82, "Customer",Normal,CustCode,false,CUSClass);
@@ -902,13 +905,13 @@ begin
   HalPushButton(h,v,h+100,v+20,"OpenCredManPayGrntReportsBtn","Reports");v = v + 30;
 
   SpecialMenu("Open #NL# Transaction",'t',2,"OpenTRFromCredMan");
-  SpecialMenu("Open Subsystem Record",' ',3,"OpenSubsysCredManDsm");
+  //SpecialMenu("Open Subsystem Record",' ',3,"OpenSubsysCredManDsm");//CUST-REMOVED
 //CUST-BEGIN
   SpecialMenu("Terminate Agreement",' ',4,"TerminateCredManDsm");
   SpecialMenu("Buy-out Agreement",' ',5,"BuyOutCredManDsm");
   SpecialMenu("Check Buy-out Value",' ',6,"CheckBuyoutValueWindowDsm");
   SpecialMenu("Customer Status",'e',7,"CUStatusCredManDsm");
-  SpecialMenu("Print Payment Schedule",' ',8,"PaymentScheduleCredManDsm");
+  //SpecialMenu("Print Payment Schedule",' ',8,"PaymentScheduleCredManDsm");
   SpecialMenu("Pause/prolong Agreement",' ',8,"PauseCredManDsm");
   SpecialMenu("Credit Agreement Info",'I',0,"CredManInfoDsm");
   SpecialMenu("Refinance Agreement",' ',9,"RefinCredManDsm");
@@ -922,8 +925,10 @@ begin
 //  SpecialMenu("Invoice",'F',1,"InvoiceCredManDsm");
   SpecialMenu("Invoice",'F',1,"CreateCredManInvoiceDsm");
   SpecialMenu("Payment",' ',1,"CredManMakePaymentDsm");
+  SpecialMenu("Extra Fee Invoice",' ',1,"ManualExtraFeeDsm");
+  
 //CUST-END
-  SpecialMenu("Receipt",'r',1,"ReceiptCredManDsm");
+  //SpecialMenu("Receipt",'r',1,"ReceiptCredManDsm");
   EndWindow;
 end;
 
@@ -971,7 +976,8 @@ begin
   EditField(h,v+=vs,262,"Classifications",Normal,Classifications,false,CredManClassSClass);
   CheckBox(h2,v,0,"Annual Rate",AnnualRate);
   EditField(h,vm2=(v+=vs),262,"Bank Account",Normal,OwnBankAccount,false,0);
-  
+  EditField(h2+150,v=vm-20,-40,"Minimum Overdue Fee",Normal,MinOverdueFee,false,0);
+  vm = vm + 20;
   //CUST-END
   ButtonFrame(h2,v=vm,150,2,"Late Interest Based On");
   RadioButton(h2,v,0,0,"Due Date",LateRateOption);

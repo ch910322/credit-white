@@ -28,6 +28,7 @@ begin
   Setting("Automatic Order Classes",CMOrderClassTClass,modCredMan);
   Setting("Receipt Entry",ReceiptEntryWClass,modSL);
   Setting("Agreement Classifications",CredManClassLClass,modCredMan);
+  Setting("Prolong Sessions",ProlongSessionLClass,modCredMan);
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
 	Report("Application Overview",LoanApplicationListRClass,LoanApplicationListRn,0,modCredMan);
@@ -39,7 +40,7 @@ begin
   Maintenance("Create Overdue Invoices",GenOverdueInvVClass,GenOverdueInvMn,modCredMan);
   Maintenance("Fix Credit History",CredManRedoCredHistVClass,CredManRedoCredHistMn,modCredMan);
   Maintenance("Generate Agreement Schedules",CreateCredManScheduleVClass,CreateCredManScheduleMn,modCredMan);
-  
+  Maintenance("Create Mails from Schedules",SendScheduleEmailsVClass,SendScheduleEmailsMn,modCredMan);
 
   Maintenance("Recreate Invoices with Prolong months",CredManRecreateDocsVClass,CredManRecreateDocsMn,modCredMan);
 
@@ -173,10 +174,12 @@ begin
   SString(200220,"Source");
   SString(200221,"Interface");
   SString(200222,"OS");
+  SString(200223,"Bank Acc.");
 
   SString(200230,"Mailing List");
   SString(200231,"Email");
   SString(200232,"Date");
+  SString(200233,"Another Prolongation Pending");
 
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");
@@ -385,6 +388,18 @@ begin
   SetBegin(2027);
   SetText(0,"Invoice");
   SetText(4,"Buy-out");
+  EndSet;
+
+  SetBegin(2028);
+  SetText(0,"Credit Agreement");
+  SetText(1,"B2B Loan Applications");
+  EndSet;
+
+  SetBegin(2029);
+  SetText(0,"Manual");
+  SetText(1,"At Insert");
+  SetText(2,"At OK");
+  SetText(3,"At Printout");
   EndSet;
 
   return;

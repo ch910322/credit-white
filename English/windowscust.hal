@@ -89,13 +89,20 @@ begin
     EditField(h,v+=vs,100,"Offer Email Row Text",Normal,EmailOfferTextRow,false,LTxtSClass);
 
   end;
+  EditField(h,v+=vs,100,"Schudule Text",Normal,ScheduleText,false,LTxtSClass);
+
 
 
   EditField(h,v+=vs,100,"Mailing List",Normal,MailingList,false,PersColSClass);
 
-  ButtonFrame(h,v+=40,150,2,"Surety Provider by default");
+  ButtonFrame(h,v+=40,200,2,"Surety Provider by default");
   RadioButton(h,v,0,0,"Contact",ContactPasteSpecial);
   RadioButton(h,v+=16,1,0,"Contact Person",ContactPasteSpecial);  
+
+  ButtonFrame(h,v+=40,200,2,"Credit Agreement Info Report Date");
+  RadioButton(h,v,1,0,"Due date",CMInfoReportDate);
+  RadioButton(h,v+=16,0,0,"Invoice date",CMInfoReportDate);  
+
 
   EditField(h,v+=40,100,"Days in Year",Normal,DaysInYear,false,0);
   ButtonFrame(h,v+=40,150,2,"Days in Month");
@@ -292,6 +299,18 @@ begin
   EditFieldTL(h,v+=vs,153,"Manager",M4Code,Normal,10,f2,false,UserSClass);
   EndWindow;
 
+  WindowBegin("Specify Mails from Schedules",SendScheduleEmailsVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 150; v = 6; vs = 20;
+  PeriodField(h=140,v=6,"Period");
+  EditFieldTL(h,v+=vs,153,"Credit Agreement",M4Long,Normal,0,long1,false,CredManSClass);
+  EditFieldTL(h,v+=vs,153,"Customer",M4Code,Normal,20,f1,false,CUSClass);
+  EditFieldTL(h,v+=vs,153,"Manager",M4Code,Normal,10,f2,false,UserSClass);
+  EditFieldTL(h,v+=vs,153,"Agreement Type",M4Code,Normal,20,f3,false,CredManTypeSClass);
+  CheckBox(h,v+=vs,0,"Re-generate Schedules",flags[1]);
+  CheckBox(h,v+=vs,0,"Send E-mails Automatically",flags[2]);
+  EndWindow;
+
   WindowBegin("Specify Recreate Invoices with Prolong months",CredManRecreateDocsVClass,CGMnt,RcType);
   SetWRect(64,80,445,95);
   h = 150; v = 6; vs = 20;
@@ -390,14 +409,27 @@ begin
 
   WindowBegin("Pause/prolong Credit Agreement",PauseCredManWClass,CGother,RcType);
   UseView(RcVc);
-  SetWRect(20,80,400,200);
+  SetWRect(20,80,400,250);
   AutoSizeWindow(false);  
   h = 150; h2 = 250; v=450;
-  EditFieldTL(h,v=6,120,"Pause Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v=6,120,"Pause/Prolong Start Date",M4Date,Normal,0,d1,false,PasteCurDate);
   EditFieldTL(h,v+=vs,120,"Pause Months",M4Qty,Normal,0,vals0,false,0);
   EditFieldTL(h,v+=vs,120,"Prolong Months",M4Qty,Normal,0,vals1,false,0);
   CheckBox(h,v+=vs,0,"Re-sign Schedule",flags[1]);
-  HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassPause","Pause");
+  CheckBox(h,v+=vs,0,"Issue Prolong Invoice",flags[2]);
+  CheckBox(h,v+=vs,0,"Prolong only when Invoice is paid",flags[3]);
+  HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassPause","Pause/Prolong");
+  EndWindow;
+
+  WindowBegin("Create Extra Fee Invoice",ManualExtraFeeWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,400,200);
+  AutoSizeWindow(false);  
+  h = 150; h2 = 250; v=450;
+  EditFieldTL(h,v=6,120,"Invoice Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,120,"Item",M4Code,Normal,20,f1,false,INSClass);
+  EditFieldTL(h,v+=vs,120,"Value",M4Qty,Normal,0,vals0,false,0);
+  HalPushButton(h,v+=vs,h+120,v+20,"ManualExtraFeeWClassCreate","Create");
   EndWindow;
 
   WindowBegin("Refinance Agreement",RefinCredManWClass,CGother,RcType);
@@ -406,7 +438,7 @@ begin
   AutoSizeWindow(false);  
   h = 20;
   HalPushButton(h,v=36,h+180,v+20,"RefinCredManWClassRefinance","Refinance");
-  HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassProlong","Prolong");
+//  HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassProlong","Prolong");
   HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassTransfer","Transfer to Surety Provider");
   HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassPartial","Partial Buy-out");
   EndWindow;
@@ -1688,7 +1720,7 @@ begin
   EditField(h2,v,-40,"Name",ViewOnly,CustName,false,0);
   EditField(h,v+=vs,90,"Date",ViewOnly,TransDate,false,0);
   EditField(h2,v,90,"Time",ViewOnly,TransTime,false,0);
-  MatrixBegin(10,v+=vs+40,-40,-20,-,99);
+  MatrixBegin(10,v+=vs+40,-40,-20,-,999);
   MatCol(1,24,"Type",0,Type,false,SetSClass);
   MatCol(1,104,"Inv. Date",0,InvDate,false,0);
   MatCol(1,104,"Period From",0,FromDate,false,0);
@@ -1710,7 +1742,7 @@ end;
 window CMInvoicingTClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  real h,v,vs,vs2,hm;
+  real h,v,vs,vs2,hm,h2,vm;
   Integer tilenr;
   vs = 20;
   WindowBegin("Invoicing Settings",CMInvoicingTClass,CGSbl,SRType);
@@ -1741,6 +1773,9 @@ begin
 
   EditField(h,v+=vs,100,"Additional Comment",Normal,InvoiceCommentStr,false,0);
   EditField(h,v+=vs,100,"Overdue Item Class",Normal,OverdueItemClass,false,DISClass);
+  EditField(h,v+=vs,140,"Replace VAT Nr.",Normal,ReplaceVATNr,false,0);
+  EditField(h+200,v,140,"with",Normal,ReplaceVATNrWith,false,0);
+  EditField(h,v+=vs,100,"Prolong Item",Normal,ProlongItem,false,INSClass);  
   
   ButtonFrame(h,v+=40,400,4,"Interest Invoicing");
   RadioButton(h,v,0,0,"With Principle, same Invoice",InterestIVType);
@@ -1756,10 +1791,18 @@ begin
   EditField(h+360,v,30,"Day of Month",Normal,OverdueIVDay,false,0);
 
   EditField(h,v+=30,100,"Overdue Months",Normal,OverdueMonths,false,0);
+  
+  v = v + 40;
+  ButtonFrame(h,vm=v,200,5,"Invoice Recipients");
+  Checkbox(h,v,0,"Primary Contact Email",SendToMainContact);
+  Checkbox(h,v+=16,0,"Company Contact Email",SendToCompany);
+  Checkbox(h+20,v+=16,0,"Only if no Contact Person",SendToCompNoContact);
+  Checkbox(h,v+=16,0,"Additional Recipients",SendToAddRecip);
+  EditField(h+100,v+=20,100,"Job Title",Normal,SendToJobDescr,false,0);
 
-  ButtonFrame(h,v+=40,250,2,"Invoice Date");
-  RadioButton(h,v,0,0,"Payment Day",InvoiceDay);
-  RadioButton(h,v+=16,1,0,"Payment Day - Days of Payment Term",InvoiceDay);  
+  ButtonFrame(h2=400,v=vm,230,2,"Invoice Date");
+  RadioButton(h2,v,0,0,"Payment Day",InvoiceDay);
+  RadioButton(h2,v+=16,1,0,"Payment Day - Days of Payment Term",InvoiceDay);  
 
 
   Tile(2,95,false,"2",FBuyerPayDeal);
@@ -1848,5 +1891,50 @@ begin
   MatCol(1,h1,"Item",0,ArtCode,false,0);
   MatCol(1,-60,"Sum",0,Sum,false,0);
   EndMatrix;
+  EndWindow;
+end;
+
+
+window ProlongSessionLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Prolong Sessions",ProlongSessionLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(ProlongSessionDClass);
+  UseView(ProlongSessionVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"SerNr",SerNr,false,SerNr);
+  RlCol(100,100,"TransDate",TransDate,false);
+  RlCol(170,170,"TransTime",TransTime,false);
+  RlCol(226,226,"SalesMan",SalesMan,false);
+  RlCol(852,852,"PaidFlag",PaidFlag,false);
+  RlCol(948,948,"CredManNr",CredManNr,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+
+window ProlongSessionDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Prolong Session",ProlongSessionDClass,CGview,-);
+  SetWRect(20,80,600,339);
+  Sizeable(-1,-1,0,0);
+  UseView(ProlongSessionVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,50,"SerNr",Normal,SerNr,false,);
+  EditField(h,v+=vs,50,"TransDate",Normal,TransDate,false,0);
+  EditField(h,v+=vs,50,"TransTime",Normal,TransTime,false,0);
+  EditField(h,v+=vs,50,"SalesMan",Normal,SalesMan,false,UserSClass);
+  EditField(h,v+=vs,50,"PauseDate",Normal,PauseDate,false,0);
+  EditField(h,v+=vs,50,"ProlongDate",Normal,ProlongDate,false,0);
+  EditField(h,v+=vs,50,"PauseMonths",Normal,PauseMonths,false,0);
+  EditField(h,v+=vs,50,"ProlongMonths",Normal,ProlongMonths,false,0);
+  EditField(h,v+=vs,50,"ProlongWhenPaid",Normal,ProlongWhenPaid,false,0);
+  EditField(h,v+=vs,50,"PaidFlag",Normal,PaidFlag,false,0);
+  EditField(h,v+=vs,50,"CredManNr",Normal,CredManNr,false,0);
+  EditField(h,v+=vs,50,"RecalcSchedule",Normal,RecalcSchedule,false,0);
   EndWindow;
 end;
