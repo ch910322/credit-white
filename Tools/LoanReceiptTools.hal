@@ -14,6 +14,7 @@ external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var 
 external inner procedure IPPastePayMode(var record IPVc);
 external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val,array string);
 external procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
+external procedure SetupOverdueLangCode(var record IVVc,string);
 
 
 /*Invoicing tools*/
@@ -496,10 +497,12 @@ begin
   string 255 instr;
   record CredManSetBlock CMb;
   array string 255 lateformula;
+  record CMInvoicingBlock CIb;
 
   PrepareIPRecord(SMr,IPr);
 
   BlockLoad(CMb);
+  BlockLoad(CIb);
   rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(SMr,i,SMrw);
@@ -521,6 +524,7 @@ begin
             //Setup always new invoice
             SetupLoanInvoice(CredManr,CMb,IVr,invdate,sd,invdate,true,false,"");
             AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
+            SetupOverdueLangCode(IVr,CredManr.Type);
             IVr.OKFlag = 1;
             RecordInsert(IVr,true);
           end;
