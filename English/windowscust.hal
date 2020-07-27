@@ -1721,7 +1721,7 @@ begin
   EditField(h2,v,-40,"Name",ViewOnly,CustName,false,0);
   EditField(h,v+=vs,90,"Date",ViewOnly,TransDate,false,0);
   EditField(h2,v,90,"Time",ViewOnly,TransTime,false,0);
-  MatrixBegin(10,v+=vs+40,-40,-20,-,999);
+  MatrixBegin(10,v+=vs+40,-40,-40,-,999);
   MatCol(1,24,"Type",0,Type,false,SetSClass);
   MatCol(1,104,"Inv. Date",0,InvDate,false,0);
   MatCol(1,104,"Period From",0,FromDate,false,0);
@@ -1734,6 +1734,11 @@ begin
   InsertRowTest;
   DeleteRowTest;
   EndMatrix;
+  SoftEditField(330,-30,70,"",ViewOnly,"totprinc",false,0,M4Val,0);
+  SoftEditField(425,-30,70,"",ViewOnly,"totint",false,0,M4Val,0);
+  SoftEditField(510,-30,70,"",ViewOnly,"totfees",false,0,M4Val,0);
+  SoftEditField(590,-30,60,"",ViewOnly,"tot",false,0,M4Val,0);
+
   SpecialMenu("Open Fees Matrix",' ',1,"OpenCredFeesMatrixSchedDsm");
 
   

@@ -1,3 +1,45 @@
+
+global
+procedure GetScheduleTotals(record CredManSchedVc CSr,var val princ,var val interest,var val fees,var val total,var val vat)
+begin  
+  Integer rwcnt,i;
+  row CredManSchedVc CSrw;
+
+  princ = 0;
+  interest = 0;
+  fees = 0;
+  total = 0;
+  vat = 0;
+
+  rwcnt = MatRowCnt(CSr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(CSr,i,CSrw);
+    princ = princ + CSrw.Principle;
+    interest = interest + CSrw.Interest;
+    fees = fees + CSrw.Fees;
+    total = total + CSrw.Total;
+    //vat = vat + CSrw.;
+  end;
+
+  return;
+end;
+
+procedure UpdateCredManSchedSoftFields(Integer wn)
+begin
+  record CredManSchedVc CSr;
+  val princ,interest,fees,total,vat;
+
+  GetWindowRecord(wn,CSr);
+  GetScheduleTotals(CSr,princ,interest,fees,total,vat);
+
+  PutWindowString(wn,"totprinc",princ);
+  PutWindowString(wn,"totint",interest);
+  PutWindowString(wn,"totfees",fees);
+  PutWindowString(wn,"tot",total);
+
+  return;
+end;
+
 global
 procedure OpenCredFeesMatrixSchedDsm()
 begin
@@ -25,6 +67,27 @@ begin
   return;
 end;
 
+procedure SumupCredManSched(var record CredManSchedVc CSr,Integer rowno)
+begin
+  row CredManSchedVc CSrw;
+  record CredFeesMatrixVc FMr;
+  row CredFeesMatrixVc FMrw;
+  Integer i,rwcnt;
+  val fees;
+  
+  MatRowGet(CSr,rowno,CSrw);
+  UnpackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
+  rwcnt = MatRowCnt(FMr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(FMr,i,FMrw);
+    fees = fees + FMrw.Sum;
+  end;
+  CSrw.Total = CSrw.Principle + CSrw.Interest + CSrw.Fees;
+  MatRowPut(CSr,rowno,CSrw);
+
+  return;
+end;
+
 global
 function Boolean CredFeesMatrixVClassOnOKWindow(Integer wn)
 begin
@@ -44,15 +107,70 @@ begin
     MatRowGet(SCr,rowno,SCrw);
     PackRowFieldMatrix(SCrw,"FeesMatrix",FMr);
     MatRowPut(SCr,rowno,SCrw);
+    SumupCredManSched(SCr,rowno);
   end;
-  
+
   CloseWindow(wn);
 
   PutWindowRecord(mwn,SCr);
   if (WindowState(mwn)==Rs_normal) then begin
     SetWindowState(mwn,Rs_update);
   end;
-  
+
+  UpdateCredManSchedSoftFields(mwn);
+ 
   CredFeesMatrixVClassOnOKWindow = false;
+  return;
+end;
+
+
+global
+function Boolean CredManSchedDClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
+begin
+  Boolean res;
+
+  res = true;
+
+  switch (fieldname) begin
+    case "Total": 
+      res = false;
+  end;
+
+  CredManSchedDClassActiveEditField = res;
+  return;
+end;
+
+
+global
+function Boolean CredManSchedDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+  record CredManSchedVc SCr;
+  
+  if (rownr>0) then begin
+    GetWindowRecord(wn,SCr);
+    SumupCredManSched(SCr,rownr);
+    PutWindowRecord(wn,SCr);
+    UpdateCredManSchedSoftFields(wn);
+  end;
+
+  CredManSchedDClassAfterEditField = res;
+  return;
+end;
+
+global
+procedure CredManSchedDClassOnWindowRecordChange(Integer wn)
+begin
+  UpdateCredManSchedSoftFields(wn);
+  return;
+end;
+
+global
+function Boolean CredManSchedDClassOnOpenWindow(Integer wn)
+begin
+  Boolean res;
+  UpdateCredManSchedSoftFields(wn);
+
+  CredManSchedDClassOnOpenWindow = false;
   return;
 end;
