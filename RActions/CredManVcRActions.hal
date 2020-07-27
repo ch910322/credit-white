@@ -477,6 +477,12 @@ BEGIN
       res = 0;
     end;
   end;
+
+  if (res!=0) then begin
+    if (CredManr.Approved!=0) then begin
+      res = 0;
+    end;
+  end;
   
   CredManVcRecordRemoveTest = res;
   return;
