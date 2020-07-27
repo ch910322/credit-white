@@ -145,6 +145,7 @@ begin
   SString(200095,"Penalties");
   SString(200096,"Total");
   SString(200097,"Balance");
+  SString(200098,"VAT");
 
   SString(200100,"Invoice Number already used");
   SString(200101,"Amount is more than specified in Credit Agreement");

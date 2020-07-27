@@ -464,9 +464,21 @@ begin
   Integer prevtype;
   record SMVc SMr;
   row SMVc SMrw;
+  Integer c10;
 
   BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,withactuals,suggestedonsameday);
   PrintCredManTop(CredManr,CredManPayPlanr,CredManSetb);
+
+  SetRepCol(2,80);
+  SetRepCol(3,180);
+  SetRepCol(4,280);
+  SetRepCol(5,160);
+  SetRepCol(6,220);
+  SetRepCol(7,280);
+  SetRepCol(8,340);
+  c10 = 380;
+  SetRepCol(9,430);
+
   StartFormat(15);
   OutString(0,0,USetStr(17326),false);
   EndFormat;
@@ -477,6 +489,7 @@ begin
   OutString(6,0,USetStr(200093),true);
   OutString(7,0,USetStr(200094),true);
   OutString(8,0,USetStr(200095),true);
+  OutString(c10,0,USetStr(200098),true);
   OutString(9,0,USetStr(200096),true);
   OutString(1,0,USetStr(200097),true);
   EndFormat;
@@ -509,6 +522,7 @@ begin
     OutString(6,0,SMrw.CredVal,true);
     OutString(7,0,SMrw.DebVal2,true);
     OutString(8,0,SMrw.CredVal2,true);
+    OutString(c10,0,SMrw.FrRate,true);
     OutString(9,0,SMrw.CurDebVal,true);
     OutString(1,0,SMrw.CurCredVal,true);
     EndFormat;
