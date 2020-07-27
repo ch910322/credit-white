@@ -1,0 +1,193 @@
+external inner function Boolean SetInSet2(string,string);
+
+procedure GetInvoiceValues(record IVVc IVr,var val bal1,var val principle,var val interest,var val fees,var val vat,var val total,var val fees,var val bal2)
+begin
+  row IVVc IVrw;
+  Integer i,rwcnt;
+  val calcbal;
+  record CredHistVc CredHistr;
+  
+  bal1 = 0;
+  principle = 0;
+  interest = 0;
+  fees = 0;
+  vat = 0;
+  total = 0;
+  fees = 0;
+  bal2 = 0;
+
+  rwcnt = MatRowCnt(IVr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    switch (IVrw.ChargeType) begin
+      case 1: 
+        principle = IVrw.Sum; 
+        CredHistr.SerNr = IVrw.CredHistNr;
+        ReadFirstMain(CredHistr,1,true);
+        if (blank(calcbal) or calcbal>CredHistr.Balance) then begin
+          calcbal = CredHistr.Balance;
+        end;
+      case 2: 
+        interest = interest + IVrw.Sum;
+      case 3: 
+        principle = principle + IVrw.Sum;
+        CredHistr.SerNr = IVrw.CredHistNr;
+        ReadFirstMain(CredHistr,1,true);
+        if (blank(calcbal) or calcbal>CredHistr.Balance) then begin
+          calcbal = CredHistr.Balance;
+        end;
+      case 4: 
+        fees = fees + IVrw.Sum;
+      case 9: 
+        fees = fees + IVrw.Sum;
+      case 15: 
+        fees = fees + IVrw.Sum;
+    end;
+  end;
+
+  vat = IVr.Sum3;
+  total = IVr.Sum4;
+  bal1 = calcbal + principle;
+  bal2 = calcbal;
+
+  return;
+end;
+
+global
+procedure CMIncomeForecastRn(record RcVc RepSpec)
+begin
+  Integer c10,c11,c12,c13,c14,c15,c16,c17;
+  record IVVc IVr;
+  Boolean TrHs,testf;
+  record CredManVc CredManr;
+  val bal1,principle,interest,vat,total,fees,bal2;
+  val rate;
+  record CUVc CUr;
+  val totprinc,totint,totfees,totvat,tot;
+  
+  StartReportJob(USetStr(200256));
+
+  EndHeader;
+
+  SetRepCol(2,50);//type
+  SetRepCol(3,120);//customer code
+  SetRepCol(4,190);//reg no
+  SetRepCol(5,270);//interest
+  SetRepCol(6,330);//sd
+  SetRepCol(7,390);//ed
+  SetRepCol(8,510);//agreement value
+  c10 = 570;//balance
+  c11 = 630;//principle
+  c12 = 690;//interest
+  c13 = 740;//fees
+  c14 = 800;//vat
+  c15 = 860;//total
+  c16 = 880;//due date
+  c17 = 1000;//remaining
+
+  StartFormat(15);
+  OutString(0,0,USetStr(200240),false);
+  OutString(2,0,USetStr(200241),false);
+  OutString(3,0,USetStr(200242),false);
+  OutString(4,0,USetStr(200243),false);
+  OutString(5,0,USetStr(200244),false);
+  OutString(6,0,USetStr(200245),false);
+  OutString(7,0,USetStr(200246),false);
+  OutString(8,0,USetStr(200247),true);
+  OutString(c10,0,USetStr(200248),true);
+  OutString(c11,0,USetStr(200249),true);
+  OutString(c12,0,USetStr(200250),true);
+  OutString(c13,0,USetStr(200251),true);
+  OutString(c14,0,USetStr(200252),true);
+  OutString(c15,0,USetStr(200253),true);
+  OutString(c16,0,USetStr(200254),false);
+  OutString(c17,0,USetStr(200255),true);
+  EndFormat;
+  StartFormat(1);
+  Gray_Divider(0,1000);
+  EndFormat;
+  
+  TrHs = true;
+  IVr.PayDate = RepSpec.sStartDate;
+  while (LoopKey("PayDate",IVr,2,TrHs)) begin
+    if (IVr.PayDate>RepSpec.sEndDate) then begin
+      TrHs = false;
+    end else begin
+      testf = true;
+      if (nonblank(RepSpec.f1) and RepSpec.f1!=IVr.CustCode) then begin
+        testf = false;
+      end;
+      CredManr.SerNr = IVr.CustCredManNr;
+      if (ReadFirstMain(CredManr,1,true)) then begin end;
+      if (nonblank(RepSpec.f1) and RepSpec.f1!=IVr.CustCode) then begin
+        testf = false;
+      end;
+      if (nonblank(RepSpec.f2) and RepSpec.f2!=CredManr.Type) then begin
+        testf = false;
+      end;
+      if (nonblank(RepSpec.f3) and RepSpec.f3!=CredManr.OrderClass) then begin
+        testf = false;
+      end;
+      if (nonblank(RepSpec.f4) and SetInSet2(RepSpec.f3,CredManr.Classifications)==false) then begin
+        testf = false;
+      end;
+      if (nonblank(RepSpec.f5) and RepSpec.f5!=CredManr.SalesMan) then begin
+        testf = false;
+      end;
+      if (IVr.OKFlag==0) then begin
+        testf = false;
+      end;
+
+      if (testf) then begin
+        StartFormat(15);
+        rate = CredManr.IntRate;
+        if (CredManr.AnnualRate==0) then begin
+          rate = rate*12;
+        end;
+        CUr.Code = CredManr.CustCode;
+        ReadFirstMain(CUr,1,true);
+        OutString(0,"DblCredManVc",CredManr.SerNr,false);
+        OutString(2,"DblCredManTypeVc",CredManr.Type,false);
+        OutString(3,"DblCUVc",CredManr.CustCode,false);
+        OutString(4,0,CUr.RegNr1,false);
+        OutString(5,0,rate,false);
+        OutString(6,0,CredManr.startDate,false);
+        OutString(7,0,CredManr.endDate,false);
+        OutString(8,0,CredManr.InvSum4,true);
+        GetInvoiceValues(IVr,bal1,principle,interest,fees,vat,total,fees,bal2);
+        if (blank(bal2)) then begin
+          bal1 = CredManr.InvSum4;
+          bal2 = CredManr.InvSum4;
+        end;
+        OutString(c10,0,bal1,true);
+        OutString(c11,0,principle,true);
+        OutString(c12,0,interest,true);
+        OutString(c13,0,fees,true);
+        OutString(c14,0,vat,true);
+        OutString(c15,0,total,true);
+        OutString(c16,0,IVr.PayDate,false);
+        OutString(c17,0,bal2,true);
+        totprinc = totprinc + principle;
+        totint = totint + interest;
+        totfees = totfees + fees;
+        totvat = totvat + vat;
+        tot = tot + total;
+        EndFormat;
+      end;
+    end;
+  end;
+
+  Gray_Divider(0,1000);
+  StartFormat(15);
+  OutString(c11,0,totprinc,true);
+  OutString(c12,0,totint,true);
+  OutString(c13,0,totfees,true);
+  OutString(c14,0,totvat,true);
+  OutString(c15,0,tot,true);
+  EndFormat;
+
+  EndJob;
+
+
+  return;
+end;

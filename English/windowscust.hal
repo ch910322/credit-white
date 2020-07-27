@@ -1609,6 +1609,24 @@ begin
   EndWindow;
 end;
 
+window CMIncomeForecastRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm,vs;
+  WindowBegin("Specify Income Forecast",CMIncomeForecastRClass,CGRcW,RcType);
+  SetWRect(20,80,420,310);
+  vs = 20;
+  PeriodField(h=140,v=6,"Period");
+  EditFieldTL(h,v+=vs,150,"Customer",   M4UStr,Normal,41,f1,false,CUSClass);
+  EditFieldTL(h,v+=vs,82,"Agreement Type",M4Str,Normal,60,f2,false,CredManTypeSClass);
+  EditFieldTL(h,v+=vs,82,"Order Class",M4Str,Normal,60,f3,false,OrderClassSClass);
+  EditFieldTL(h,v+=vs,82,"Agreement Classification",M4Str,Normal,60,f4,false,CredManClassSClass);
+  EditFieldTL(h,v+=vs,82,"Manager",M4Str,Normal,60,f5,false,UserSClass);
+  EndWindow;
+end;
+
+
+
 window ReceiptEntryWClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
