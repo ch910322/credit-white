@@ -569,6 +569,7 @@ begin
   RecordField(OwnBankAccount,M4UStr,255,0);
   RecordField(AnnualRate,M4Int,0,0);
   RecordField(MinOverdueFee,M4Val,0,0);
+  RecordField(OverdueRateType,M4Int,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -1134,6 +1135,7 @@ begin
   RecordField(ReplaceVATNr,M4Str,255,0);
   RecordField(ReplaceVATNrWith,M4Str,255,0);
   RecordField(ProlongItem,M4Code,20,INVc);
+  RecordField(OverdueRateType,M4Int,0,0);
 
   EndBlock;
 

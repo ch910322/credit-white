@@ -984,6 +984,11 @@ begin
   ButtonFrame(h2,v+=40,150,2,"Interest Calculation");
   RadioButton(h2,v,1,0,"Running Principle",ChargeMethod);
   RadioButton(h2,v+=16,0,0,"Initial Principle",ChargeMethod);
+
+  ButtonFrame(h3=h2+170,v=vm,80,3,"Overdue Rate");
+  RadioButton(h3,v,0,0,"Default",OverdueRateType);
+  RadioButton(h3,v+=16,1,0,"Daily",OverdueRateType);
+  RadioButton(h3,v+=16,1,0,"Monthly",OverdueRateType);
 //CUST-END
 /*
   ButtonFrame(h=50,vm=(v+=45),140,2,"Default Interest Type");
