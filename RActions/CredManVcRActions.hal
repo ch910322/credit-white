@@ -308,6 +308,8 @@ begin
     StoreCredOffSerNrIV(CredManr.SerNr,"CredManVc",CredManr.OfficialSerNr)
   end;
 
+  res = inner.CredManVcRecordUpdateAfter(CredManr,CredMan2r,stat,long4);
+
   CredManVcRecordUpdateAfter = res;
   return;
 end;
