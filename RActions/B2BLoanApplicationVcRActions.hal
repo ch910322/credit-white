@@ -1,6 +1,10 @@
 //<halrule>server-only</halrule>
 external function Boolean InsertManagerInB2BApplication(var record B2BLoanApplicationVc);
 external updating procedure ClearAgreementDocRecords(Longint,Integer);
+external inner function string 50 NextLegalSerNr(string,LongInt,Date,string,string,string);
+external updating procedure DeleteCredOffSerNr(LongInt,string);
+external updating procedure StoreCredOffSerNrIV(LongInt,string,string);
+external function Boolean GetCredLegalNrLine(string,string,Date,string,string,var row CredLegalInvNrBlock,Integer);
 
 global
 function LongInt B2BLoanApplicationVcRecordDefaults(var record B2BLoanApplicationVc LAr,record B2BLoanApplicationVc LA2r,LongInt long3,LongInt long4)
@@ -40,6 +44,7 @@ begin
   LAr.StateChangeDate = CurrentDate;
   LAr.StateChangeTime = CurrentTime;
   LAr.StateNotified = 0;
+  LAr.OfficialSerNr = "";
 
   InsertManagerInB2BApplication(LAr);
 
@@ -123,6 +128,46 @@ begin
 end;
 
 global
+updating function LongInt B2BLoanApplicationVcRecordSave(var record B2BLoanApplicationVc LAr,record B2BLoanApplicationVc LA2r,LongInt stat,LongInt long4)
+begin
+  Longint res;
+  row CredLegalInvNrBlock LegalInvNrrw;
+
+  res = 0;
+
+  if (blank(LAr.OfficialSerNr)) then begin
+    if (GetCredLegalNrLine("B2BLoanApplicationVc",LAr.SerNr,LAr.TransDate,LAr.Type,"",LegalInvNrrw,1)) then begin
+      LAr.OfficialSerNr = NextLegalSerNr("B2BLoanApplicationVc",LAr.SerNr,LAr.TransDate,LegalInvNrrw.Serie,LegalInvNrrw.TSerStart,LegalInvNrrw.TSerEnd);
+    end;
+  end;
+
+
+
+  B2BLoanApplicationVcRecordSave = res;
+  return;
+end;
+
+global
+updating function LongInt B2BLoanApplicationVcRecordUpdate(var record B2BLoanApplicationVc LAr,record B2BLoanApplicationVc LA2r,LongInt stat,LongInt long4)
+begin
+  Longint res;
+  row CredLegalInvNrBlock LegalInvNrrw;
+
+  res = 0;
+
+  if (blank(LAr.OfficialSerNr)) then begin
+    if (GetCredLegalNrLine("B2BLoanApplicationVc",LAr.SerNr,LAr.TransDate,LAr.Type,"",LegalInvNrrw,1)) then begin
+      LAr.OfficialSerNr = NextLegalSerNr("B2BLoanApplicationVc",LAr.SerNr,LAr.TransDate,LegalInvNrrw.Serie,LegalInvNrrw.TSerStart,LegalInvNrrw.TSerEnd);
+    end;
+  end;
+
+
+  B2BLoanApplicationVcRecordUpdate = res;
+  return;
+end;
+
+
+global
 updating function LongInt B2BLoanApplicationVcRecordUpdateAfter(var record B2BLoanApplicationVc LAr,record B2BLoanApplicationVc LA2r,LongInt stat,LongInt long4)
 begin
   Longint res;
@@ -146,6 +191,9 @@ begin
   res = 0;
   
   ClearAgreementDocRecords(LAr.SerNr,1);
+  if (nonblank(LAr.OfficialSerNr)) then begin
+    DeleteCredOffSerNr(LAr.SerNr,"B2BLoanApplicationVc");
+  end;
   
   B2BLoanApplicationVcRecordRemoveAfter = res;
   return;

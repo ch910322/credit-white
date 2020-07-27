@@ -618,7 +618,7 @@ begin
   EditField(h,vm=(v=6), 82,"No.",St_i,SerNr,false,TSerSClass);
 //CUST-BEGIn
   EditField(h+90,v,50,"",ViewOnly,VersionNo,false,0);
-  EditField(h2,v,150,"Legal No.",Normal,OfficialSerNr,false,0);
+  EditField(h2,v,150,"Legal No.",Normal,OfficialSerNr,false,CredLegalNrSerNrSClass);
 //CUST-END
   EditField(h,v+=vs,82,"Type",Normal,Type,false,CredManTypeSClass);
   EditField(h2,v,-40,"Interest",Normal,InstalmentType,false,SetSClass);

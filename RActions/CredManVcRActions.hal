@@ -4,6 +4,10 @@ external inner procedure CUCreditLimit(record CUVc,Date,string,var val,var LongI
 external function val GetMonthlyPaymentAmount(record CredManVc,Integer);
 external updating procedure ClearAgreementDocRecords(Longint,Integer);
 external procedure RecalcCredManFees(var record CredManVc);
+external function Boolean GetCredLegalNrLine(string,string,Date,string,string,var row CredLegalInvNrBlock,Integer);
+external inner function string 50 NextLegalSerNr(string,LongInt,Date,string,string,string);
+external updating procedure DeleteCredOffSerNr(LongInt,string);
+external updating procedure StoreCredOffSerNrIV(LongInt,string,string);
 
 
 global
@@ -48,6 +52,7 @@ BEGIN
   CredManr.StateChangeTime = CurrentTime;
   CredManr.StateNotified = 0;
   CredManr.VersionNo = -1;
+  CredManr.OfficialSerNr = "";
 /*
   CredManr.FactInvAmount = t;
   CredManr.LoanToValue = t;
@@ -199,6 +204,71 @@ LCredManVcRecordCheck:;
 END;
 
 
+global
+updating function LongInt CredManVcRecordSave(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  row CredLegalInvNrBlock LegalInvNrrw;
+
+  res = 0;
+
+  if (CredManr.OKFlag==1) then begin
+    if (GetCredLegalNrLine("CredManVc",CredManr.SerNr,CredManr.startDate,CredManr.Type,CredManr.Classifications,LegalInvNrrw,2)) then begin
+      CredManr.OfficialSerNr = NextLegalSerNr("CredManVc",CredManr.SerNr,CredManr.startDate,LegalInvNrrw.Serie,LegalInvNrrw.TSerStart,LegalInvNrrw.TSerEnd);
+    end;
+  end;
+  if (blank(CredManr.OfficialSerNr)) then begin
+    if (GetCredLegalNrLine("CredManVc",CredManr.SerNr,CredManr.startDate,CredManr.Type,CredManr.Classifications,LegalInvNrrw,1)) then begin
+      CredManr.OfficialSerNr = NextLegalSerNr("CredManVc",CredManr.SerNr,CredManr.startDate,LegalInvNrrw.Serie,LegalInvNrrw.TSerStart,LegalInvNrrw.TSerEnd);
+    end;
+  end;
+
+  res = inner.CredManVcRecordSave(CredManr,CredMan2r,stat,long4);
+  
+  CredManVcRecordSave = res;
+  return;
+END;
+
+global
+updating function LongInt CredManVcRecordSaveAfter(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  row CredLegalInvNrBlock LegalInvNrrw;
+
+  res = 0;
+
+  if (nonblank(CredManr.OfficialSerNr)) then begin
+    StoreCredOffSerNrIV(CredManr.SerNr,"CredManVc",CredManr.OfficialSerNr);
+  end;
+
+  res = inner.CredManVcRecordSaveAfter(CredManr,CredMan2r,stat,long4);
+  
+  CredManVcRecordSaveAfter = res;
+  return;
+END;
+
+
+global
+updating function LongInt CredManVcRecordUpdate(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  row CredLegalInvNrBlock LegalInvNrrw;
+
+  res = 0;
+
+  if (CredManr.OKFlag==1 and CredMan2r.OKFlag!=1 and blank(CredManr.OfficialSerNr)) then begin
+    if (GetCredLegalNrLine("CredManVc",CredManr.SerNr,CredManr.startDate,CredManr.Type,CredManr.Classifications,LegalInvNrrw,2)) then begin
+      CredManr.OfficialSerNr = NextLegalSerNr("CredManVc",CredManr.SerNr,CredManr.startDate,LegalInvNrrw.Serie,LegalInvNrrw.TSerStart,LegalInvNrrw.TSerEnd);
+    end;
+  end;
+
+  res = inner.CredManVcRecordUpdate(CredManr,CredMan2r,stat,long4);
+  
+  CredManVcRecordUpdate = res;
+  return;
+END;
+
+
 updating procedure CheckAndCloseCredManTasks(record CredManVc CredManr)
 begin
   record CredManCloseTaskBlock CTb;
@@ -233,6 +303,9 @@ begin
 
   if (CredManr.OrderClass!=CredMan2r.OrderClass) then begin
     CheckAndCloseCredManTasks(CredManr);
+  end;
+  if (CredManr.OfficialSerNr!=CredMan2r.OfficialSerNr) then begin
+    StoreCredOffSerNrIV(CredManr.SerNr,"CredManVc",CredManr.OfficialSerNr)
   end;
 
   CredManVcRecordUpdateAfter = res;
@@ -367,6 +440,7 @@ LCredManPmtGrntVcRecordCheck:;
   return;
 end;
 
+
 function Boolean ContractHasHistory(record CredManVc CredManr)
 begin
   record CredHistVc CredHistr;
@@ -428,6 +502,9 @@ begin
   
   ClearAgreementDocRecords(CredManr.SerNr,0);
   RemoveCredManSchedule(CredManr.SerNr);
+  if (nonblank(CredManr.OfficialSerNr)) then begin
+    DeleteCredOffSerNr(CredManr.SerNr,"CredManVc");
+  end;
   
   CredManVcRecordRemoveAfter = res;
   return;

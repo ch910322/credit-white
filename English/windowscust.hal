@@ -670,6 +670,7 @@ begin
   EditField(h2,v+=vs,120,"Bank Name",Normal,BankName,false,0);
   EditField(h2,v+=vs,120,"Bank Account",Normal,BankAccount,false,BankAccountSClass);
   EditField(h2,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  EditField(h2,v+=vs,-40,"Legal No.",Normal,OfficialSerNr,false,CredLegalNrSerNrSClass);
   
   CheckBox(h3,v=6,0,"Request Direct Debit",RequestDirectDebit);
   
@@ -1857,10 +1858,9 @@ begin
   SetWRect(20,80,900,457);
   Sizeable(-1,-1,0,0);
   h = 8; v = 20;
-  h1=28;
+  h1=24;
   MatrixBegin(h,v+=60,-50,-20,-,499);
-  Flip(0);
-  MatCol(1,h1,"From Date",0,PurchDate,false,PasteCurDate);
+  MatCol(1,h1,"From Date",0,StartDate,false,PasteCurDate);
   MatCol(1,h1+=80,"To Date",0,EndDate,false,PasteCurDate);
   MatCol(1,h1+=80,"Serie",0,Serie,false,0);
   MatCol(1,h1+=80,"From",0,TSerStart,false,0);
@@ -1936,5 +1936,17 @@ begin
   EditField(h,v+=vs,50,"PaidFlag",Normal,PaidFlag,false,0);
   EditField(h,v+=vs,50,"CredManNr",Normal,CredManNr,false,0);
   EditField(h,v+=vs,50,"RecalcSchedule",Normal,RecalcSchedule,false,0);
+  EndWindow;
+end;
+
+window CredLegalNrSerNrSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v;
+
+  WindowBegin("Paste Legal Serial Number",CredLegalNrSerNrSClass,CGother,RcType);
+  SetWRect(64,80,400,298);
+  DataList(0,0,-1,-1,"DLPasteCredSerNrAccount");
+  DataListColumn(1,6,-1,AdjLeft,"DLSerNr","Nr",M4Str);
   EndWindow;
 end;

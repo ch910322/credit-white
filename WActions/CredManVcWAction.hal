@@ -26,6 +26,7 @@ remote updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
 remote updating procedure GenerateAgreementSchedule(record CredManVc);
 remote function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
 remote updating procedure CreateManualExtraInvoice(record RcVc,var record IVVc);
+remote procedure CredLegalNrSerNrSClassOnOpenWindowRemote(string,string,Date,string,string,var array string);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -1338,5 +1339,58 @@ begin
   end else begin
     inner.DblCredManVc(dblstr,l,currepwn);
   end;
+  return;
+end;
+
+
+global
+function Boolean CredLegalNrSerNrSClassOnOpenWindow(Integer wn)
+begin
+  array string 255 arrOffSerNr;
+  record B2BLoanApplicationVc LAr;
+  record CredManVc CredManr;
+  Integer mwn,i;
+  
+  mwn = MotherWindow(wn);
+
+  switch (GetWindowClass(mwn)) begin
+    case "B2BLoanApplicationDClass":
+      GetWindowRecord(mwn,LAr);
+      CredLegalNrSerNrSClassOnOpenWindowRemote("B2BLoanApplicationVc",LAr.SerNr,LAr.Type,LAr.TransDate,"",arrOffSerNr);
+    case "CredManDClass":
+      GetWindowRecord(mwn,CredManr);
+      CredLegalNrSerNrSClassOnOpenWindowRemote("CredManVc",CredManr.SerNr,CredManr.startDate,CredManr.Type,CredManr.Classifications,arrOffSerNr);
+  end;
+  ClearStringList(wn);
+  for (i=0;i<arrOffSerNr.length;i=i+1) begin
+    AddListRow(wn,"DLPasteCredSerNrAccount",1,arrOffSerNr[i],0);
+    AddListData(wn,"DLPasteCredSerNrAccount","DLSerNr",arrOffSerNr[i]);
+  end;
+
+  CredLegalNrSerNrSClassOnOpenWindow = false;
+  return;
+end;
+
+
+global
+function Boolean CredLegalNrSerNrSClassOnOKWindow(Integer wn)
+begin
+  Integer mwn;
+  record B2BLoanApplicationVc LAr;
+  record CredManVc CredManr;
+  record BankVc Bankr;
+  Integer Sel;
+  string 255 tstr;
+  
+  mwn = MotherWindow(wn);
+
+  Sel = SelectedListLine(wn);
+  if (Sel>-1) then begin
+    tstr = GetListTag(wn,Sel);
+    PasteString(mwn,tstr);
+  end;
+  CloseWindow(wn);
+
+  CredLegalNrSerNrSClassOnOKWindow = false;
   return;
 end;

@@ -2,8 +2,46 @@ external inner procedure M4PadString(string,Integer,string,Boolean,var string);
 external inner function string 50 NextLegalSerNr(string,LongInt,Date,string,string,string);
 external inner procedure NextOfficialSerNr(string,LongInt,Date,string,var string);
 
+function Boolean TestCredLegalNrLine(row CredLegalInvNrBlock LegalInvNrrw,string filename,Date invdate,string agrtype,string agrclass,Integer type)
+begin
+  Boolean testf;
+
+  testf = true;
+
+  if (nonblank(LegalInvNrrw.CredManType)) then begin
+    if (nonblank(agrtype)) then begin
+      if (SetInSet(LegalInvNrrw.CredManType,agrtype)==false) then begin testf = false; end;
+    end;
+  end;
+  if (nonblank(LegalInvNrrw.CredManClass)) then begin
+    if (nonblank(agrtype)) then begin
+      if (SetInSet(LegalInvNrrw.CredManClass,agrclass)==false) then begin testf = false; end;
+    end;
+  end;
+  if (filename=="CredManVc" and LegalInvNrrw.RegType!=0) then begin
+    testf = false;
+  end;
+  if (filename=="B2BLoanApplicationVc" and LegalInvNrrw.RegType!=1) then begin
+    testf = false;
+  end;
+  if (nonblankdate(LegalInvNrrw.StartDate)) then begin
+    if (invdate<LegalInvNrrw.StartDate) then begin testf = false; end;
+  end;
+  if (nonblankdate(LegalInvNrrw.EndDate)) then begin
+    if (invdate>LegalInvNrrw.EndDate) then begin testf = false; end;
+  end;
+  if (type>-1) then begin
+    if (type!=LegalInvNrrw.SelectionType) then begin
+      testf = false;
+    end;
+  end;
+
+  TestCredLegalNrLine = testf;
+  return;
+end;
+
 global
-function string 255 FindNextCredLegalSerNr(string filename,string sernr,string agrtype,string agrclass)
+function string 255 FindNextCredLegalSerNr(string filename,string sernr,string invdate,string agrtype,string agrclass,Integer type)
 BEGIN
   string 255 res,tstr;
   record CredLegalInvNrBlock LegalInvNrRec;
@@ -11,43 +49,114 @@ BEGIN
   Integer i,rwcnt,pages;
   Boolean testf;
   LongInt invnr;
-  Date invdate;  
   record OffSerNrIVVc OffSerNrIVr;
   
   invnr = sernr;
-  invdate = CurrentDate;//fix
   NextOfficialSerNr(filename,sernr,invdate,"",res);
   if (blank(res)) then begin
 
     BlockLoad(LegalInvNrRec);  
     rwcnt = MatRowCnt(LegalInvNrRec);
-    if (rwcnt>0) then begin    
-      for (i=0;i<rwcnt;i=i+1) begin
-        MatRowGet(LegalInvNrRec,i,LegalInvNrrw);
-        testf = true;
-        if (nonblank(LegalInvNrrw.CredManType)) then begin
-          if (nonblank(agrtype)) then begin
-            if (SetInSet(LegalInvNrrw.CredManType,agrtype)==false) then begin testf = false; end;
-          end;
-        end;
-        if (nonblank(LegalInvNrrw.CredManClass)) then begin
-          if (nonblank(agrtype)) then begin
-            if (SetInSet(LegalInvNrrw.CredManClass,agrclass)==false) then begin testf = false; end;
-          end;
-        end;
-        if (nonblankdate(LegalInvNrrw.EndDate)) then begin
-          if (invdate>LegalInvNrrw.EndDate) then begin testf = false; end;
-        end;
-        if (testf) then begin
-          res = NextLegalSerNr("CredManVc",,invdate,LegalInvNrrw.Serie,LegalInvNrrw.TSerStart,LegalInvNrrw.TSerEnd);
-          if (nonblank(res)) then begin 
-            i = rwcnt;
-          end;
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(LegalInvNrRec,i,LegalInvNrrw);
+      testf = TestCredLegalNrLine(LegalInvNrrw,filename,invdate,agrtype,agrclass,type);
+      if (testf) then begin
+        res = NextLegalSerNr(filename,sernr,invdate,LegalInvNrrw.Serie,LegalInvNrrw.TSerStart,LegalInvNrrw.TSerEnd);
+        if (nonblank(res)) then begin 
+          i = rwcnt;
         end;
       end;
-    end;   
+    end;
   end;
 LFindNextLegalSerNr:;  
   FindNextCredLegalSerNr = res;
+  RETURN;
+END;
+
+global
+procedure FindListCredLegalSerNr(string filename,string sernr,string invdate,string agrtype,string agrclass,Integer type,var array string arrOffSerNr)
+BEGIN
+  string 255 res,tstr;
+  record CredLegalInvNrBlock LegalInvNrRec;
+  row CredLegalInvNrBlock LegalInvNrrw;
+  Integer i,rwcnt,pages;
+  Boolean testf;
+  LongInt invnr;
+  record OffSerNrIVVc OffSerNrIVr;
+  
+  invnr = sernr;
+  //NextOfficialSerNr(filename,sernr,invdate,"",res);
+  if (blank(res)) then begin
+
+    BlockLoad(LegalInvNrRec);  
+    rwcnt = MatRowCnt(LegalInvNrRec);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(LegalInvNrRec,i,LegalInvNrrw);
+      testf = TestCredLegalNrLine(LegalInvNrrw,filename,invdate,agrtype,agrclass,type);
+      if (testf) then begin
+        arrOffSerNr[arrOffSerNr.length] = NextLegalSerNr(filename,sernr,invdate,LegalInvNrrw.Serie,LegalInvNrrw.TSerStart,LegalInvNrrw.TSerEnd);
+      end;
+    end;
+  end;
+
+  RETURN;
+END;
+
+global
+function Boolean GetCredLegalNrLine(string filename,string sernr,string invdate,string agrtype,string agrclass,var row CredLegalInvNrBlock resLegalInvNrrw,Integer type)
+begin
+  string 255 tstr;
+  record CredLegalInvNrBlock LegalInvNrRec;
+  row CredLegalInvNrBlock LegalInvNrrw;
+  Integer i,rwcnt,pages;
+  Boolean testf,res;
+
+  BlockLoad(LegalInvNrRec);  
+  rwcnt = MatRowCnt(LegalInvNrRec);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(LegalInvNrRec,i,LegalInvNrrw);
+    testf = TestCredLegalNrLine(LegalInvNrrw,filename,invdate,agrtype,agrclass,type);
+    if (testf) then begin
+      i = rwcnt;
+      res = true;
+      CopyRow(LegalInvNrRec,LegalInvNrrw,resLegalInvNrrw);
+    end;
+  end;
+
+  GetCredLegalNrLine = res;
+  return;
+end;
+
+global
+updating procedure DeleteCredOffSerNr(LongInt sernr, string filename)
+BEGIN
+  record OffSerNrIVVc OffSNIVr;
+  Boolean found;
+
+  found = true;
+  OffSNIVr.IVNr = sernr;
+  OffSNIVr.FileName = filename;
+  while (LoopMain(OffSNIVr,2,found)) begin
+    if (OffSNIVr.IVNr!=sernr) then begin found = false; end;
+    if (OffSNIVr.FileName!=filename) then begin found = false; end;
+    if (found) then begin
+      RecordDelete(OffSNIVr);
+      StepBack(OffSNIVr);
+    end;
+  end;
+  
+  RETURN;
+END;
+
+global
+updating procedure StoreCredOffSerNrIV(LongInt sernr,string filename,string officialsernr)
+BEGIN
+  record OffSerNrIVVc OffSNIVr;
+
+  RecordNew(OffSNIVr);
+  OffSNIVr.IVNr = sernr;
+  OffSNIVr.OfficialSerNr = officialsernr;
+  OffSNIVr.FileName = filename;
+  if (RecordStore(OffSNIVr,false)) then begin end;
   RETURN;
 END;

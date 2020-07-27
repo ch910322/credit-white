@@ -169,6 +169,7 @@ begin
   RecordField(Source,M4Str,255,0);
   RecordField(Math2,M4TextField,0,0);
   RecordField(AnnualRate,M4Int,0,0);
+  RecordField(OfficialSerNr,M4Str,255,0);
 
   ArrayBegin(Math,-,1);
   ArrayField(Period,M4Str,10,0);
