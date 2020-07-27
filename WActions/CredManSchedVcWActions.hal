@@ -1,6 +1,6 @@
 
 global
-procedure GetScheduleTotals(record CredManSchedVc CSr,var val princ,var val interest,var val fees,var val total,var val vat)
+procedure GetScheduleTotals(record CredManSchedVc CSr,var val princ,var val interest,var val fees,var val total,var val vat,var Date sd,var Date ed)
 begin  
   Integer rwcnt,i;
   row CredManSchedVc CSrw;
@@ -18,6 +18,12 @@ begin
     interest = interest + CSrw.Interest;
     fees = fees + CSrw.Fees;
     total = total + CSrw.Total;
+    if (i==0) then begin
+      sd = CSrw.InvDate;
+    end;
+    if (i==rwcnt-1) then begin
+      ed = CSrw.InvDate;
+    end;
     //vat = vat + CSrw.;
   end;
 
@@ -28,10 +34,12 @@ procedure UpdateCredManSchedSoftFields(Integer wn)
 begin
   record CredManSchedVc CSr;
   val princ,interest,fees,total,vat;
+  Date sd,ed;
 
   GetWindowRecord(wn,CSr);
-  GetScheduleTotals(CSr,princ,interest,fees,total,vat);
+  GetScheduleTotals(CSr,princ,interest,fees,total,vat,sd,ed);
 
+  PutWindowString(wn,"period",sd & ":" & ed);
   PutWindowString(wn,"totprinc",princ);
   PutWindowString(wn,"totint",interest);
   PutWindowString(wn,"totfees",fees);

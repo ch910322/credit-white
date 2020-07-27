@@ -1723,21 +1723,22 @@ begin
   EditField(h2,v,90,"Time",ViewOnly,TransTime,false,0);
   MatrixBegin(10,v+=vs+40,-40,-40,-,999);
   MatCol(1,24,"Type",0,Type,false,SetSClass);
-  MatCol(1,104,"Inv. Date",0,InvDate,false,0);
-  MatCol(1,104,"Period From",0,FromDate,false,0);
-  MatCol(1,104,"Period To",0,ToDate,false,0);
-  MatCol(1,184,"Principle",0,Principle,false,0);
-  MatCol(1,274,"Interest",0,Interest,false,0);
-  MatCol(1,354,"Fees",0,Fees,false,0);
-  MatCol(1,434,"Total",0,Total,false,0);
+  MatCol(1,85,"Inv. Date",0,InvDate,false,0);
+  MatCol(1,150,"Period From",0,FromDate,false,0);
+  MatCol(1,215,"Period To",0,ToDate,false,0);
+  MatCol(1,320,"Principle",0,Principle,false,0);
+  MatCol(1,390,"Interest",0,Interest,false,0);
+  MatCol(1,460,"Fees",0,Fees,false,0);
+  MatCol(1,534,"Total",0,Total,false,0);
   MatCol(1,-60,"Invoiced",0,Invoiced,false,SetSClass);
   InsertRowTest;
   DeleteRowTest;
   EndMatrix;
-  SoftEditField(330,-30,70,"",ViewOnly,"totprinc",false,0,M4Val,0);
-  SoftEditField(425,-30,70,"",ViewOnly,"totint",false,0,M4Val,0);
-  SoftEditField(510,-30,70,"",ViewOnly,"totfees",false,0,M4Val,0);
-  SoftEditField(590,-30,60,"",ViewOnly,"tot",false,0,M4Val,0);
+  SoftEditField(150,-30,150,"Period",ViewOnly,"period",false,0,M4Str,255);
+  SoftEditField(350,-30,60,"",ViewOnly,"totprinc",false,0,M4Val,0);
+  SoftEditField(420,-30,60,"",ViewOnly,"totint",false,0,M4Val,0);
+  SoftEditField(495,-30,60,"",ViewOnly,"totfees",false,0,M4Val,0);
+  SoftEditField(570,-30,60,"",ViewOnly,"tot",false,0,M4Val,0);
 
   SpecialMenu("Open Fees Matrix",' ',1,"OpenCredFeesMatrixSchedDsm");
 

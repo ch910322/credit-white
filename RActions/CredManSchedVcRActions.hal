@@ -1,5 +1,5 @@
 //<halrule>server-only</halrule>
-external procedure GetScheduleTotals(record CredManSchedVc,var val,var val,var val,var val,var val);
+external procedure GetScheduleTotals(record CredManSchedVc,var val,var val,var val,var val,var val,var Date,var Date);
 
 global
 updating function LongInt CredManSchedVcRecordCheck(var record CredManSchedVc CSr,record CredManSchedVc CS2r,LongInt stat,LongInt long4)
@@ -7,10 +7,11 @@ begin
   Longint res;
   record CredManVc CredManr;
   val princ,interest,fees,total,vat;
+  Date sd,ed;
 
   res = 0;
 
-  GetScheduleTotals(CSr,princ,interest,fees,total,vat);
+  GetScheduleTotals(CSr,princ,interest,fees,total,vat,sd,ed);
   CredManr.SerNr = CSr.CredManNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
     if (princ!=CredManr.InvSum4) then begin
