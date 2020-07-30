@@ -78,7 +78,7 @@ LInsertCredHistInArray:;
 end;
 
 global
-function val GetLoanItemPaidAmount(Longint histnr)
+function val GetLoanItemPaidAmount(Longint histnr,Longint skippmt)
 begin
   val res;
   Boolean TrHs;
@@ -90,7 +90,11 @@ begin
     if (CredHistr.PreviousNr!=histnr) then begin
       TrHs = false;
     end else begin
-      res = res + CredHistr.Sum;
+      if (skippmt>0 and skippmt==CredHistr.RecordNr) then begin
+
+      end else begin
+        res = res + CredHistr.Sum;
+      end;
     end;
   end;
 
@@ -232,7 +236,7 @@ begin
     rwcnt = MatRowCnt(ORr);
     for (j=0;j<rwcnt;j=j+1) begin
       MatRowGet(ORr,j,ORrw);
-      paid = GetLoanItemPaidAmount(ORrw.CUServiceHistNr);
+      paid = GetLoanItemPaidAmount(ORrw.CUServiceHistNr,-1);
       ORrw.Price = paid;
       MatRowPut(ORr,j,ORrw);
     end;
@@ -303,7 +307,7 @@ begin
     rwcnt = MatRowCnt(ORr);
     for (j=0;j<rwcnt;j=j+1) begin
       MatRowGet(ORr,j,ORrw);
-      paid = GetLoanItemPaidAmount(ORrw.CUServiceHistNr);
+      paid = GetLoanItemPaidAmount(ORrw.CUServiceHistNr,-1);
       ORrw.Price = paid;
       MatRowPut(ORr,j,ORrw);
     end;

@@ -4,7 +4,10 @@ external procedure BankFillOProws(var record OPVc,string,string,var val,string,b
 external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
 external function Integer GetItemPriority(record ItemPriorityBlock,string);
 external procedure InsertCredHistInArray(record CredHistVc,array record ORVc,Integer);
-external function val GetLoanItemPaidAmount(Longint);
+external function val GetLoanItemPaidAmount(Longint,Longint);
+external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var val,Boolean,var Boolean);
+external inner procedure IPPastePayMode(var record IPVc);
+external inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var LongInt);
 
 function Boolean FilterReceiptInBankTrans(record BankTRVc BTr,Longint ivnr)
 begin
@@ -323,19 +326,23 @@ begin
   Integer i,rwcnt;
   
   RecordCopy(nIPr,IPr);
+  nIPr.TransDate = CurrentDate;
+  nIPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
   rwcnt = MatRowCnt(nIPr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(nIPr,i,IPrw);
     IPrw.RecVal = -IPrw.RecVal;
+    if (IPrw.CUPNr>0) then begin
+      IPrw.CUPNr = IPr.SerNr;
+    end;
     MatRowPut(nIPr,i,IPrw);
     IPVc_PasteRecVal(nIPr,i);
   end;
-  nIPr.TransDate = CurrentDate;
-  nIPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
-  RecordInsert(nIPr,true);
-  RecordCopy(oldIPr,nIPr);
-  nIPr.OKFlag = 1;
-  RecordUpdate(oldIPr,nIPr,true);
+  if (RecordInsert(nIPr,true)) then begin
+    RecordCopy(oldIPr,nIPr);
+    nIPr.OKFlag = 1;
+    RecordUpdate(oldIPr,nIPr,true);
+  end;
 
   return;
 end;
@@ -346,24 +353,75 @@ updating procedure DistributeReceiptRemote(record IPConDistributeVc IPDr)
 begin
   row IPConDistributeVc IPDrw;
   Integer i,rwcnt;
-  record IPVc IPr,oldIPr;
+  record IPVc IPr,oldIPr,tIPr;
+  Longint ivnr;
+  row IPVc IPrw;
+  Integer rownr;
+  val chk,sum;
+  Boolean installmentf;
+  string 255 custcode;
+  Longint err;
+  record BankTRVc BTr,oldBTr;
 
   IPr.SerNr = IPDr.SerNr;
   if (ReadFirstMain(IPr,1,true)) then begin
+    MatRowGet(IPr,0,IPrw);
+    custcode = IPrw.CustCode;
     RecordCopy(oldIPr,IPr);
     IPr.OKFlag = 0;
     if (RecordUpdate(oldIPr,IPr,true)==0) then begin
-      RecordRemove(IPr);
+      RecordCopy(oldIPr,IPr);
+      rwcnt = MatRowCnt(IPr);
+      for (i=rwcnt-1;i>=0;i=i-1) begin
+        MatRowDelete(IPr,i);
+      end;
+      RecordUpdate(oldIPr,IPr,true);
+      
+      RecordCopy(oldIPr,IPr);
+      rownr = 0;
+      rwcnt = MatRowCnt(IPDr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(IPDr,i,IPDrw);
+        if (IPDrw.stp==2) then begin
+          ClearRow(IPr,IPrw,1);
+          IPrw.InvoiceNr = IPDrw.InvoiceNr;
+          MatRowPut(IPr,rownr,IPrw);
+          PasteInvIn2IPr(IPr,rownr,IPr.TransDate,chk,false,installmentf);
+          MatRowGet(IPr,rownr,IPrw);
+          IPrw.RecVal = IPDrw.Sum4;
+          IPrw.CredHistNr = IPDrw.CredHistNr;
+          MatRowPut(IPr,rownr,IPrw);
+          IPVc_PasteRecVal(IPr,0);
+          rownr = rownr + 1;
+        end;
+      end;
+
+      if (IPDr.Overpaid>0) then begin
+        ClearRow(IPr,IPrw,1);
+        IPrw.CustCode = custcode;
+        MatRowPut(IPr,rownr,IPrw);
+        IPVc_PasteCustCode(IPr,rownr,err);
+        MatRowGet(IPr,rownr,IPrw);
+        IPrw.RecVal = IPDr.Overpaid;
+        MatRowPut(IPr,rownr,IPrw);
+        IPVc_PasteRecVal(IPr,rownr);
+        MatRowGet(IPr,rownr,IPrw);
+        IPrw.CUPNr = IPr.SerNr;
+        MatRowPut(IPr,rownr,IPrw);
+      end;
+
+      if (MatRowCnt(IPr)>0) then begin
+        IPr.OKFlag = 1;
+        if (RecordUpdate(oldIPr,IPr,true)==0) then begin
+        end;
+      end;
     end;
   end;
-
-  rwcnt = MatRowCnt(IPDr);
-  
 
   return;
 end;
 
-procedure AddDistributeRow(var record IPConDistributeVc IPDr,var Integer rownr,row ORVc ORrw,val sum)
+procedure AddDistributeRow(var record IPConDistributeVc IPDr,var Integer rownr,row ORVc ORrw,val sum,Longint invoicenr)
 begin
   row IPConDistributeVc IPDrw;
   record INVc INr;
@@ -379,9 +437,31 @@ begin
     end;
     IPDrw.Sum = CredHistr.Sum;
     IPDrw.Sum4 = sum;
+    IPDrw.InvoiceNr = invoicenr;
+    IPDrw.CredHistNr = CredHistr.SerNr;
     MatRowInsert(IPDr,rownr,IPDrw);
     rownr = rownr + 1;
   end;
+
+  return;
+end;
+
+global
+procedure RecalculateIPDOverpaid(var record IPConDistributeVc IPDr)
+begin
+  row IPConDistributeVc IPDrw;
+  Integer i,rwcnt;
+  val sum;
+
+  rwcnt = MatRowCnt(IPDr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IPDr,i,IPDrw);
+    if (IPDrw.stp==2) then begin
+      sum = sum + IPDrw.Sum4;
+    end;
+  end;  
+
+  IPDr.Overpaid = IPDr.Total - sum;
 
   return;
 end;
@@ -403,10 +483,33 @@ begin
   Longint credmannr;
   array Longint arrCredManr;
   Integer currow;
+  record IVVc IVr;
+  record ARVc ARr;
+  record IPVc IPr;
+  row IPVc IPrw;
+  val sum;
 
   BlockLoad(IPb);
   currow = rownr + 1;
   MatRowGet(IPDr,rownr,IPDrw);
+  
+  ARr.InvoiceNr = IPDrw.InvoiceNr;
+  if (ReadFirstMain(ARr,1,true)) then begin
+    sum = ARr.RVal;
+  end;
+
+  IPr.SerNr = IPDr.SerNr;
+  ReadFirstMain(IPr,1,true);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IPr,i,IPrw);
+    if (IPrw.InvoiceNr==IPDrw.InvoiceNr) then begin
+      sum = sum + IPrw.RecVal;
+    end;
+  end;
+
+  IPDrw.Sum = sum;
+  MatRowPut(IPDr,rownr,IPDrw);
+
   TrHs = true;
   CredHistr.RecordNr = IPDrw.InvoiceNr;
   CredHistr.RecordType = 0;
@@ -424,7 +527,7 @@ begin
     rwcnt = MatRowCnt(ORr);
     for (j=0;j<rwcnt;j=j+1) begin
       MatRowGet(ORr,j,ORrw);
-      paid = GetLoanItemPaidAmount(ORrw.CUServiceHistNr);
+      paid = GetLoanItemPaidAmount(ORrw.CUServiceHistNr,IPDr.SerNr);
       ORrw.Price = paid;
       MatRowPut(ORr,j,ORrw);
     end;
@@ -451,13 +554,15 @@ begin
           arrCredManr[credmannr] = 0;
           //mainf = 1;
         end;
-        AddDistributeRow(IPDr,currow,ORrw,paid);
+        AddDistributeRow(IPDr,currow,ORrw,paid,IPDrw.InvoiceNr);
       end;
       if (remsum<=0) then begin
         goto LInsertInvoiceToDistribute;
       end;
     end;
   end;
+
+  RecalculateIPDOverpaid(IPDr);
 
 LInsertInvoiceToDistribute:;
   return;
@@ -479,8 +584,11 @@ begin
     end;
   end;
   
-  IVr.Sum4 = sum;
-  arrIVr[arrIVr.length] = IVr;
+  IVr.SerNr = sernr;
+  if (ReadFirstMain(IVr,1,true)) then begin
+    IVr.Sum4 = sum;
+    arrIVr[arrIVr.length] = IVr;
+  end;
 
 LAddToIVArray:;
   return;
@@ -495,7 +603,7 @@ begin
   record ARVc ARr;
   string 255 custcode;
   Boolean TrHs;
-  
+
   IPr.SerNr = ipnr;
   if (ReadFirstMain(IPr,1,true)) then begin
     MatRowGet(IPr,0,IPrw);
@@ -511,11 +619,13 @@ begin
         end;
       end;
     end;
-    rwcnt = MatRowCnt(IPr);
-    for (i=0;i<rwcnt;i=i+1) begin
-      MatRowGet(IPr,i,IPrw);
-      if (IPrw.InvoiceNr>0) then begin
-        AddToIVArray(IPrw.InvoiceNr,-IPrw.RecVal,arrIVr);
+    if (IPr.OKFlag==1) then begin
+      rwcnt = MatRowCnt(IPr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(IPr,i,IPrw);
+        if (IPrw.InvoiceNr>0) then begin
+          AddToIVArray(IPrw.InvoiceNr,-IPrw.RecVal,arrIVr);
+        end;
       end;
     end;
   end;

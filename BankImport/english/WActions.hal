@@ -4,6 +4,7 @@ remote updating procedure DistributeReceiptRemote(record IPConDistributeVc);
 remote procedure InsertInvoiceToDistribute(var record IPConDistributeVc,Integer);
 remote procedure DistributeInvoicesSClassOnOpenWindowRemote(Longint,var array record IVVc);
 remote function Integer FindBankAccImportBank(string);
+external procedure RecalculateIPDOverpaid(var record IPConDistributeVc);
 
 
 global
@@ -207,13 +208,22 @@ end;
 global
 updating procedure ReceiptConnectionDistributeWClassProceed()
 begin
-  Integer wn,rw;  
+  Integer wn,rw,twn;  
   record IPConDistributeVc IPDr;
+  record IPConVc PCr;
+
 
   wn = CurWindow;
+  DeselectWindow(wn,true);
   GetWindowRecord(wn,IPDr);
   DistributeReceiptRemote(IPDr);
- 
+  CloseWindow(wn);
+  twn = FindWindow("ReceiptConnectionWClass");
+  if (twn>0) then begin
+    GetWindowRecord(twn,PCr);
+    FillBankTransactionsAndReceipts(PCr);
+    PutWindowRecord(twn,PCr);
+  end;
 
   return;
 end;
@@ -225,12 +235,31 @@ begin
   if (changed!=0) then begin
     GetWindowRecord(wn,IPDr);
     InsertInvoiceToDistribute(IPDr,rownr);
-    
-
     PutWindowRecord(wn,IPDr);
   end;
 
   ReceiptConnectionDistributeWClassInvoiceNrEFAfter = true;
+  return;
+end;
+
+function Boolean ReceiptConnectionDistributeWClassSum4EFAfter(Integer wn,Integer rownr,Integer changed)
+begin
+  record IPConDistributeVc IPDr;
+  row IPConDistributeVc IPDrw;
+
+  if (changed!=0) then begin
+    GetWindowRecord(wn,IPDr);
+    MatRowGet(IPDr,rownr,IPDrw);
+    if (IPDrw.Sum4>IPDrw.Sum) then begin
+      IPDrw.Sum4 = IPDrw.Sum;
+      MatRowPut(IPDr,rownr,IPDrw);
+    end;
+    RecalculateIPDOverpaid(IPDr);
+    PutWindowRecord(wn,IPDr);
+  end;
+  
+
+  ReceiptConnectionDistributeWClassSum4EFAfter = false;
   return;
 end;
 
@@ -243,6 +272,8 @@ begin
     switch (fieldname) begin
       case "InvoiceNr": 
         res = ReceiptConnectionDistributeWClassInvoiceNrEFAfter(wn,changed,rownr);
+      case "Sum4": 
+        res = ReceiptConnectionDistributeWClassSum4EFAfter(wn,rownr,changed);
     end;
   end;
     
@@ -261,8 +292,9 @@ begin
   record IPConDistributeVc IPDr;
   array record IVVc arrIVr;
   record IVVc IVr;
-
-  GetWindowRecord(wn,IPDr);
+  
+  mwn = MotherWindow(wn);
+  GetWindowRecord(mwn,IPDr);
   ClearStringList(wn);
   DistributeInvoicesSClassOnOpenWindowRemote(IPDr.SerNr,arrIVr);
   for (i=0;i<arrIVr.length;i=i+1) begin
@@ -277,3 +309,63 @@ begin
   DistributeInvoicesSClassOnOpenWindow = false;
   return;
 end;
+
+global
+function Boolean DistributeInvoicesSClassOnOKWindow(Integer wn)
+begin
+  Integer mwn;
+  Integer Sel;
+  string 255 tstr;
+  
+  mwn = MotherWindow(wn);
+
+  Sel = SelectedListLine(wn);
+  if (Sel>-1) then begin
+    tstr = GetListTag(wn,Sel);
+    PasteString(mwn,tstr);
+  end;
+  CloseWindow(wn);
+
+  DistributeInvoicesSClassOnOKWindow = false;
+  return;
+end;
+
+global 
+function Boolean ReceiptConnectionDistributeWClassDeleteRowTest(Integer wn,Integer rownr)
+begin
+  Boolean res;
+
+  res = false;
+  ReceiptConnectionDistributeWClassDeleteRowTest = res;
+  return;
+end;
+
+global 
+function Boolean ReceiptConnectionDistributeWClassInsertRowTest(Integer wn,Integer rownr)
+begin
+  Boolean res;
+
+  res = false;
+
+  ReceiptConnectionDistributeWClassInsertRowTest = res;
+  return;
+end;
+
+global
+function Boolean ReceiptConnectionDistributeWClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
+begin
+  Boolean res;
+
+  res = false;
+
+  switch (fieldname) begin
+    case "Sum4": 
+      res = true;
+    case "InvoiceNr": 
+      res = true;
+  end;
+
+  ReceiptConnectionDistributeWClassActiveEditField = res;
+  return;
+end;
+

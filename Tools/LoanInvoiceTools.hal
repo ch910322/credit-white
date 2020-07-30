@@ -18,6 +18,7 @@ external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlan
 external inner procedure SumNoDownPay(record IVVc,var val,var val,var val,var val,var val,var val);
 external function string 255 GetCredManNr(Longint);
 external procedure GetHiddenInvoiceValues(record IVVc,var val,var val);
+external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -1268,9 +1269,17 @@ end;
 function val CalculateRowSumWithVAT(record IVVc IVr,row IVVc IVrw)
 begin
   val res;
+  val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
 
 //first version is just row sum. We should include VAT to match with payments
   res = IVrw.Sum;
+  InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+
+  if (IVr.InclVAT==0) then begin
+    res = res + vatval;
+  end;
+
+
 
   CalculateRowSumWithVAT = res;
   return;

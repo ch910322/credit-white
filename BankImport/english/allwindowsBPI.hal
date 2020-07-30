@@ -110,23 +110,25 @@ begin
 
   WindowBegin("Distribute Receipt",ReceiptConnectionDistributeWClass,CGother,-);
   UseView(IPConDistributeVc);
-  SetWRect(20,80,880,621);
+  SetWRect(20,80,680,421);
   h = 80; v = 27; h2 = 300; h3 = 480;
   vs = 20;
-	EditField(h,v=6,120,"Total",Normal,Total,true,0);
+	EditField(h,v=6,120,"Total",ViewOnly,Total,true,0);
   HalPushButton(h+200,v,h+300,v+20,"ReceiptConnectionDistributeWClassProceed","Distribute");
 
-  MatrixBegin(h,v+=40,-30,-40,-,199);
+  MatrixBegin(h,v+=40,-30,-30,-,199);
   MatTypedRow(stp);
-  MatCol(1,34,"Invoice",0,InvoiceNr,false,CUPrSClass);
-  MatCol(1,124,"Amount",0,Sum,false,0);
+  MatCol(1,23,"Invoice",0,InvoiceNr,false,DistributeInvoicesSClass);
+  MatCol(1,-80,"Amount",0,Sum,true,0);
 
-  MatCol(2,34,"Item",0,ArtCode,false,0);
+  MatCol(2,44,"Item",0,ArtCode,false,0);
   MatCol(2,120,"Name",0,Spec,false,0);
-  MatCol(2,-160,"Amount",0,Sum,false,0);
+  MatCol(2,-160,"Amount",0,Sum,true,0);
   MatCol(2,-80,"Assigned",0,Sum4,true,0);
+  InsertRowTest;
+  DeleteRowTest;
   EndMatrix;
-	EditField(-170,-30,-80,"Overpaid",Normal,Overpaid,true,0);
+	EditField(-95,-30,-15,"Overpaid",ViewOnly,Overpaid,true,0);
 
   EndWindow;
   return;
@@ -155,11 +157,9 @@ begin
 
   WindowBegin("Paste Invoice",DistributeInvoicesSClass,CGother,RcType);
   SetWRect(64,80,500,298);
-  HalPushButton(-120,v=8,-6,v+=20,"ContactsSwitchToCust","Contacts");
-  DataList(9,v+10,-22,-6,"DLPasteInvoice");
-  DataListColumn(1,6,250,AdjLeft,"DLSerNr","Ser. Nr.",M4Str);
-  DataListColumn(1,256,-32,AdjLeft,"DLOfficSerNr","Legal Nr.",M4Str);  
-  DataListColumn(1,256,-202,AdjLeft,"DLOfficSerNr","Legal Nr.",M4Str);  
+  DataList(9,17,-22,-6,"DLPasteInvoice");
+  DataListColumn(1,6,100,AdjLeft,"DLSerNr","Ser. Nr.",M4Str);
+  DataListColumn(1,106,-206,AdjLeft,"DLOfficSerNr","Legal Nr.",M4Str);  
   DataListColumn(1,-200,-92,AdjLeft,"DLInvDate","Inv. Date",M4Str);  
   DataListColumn(1,-90,-32,AdjRight,"DLSum","Sum",M4Str);  
 
