@@ -1,4 +1,5 @@
 remote procedure FillBankTransactionsAndReceipts(var record IPConVc);
+remote function Integer FindBankAccImportBank(string);
 
 
 global
@@ -39,6 +40,28 @@ begin
   SelectWindow(wn);
   return;
 end;
+
+global
+function boolean LitBankImportIClassAfterEditField(Integer wn,string fieldname,Integer fn,Integer rownr,Integer changed)
+BEGIN
+  Boolean res;
+  record RcVc RepSpec;
+  record SysFormatBlock SFb;
+  Integer stmt;
+
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  if (fieldname=="f20") then begin
+    stmt = FindBankAccImportBank(RepSpec.f20);
+    if (stmt>=0) then begin
+      RepSpec.flags[20] = stmt;
+    end;
+  end;
+  PutWindowRecord(wn,RepSpec);
+  SelectWindow(wn);
+  return;
+end;
+
 
 global
 procedure ReceiptConnectionWClassOnOpenWindow(Integer wn)
