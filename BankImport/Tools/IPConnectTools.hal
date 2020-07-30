@@ -332,9 +332,6 @@ begin
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(nIPr,i,IPrw);
     IPrw.RecVal = -IPrw.RecVal;
-    if (IPrw.CUPNr>0) then begin
-      IPrw.CUPNr = IPr.SerNr;
-    end;
     MatRowPut(nIPr,i,IPrw);
     IPVc_PasteRecVal(nIPr,i);
   end;
