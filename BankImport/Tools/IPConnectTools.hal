@@ -1,6 +1,10 @@
 external function string 255 BPI_ParseInvStr(string);
 external procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
 external procedure BankFillOProws(var record OPVc,string,string,var val,string,boolean,string,string);
+external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
+external function Integer GetItemPriority(record ItemPriorityBlock,string);
+external procedure InsertCredHistInArray(record CredHistVc,array record ORVc,Integer);
+external function val GetLoanItemPaidAmount(Longint);
 
 function Boolean FilterReceiptInBankTrans(record BankTRVc BTr,Longint ivnr)
 begin
@@ -80,6 +84,8 @@ begin
   record IPVc IPr;
   row IPVc IPrw;
   Integer i,rwcnt;
+  record IVVc IVr;
+  val tot;
   
   //should be a remote call to server
 
@@ -118,7 +124,19 @@ begin
             testf = FilterReceiptInBankTrans(BTr,PCr.IVNr);
           end;
         end;
-
+        if (testf and PCr.ArtMode>0) then begin
+          if (BTr.TransNr>0) then begin
+            IPr.SerNr = BTr.TransNr;
+            if (ReadFirstMain(IPr,1,true)) then begin
+              if (PCr.ArtMode==1 and IPr.OKFlag!=1) then begin
+                testf = false;
+              end;
+              if (PCr.ArtMode==2 and IPr.OKFlag!=0) then begin
+                testf = false;
+              end;
+            end;
+          end;
+        end;
         if (testf) then begin
           ClearRow(PCr,PCrw,1);
           PCrw.TransDate = BTr.TransDate;
@@ -130,7 +148,7 @@ begin
           PCrw.BankTRNr = BTr.SerNr;
           PCrw.IPNr = BTr.TransNr;
           MatRowPut(PCr,MatRowCnt(PCr),PCrw);
-
+          tot = tot + PCrw.Amount;
           if (BTr.TransNr>0) then begin
             IPr.SerNr = BTr.TransNr;
             if (ReadFirstMain(IPr,1,true)) then begin
@@ -138,7 +156,10 @@ begin
               for (i=0;i<rwcnt;i=i+1) begin
                 MatRowGet(IPr,i,IPrw);
                 ClearRow(PCr,PCrw,2);
+                IVr.SerNr = IPrw.InvoiceNr;
+                ReadFirstmain(IVr,1,true);
                 PCrw.IVNrRow = IPrw.InvoiceNr;
+                PCrw.IVOfficNrRow = IVr.OfficialSerNr;
                 PCrw.PrepayNr = IPrw.CUPNr;
                 PCrw.Amount = IPrw.RecVal;
                 PCrw.CurncyCode = IPrw.RecCurncy;
@@ -152,6 +173,8 @@ begin
       end;
     end;
   end;
+
+  PCr.Total = tot;
 
   return;
 end;
@@ -288,6 +311,214 @@ begin
 					SWIr.PayType = "BFIS";
 				end;
 */
+
+  return;
+end;
+
+global
+updating procedure CreateRefundReceipt(record IPVc IPr,var record IPVc nIPr)
+begin
+  record IPVc oldIPr;
+  row IPVc IPrw;
+  Integer i,rwcnt;
+  
+  RecordCopy(nIPr,IPr);
+  rwcnt = MatRowCnt(nIPr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(nIPr,i,IPrw);
+    IPrw.RecVal = -IPrw.RecVal;
+    MatRowPut(nIPr,i,IPrw);
+    IPVc_PasteRecVal(nIPr,i);
+  end;
+  nIPr.TransDate = CurrentDate;
+  nIPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
+  RecordInsert(nIPr,true);
+  RecordCopy(oldIPr,nIPr);
+  nIPr.OKFlag = 1;
+  RecordUpdate(oldIPr,nIPr,true);
+
+  return;
+end;
+
+
+global
+updating procedure DistributeReceiptRemote(record IPConDistributeVc IPDr)
+begin
+  row IPConDistributeVc IPDrw;
+  Integer i,rwcnt;
+  record IPVc IPr,oldIPr;
+
+  IPr.SerNr = IPDr.SerNr;
+  if (ReadFirstMain(IPr,1,true)) then begin
+    RecordCopy(oldIPr,IPr);
+    IPr.OKFlag = 0;
+    if (RecordUpdate(oldIPr,IPr,true)==0) then begin
+      RecordRemove(IPr);
+    end;
+  end;
+
+  rwcnt = MatRowCnt(IPDr);
+  
+
+  return;
+end;
+
+procedure AddDistributeRow(var record IPConDistributeVc IPDr,var Integer rownr,row ORVc ORrw,val sum)
+begin
+  row IPConDistributeVc IPDrw;
+  record INVc INr;
+  record CredHistVc CredHistr;
+  
+  CredHistr.SerNr = ORrw.CUServiceHistNr;
+  if (ReadFirstMain(CredHistr,1,true)) then begin
+    ClearRow(IPDr,IPDrw,2);
+    IPDrw.ArtCode = CredHistr.ArtCode;
+    INr.Code = CredHistr.ArtCode;
+    if (ReadFirstMain(INr,1,true)) then begin
+      IPDrw.Spec = INr.Name;
+    end;
+    IPDrw.Sum = CredHistr.Sum;
+    IPDrw.Sum4 = sum;
+    MatRowInsert(IPDr,rownr,IPDrw);
+    rownr = rownr + 1;
+  end;
+
+  return;
+end;
+
+global 
+procedure InsertInvoiceToDistribute(var record IPConDistributeVc IPDr,Integer rownr)
+begin
+  row IPConDistributeVc IPDrw;
+  Boolean TrHs;
+  record CredHistVc CredHistr;
+  Integer priority;
+  array record ORVc arrORr;
+  record ItemPriorityBlock IPb;
+  Integer i,j,rwcnt;
+  val remsum,paid,recval;
+  record ORVc ORr;
+  row ORVc ORrw;
+  Integer mainf;
+  Longint credmannr;
+  array Longint arrCredManr;
+  Integer currow;
+
+  BlockLoad(IPb);
+  currow = rownr + 1;
+  MatRowGet(IPDr,rownr,IPDrw);
+  TrHs = true;
+  CredHistr.RecordNr = IPDrw.InvoiceNr;
+  CredHistr.RecordType = 0;
+  while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+    if (CredHistr.RecordNr!=IPDrw.InvoiceNr or CredHistr.RecordType!=0) then begin
+      TrHs = false;
+    end else begin
+      priority = GetItemPriority(IPb,CredHistr.ArtCode);
+      InsertCredHistInArray(CredHistr,arrORr,priority);
+    end;
+  end;
+
+  for (i=0;i<arrORr.length;i=i+1) begin
+    ORr = arrORr[i];
+    rwcnt = MatRowCnt(ORr);
+    for (j=0;j<rwcnt;j=j+1) begin
+      MatRowGet(ORr,j,ORrw);
+      paid = GetLoanItemPaidAmount(ORrw.CUServiceHistNr);
+      ORrw.Price = paid;
+      MatRowPut(ORr,j,ORrw);
+    end;
+    arrORr[i] = ORr;
+  end;
+
+  remsum = IPDr.Total;
+  for (i=0;i<arrORr.length;i=i+1) begin
+    ORr = arrORr[i];
+    rwcnt = MatRowCnt(ORr);
+    for (j=0;j<rwcnt;j=j+1) begin
+      MatRowGet(ORr,j,ORrw);
+      paid = ORrw.Sum-ORrw.Price;
+      if (paid>0) then begin
+        if (remsum<paid) then begin
+          paid = remsum;
+        end;
+        remsum = remsum - paid;
+        mainf = 0;
+        recval = 0;
+        credmannr = ORrw.TAX2Reb;
+        if (arrCredManr[credmannr]>0) then begin
+          recval = arrCredManr[credmannr];
+          arrCredManr[credmannr] = 0;
+          //mainf = 1;
+        end;
+        AddDistributeRow(IPDr,currow,ORrw,paid);
+      end;
+      if (remsum<=0) then begin
+        goto LInsertInvoiceToDistribute;
+      end;
+    end;
+  end;
+
+LInsertInvoiceToDistribute:;
+  return;
+end;
+
+procedure AddToIVArray(Longint sernr,val sum,var array record IVVc arrIVr)
+begin
+  record IVVc IVr;
+  Integer i;
+  
+  for (i=0;i<arrIVr.length;i=i+1) begin
+    IVr = arrIVr[i];
+    if (IVr.SerNr == sernr) then begin
+      if (sum<0) then begin
+        IVr.Sum4 = IVr.Sum4 - sum;//actually increasing the value by IPrw value
+        arrIVr[i] = IVr;
+      end;
+      goto LAddToIVArray;
+    end;
+  end;
+  
+  IVr.Sum4 = sum;
+  arrIVr[arrIVr.length] = IVr;
+
+LAddToIVArray:;
+  return;
+end;
+
+global
+procedure DistributeInvoicesSClassOnOpenWindowRemote(Longint ipnr,var array record IVVc arrIVr)
+begin
+  record IPVc IPr;
+  row IPVc IPrw;
+  Integer i,rwcnt;
+  record ARVc ARr;
+  string 255 custcode;
+  Boolean TrHs;
+  
+  IPr.SerNr = ipnr;
+  if (ReadFirstMain(IPr,1,true)) then begin
+    MatRowGet(IPr,0,IPrw);
+    TrHs = true;
+    custcode = IPrw.CustCode;
+    ARr.CustCode = custcode;
+    while (LoopKey("CustCode",ARr,1,TrHs)) begin
+      if (ARr.CustCode!=custcode) then begin
+        TrHs = false;
+      end else begin
+        if (ARr.RVal>0) then begin
+          AddToIVArray(ARr.InvoiceNr,ARr.RVal,arrIVr);
+        end;
+      end;
+    end;
+    rwcnt = MatRowCnt(IPr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(IPr,i,IPrw);
+      if (IPrw.InvoiceNr>0) then begin
+        AddToIVArray(IPrw.InvoiceNr,-IPrw.RecVal,arrIVr);
+      end;
+    end;
+  end;
 
   return;
 end;

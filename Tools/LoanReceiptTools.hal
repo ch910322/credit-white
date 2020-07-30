@@ -18,6 +18,7 @@ external procedure SetupOverdueLangCode(var record IVVc,string);
 
 
 /*Invoicing tools*/
+global
 function Integer GetItemPriority(record ItemPriorityBlock IPb,string item)
 begin
   Integer i,rwcnt;
@@ -38,6 +39,7 @@ begin
   return;
 end;
 
+global
 procedure InsertCredHistInArray(record CredHistVc CredHistr,array record ORVc arrORr,Integer priority)
 begin
   Integer i,rwcnt,index;
@@ -75,6 +77,7 @@ LInsertCredHistInArray:;
   return;
 end;
 
+global
 function val GetLoanItemPaidAmount(Longint histnr)
 begin
   val res;
@@ -277,18 +280,21 @@ begin
   array record ORVc arrORr;
   Longint histnr,credmannr;
   
-  TrHs = true;
-  CredHistr.RecordNr = IPrw.InvoiceNr;
-  CredHistr.RecordType = 0;
-  while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
-    if (CredHistr.RecordNr!=IPrw.InvoiceNr or CredHistr.RecordType!=0) then begin
-      TrHs = false;
-    end else begin
-      priority = GetItemPriority(IPb,CredHistr.ArtCode);
-      InsertCredHistInArray(CredHistr,arrORr,priority);
+  if (IPrw.CredHistNr>0) then begin
+    InsertCredHistInArray(CredHistr,arrORr,10);
+  end else begin
+    TrHs = true;
+    CredHistr.RecordNr = IPrw.InvoiceNr;
+    CredHistr.RecordType = 0;
+    while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+      if (CredHistr.RecordNr!=IPrw.InvoiceNr or CredHistr.RecordType!=0) then begin
+        TrHs = false;
+      end else begin
+        priority = GetItemPriority(IPb,CredHistr.ArtCode);
+        InsertCredHistInArray(CredHistr,arrORr,priority);
+      end;
     end;
   end;
-
   SortRecordArray(arrORr,"BuildOn");
  
  //get all paid amounts for each CredHistr

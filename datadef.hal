@@ -1187,6 +1187,10 @@ begin
   KeySegment(PaidFlag);
   KeySegment(SerNr);
   EndRecord;
+
+  RecordAddBegin(IPVc,"IPVc_FIN");
+  ArrayField(CredHistNr,M4Long,0,0);
+  EndRecordAdd;
   
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
