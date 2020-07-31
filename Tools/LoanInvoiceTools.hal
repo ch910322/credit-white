@@ -723,7 +723,10 @@ begin
         SetupLoanInvoice(CredManr,CMb,IVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,false,false,"");
 
       end;
-      SetupInvoiceRowAndAdd(IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
+      //skip late fees here?? 
+      if (CredManPayPlanrw.PlanType!=9) then begin
+        SetupInvoiceRowAndAdd(IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
+      end;
 
     end;
     if (CredManPayPlanrw.TransDate>ed) then begin
@@ -785,7 +788,7 @@ begin
   return;
 end;
 
-procedure BuildInvoiceBasedOnSchedule(record CredManVc CredManr,row CredManSchedVc CSrw,record CredManSetBlock CMb,record CMApplicationSetBlock ASb,Date lastd,var record IVVc IVr,Boolean updf)
+procedure BuildInvoiceBasedOnSchedule(record CredManVc CredManr,row CredManSchedVc CSrw,record CredManSetBlock CMb,record CMApplicationSetBlock ASb,Date lastd,var record IVVc IVr,Boolean updf,Boolean addfeesf)
 begin
   Integer latedays;
   val lateamount;
@@ -819,16 +822,17 @@ begin
     end;
   end;
   MergeItemsInInvoice(IVr);
-  GetCredManOverdueInvoices(CredManr,CMb,CSrw.InvDate,lastd,latedays,lateamount,lateformula);
-  switch (CIb.OverdueIVType) begin
-    case 0: AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
-    case 1: 
-      SetupLoanInvoice(CredManr,CMb,oIVr,CSrw.InvDate,CSrw.FromDate,CSrw.ToDate,true,false,"");
-      AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
-      SetupOverdueLangCode(IVr,CredManr.Type);
-      if (updf) then begin
-        qupdating.StoreLoanInvoice(oIVr);
-      end;
+  if (addfeesf) then begin
+    GetCredManOverdueInvoices(CredManr,CMb,CSrw.InvDate,lastd,latedays,lateamount,lateformula);
+    switch (CIb.OverdueIVType) begin
+      case 0: AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
+      case 1: 
+        SetupLoanInvoice(CredManr,CMb,oIVr,CSrw.InvDate,CSrw.FromDate,CSrw.ToDate,true,false,"");
+        AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
+        if (updf) then begin
+          qupdating.StoreLoanInvoice(oIVr);
+        end;
+    end;
   end;
   if (updf) then begin
     AddPrepayments(IVr,ASb);
@@ -859,7 +863,7 @@ begin
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CSr,i,CSrw);
       if (CSrw.InvDate<=ed and CSrw.Invoiced==0) then begin
-        BuildInvoiceBasedOnSchedule(CredManr,CSrw,CMb,ASb,lastd,IVr,true);
+        BuildInvoiceBasedOnSchedule(CredManr,CSrw,CMb,ASb,lastd,IVr,true,true);
         if (IVr.SerNr>-1) then begin
           if (RecordInsert(IVr,true)) then begin
             RecordCopy(oldIVr,IVr);
@@ -903,7 +907,7 @@ begin
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CSr,i,CSrw);
     if (CSrw.InvDate<=ed and CSrw.Invoiced==0) then begin
-      BuildInvoiceBasedOnSchedule(CredManr,CSrw,CMb,ASb,lastd,IVr,false);
+      BuildInvoiceBasedOnSchedule(CredManr,CSrw,CMb,ASb,lastd,IVr,false,false);
       aIVr[aIVr.length] = IVr;
     end else begin
       if (CSrw.InvDate>ed) then begin
