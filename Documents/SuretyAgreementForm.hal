@@ -6,6 +6,7 @@ external inner procedure OutAddress(string,string,string,string,string,string,st
 external inner procedure PrintCurrencyCode(string,string);
 external inner procedure ValToText(val,Integer,string,string,var string);
 external inner function string 255 CredManOwnBankAccount(Longint);
+external inner function roundmode SetRoundModeD(integer);
 
 global
 procedure PrintDocumentSigner()
@@ -207,6 +208,12 @@ LBREAK:;
         //CUST-BEGIN
         OUTFORMFIELD("F_CUSTOWNBANKACC",CredManOwnBankAccount(CredManr.SerNr));
         //CUST-END
+
+        if (CredManr.AnnualRate==1) then begin
+          OUTFORMFIELD("F_ANNUALRATE",Round(CredManr.IntRate,SetRoundModeD(2)) & " %");
+        end else begin
+          OUTFORMFIELD("F_ANNUALRATE",Round(CredManr.IntRate*12,SetRoundModeD(2)) & " %");
+        end;
 
         CloseForm;        
       end else begin
