@@ -224,7 +224,7 @@ begin
       status = JSONGet(js,"status");
       action = JSONGet(js,"action");
       token = JSONGet(js,"token");
-logtext(0,"TreatDokobitCallBack1 " & action & ":" status);
+logtext(0,"TreatDokobitCallBack1 " & action & ":" & status);
       if (status=="ok" and SetInSet(action,"signing_completed,signer_signed,signing_archived")) then begin      
         RecordCopy(oldWPSr,WPSr);
         WPSr.Status = 10+kCCStatusPaymentOK;
