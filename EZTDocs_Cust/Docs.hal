@@ -357,12 +357,12 @@ begin
 
   calcfees = GetMonthlyFees(CredManr,0);
   fixfees =  GetMonthlyFees(CredManr,1);
-  if (calcfees>0) then begin
+  //if (calcfees>0) then begin
     vVals["F_CALCFEES"] = calcfees & " %";
-  end;
-  if (fixfees>0) then begin
+  //end;
+  //if (fixfees>0) then begin
     vVals["F_FIXFEES"] = fixfees;
-  end;
+  //end;
 
   RecordCLear(CUr);
   if (FindCEOContact(CredManr.CustCode,CUr)) then begin
@@ -547,6 +547,11 @@ begin
   vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(CredManr.SerNr);
   vVals["F_NUMMER2"] = GetCredManNr(CredManr.SerNr);
   vVals["F_CREDMANCREATEDATE"] = CredManr.CreatedDate;
+  if (CredManr.AnnualRate==1) then begin
+    vVals["F_ANNUALRATE"] = Round(CredManr.IntRate,SetRoundModeD(2)) & " %";
+  end else begin
+    vVals["F_ANNUALRATE"] = Round(CredManr.IntRate*12,SetRoundModeD(2)) & " %";
+  end;
 
   return;
 end;
