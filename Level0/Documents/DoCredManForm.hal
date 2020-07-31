@@ -167,6 +167,7 @@ begin
   Integer rwcnt,i;
   row CredManVc CredManrw;
 
+  res = 0;
   rwcnt = MatRowCnt(CredManr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManr,i,CredManrw);
@@ -310,12 +311,12 @@ begin
   end;
   calcfees = GetMonthlyFees(CredManr,0);
   fixfees =  GetMonthlyFees(CredManr,1);
-  if (calcfees>0) then begin
+  //if (calcfees>0) then begin
     OUTFORMFIELD("F_CALCFEES",calcfees & " %");
-  end;
-  if (fixfees>0) then begin
+  //end;
+  //if (fixfees>0) then begin
     OUTFORMFIELD("F_FIXFEES",fixfees);
-  end;
+  //end;
 
   return;
 end;

@@ -356,12 +356,12 @@ begin
 
   calcfees = GetMonthlyFees(CredManr,0);
   fixfees =  GetMonthlyFees(CredManr,1);
-  if (calcfees>0) then begin
+  //if (calcfees>0) then begin
     vVals["F_CALCFEES"] = calcfees & " %";
-  end;
-  if (fixfees>0) then begin
+  //end;
+  //if (fixfees>0) then begin
     vVals["F_FIXFEES"] = fixfees;
-  end;
+  //end;
 
   RecordCLear(CUr);
   if (FindCEOContact(CredManr.CustCode,CUr)) then begin
