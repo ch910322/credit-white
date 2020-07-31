@@ -224,6 +224,7 @@ begin
       status = JSONGet(js,"status");
       action = JSONGet(js,"action");
       token = JSONGet(js,"token");
+logtext(0,"TreatDokobitCallBack1 " & action & ":" status);
       if (status=="ok" and SetInSet(action,"signing_completed,signer_signed,signing_archived")) then begin      
         RecordCopy(oldWPSr,WPSr);
         WPSr.Status = 10+kCCStatusPaymentOK;
@@ -231,7 +232,9 @@ begin
           //download file
           ExtractFileUrl(StrReplace(JSONGet(js,"file"),"\\",""),url,path,fn);
           BlockLoad(SIb);
-          if (SendWebRequest(url,443,-1,true,"POST",path & "?access_token=" & SIb.AccessToken,"","",false,request,reply,30)) then begin
+logtext(0,"TreatDokobitCallBack2");
+          if (SendWebRequest(url,443,-1,true,"POST",path & "?access_token=" & SIb.AccessToken,"","",false,request,reply,60)) then begin
+logtext(0,"TreatDokobitCallBack3 ");
             FinishDocumentSigning(WPSr.PayMentDesc,WPSr.RecordNr,WPSr.CustCode,reply);
           //download file and 
             threadasync.RemoveDokobitFile(url,token,SIb.AccessToken);
@@ -389,6 +392,7 @@ begin
     case "callback":
       WebGetRawPostData(post);
       LogDokobit(post,"dokobit_callback.txt");
+      Logtext(0,"dokobit callback");
       qupdating.TreatDokobitCallBack(post,WebGetArg("session"));
       //from dokobit
     case "proceed":

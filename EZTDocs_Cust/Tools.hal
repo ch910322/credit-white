@@ -200,6 +200,7 @@ begin
         TRr.Code = VATbrw.TaxRules;
         if (ReadFirstMain(TRr,1,true)) then begin
           if (ReadRecordLink(TRr,1,Noter,RLr)) begin
+/*
             pos = 0;
             l = SizeTextCnt(Noter);
             tstr = "";
@@ -207,6 +208,11 @@ begin
               tstr = tstr & StringFromText(Noter,pos,255);
               pos = pos + 255;
             end;
+*/
+            for (i=0;i<LineTextCnt2(Noter);i=i+1) begin
+              tstr = tstr & LineTextGet2(Noter,i);
+            end;
+
             vVals["F_TAXRULE"] = StrReplace(tstr,chr(13),"\\n");
             i = rwcnt;
           end;

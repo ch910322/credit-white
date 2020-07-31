@@ -28,6 +28,7 @@ begin
   	CheckBox(h,v+=20,0,"Import payments",ImpPaym);
   	CheckBox(h,v+=20,0,"Import payment orders",ImpPaymOrd);
   	CheckBox(h,v+=20,0,"Import charges",ImpCharges);
+  	CheckBox(h,v+=20,0,"OK Receipts",OKIPFlag);
   	v = v + vs + 40;
   	h=h+150;
 		EditField(h,v+=vs,50,"Swedbank Payment mode",Normal,DefPayModeSW,false,PMSClass);
@@ -67,27 +68,67 @@ begin
   vs = 20;
 	EditField(h,v=6,120,"Period",Normal,Period,false,PerSClass);
 	EditField(h2,v,50,"Payment Mode",Normal,PMCode,false,PMSClass);
-	EditField(h,v+=vs,100,"Customer",Normal,CustCode,false,CUSClass);
+	EditField(h,v+=vs,120,"Customer",Normal,CustCode,false,CUSClass);
 	EditField(h2,v,100,"Invoice No.",Normal,IVNr,false,IVSClass);
 	EditField(h3,v,120,"Comment",Normal,Comment,false,0);
 
-  MatrixBegin(h,v+=40,-30,-10,-,199);
+  ButtonFrame(h4=620,v=26,100,3,"Show");
+  RadioButton(h4,v,0,0,"All",ArtMode);
+  RadioButton(h4,v+=16,1,0,"OKed",ArtMode);
+  RadioButton(h4,v+=16,2,0,"Not OKed",ArtMode);
+
+  MatrixBegin(h,v+=40,-30,-40,-,199);
   MatTypedRow(stp);
   MatCol(1,34,"Date",0,TransDate,false,0);
   MatCol(1,124,"Customer",0,CustCodeRow,false,0);
   MatCol(1,224,"Name",0,CustName,false,0);
   MatCol(1,354,"Comment",0,CommentRow,false,0);
-  MatCol(1,-120,"Amount",0,Amount,false,0);
+  MatCol(1,-140,"Amount",0,Amount,true,0);
   MatCol(1,-60,"Currency",0,CurncyCode,false,0);
 
-  MatCol(2,-420,"Invoice",0,IVNrRow,false,0);
+  MatCol(2,-490,"Invoice",0,IVNrRow,false,0);
+  MatCol(2,-380,"Legal Number",0,IVOfficNrRow,false,0);
   MatCol(2,-270,"Prepayment",0,PrepayNr,false,0);
-  MatCol(2,-120,"Amount",0,Amount,false,0);
+  MatCol(2,-140,"Amount",0,Amount,true,0);
   MatCol(2,-60,"Currency",0,CurncyCode,false,0);
   RowMenuBegin("");
   RowMenuItem(0,"Open Receipt",'I','I',0,"ReceiptConnectionOpenReceiptDsm");
+  RowMenuItem(0,"Refund",'','',0,"ReceiptConnectionRefundDsm");
+  RowMenuItem(0,"Redistribute",'','',0,"ReceiptConnectionRedistributeDsm");
   EndRowMenu;
   EndMatrix;
+	EditField(-170,-30,-80,"Total",Normal,Total,true,0);
+
+  EndWindow;
+  return;
+end;
+
+window ReceiptConnectionDistributeWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,h2,h3,h4,h5;
+
+  WindowBegin("Distribute Receipt",ReceiptConnectionDistributeWClass,CGother,-);
+  UseView(IPConDistributeVc);
+  SetWRect(20,80,680,421);
+  h = 80; v = 27; h2 = 300; h3 = 480;
+  vs = 20;
+	EditField(h,v=6,120,"Total",ViewOnly,Total,true,0);
+  HalPushButton(h+200,v,h+300,v+20,"ReceiptConnectionDistributeWClassProceed","Distribute");
+
+  MatrixBegin(h,v+=40,-30,-30,-,199);
+  MatTypedRow(stp);
+  MatCol(1,23,"Invoice",0,InvoiceNr,false,DistributeInvoicesSClass);
+  MatCol(1,-80,"Amount",0,Sum,true,0);
+
+  MatCol(2,44,"Item",0,ArtCode,false,0);
+  MatCol(2,120,"Name",0,Spec,false,0);
+  MatCol(2,-160,"Amount",0,Sum,true,0);
+  MatCol(2,-80,"Assigned",0,Sum4,true,0);
+  InsertRowTest;
+  DeleteRowTest;
+  EndMatrix;
+	EditField(-95,-30,-15,"Overpaid",ViewOnly,Overpaid,true,0);
 
   EndWindow;
   return;
@@ -106,4 +147,22 @@ begin
   EditFieldTL(h,v+=vs,140,"Bank",M4Set,Normal,26,flags[20],false,SetSClass);
   EndWindow;
   return;
+end;
+
+
+window DistributeInvoicesSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v;
+
+  WindowBegin("Paste Invoice",DistributeInvoicesSClass,CGother,RcType);
+  SetWRect(64,80,500,298);
+  DataList(9,17,-22,-6,"DLPasteInvoice");
+  DataListColumn(1,6,100,AdjLeft,"DLSerNr","Ser. Nr.",M4Str);
+  DataListColumn(1,106,-206,AdjLeft,"DLOfficSerNr","Legal Nr.",M4Str);  
+  DataListColumn(1,-200,-92,AdjLeft,"DLInvDate","Inv. Date",M4Str);  
+  DataListColumn(1,-90,-32,AdjRight,"DLSum","Sum",M4Str);  
+
+
+  EndWindow;
 end;

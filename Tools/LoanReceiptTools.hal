@@ -14,9 +14,11 @@ external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var 
 external inner procedure IPPastePayMode(var record IPVc);
 external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val,array string);
 external procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
+external procedure SetupOverdueLangCode(var record IVVc,string);
 
 
 /*Invoicing tools*/
+global
 function Integer GetItemPriority(record ItemPriorityBlock IPb,string item)
 begin
   Integer i,rwcnt;
@@ -37,6 +39,7 @@ begin
   return;
 end;
 
+global
 procedure InsertCredHistInArray(record CredHistVc CredHistr,array record ORVc arrORr,Integer priority)
 begin
   Integer i,rwcnt,index;
@@ -74,7 +77,8 @@ LInsertCredHistInArray:;
   return;
 end;
 
-function val GetLoanItemPaidAmount(Longint histnr)
+global
+function val GetLoanItemPaidAmount(Longint histnr,Longint skippmt)
 begin
   val res;
   Boolean TrHs;
@@ -86,7 +90,11 @@ begin
     if (CredHistr.PreviousNr!=histnr) then begin
       TrHs = false;
     end else begin
-      res = res + CredHistr.Sum;
+      if (skippmt>0 and skippmt==CredHistr.RecordNr) then begin
+
+      end else begin
+        res = res + CredHistr.Sum;
+      end;
     end;
   end;
 
@@ -228,7 +236,7 @@ begin
     rwcnt = MatRowCnt(ORr);
     for (j=0;j<rwcnt;j=j+1) begin
       MatRowGet(ORr,j,ORrw);
-      paid = GetLoanItemPaidAmount(ORrw.CUServiceHistNr);
+      paid = GetLoanItemPaidAmount(ORrw.CUServiceHistNr,-1);
       ORrw.Price = paid;
       MatRowPut(ORr,j,ORrw);
     end;
@@ -276,18 +284,21 @@ begin
   array record ORVc arrORr;
   Longint histnr,credmannr;
   
-  TrHs = true;
-  CredHistr.RecordNr = IPrw.InvoiceNr;
-  CredHistr.RecordType = 0;
-  while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
-    if (CredHistr.RecordNr!=IPrw.InvoiceNr or CredHistr.RecordType!=0) then begin
-      TrHs = false;
-    end else begin
-      priority = GetItemPriority(IPb,CredHistr.ArtCode);
-      InsertCredHistInArray(CredHistr,arrORr,priority);
+  if (IPrw.CredHistNr>0) then begin
+    InsertCredHistInArray(CredHistr,arrORr,10);
+  end else begin
+    TrHs = true;
+    CredHistr.RecordNr = IPrw.InvoiceNr;
+    CredHistr.RecordType = 0;
+    while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+      if (CredHistr.RecordNr!=IPrw.InvoiceNr or CredHistr.RecordType!=0) then begin
+        TrHs = false;
+      end else begin
+        priority = GetItemPriority(IPb,CredHistr.ArtCode);
+        InsertCredHistInArray(CredHistr,arrORr,priority);
+      end;
     end;
   end;
-
   SortRecordArray(arrORr,"BuildOn");
  
  //get all paid amounts for each CredHistr
@@ -296,7 +307,7 @@ begin
     rwcnt = MatRowCnt(ORr);
     for (j=0;j<rwcnt;j=j+1) begin
       MatRowGet(ORr,j,ORrw);
-      paid = GetLoanItemPaidAmount(ORrw.CUServiceHistNr);
+      paid = GetLoanItemPaidAmount(ORrw.CUServiceHistNr,-1);
       ORrw.Price = paid;
       MatRowPut(ORr,j,ORrw);
     end;
@@ -496,10 +507,12 @@ begin
   string 255 instr;
   record CredManSetBlock CMb;
   array string 255 lateformula;
+  record CMInvoicingBlock CIb;
 
   PrepareIPRecord(SMr,IPr);
 
   BlockLoad(CMb);
+  BlockLoad(CIb);
   rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(SMr,i,SMrw);
@@ -521,6 +534,7 @@ begin
             //Setup always new invoice
             SetupLoanInvoice(CredManr,CMb,IVr,invdate,sd,invdate,true,false,"");
             AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
+            SetupOverdueLangCode(IVr,CredManr.Type);
             IVr.OKFlag = 1;
             RecordInsert(IVr,true);
           end;

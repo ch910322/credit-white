@@ -169,6 +169,7 @@ begin
   RecordField(Source,M4Str,255,0);
   RecordField(Math2,M4TextField,0,0);
   RecordField(AnnualRate,M4Int,0,0);
+  RecordField(OfficialSerNr,M4Str,255,0);
 
   ArrayBegin(Math,-,1);
   ArrayField(Period,M4Str,10,0);
@@ -569,6 +570,8 @@ begin
   RecordField(OwnBankAccount,M4UStr,255,0);
   RecordField(AnnualRate,M4Int,0,0);
   RecordField(MinOverdueFee,M4Val,0,0);
+  RecordField(OverdueRateType,M4Int,0,0);
+  RecordField(OverdueLangCode,M4Code,20,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -1134,6 +1137,7 @@ begin
   RecordField(ReplaceVATNr,M4Str,255,0);
   RecordField(ReplaceVATNrWith,M4Str,255,0);
   RecordField(ProlongItem,M4Code,20,INVc);
+  RecordField(OverdueRateType,M4Int,0,0);
 
   EndBlock;
 
@@ -1184,6 +1188,10 @@ begin
   KeySegment(PaidFlag);
   KeySegment(SerNr);
   EndRecord;
+
+  RecordAddBegin(IPVc,"IPVc_FIN");
+  ArrayField(CredHistNr,M4Long,0,0);
+  EndRecordAdd;
   
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);

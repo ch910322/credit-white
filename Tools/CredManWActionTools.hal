@@ -34,6 +34,9 @@ external inner function Boolean ExternalDocumentEnabled(string);
 external updating procedure PrintCredManDocument(string,string,record CredManVc,Integer,Boolean,string);
 external inner procedure GetCurUser(var record UserVc);
 external updating procedure CreateProlongInvoice(record CredManVc);
+external inner function string 50 NextLegalSerNr(string,LongInt,Date,string,string,string);
+external function Boolean GetCredLegalNrLine(string,string,Date,string,string,var row CredLegalInvNrBlock,Integer);
+external procedure FindListCredLegalSerNr(string,string,string,string,string,Integer,var array string);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr)
@@ -734,7 +737,9 @@ begin
   area filearea;
   record RcVc RepSpec;
   Boolean flags1,flags2,flags3;
-  
+  row CredLegalInvNrBlock LegalInvNrrw;
+  record CredManVc oldCredManr;
+
   RecordNew(ADr);
   ADr.SerNr = NextSerNr("AgreementDocVc",CurrentDate,-1,false,"");
   ADr.TransDate = CurrentDate;
@@ -813,6 +818,14 @@ begin
     end;
     RecordLinkFile(fn,0,ADr,CurrentCompany);
     Delete_File(fn);
+    if (blank(CredManr.OfficialSerNr)) then begin
+      if (GetCredLegalNrLine("CredManVc",CredManr.SerNr,CredManr.startDate,CredManr.Type,CredManr.Classifications,LegalInvNrrw,3)) then begin
+        RecordCopy(oldCredManr,CredManr);
+        CredManr.OfficialSerNr = NextLegalSerNr("CredManVc",CredManr.SerNr,CredManr.startDate,LegalInvNrrw.Serie,LegalInvNrrw.TSerStart,LegalInvNrrw.TSerEnd);
+        RecordUpdate(oldCredManr,CredManr,true);
+      end;
+    end;
+
   end;
 
   return;
@@ -1144,5 +1157,15 @@ begin
   end;
 
   ContractHasInvoiceCreated = res;
+  return;
+end;
+
+
+global
+procedure CredLegalNrSerNrSClassOnOpenWindowRemote(string filename,string sernr,Date invdate,string agrtype,string agrclass,var array string arrOffSerNr)
+begin
+  
+  FindListCredLegalSerNr(filename,sernr,invdate,agrtype,agrclass,0,arrOffSerNr);
+
   return;
 end;

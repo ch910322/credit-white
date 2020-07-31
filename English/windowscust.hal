@@ -670,6 +670,7 @@ begin
   EditField(h2,v+=vs,120,"Bank Name",Normal,BankName,false,0);
   EditField(h2,v+=vs,120,"Bank Account",Normal,BankAccount,false,BankAccountSClass);
   EditField(h2,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  EditField(h2,v+=vs,-40,"Legal No.",Normal,OfficialSerNr,false,CredLegalNrSerNrSClass);
   
   CheckBox(h3,v=6,0,"Request Direct Debit",RequestDirectDebit);
   
@@ -1608,6 +1609,24 @@ begin
   EndWindow;
 end;
 
+window CMIncomeForecastRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm,vs;
+  WindowBegin("Specify Income Forecast",CMIncomeForecastRClass,CGRcW,RcType);
+  SetWRect(20,80,420,310);
+  vs = 20;
+  PeriodField(h=140,v=6,"Period");
+  EditFieldTL(h,v+=vs,150,"Customer",   M4UStr,Normal,41,f1,false,CUSClass);
+  EditFieldTL(h,v+=vs,82,"Agreement Type",M4Str,Normal,60,f2,false,CredManTypeSClass);
+  EditFieldTL(h,v+=vs,82,"Class",M4Str,Normal,60,f3,false,OrderClassSClass);
+  EditFieldTL(h,v+=vs,82,"Agreement Classification",M4Str,Normal,60,f4,false,CredManClassSClass);
+  EditFieldTL(h,v+=vs,82,"Manager",M4Str,Normal,60,f5,false,UserSClass);
+  EndWindow;
+end;
+
+
+
 window ReceiptEntryWClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
@@ -1720,19 +1739,25 @@ begin
   EditField(h2,v,-40,"Name",ViewOnly,CustName,false,0);
   EditField(h,v+=vs,90,"Date",ViewOnly,TransDate,false,0);
   EditField(h2,v,90,"Time",ViewOnly,TransTime,false,0);
-  MatrixBegin(10,v+=vs+40,-40,-20,-,999);
+  MatrixBegin(10,v+=vs+40,-40,-40,-,999);
   MatCol(1,24,"Type",0,Type,false,SetSClass);
-  MatCol(1,104,"Inv. Date",0,InvDate,false,0);
-  MatCol(1,104,"Period From",0,FromDate,false,0);
-  MatCol(1,104,"Period To",0,ToDate,false,0);
-  MatCol(1,184,"Principle",0,Principle,false,0);
-  MatCol(1,274,"Interest",0,Interest,false,0);
-  MatCol(1,354,"Fees",0,Fees,false,0);
-  MatCol(1,434,"Total",0,Total,false,0);
+  MatCol(1,85,"Inv. Date",0,InvDate,false,0);
+  MatCol(1,150,"Period From",0,FromDate,false,0);
+  MatCol(1,215,"Period To",0,ToDate,false,0);
+  MatCol(1,320,"Principle",0,Principle,false,0);
+  MatCol(1,390,"Interest",0,Interest,false,0);
+  MatCol(1,460,"Fees",0,Fees,false,0);
+  MatCol(1,534,"Total",0,Total,false,0);
   MatCol(1,-60,"Invoiced",0,Invoiced,false,SetSClass);
   InsertRowTest;
   DeleteRowTest;
   EndMatrix;
+  SoftEditField(150,-30,150,"Period",ViewOnly,"period",false,0,M4Str,255);
+  SoftEditField(350,-30,60,"",ViewOnly,"totprinc",false,0,M4Val,0);
+  SoftEditField(420,-30,60,"",ViewOnly,"totint",false,0,M4Val,0);
+  SoftEditField(495,-30,60,"",ViewOnly,"totfees",false,0,M4Val,0);
+  SoftEditField(570,-30,60,"",ViewOnly,"tot",false,0,M4Val,0);
+
   SpecialMenu("Open Fees Matrix",' ',1,"OpenCredFeesMatrixSchedDsm");
 
   
@@ -1753,6 +1778,7 @@ begin
   tilenr = 1;
   Tile(0,20,false,"",DetailedInvoice);
   TileButton(tilenr,"General"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Overdue"); tilenr = tilenr + 1;  
   TileButton(tilenr,"Factoring"); tilenr = tilenr + 1;  
   TileButton(tilenr,"Payment Guarantee"); tilenr = tilenr + 1;  
   TileButton(tilenr,"Payments"); tilenr = tilenr + 1;
@@ -1763,8 +1789,6 @@ begin
   CheckBox(h,v+=16,0,"Interest on due Principle",IntDuePrinciple);
   CheckBox(h,v+=16,0,"Manual Contract Fee Invoice Number",ManualInvoiceNumber);
   CheckBox(h,v+=16,0,"Principle below hidden Line",HiddenPrinciple);
-  CheckBox(h,v+=16,0,"Overdue Calculation below hidden Line",AddOverdueDetails);
-
 
   CheckBox(h,v+=30,0,"Automatically issue Invoices",AutoInvoiceFlag);
   EditField(h,v+=20,100,"Time",Normal,AutoInvoiceTime,false,PasteCurTime);
@@ -1772,7 +1796,6 @@ begin
   CheckBox(h,v+=16,0,"Automatically send Invoices created from Contracts",AutoMailsFromInvoices);
 
   EditField(h,v+=vs,100,"Additional Comment",Normal,InvoiceCommentStr,false,0);
-  EditField(h,v+=vs,100,"Overdue Item Class",Normal,OverdueItemClass,false,DISClass);
   EditField(h,v+=vs,140,"Replace VAT Nr.",Normal,ReplaceVATNr,false,0);
   EditField(h+200,v,140,"with",Normal,ReplaceVATNrWith,false,0);
   EditField(h,v+=vs,100,"Prolong Item",Normal,ProlongItem,false,INSClass);  
@@ -1784,14 +1807,6 @@ begin
   RadioButton(h,v+=16,3,0,"Separately for previous Calendar Month, on Day",InterestIVType);  
   EditField(h+360,v,30,"Day of Month",Normal,InterestIVDay,false,0);
 
-  ButtonFrame(h,v+=40,400,3,"Overdue Invoicing");
-  RadioButton(h,v,0,0,"With Principle, same Invoice",OverdueIVType);
-  RadioButton(h,v+=16,1,0,"With Principle, separate Invoice",OverdueIVType);  
-  RadioButton(h,v+=16,2,0,"Separately for previous Calendar Month, on Day",OverdueIVType);  
-  EditField(h+360,v,30,"Day of Month",Normal,OverdueIVDay,false,0);
-
-  EditField(h,v+=30,100,"Overdue Months",Normal,OverdueMonths,false,0);
-  
   v = v + 40;
   ButtonFrame(h,vm=v,200,5,"Invoice Recipients");
   Checkbox(h,v,0,"Primary Contact Email",SendToMainContact);
@@ -1804,8 +1819,25 @@ begin
   RadioButton(h2,v,0,0,"Payment Day",InvoiceDay);
   RadioButton(h2,v+=16,1,0,"Payment Day - Days of Payment Term",InvoiceDay);  
 
+  Tile(2,500,false,"2",DetailedInvoice);
+  CheckBox(h,v=6,0,"Overdue Calculation below hidden Line",AddOverdueDetails);
 
-  Tile(2,95,false,"2",FBuyerPayDeal);
+
+  EditField(h,v+=vs,100,"Overdue Item Class",Normal,OverdueItemClass,false,DISClass);
+  EditField(h,v+=30,100,"Overdue Months",Normal,OverdueMonths,false,0);
+
+  ButtonFrame(h,v+=40,400,3,"Overdue Invoicing");
+  RadioButton(h,v,0,0,"With Principle, same Invoice",OverdueIVType);
+  RadioButton(h,v+=16,1,0,"With Principle, separate Invoice",OverdueIVType);  
+  RadioButton(h,v+=16,2,0,"Separately for previous Calendar Month, on Day",OverdueIVType);  
+  EditField(h+360,v,30,"Day of Month",Normal,OverdueIVDay,false,0);
+
+  ButtonFrame(h,v+=40,150,2,"Overdue Rate");
+  RadioButton(h,v,0,0,"Daily",OverdueRateType);
+  RadioButton(h,v+=16,1,0,"Monthly",OverdueRateType);  
+
+  
+  Tile(3,95,false,"3",FBuyerPayDeal);
   vs=20; h=160; vs2=16; hm=-100;
   ButtonFrame(h-100,v=30,250,5,"Buyer's Invoice");
   EditField(h,v,100,"Payment Terms",Normal,FBuyerPayDeal,false,PDSClass);
@@ -1821,7 +1853,7 @@ begin
   EditField(h,v+=vs,100,"Object",Normal,FSellerObject,false,ObjSClass);
   EditField(h,v+=vs,100,"Payment Mode",Normal,FIVPaymentMode,false,PMSClass);
   
-  Tile(3,95,false,"3",PGBuyerSecurityItem);
+  Tile(4,95,false,"4",PGBuyerSecurityItem);
  
   ButtonFrame(h-100,v=30,250,5,"Buyer's Invoice");
   EditField(h,v,100,"Security Item",Normal,PGBuyerSecurityItem,false,INSClass);
@@ -1833,7 +1865,7 @@ begin
   EditField(h,v,100,"Account",Normal,PGSellerAccount,false,AccSClass);
   EditField(h,v+=vs,100,"VAT Code",Normal,PGSellerVATCode,false,VATCodeSClass);
 
-  Tile(4,95,false,"4",PaymentPayDeal);
+  Tile(5,95,false,"5",PaymentPayDeal);
 
   EditField(h,v=6,100,"Payment Terms",Normal,PaymentPayDeal,false,PDSClass);
   EditField(h,v+=vs,100,"Account",Normal,PaymentAccount,false,AccSClass);
@@ -1857,10 +1889,9 @@ begin
   SetWRect(20,80,900,457);
   Sizeable(-1,-1,0,0);
   h = 8; v = 20;
-  h1=28;
+  h1=24;
   MatrixBegin(h,v+=60,-50,-20,-,499);
-  Flip(0);
-  MatCol(1,h1,"From Date",0,PurchDate,false,PasteCurDate);
+  MatCol(1,h1,"From Date",0,StartDate,false,PasteCurDate);
   MatCol(1,h1+=80,"To Date",0,EndDate,false,PasteCurDate);
   MatCol(1,h1+=80,"Serie",0,Serie,false,0);
   MatCol(1,h1+=80,"From",0,TSerStart,false,0);
@@ -1936,5 +1967,17 @@ begin
   EditField(h,v+=vs,50,"PaidFlag",Normal,PaidFlag,false,0);
   EditField(h,v+=vs,50,"CredManNr",Normal,CredManNr,false,0);
   EditField(h,v+=vs,50,"RecalcSchedule",Normal,RecalcSchedule,false,0);
+  EndWindow;
+end;
+
+window CredLegalNrSerNrSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v;
+
+  WindowBegin("Paste Legal Serial Number",CredLegalNrSerNrSClass,CGother,RcType);
+  SetWRect(64,80,400,298);
+  DataList(0,0,-1,-1,"DLPasteCredSerNrAccount");
+  DataListColumn(1,6,-1,AdjLeft,"DLSerNr","Nr",M4Str);
   EndWindow;
 end;

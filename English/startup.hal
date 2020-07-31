@@ -29,11 +29,13 @@ begin
   Setting("Receipt Entry",ReceiptEntryWClass,modSL);
   Setting("Agreement Classifications",CredManClassLClass,modCredMan);
   Setting("Prolong Sessions",ProlongSessionLClass,modCredMan);
+  Setting("Legal Record Numbers",CredLegalInvNrTClass,modCredMan);
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
 	Report("Application Overview",LoanApplicationListRClass,LoanApplicationListRn,0,modCredMan);
 
 	Report("Income Analysis",EBSIncomeAnalysisRClass,EBSIncomeAnalysisRn,0,modCredMan);
+	Report("Income Forecast",CMIncomeForecastRClass,CMIncomeForecastRn,0,modCredMan);
 
   Maintenance("Create Agreement Invoices",GenLoanInvoicesVClass,GenLoanInvoicesMn,modCredMan);
   Maintenance("Create Payment Guarantee Invoices",PmtGrntInvoiceVClass,PmtGrntInvoiceMn,modCredMan);
@@ -55,6 +57,7 @@ begin
 /*DB Maint*/
 
   Setting("Reminder Queue",SMSReminderQueueLClass,modDBMain);
+  Setting("Legal Record Numbers",OffSerNrLClass,modDBMain);
 
 /* Sales ledger */
 	Report("Income Analysis",EBSIncomeAnalysisRClass,EBSIncomeAnalysisRn,0,modSL);
@@ -143,6 +146,7 @@ begin
   SString(200095,"Penalties");
   SString(200096,"Total");
   SString(200097,"Balance");
+  SString(200098,"VAT");
 
   SString(200100,"Invoice Number already used");
   SString(200101,"Amount is more than specified in Credit Agreement");
@@ -180,6 +184,25 @@ begin
   SString(200231,"Email");
   SString(200232,"Date");
   SString(200233,"Another Prolongation Pending");
+
+/*IncomeForecatRn*/
+  SString(200240,"No");
+  SString(200241,"Type");
+  SString(200242,"Customer");
+  SString(200243,"Reg. No");
+  SString(200244,"Rate");
+  SString(200245,"Start Date");
+  SString(200246,"End Date");
+  SString(200247,"Value");
+  SString(200248,"Balance");
+  SString(200249,"Principle");
+  SString(200250,"Interest");
+  SString(200251,"Fees");
+  SString(200252,"VAT");
+  SString(200253,"Total");
+  SString(200254,"Due Date");
+  SString(200255,"Remaining");
+  SString(200256,"Income Forecast");
 
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");
