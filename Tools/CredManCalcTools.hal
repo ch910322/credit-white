@@ -519,6 +519,7 @@ begin
       TrHs = false;
     end else begin
  //     if (CredHistr.RecordType==0) then begin
+      if (CredHistr.ChargeType!=15 and CredHistr.ChargeType!=14) then begin
         openamount = 0;
         switch (CredHistr.RecordType) begin
           case 0: 
@@ -539,7 +540,7 @@ begin
             type = GetCredHistType(PrevCredHistr.ArtCode,true);          
         end;
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,CredHistr.ArtCode,"",type,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,openamount);
-        if (CredHistr.RecordType==0 and CredHistr.ChargeType!=15) then begin
+        if (CredHistr.RecordType==0) then begin
           if (IsInitialInvoice(CredManr,CredHistr.TransDate,lastrecnr,vFirstInv[CredHistr.RecordNr])) then begin
             firstinvf = true;
             vFirstInv[CredHistr.RecordNr] = true;//we can have multiple records for single invoice. so we need to store that this invoice is the initial invoice
@@ -550,7 +551,7 @@ begin
           end;
           lastrecnr = CredHistr.RecordNr;
         end;
- //     end;
+      end;
     end;
   end;
 
