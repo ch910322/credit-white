@@ -5,6 +5,8 @@ remote procedure InsertInvoiceToDistribute(var record IPConDistributeVc,Integer)
 remote procedure DistributeInvoicesSClassOnOpenWindowRemote(Longint,var array record IVVc);
 remote function Integer FindBankAccImportBank(string);
 external procedure RecalculateIPDOverpaid(var record IPConDistributeVc);
+remote procedure PayModeBankAccCustSClassArrayOnOpen(var Array string,var Array string);
+external inner procedure PasteFromSysList(Integer ,Integer);
 
 
 global
@@ -195,6 +197,7 @@ begin
         //fill the matrix
         IPDr.SerNr = IPr.SerNr;
         IPDr.Total = IPr.CurPayVal;
+        IPDr.Overpaid = IPr.CurPayVal;
         OpenWindow("ReceiptConnectionDistributeWClass",0,0,"","",IPDr);
 
       end;
@@ -242,6 +245,45 @@ begin
   return;
 end;
 
+procedure RecalculateDistributeInvoiceTotal(record IPConDistributeVc IPDr,Integer rownr)
+begin
+  Integer setiv,lastiv,rwcnt,i;
+  row IPConDistributeVc IPDrw;
+  val sum;
+  Boolean stopf;
+  
+  setiv = -1;
+  lastiv = -1;
+  rwcnt = MatRowCnt(IPDr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IPDr,i,IPDrw);
+    if (IPDrw.stp==1) then begin
+      lastiv = i;
+      if (stopf) then begin
+        goto LRecalculateDistributeInvoiceTotal;
+      end else begin
+        sum = 0;
+      end;
+    end else begin
+      if (rownr==i) then begin
+        stopf = true;
+        setiv = lastiv;
+      end;
+      sum = sum + IPDrw.Sum4;
+    end;
+  end;
+
+LRecalculateDistributeInvoiceTotal:;
+
+  if (setiv>-1) then begin
+    MatRowGet(IPDr,setiv,IPDrw);
+    IPDrw.Sum = sum;
+    MatRowPut(IPDr,setiv,IPDrw);
+  end;
+
+  return;
+end;
+
 function Boolean ReceiptConnectionDistributeWClassSum4EFAfter(Integer wn,Integer rownr,Integer changed)
 begin
   record IPConDistributeVc IPDr;
@@ -254,6 +296,7 @@ begin
       IPDrw.Sum4 = IPDrw.Sum;
       MatRowPut(IPDr,rownr,IPDrw);
     end;
+    RecalculateDistributeInvoiceTotal(IPDr,rownr);
     RecalculateIPDOverpaid(IPDr);
     PutWindowRecord(wn,IPDr);
   end;
@@ -369,3 +412,30 @@ begin
   return;
 end;
 
+
+
+global
+function Boolean PayModeBankAccCustSClassOnOKWindow(Integer wn)
+begin
+  PasteFromSysList(wn,-2);
+  PayModeBankAccCustSClassOnOKWindow = false;
+  return;
+end;
+
+global
+function Boolean PayModeBankAccCustSClassOnOpenWindow(Integer wn)
+begin
+  Array string 255 acode,acomment;
+  Integer i;
+  
+  PayModeBankAccCustSClassArrayOnOpen(acode,acomment);
+  for (i=0;i<acode.length;i=i+1) begin
+    if (nonblank(acode[i])) then begin
+      AddListRow(wn,"PayModeBankAccClass",1,acode[i],0);
+      AddListData(wn,"PayModeBankAccClass","bankacc",acode[i]);
+      AddListData(wn,"PayModeBankAccClass","pmname",acomment[i]);
+    end;
+  end;
+  PayModeBankAccCustSClassOnOpenWindow = false;
+  return;
+end;

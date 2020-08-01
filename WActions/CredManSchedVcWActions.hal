@@ -100,14 +100,25 @@ global
 function Boolean CredFeesMatrixVClassOnOKWindow(Integer wn)
 begin
   record CredFeesMatrixVc FMr;
+  row CredFeesMatrixVc FMrw;
   record CredManSchedVc SCr;
   row CredManSchedVc SCrw;
   longint mwn,rowno;
+  Integer i,rwcnt;
   
   //wn = CurWindow;
   mwn = MotherWindow(wn);
   
   GetWindowRecord(wn,FMr);
+  rwcnt = MatRowCnt(FMr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(FMr,i,FMrw);
+    if (blank(FMrw.ArtCode)) then begin
+      MessageBox(1058,"");
+      WindowFieldGoto(wn,FMr,i,"ArtCode",true);
+      goto LCredFeesMatrixVClassOnOKWindow;
+    end;
+  end;
   GetWindowRecord(mwn,SCr);
   
   rowno = StringToInt(GetWindowString(wn,"TaxMatrixActiveRow"));
@@ -126,7 +137,8 @@ begin
   end;
 
   UpdateCredManSchedSoftFields(mwn);
- 
+
+LCredFeesMatrixVClassOnOKWindow:;
   CredFeesMatrixVClassOnOKWindow = false;
   return;
 end;

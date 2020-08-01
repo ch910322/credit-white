@@ -494,7 +494,7 @@ begin
   record CredManSchedVc CSr;
 
   CSr.CredManNr = sernr;
-  if (ReadFirstKey("CredManNr",CSr,1,true)) then begin
+  if (ReadFirstMain(CSr,1,true)) then begin
     RecordRemove(CSr);
   end;
 

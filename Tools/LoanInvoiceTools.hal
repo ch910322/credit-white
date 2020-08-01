@@ -85,6 +85,13 @@ begin
   return;
 end;
 
+updating procedure LinkCredManAndInvoice(record IVVc IVr,record CredManVc CredManr)
+begin
+  
+  CreateRecordLink(IVr,CurrentCompany,CredManr,CurrentCompany);
+
+  return;
+end;
 
 global
 procedure SetupLoanInvoice(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Date invdate,Date fromdate,Date todate,Boolean sernrf,Boolean forcecustf,string ivno)
@@ -558,7 +565,7 @@ begin
 end;
 
 global
-updating procedure StoreLoanInvoice(var record IVVc IVr)
+updating procedure StoreLoanInvoice(var record IVVc IVr,record CredManVc CredManr)
 begin
   record IVVc oldIVr;
   
@@ -567,6 +574,7 @@ begin
     RecordCopy(oldIVr,IVr);
     IVr.OKFlag = 1;
     RecordUpdate(oldIVr,IVr,true);
+    LinkCredManAndInvoice(IVr,CredManr);
   end;
 
   return;
@@ -638,12 +646,12 @@ begin
               SetupLoanInvoice(CredManr,CMb,oIVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno);
               SetupOverdueLangCode(IVr,CredManr.Type);
               AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
-              StoreLoanInvoice(oIVr);
+              StoreLoanInvoice(oIVr,CredManr);
           end;
           AddPrepayments(IVr,CIb);
           if (IVr.SerNr>-1) then begin
             CheckAndAddHiddenPrinciple(IVr,CIb);
-            StoreLoanInvoice(IVr);
+            StoreLoanInvoice(IVr,CredManr);
             if (firstf==false) then begin
               RecordCopy(firstIVr,IVr);
               firstf = true;
@@ -674,12 +682,12 @@ begin
         SetupLoanInvoice(CredManr,CMb,oIVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno);
         AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
         SetupOverdueLangCode(IVr,CredManr.Type);
-        StoreLoanInvoice(oIVr);
+        StoreLoanInvoice(oIVr,CredManr);
     end;
     AddPrepayments(IVr,CIb);
     if (IVr.SerNr>-1) then begin
       CheckAndAddHiddenPrinciple(IVr,CIb);
-      StoreLoanInvoice(IVr);
+      StoreLoanInvoice(IVr,CredManr);
       if (firstf==false) then begin
         RecordCopy(firstIVr,IVr);
       end;
@@ -830,7 +838,7 @@ begin
         SetupLoanInvoice(CredManr,CMb,oIVr,CSrw.InvDate,CSrw.FromDate,CSrw.ToDate,true,false,"");
         AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
         if (updf) then begin
-          qupdating.StoreLoanInvoice(oIVr);
+          qupdating.StoreLoanInvoice(oIVr,CredManr);
         end;
     end;
   end;
@@ -854,7 +862,7 @@ begin
   Boolean res;
   
   CSr.CredManNr = CredManr.SerNr;
-  if (ReadFirstKey("CredManNr",CSr,1,true)) then begin
+  if (ReadFirstMain(CSr,1,true)) then begin
     res = true;
     BlockLoad(CMb);
     BlockLoad(ASb);
@@ -869,6 +877,7 @@ begin
             RecordCopy(oldIVr,IVr);
             IVr.OKFlag = 1;
             RecordUpdate(oldIVr,IVr,true);
+            LinkCredManAndInvoice(IVr,CredManr);
           end;
 
           if (firstf==false) then begin
@@ -1023,6 +1032,7 @@ begin
       RecordCopy(oldIVr,IVr);
       IVr.OKFlag = 1;
       RecordUpdate(oldIVr,IVr,true);
+      LinkCredManAndInvoice(IVr,CredManr);
     end;  
   end;
 
@@ -1056,6 +1066,7 @@ begin
         RecordCopy(oldIVr,IVr);
         IVr.OKFlag = 1;
         RecordUpdate(oldIVr,IVr,true);
+        LinkCredManAndInvoice(IVr,CredManr);
       end;  
     end;
   end;
@@ -1083,6 +1094,7 @@ begin
           RecordCopy(oldIVr,IVr);
           IVr.OKFlag = 1;
           RecordUpdate(oldIVr,IVr,true);
+          LinkCredManAndInvoice(IVr,CredManr);
         end;
         RecordCopy(firstIVr,IVr);
       end;
@@ -1476,7 +1488,7 @@ begin
 
   if (IVr.CustCredManNr>0) then begin
     CSr.CredManNr = IVr.CustCredManNr;
-    if (ReadFirstKey("CredManNr",CSr,1,true)) then begin
+    if (ReadFirstMain(CSr,1,true)) then begin
       RecordCopy(oldCSr,CSr);
       rwcnt = MatRowCnt(CSr);
       for (i=0;i<rwcnt;i=i+1) begin
@@ -1640,7 +1652,7 @@ begin
   record CredFeesMatrixVc FMr;
   
   CSr.CredManNr = CredManr.SerNr;
-  if (ReadFirstKey("CredManNr",CSr,1,true)) then begin
+  if (ReadFirstMain(CSr,1,true)) then begin
     RecordCopy(oldCSr,CSr);
     rwcnt = MatRowCnt(CSr);
     for (i=rwcnt-1;i>=0;i=i-1) begin
@@ -1649,7 +1661,6 @@ begin
     updf = true;
   end else begin
     RecordNew(CSr);
-    CSr.SerNr = NextSerNr("CredManSchedVc",CurrentDate,-1,false,"");
     CSr.CredManNr = CredManr.SerNr;
     CSr.CustCode = CredManr.CustCode;
     CSr.CustName = CredManr.Addr0;
