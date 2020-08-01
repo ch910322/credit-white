@@ -5,6 +5,8 @@ remote procedure InsertInvoiceToDistribute(var record IPConDistributeVc,Integer)
 remote procedure DistributeInvoicesSClassOnOpenWindowRemote(Longint,var array record IVVc);
 remote function Integer FindBankAccImportBank(string);
 external procedure RecalculateIPDOverpaid(var record IPConDistributeVc);
+remote procedure PayModeBankAccCustSClassArrayOnOpen(var Array string,var Array string);
+external inner procedure PasteFromSysList(Integer ,Integer);
 
 
 global
@@ -369,3 +371,30 @@ begin
   return;
 end;
 
+
+
+global
+function Boolean PayModeBankAccCustSClassOnOKWindow(Integer wn)
+begin
+  PasteFromSysList(wn,-2);
+  PayModeBankAccCustSClassOnOKWindow = false;
+  return;
+end;
+
+global
+function Boolean PayModeBankAccCustSClassOnOpenWindow(Integer wn)
+begin
+  Array string 255 acode,acomment;
+  Integer i;
+  
+  PayModeBankAccCustSClassArrayOnOpen(acode,acomment);
+  for (i=0;i<acode.length;i=i+1) begin
+    if (nonblank(acode[i])) then begin
+      AddListRow(wn,"PayModeBankAccClass",1,acode[i],0);
+      AddListData(wn,"PayModeBankAccClass","bankacc",acode[i]);
+      AddListData(wn,"PayModeBankAccClass","pmname",acomment[i]);
+    end;
+  end;
+  PayModeBankAccCustSClassOnOpenWindow = false;
+  return;
+end;

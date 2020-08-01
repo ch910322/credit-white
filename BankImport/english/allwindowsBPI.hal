@@ -143,7 +143,7 @@ begin
   WindowBegin("Specify Bank Transactions",LitBankImportIClass,CGIcW,RcType);
   SetWRect(20,80,480,150);
   vs = 20;
-  EditFieldTL(h=150,v=6,150,"Bank A/C",M4Str,Normal,60,f20,false,PayModeBankAccSClass);
+  EditFieldTL(h=150,v=6,150,"Bank A/C",M4Str,Normal,60,f20,false,PayModeBankAccCustSClass);
   EditFieldTL(h,v+=vs,140,"Bank",M4Set,Normal,26,flags[20],false,SetSClass);
   EndWindow;
   return;
@@ -164,5 +164,17 @@ begin
   DataListColumn(1,-90,-32,AdjRight,"DLSum","Sum",M4Str);  
 
 
+  EndWindow;
+end;
+
+window PayModeBankAccCustSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Paste Bank Acc.",PayModeBankAccCustSClass,CGother,HBlRecType);
+  SetWRect(240,80,680,298);
+  DataList(0,9,500,209,"PayModeBankAccClass");
+  DataListColumn(1,0,200,AdjLeft,"pmname","Comment",M4Str);
+  DataListColumn(1,206,-10,AdjLeft,"bankacc","Bank A/C",M4Str);
+  SearchField("Search");
   EndWindow;
 end;
