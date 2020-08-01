@@ -256,7 +256,7 @@ begin
     end;
     if (RecordUpdate(oldADr,ADr,true)==0) then begin
       //should move this out to a function
-      fn = "Schedule.pdf";
+      fn = "Schedule" & CredManr.SerNr & ".pdf";
       GenerateAgreementSchedule(CredManr);
       langcode = GetDocumentLangCode(CredManr,2);
       if (ExternalDocumentEnabled("CredManScheduleForm")) then begin
@@ -761,7 +761,7 @@ begin
     scnt = GetSuretyCnt(CredManr);
     switch (ADr.Type) begin
       case 1://agreement
-        fn = "Agreement.pdf";
+        fn = "Agreement" & CredManr.SerNr & ".pdf";
         langcode = GetDocumentLangCode(CredManr,1);
         if (ExternalDocumentEnabled("CredManForm")) then begin
           RepSpec.long1 = CredManr.InstalmentType;
@@ -774,7 +774,7 @@ begin
           //PrintMultiDocDocument("CredManLongForm",fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
         end;
       case 2://schedule
-        fn = "Schedule.pdf";
+        fn = "Schedule" & CredManr.SerNr & ".pdf";
         GenerateAgreementSchedule(CredManr);
         langcode = GetDocumentLangCode(CredManr,2);
         if (ExternalDocumentEnabled("CredManScheduleForm")) then begin
@@ -788,7 +788,7 @@ begin
           //PrintMultiDocDocument("CredManScheduleForm",fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
         end;
       case 3://surety
-        fn = "Surety.pdf";
+        fn = "Surety" & CredManr.SerNr & ".pdf";
         langcode = GetDocumentLangCode(CredManr,3);
         if (ExternalDocumentEnabled("SuretyAgreementForm")) then begin
           RepSpec.long1 = CredManr.InstalmentType;
@@ -802,7 +802,7 @@ begin
           //PrintMultiDocDocument("SuretyAgreementForm" & scnt,fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
         end;
       case 6://vekselis
-        fn = "Vekselis.pdf";
+        fn = "Bill" & CredManr.SerNr & ".pdf";
         langcode = GetDocumentLangCode(CredManr,4);
         if (ExternalDocumentEnabled("VekselisForm")) then begin
           RepSpec.long1 = CredManr.InstalmentType;
