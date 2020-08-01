@@ -1054,7 +1054,6 @@ begin
   EndRecord;
 
   RecordBegin(CredManSchedVc,-,"");
-  RecordField(SerNr,M4Long,0,0);
   RecordField(CredManNr,M4Long,0,CredManVc);
   RecordField(CustCode,M4Code,20,CUVc);
   RecordField(CustName,M4Str,255,0);
@@ -1075,11 +1074,8 @@ begin
   ArrayField(PayDate,M4Date,0,0);
   ArrayField(FeesMatrix,M4PackedMatrix,0,CredFeesMatrixVc);
   EndArray;
-  MainKeyBegin(SerNr,0);
-  KeySegment(SerNr);
-  KeyBegin(CredManNr);
+  MainKeyBegin(CredManNr,0);
   KeySegment(CredManNr);
-  KeySegment(SerNr);
   EndRecord;
 
   BlockBegin(CMInvoicingBlock,-,"");

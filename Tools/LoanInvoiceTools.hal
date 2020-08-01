@@ -862,7 +862,7 @@ begin
   Boolean res;
   
   CSr.CredManNr = CredManr.SerNr;
-  if (ReadFirstKey("CredManNr",CSr,1,true)) then begin
+  if (ReadFirstMain(CSr,1,true)) then begin
     res = true;
     BlockLoad(CMb);
     BlockLoad(ASb);
@@ -1488,7 +1488,7 @@ begin
 
   if (IVr.CustCredManNr>0) then begin
     CSr.CredManNr = IVr.CustCredManNr;
-    if (ReadFirstKey("CredManNr",CSr,1,true)) then begin
+    if (ReadFirstMain(CSr,1,true)) then begin
       RecordCopy(oldCSr,CSr);
       rwcnt = MatRowCnt(CSr);
       for (i=0;i<rwcnt;i=i+1) begin
@@ -1652,7 +1652,7 @@ begin
   record CredFeesMatrixVc FMr;
   
   CSr.CredManNr = CredManr.SerNr;
-  if (ReadFirstKey("CredManNr",CSr,1,true)) then begin
+  if (ReadFirstMain(CSr,1,true)) then begin
     RecordCopy(oldCSr,CSr);
     rwcnt = MatRowCnt(CSr);
     for (i=rwcnt-1;i>=0;i=i-1) begin
@@ -1661,7 +1661,6 @@ begin
     updf = true;
   end else begin
     RecordNew(CSr);
-    CSr.SerNr = NextSerNr("CredManSchedVc",CurrentDate,-1,false,"");
     CSr.CredManNr = CredManr.SerNr;
     CSr.CustCode = CredManr.CustCode;
     CSr.CustName = CredManr.Addr0;

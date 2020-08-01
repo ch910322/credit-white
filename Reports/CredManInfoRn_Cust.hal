@@ -428,7 +428,7 @@ begin
  
   
   CSr.CredManNr = CredManr.SerNr;
-  if (ReadFirstKey("CredManNr",CSr,1,true)) then begin
+  if (ReadFirstMain(CSr,1,true)) then begin
     res = true;
     calcbal = CredManr.InvSum4;
     rwcnt = MatRowCnt(CSr);

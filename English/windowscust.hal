@@ -1710,16 +1710,15 @@ window CredManSchedLClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Agreement Schedules",CredManSchedLClass,CGmlist,-);
-  SetWRect(20,80,660,298);
+  SetWRect(20,80,560,298);
   Sizeable(-1,-1,0,0);
   SpawnClass(CredManSchedDClass);
   UseView(CredManSchedVc);
   RecordList(4,17,-21,-39);
-  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
-  RlColKey(100,100,"Agreement",CredManNr,false,CredManNr);
-  RlCol(196,196,"Customer",CustCode,false);
-  RlCol(456,456,"Date",TransDate,false);
-  RlCol(526,526,"Time",TransTime,false);
+  RlColKey(4,4,"Agreement",CredManNr,false,CredManNr);
+  RlCol(106,106,"Customer",CustCode,false);
+  RlCol(356,356,"Date",TransDate,false);
+  RlCol(426,426,"Time",TransTime,false);
   SearchField("Search");
   EndWindow;
 end;
@@ -1733,8 +1732,7 @@ begin
   Sizeable(-1,-1,0,0);
   UseView(CredManSchedVc);
   vs=20; h=120; vs2=16; hm=-100; h2 = 350;
-  EditField(h,v=6,90,"Ser. No.",Normal,SerNr,false,);
-  EditField(h2,v,120,"Agreement",ViewOnly,CredManNr,false,CredManSClass);
+  EditField(h,v=6,120,"Agreement",ViewOnly,CredManNr,false,0);
   EditField(h,v+=vs,90,"Customer",ViewOnly,CustCode,false,CUSClass);
   EditField(h2,v,-40,"Name",ViewOnly,CustName,false,0);
   EditField(h,v+=vs,90,"Date",ViewOnly,TransDate,false,0);
