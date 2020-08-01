@@ -197,6 +197,7 @@ begin
         //fill the matrix
         IPDr.SerNr = IPr.SerNr;
         IPDr.Total = IPr.CurPayVal;
+        IPDr.Overpaid = IPr.CurPayVal;
         OpenWindow("ReceiptConnectionDistributeWClass",0,0,"","",IPDr);
 
       end;
@@ -244,6 +245,45 @@ begin
   return;
 end;
 
+procedure RecalculateDistributeInvoiceTotal(record IPConDistributeVc IPDr,Integer rownr)
+begin
+  Integer setiv,lastiv,rwcnt,i;
+  row IPConDistributeVc IPDrw;
+  val sum;
+  Boolean stopf;
+  
+  setiv = -1;
+  lastiv = -1;
+  rwcnt = MatRowCnt(IPDr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IPDr,i,IPDrw);
+    if (IPDrw.stp==1) then begin
+      lastiv = i;
+      if (stopf) then begin
+        goto LRecalculateDistributeInvoiceTotal;
+      end else begin
+        sum = 0;
+      end;
+    end else begin
+      if (rownr==i) then begin
+        stopf = true;
+        setiv = lastiv;
+      end;
+      sum = sum + IPDrw.Sum4;
+    end;
+  end;
+
+LRecalculateDistributeInvoiceTotal:;
+
+  if (setiv>-1) then begin
+    MatRowGet(IPDr,setiv,IPDrw);
+    IPDrw.Sum = sum;
+    MatRowPut(IPDr,setiv,IPDrw);
+  end;
+
+  return;
+end;
+
 function Boolean ReceiptConnectionDistributeWClassSum4EFAfter(Integer wn,Integer rownr,Integer changed)
 begin
   record IPConDistributeVc IPDr;
@@ -256,6 +296,7 @@ begin
       IPDrw.Sum4 = IPDrw.Sum;
       MatRowPut(IPDr,rownr,IPDrw);
     end;
+    RecalculateDistributeInvoiceTotal(IPDr,rownr);
     RecalculateIPDOverpaid(IPDr);
     PutWindowRecord(wn,IPDr);
   end;
