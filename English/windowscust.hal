@@ -1979,3 +1979,22 @@ begin
   DataListColumn(1,6,-1,AdjLeft,"DLSerNr","Nr",M4Str);
   EndWindow;
 end;
+
+
+
+window SchedYesNoWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v; 
+
+  WindowBegin("Generate Schedule",SchedYesNoWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,300,220);
+  AutoSizeWindow(false);  
+  StaticText(50,26,"Already registered. Overwrite?",false);
+  HalPushButton(-260,-30,-160,-10,"SchedYesNoWClassProceed","Yes");
+  HalPushButton(-120,-30,-20,-10,"SchedYesNoWClassClose","No");
+  EndWindow;
+
+  return;
+end;

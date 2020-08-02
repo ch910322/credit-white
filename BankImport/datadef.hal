@@ -29,6 +29,12 @@ begin
   RecordField(Math,M4Matrix,0,0);
   RecordField(ArtMode,M4Int,0,0);
   RecordField(Total,M4Qty,0,0);
+  RecordField(PaidStat,M4Int,0,0);
+  RecordField(TransactionCnt,M4Qty,0,0);
+  RecordField(OverpaidCnt,M4Qty,0,0);
+  RecordField(ConnectedCnt,M4Qty,0,0);
+  RecordField(NotRecognizedCnt,M4Qty,0,0);
+  
   ArrayBegin(Math,-,1);
   ArrayField(TransDate,M4Date,0,0);
   ArrayField(CustCodeRow,M4Code,20,0);
@@ -42,6 +48,10 @@ begin
   ArrayField(BankTRNr,M4Long,0,0);
   ArrayField(IPNr,M4Long,0,0);
   ArrayField(IVOfficNrRow,M4Str,255,0);
+  ArrayField(IVOpenAmount,M4Val,0,0);
+  ArrayField(IVPaidAmount,M4Val,0,0);
+  ArrayField(IVOpenAmount2,M4Val,0,0);
+  ArrayField(Status,M4Set,21000,0);
   EndArray;
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);

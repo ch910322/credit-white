@@ -11,6 +11,11 @@ begin
 
   Report("Bank Transactions",BankTRRClass,BankTRRn,0,modSL);
 
+  SetBegin(21000);
+  SetText(0,"Not OK");
+  SetText(1,"OK");
+  EndSet;
+
   return;
 end;
 
@@ -70,12 +75,18 @@ begin
 	EditField(h2,v,50,"Payment Mode",Normal,PMCode,false,PMSClass);
 	EditField(h,v+=vs,120,"Customer",Normal,CustCode,false,CUSClass);
 	EditField(h2,v,100,"Invoice No.",Normal,IVNr,false,IVSClass);
-	EditField(h3,v,120,"Comment",Normal,Comment,false,0);
+	EditField(h,v+=vs,200,"Comment",Normal,Comment,false,0);
 
-  ButtonFrame(h4=620,v=26,100,3,"Show");
+  ButtonFrame(h4=480,v=26,100,3,"Status");
   RadioButton(h4,v,0,0,"All",ArtMode);
   RadioButton(h4,v+=16,1,0,"OKed",ArtMode);
   RadioButton(h4,v+=16,2,0,"Not OKed",ArtMode);
+
+  ButtonFrame(h5=630,v=26,100,4,"Show");
+  RadioButton(h5,v,0,0,"All",PaidStat);
+  RadioButton(h5,v+=16,1,0,"Paid less",PaidStat);
+  RadioButton(h5,v+=16,2,0,"Exact",PaidStat);
+  RadioButton(h5,v+=16,3,0,"Paid more",PaidStat);
 
   MatrixBegin(h,v+=40,-30,-40,-,999);
   MatTypedRow(stp);
@@ -85,20 +96,29 @@ begin
   MatCol(1,354,"Comment",0,CommentRow,false,0);
   MatCol(1,-140,"Amount",0,Amount,true,0);
   MatCol(1,-60,"Currency",0,CurncyCode,false,0);
+  MatCol(1,-60,"Status",0,Status,false,0);
 
-  MatCol(2,-490,"Invoice",0,IVNrRow,false,0);
-  MatCol(2,-380,"Legal Number",0,IVOfficNrRow,false,0);
-  MatCol(2,-270,"Prepayment",0,PrepayNr,false,0);
-  MatCol(2,-140,"Amount",0,Amount,true,0);
+  MatCol(2,80,"Invoice",0,IVNrRow,false,0);
+  MatCol(2,140,"Legal Number",0,IVOfficNrRow,false,0);
+  MatCol(2,-380,"Prepayment",0,PrepayNr,false,0);
+  MatCol(2,-300,"Open Balance",0,IVOpenAmount,true,0);
+  MatCol(2,-220,"Paid",0,IVPaidAmount,true,0);
+  MatCol(2,-140,"Balance",0,IVOpenAmount2,true,0);
   MatCol(2,-60,"Currency",0,CurncyCode,false,0);
   RowMenuBegin("");
   RowMenuItem(0,"Open Receipt",'I','I',0,"ReceiptConnectionOpenReceiptDsm");
   RowMenuItem(0,"Refund",'','',0,"ReceiptConnectionRefundDsm");
   RowMenuItem(0,"Redistribute",'','',0,"ReceiptConnectionRedistributeDsm");
+  RowMenuItem(0,"OK/UnOK Receipt",'','',0,"ReceiptConnectionOKReceiptDsm");
   EndRowMenu;
   EndMatrix;
-	EditField(-170,-30,-80,"Total",Normal,Total,true,0);
 
+	EditField(120,-30,70,"Transactions",ViewOnly,TransactionCnt,true,0);
+	EditField(270,-30,70,"Connected",ViewOnly,ConnectedCnt,true,0);
+	EditField(410,-30,70,"Overpaid",ViewOnly,OverpaidCnt,true,0);
+	EditField(580,-30,70,"Not Recognised",ViewOnly,NotRecognizedCnt,true,0);
+
+	EditField(-170,-30,-80,"Total",ViewOnly,Total,true,0);
   EndWindow;
   return;
 end;

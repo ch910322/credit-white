@@ -23,7 +23,7 @@ remote function Date GetPauseCredManNextDate(record CredManVc);
 remote updating procedure RecreateAgreementSchedule(record CredManVc);
 remote function Boolean ContractHasInvoiceCreated(record CredManVc);
 remote updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
-remote updating procedure GenerateAgreementSchedule(record CredManVc);
+remote updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
 remote function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
 remote updating procedure CreateManualExtraInvoice(record RcVc,var record IVVc);
 remote procedure CredLegalNrSerNrSClassOnOpenWindowRemote(string,string,Date,string,string,var array string);
@@ -1266,13 +1266,49 @@ begin
   Integer wn;
   record CredManVc CredManr;
   record VIVc VIr;
+  record RcVc RepSpec;
+  record CredManSchedVc CSr;
     
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
 
   if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
-    GenerateAgreementSchedule(CredManr);
+    CSr.CredManNr = CredManr.SerNr;
+    if (ReadFirstMain(CSr,1,true)) then begin
+      RepSpec.long1 = CredManr.SerNr;
+      OpenWindow("SchedYesNoWClass",0,0,"","",RepSpec);
+    end else begin
+      GenerateAgreementSchedule(CredManr,false);
+    end;
   end;
+
+  return;
+end;
+
+global
+updating procedure SchedYesNoWClassProceed()
+begin
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  Integer wn;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,RepSpec);
+  
+  CredManr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    GenerateAgreementSchedule(CredManr,true);
+  end;
+
+  CloseWindow(wn);
+  return;
+end;
+
+global
+procedure SchedYesNoWClassClose()
+begin
+  
+  CloseWindow(CurWindow);
 
   return;
 end;
