@@ -137,12 +137,12 @@ begin
     if (PCrw.IPNr>0) then begin
       IPr.SerNr = PCrw.IPNr;
       if (ReadFirstMain(IPr,1,true)) then begin
-        OpenWindow("IPDClass",1,wn,"","",IPr);      
+        OpenWindow("IPDClass",1,0,"","",IPr);      
       end;
     end else begin
       RecordNew(IPr);
       IPr.TransDate = PCrw.TransDate;
-      OpenWindow("IPDClass",1,wn,"","",IPr);      
+      OpenWindow("IPDClass",1,0,"","",IPr);      
     end;
   end;
 
