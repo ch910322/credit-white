@@ -127,7 +127,7 @@ begin
             testf = FilterReceiptInBankTrans(BTr,PCr.IVNr);
           end;
         end;
-        if (testf and PCr.ArtMode>0) then begin
+        if (testf) then begin
           if (BTr.TransNr>0) then begin
             IPr.SerNr = BTr.TransNr;
             if (ReadFirstMain(IPr,1,true)) then begin
@@ -150,11 +150,12 @@ begin
           PCrw.CurncyCode = BTr.CurncyCode;
           PCrw.BankTRNr = BTr.SerNr;
           PCrw.IPNr = BTr.TransNr;
+          PCrw.Status = IPr.OKFlag;
           MatRowPut(PCr,MatRowCnt(PCr),PCrw);
           tot = tot + PCrw.Amount;
-          if (BTr.TransNr>0) then begin
-            IPr.SerNr = BTr.TransNr;
-            if (ReadFirstMain(IPr,1,true)) then begin
+//          if (BTr.TransNr>0) then begin
+//            IPr.SerNr = BTr.TransNr;
+//            if (ReadFirstMain(IPr,1,true)) then begin
               rwcnt = MatRowCnt(IPr);
               for (i=0;i<rwcnt;i=i+1) begin
                 MatRowGet(IPr,i,IPrw);
@@ -168,10 +169,16 @@ begin
                 PCrw.CurncyCode = IPrw.RecCurncy;
                 PCrw.BankTRNr = BTr.SerNr;
                 PCrw.IPNr = BTr.TransNr;
+                if (IPrw.InvoiceNr>-1) then begin
+                  PCrw.IVPaidAmount = IPrw.RecVal;
+                  PCrw.IVOpenAmount = IPrw.InvOutstand;
+                  PCrw.IVOpenAmount2 = IPrw.InvOutstand-IPrw.RecVal;
+                end;
+
                 MatRowPut(PCr,MatRowCnt(PCr),PCrw);
               end;
-            end;
-          end;
+//            end;
+//          end;
         end;
       end;
     end;

@@ -150,6 +150,36 @@ begin
 end;
 
 global
+updating procedure ReceiptConnectionOKReceiptDsm()
+begin
+  Integer wn,rw;
+  record IPConVc PCr;
+  row IPConVc PCrw;
+  record IPVc IPr,oldIPr;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,PCr);
+  rw = WindowActiveRow(wn);
+  if (rw>-1) then begin
+    MatRowGet(PCr,rw,PCrw); 
+    if (PCrw.IPNr>0) then begin
+      IPr.SerNr = PCrw.IPNr;
+      if (ReadFirstMain(IPr,1,true)) then begin
+        RecordCopy(oldIPr,IPr);
+        if (IPr.OKFlag==1) then begin
+          IPr.OKFlag = 0;
+        end else begin
+          IPr.OKFlag = 1;
+        end;
+        RecordUpdate(oldIPr,IPr,true);
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+global
 updating procedure ReceiptConnectionRefundDsm()
 begin
   Integer wn,rw;
