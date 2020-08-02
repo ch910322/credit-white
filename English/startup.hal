@@ -6,6 +6,7 @@ begin
 /* modCredMan */  
   Register("B2B Loan Applications","B2B Loan Applications",B2BLoanApplicationVc,modCredMan);
   Register("Agreement Schedules","Agreement Schedules",CredManSchedVc,modCredMan);
+  Register("Properties","Properties",CMPropertyVc,modCredMan);
 
   Setting("Number Series - B2B Loan Applications",B2BLoanAppSerTClass,modCredMan);
   Setting("Credit Management Settings",CMApplicationSetTClass,modCredMan);
@@ -30,6 +31,8 @@ begin
   Setting("Agreement Classifications",CredManClassLClass,modCredMan);
   Setting("Prolong Sessions",ProlongSessionLClass,modCredMan);
   Setting("Legal Record Numbers",CredLegalInvNrTClass,modCredMan);
+  Setting("Property Types",CMPropertyTypeLClass,modCredMan);
+  Setting("Insurance Types",CMInsuranceTypeLClass,modCredMan);
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
 	Report("Application Overview",LoanApplicationListRClass,LoanApplicationListRn,0,modCredMan);

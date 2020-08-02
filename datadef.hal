@@ -1187,7 +1187,52 @@ begin
   RecordAddBegin(IPVc,"IPVc_FIN");
   ArrayField(CredHistNr,M4Long,0,0);
   EndRecordAdd;
-  
+
+  RecordBegin(CMPropertyVc,0,"");
+  RecordField(SerNr,M4Long,0,0);
+  RecordField(OfficialSerNr,M4Str,255,0);
+  RecordField(Addr0,M4Str,255,0);
+  RecordField(Addr1,M4Str,255,0);
+  RecordField(Addr2,M4Str,255,0);
+  RecordField(Addr3,M4Str,255,0);
+  RecordField(Addr4,M4Str,255,0);
+  RecordField(Type,M4Code,20,0);
+  RecordField(RepVal,M4Val,0,0);
+  RecordField(EvalVal,M4Val,0,0);
+  RecordField(InsuranceCompany,M4Code,20,CUVc);
+  RecordField(InsuranceName,M4Str,255,0);
+  RecordField(InsuranceType,M4Code,20,0);
+  RecordField(InsuredVal,M4Val,0,0);
+  RecordField(InsuredUntil,M4Date,0,0);
+  RecordField(Math2,M4TextField,0,0);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(OwnerCode,M4Code,20,CUVc);
+  ArrayField(OwnerName,M4Str,255,0);
+  ArrayField(SharesPrc,M4Val,0,0);
+  ArrayField(SharesVal,M4Val,0,0);
+  EndArray;
+  MainKeyBegin(SerNr,0);
+  KeySegment(SerNr);
+  KeyBegin(OfficialSerNr);
+  KeySegment(OfficialSerNr);
+  KeySegment(SerNr);
+  EndRecord;
+
+  RecordBegin(CMPropertyTypeVc,-,"");
+  RecordField(Code,M4Code,20,0);
+  RecordField(Comment,M4Str,250,0);
+  MainKeyBegin(Code,0);
+  KeySegment(Code);
+  EndRecord;
+
+  RecordBegin(CMInsuranceTypeVc,-,"");
+  RecordField(Code,M4Code,20,0);
+  RecordField(Comment,M4Str,250,0);
+  MainKeyBegin(Code,0);
+  KeySegment(Code);
+  EndRecord;
+
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Latvian", 0);
