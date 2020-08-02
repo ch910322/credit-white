@@ -172,6 +172,8 @@ begin
           IPr.OKFlag = 1;
         end;
         RecordUpdate(oldIPr,IPr,true);
+        FillBankTransactionsAndReceipts(PCr);
+        PutWindowRecord(wn,PCr);
       end;
     end;
   end;
@@ -467,5 +469,53 @@ begin
     end;
   end;
   PayModeBankAccCustSClassOnOpenWindow = false;
+  return;
+end;
+
+global
+function Boolean ReceiptConnectionWClassArtModeButtonAction(Integer wn,Integer value)
+begin
+  record IPConVc PCr;
+
+  GetWindowRecord(wn,PCr);
+  PCr.ArtMode = value;
+  FillBankTransactionsAndReceipts(PCr);
+  PutWindowRecord(wn,PCr);
+
+  ReceiptConnectionWClassArtModeButtonAction = true;
+  return;
+end;
+global
+function Boolean ReceiptConnectionWClassPaidStatButtonAction(Integer wn,Integer value)
+begin
+  record IPConVc PCr;
+
+  GetWindowRecord(wn,PCr);
+  PCr.PaidStat = value;
+  FillBankTransactionsAndReceipts(PCr);
+  PutWindowRecord(wn,PCr);
+
+  ReceiptConnectionWClassPaidStatButtonAction = true;
+  return;
+end;
+
+
+global
+function LongInt IPVcRecordUpdateClient(LongInt wn,var record IPVc IPr,record IPVc IP2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  record IPConVc PCr;
+  Integer pwn;
+
+  pwn = FindWindow("ReceiptConnectionWClass");
+  if (pwn>0) then begin
+    GetWindowRecord(pwn,PCr);
+    FillBankTransactionsAndReceipts(PCr);
+    PutWindowRecord(pwn,PCr);
+  end;
+
+  res = inner.IPVcRecordUpdateClient(wn,IPr,IP2r,stat,long4);
+
+  IPVcRecordUpdateClient = res;
   return;
 end;

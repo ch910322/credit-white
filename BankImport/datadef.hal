@@ -31,9 +31,9 @@ begin
   RecordField(Total,M4Qty,0,0);
   RecordField(PaidStat,M4Int,0,0);
   RecordField(TransactionCnt,M4Qty,0,0);
-  RecordField(OverpaidCnt,M4Qty,0,0);
-  RecordField(ConnectedCnt,M4Qty,0,0);
-  RecordField(NotRecognizedCnt,M4Qty,0,0);
+  RecordField(OverpaidCnt,M4Val,0,0);//this is not cnt, but amount
+  RecordField(ConnectedCnt,M4Val,0,0);//this is not cnt, but amount
+  RecordField(NotRecognizedCnt,M4Val,0,0);//this is not cnt, but amount
   
   ArrayBegin(Math,-,1);
   ArrayField(TransDate,M4Date,0,0);
