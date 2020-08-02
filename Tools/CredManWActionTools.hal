@@ -29,7 +29,7 @@ external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var 
 external inner procedure IPPastePayMode(var record IPVc);
 external inner procedure OPVc_PasteRecVal(var record OPVc,Integer);
 external updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
-external updating procedure GenerateAgreementSchedule(record CredManVc);
+external updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
 external inner function Boolean ExternalDocumentEnabled(string);
 external updating procedure PrintCredManDocument(string,string,record CredManVc,Integer,Boolean,string);
 external inner procedure GetCurUser(var record UserVc);
@@ -257,7 +257,7 @@ begin
     if (RecordUpdate(oldADr,ADr,true)==0) then begin
       //should move this out to a function
       fn = "Schedule" & CredManr.SerNr & ".pdf";
-      GenerateAgreementSchedule(CredManr);
+      GenerateAgreementSchedule(CredManr,true);
       langcode = GetDocumentLangCode(CredManr,2);
       if (ExternalDocumentEnabled("CredManScheduleForm")) then begin
         RepSpec.long1 = CredManr.InstalmentType;
@@ -775,7 +775,7 @@ begin
         end;
       case 2://schedule
         fn = "Schedule" & CredManr.SerNr & ".pdf";
-        GenerateAgreementSchedule(CredManr);
+        GenerateAgreementSchedule(CredManr,false);
         langcode = GetDocumentLangCode(CredManr,2);
         if (ExternalDocumentEnabled("CredManScheduleForm")) then begin
           RepSpec.long1 = CredManr.InstalmentType;

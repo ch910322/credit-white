@@ -1639,7 +1639,7 @@ end;
 
 
 global
-updating procedure GenerateAgreementSchedule(record CredManVc CredManr)
+updating procedure GenerateAgreementSchedule(record CredManVc CredManr,Boolean forcef)
 begin
   record CredManSetBlock CMb;
   record CredManPayPlanVc CredManPayPlanr;
@@ -1664,6 +1664,9 @@ begin
     CSr.CredManNr = CredManr.SerNr;
     CSr.CustCode = CredManr.CustCode;
     CSr.CustName = CredManr.Addr0;
+  end;
+  if (updf and forcef==false) then begin
+    goto lout;
   end;
   CSr.TransDate = CurrentDate;
   CSr.TransTime = CurrentTime;
@@ -1705,6 +1708,7 @@ begin
     RecordInsert(CSr,true);
   end;
 
+lout:;
   return;
 end;
 
