@@ -19,6 +19,7 @@ external inner procedure SumNoDownPay(record IVVc,var val,var val,var val,var va
 external function string 255 GetCredManNr(Longint);
 external procedure GetHiddenInvoiceValues(record IVVc,var val,var val);
 external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
+external updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -1095,6 +1096,7 @@ begin
           IVr.OKFlag = 1;
           RecordUpdate(oldIVr,IVr,true);
           LinkCredManAndInvoice(IVr,CredManr);
+          GenerateAgreementSchedule(CredManr,true);
         end;
         RecordCopy(firstIVr,IVr);
       end;
