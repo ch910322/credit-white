@@ -2,6 +2,7 @@
 external  procedure CredManSetDatesCust(var record CredManVc);
 external updating procedure RecreateAgreementSchedule(record CredManVc);
 external procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
+external updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
 
 global
 function LongInt CredHistVcRecordInIndex(record CredHistVc CredHistr,string indexname)
@@ -44,6 +45,7 @@ begin
             ADr.RecordNr = CredManr.SerNr;
             ADr.Type = 2;
             if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
+              GenerateAgreementSchedule(CredManr,true);
               threadasync.RecreateAgreementDocument(ADr,true);
             end;
           end;
