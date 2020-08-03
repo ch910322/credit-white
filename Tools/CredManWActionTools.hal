@@ -1260,3 +1260,18 @@ begin
 
   return;
 end;
+
+global
+updating procedure GetCredManPropertyRecord(record CredManVc CredManr,var record CredManPropertiesVc CMPr)
+begin
+  
+  CMPr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CMPr,1,true)==false) then begin
+    RecordNew(CMPr);
+    CMPr.CredManNr = CredManr.SerNr;
+    RecordInsert(CMPr,true);
+  end;
+
+
+  return;
+end;

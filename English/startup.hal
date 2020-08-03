@@ -428,5 +428,10 @@ begin
   SetText(3,"At Printout");
   EndSet;
 
+  SetBegin(2030);
+  SetText(0,"First");
+  SetText(1,"Second");
+  EndSet;
+
   return;
 end;

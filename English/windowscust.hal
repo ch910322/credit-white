@@ -2015,6 +2015,22 @@ begin
   EndWindow;
 end;
 
+window CMPropertySClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Propertys",CMPropertySClass,CGslist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMPropertyDClass);
+  UseView(CMPropertyVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
+  RlCol(100,100,"Official No.",OfficialSerNr,false);
+  RlCol(230,230,"Name",Addr0,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
 window CMPropertyDClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
@@ -2132,5 +2148,27 @@ begin
   vs=20; h=120; vs2=16; hm=-100;
   EditField(h,v=6,100,"Code",Normal,Code,false,);
   EditField(h,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  EndWindow;
+end;
+
+
+window CredManPropertiesDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Properties",CredManPropertiesDClass,CGview,-);
+  SetWRect(20,80,900,339);
+  UseView(CredManPropertiesVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  MatrixBegin(10,20,-40,-20,-,99);
+  MatCol(1,24,"Property",0,Property,false,CMPropertySClass);
+  MatCol(1,104,"Name",0,Addr0,false,0);
+  MatCol(1,-530,"ID",0,OfficialSerNr,false,0);
+  MatCol(1,-440,"Reported Value",0,RepVal,true,0);
+  MatCol(1,-350,"Evaluated Value",0,EvalVal,true,0);
+  MatCol(1,-260,"Pledge Type",0,PledgeType,false,SetSClass);
+  MatCol(1,-170,"Pledge Val",0,PledgeVal,true,0);
+  MatCol(1,-80,"Pledge Date",0,PledgeDate,false,PasteCurDate);
+  EndMatrix;
   EndWindow;
 end;

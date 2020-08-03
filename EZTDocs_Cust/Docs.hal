@@ -48,6 +48,7 @@ external inner function string 255 CredManCustEmail(record CUVc);
 external inner function val GetMonthlyFees(record CredManVc,Integer);
 external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,record CredManSetBlock,var record SMVc);
 external function string 255 GetCredManNr(Longint);
+external inner function string 255 StrReplace(string,string,string);
 
 procedure GetCredManCustContact(record CredManVc CredManr,var string contactid,var string contactname)
 begin
@@ -697,11 +698,14 @@ begin
   string 255 tstr,strnum;
   record SysFormatBlock SysFormatRec;
   record LangNrVc LangNrr;
-  
+  record CredManPropertiesVc CMPr;
+  row CredManPropertiesVc CMPrw;
+  record CMPropertyVc Propr;
+
   GetLangNr(CredManr.LangCode,LangNrr);      
   Ext_CommonDocumentFields(vVals);
   CredManHeader(vVals,CredManr);
-  
+/*
   BlockLoad(SysFormatRec);
   rwcnt = MatRowCnt(CredManr);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -731,6 +735,35 @@ begin
     vVals["ROW_" & strnum & "_F_BASPRIS"] = CredManrw.Sum;
     vVals["ROW_" & strnum & "_F_PRICEFACTOR"] = CredManrw.PriceFactor;
     vVals["ROW_" & strnum & "_F_FAKTURANUMMER"] = CredManrw.InvoicedOn;
+  end;
+*/
+
+  CMPr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CMPr,1,true)==false) then begin
+    rwcnt = MatRowCnt(CMPr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      Propr.SerNr = CMPrw.Property;
+      if (ReadFirstMain(Propr,1,true)) then begin
+        M4PadString(i,3,"0",true,strnum);
+        vVals["ROW_" & strnum & "_F_PROPNAME"] = CMPrw.Addr0;
+        vVals["ROW_" & strnum & "_F_PROPCOUNTRY"] = Propr.Addr1;
+        vVals["ROW_" & strnum & "_F_PROPCITY"] = Propr.Addr2;
+        vVals["ROW_" & strnum & "_F_PROPADDRESS"] = Propr.Addr3;
+        vVals["ROW_" & strnum & "_F_PROPZIP"] = Propr.Addr4;
+        vVals["ROW_" & strnum & "_F_PROPTYPE"] = Propr.Addr4;
+        vVals["ROW_" & strnum & "_F_PROPRVAL"] = Propr.Addr4;
+        vVals["ROW_" & strnum & "_F_PROPEVAL"] = Propr.Addr4;
+        vVals["ROW_" & strnum & "_F_PROPINSCOMPNAME"] = Propr.InsuranceName;
+        vVals["ROW_" & strnum & "_F_PROPINSUNTIL"] = Propr.InsuredUntil;
+        vVals["ROW_" & strnum & "_F_PROPINSVAL"] = Propr.InsuredVal;
+        tstr = "";
+        for (i=0;i<LineTextCnt2(Propr);i=i+1) begin
+          tstr = tstr & LineTextGet2(Propr,i);
+        end;
+        vVals["ROW_" & strnum & "_F_PROPCOMMENT"] = StrReplace(tstr,chr(13),"\\n");;
+
+      end;
+    end;
   end;
 
   return;   

@@ -812,6 +812,8 @@ begin
   EditField(h,v+=vs,100,"Classifications",Normal,Classifications,false,CredManClassSClass);
 
 //CUST-BEGIN
+  HalPushButton(h,v+=vs,h+120,v+20,"CredManDClassOpenProperties","Properties");
+
   EditField(h2,v=vm-20,-40,"Bank Code",Normal,BankCode,false,BankSClass);
   EditField(h2,v+=vs,-40,"Bank Name",Normal,BankName,false,0);
   EditField(h2,v+=vs,-40,"Bank Account",Normal,BankAccount,false,BankAccountSClass);

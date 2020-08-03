@@ -28,6 +28,7 @@ remote function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boo
 remote updating procedure CreateManualExtraInvoice(record RcVc,var record IVVc);
 remote procedure CredLegalNrSerNrSClassOnOpenWindowRemote(string,string,Date,string,string,var array string);
 remote procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
+remote updating procedure GetCredManPropertyRecord(record CredManVc,var record CredManPropertyVc);
 
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
@@ -1465,5 +1466,21 @@ begin
   CloseWindow(wn);
 
   CredLegalNrSerNrSClassOnOKWindow = false;
+  return;
+end;
+
+global
+updating procedure CredManDClassOpenProperties()
+begin
+  record CredManVc CredManr;
+  record CredManPropertiesVc CMPr;
+  Integer wn;
+
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_Normal) then begin
+    GetWindowRecord(wn,CredManr);
+    GetCredManPropertyRecord(CredManr,CMPr);
+    OpenWindow("CredManPropertiesDClass",0,0,"","",CMPr);
+  end;
   return;
 end;
