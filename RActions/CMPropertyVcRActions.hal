@@ -1,0 +1,43 @@
+//<halrule>server-only</halrule>
+
+
+global
+function LongInt CMPropertyVcRecordDefaults(var record CMPropertyVc Propr,record CMPropertyVc Prop2r,LongInt long3,LongInt long4)
+begin
+  LongInt res;
+  
+  res = 1;  
+
+  if (SingleUserMode) then begin
+    Propr.SerNr = NextSerNr("CMPropertyVc",CurrentDate,-1,false,"");
+  end;
+  
+  CMPropertyVcRecordDefaults = res; 
+  return;
+end;
+
+global
+function LongInt CMPropertyVcRecordDuplicate(var record CMPropertyVc Propr,record CMPropertyVc Prop2r,LongInt long3,LongInt long4)
+begin
+  LongInt res; 
+  res = 1;  
+
+  Propr.SerNr = -1;
+
+  CMPropertyVcRecordDuplicate = res; 
+  return;
+end;
+
+global
+updating function LongInt CMPropertyVcRecordCheck(var record CMPropertyVc Propr,record CMPropertyVc Prop2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+
+  res = 0;
+  if (Propr.SerNr<=0) then begin
+    Propr.SerNr = NextSerNr("CMPropertyVc",CurrentDate,-1,false,"");
+  end;
+
+  CMPropertyVcRecordCheck = res;
+  return;
+end;

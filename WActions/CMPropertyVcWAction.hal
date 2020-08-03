@@ -1,0 +1,101 @@
+
+function Boolean CMPropertyDClassInsuranceCompanyEFAfter(Integer wn,Integer rownr,Integer changed)
+begin
+  Boolean res;
+  record CUVc CUr;
+  record CMPropertyVc Propr;
+  
+  if (changed!=0) then begin
+    GetWindowRecord(wn,Propr);
+    CUr.Code = Propr.InsuranceCompany;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      Propr.InsuranceName = CUr.Name;
+      PutWindowRecord(wn,Propr);
+    end; 
+  end;
+
+  CMPropertyDClassInsuranceCompanyEFAfter = res;
+  return;
+end;
+
+function Boolean CMPropertyDClassOwnerCodeEFAfter(Integer wn,Integer rownr,Integer changed)
+begin
+  Boolean res;
+  record CUVc CUr;
+  record CMPropertyVc Propr;
+  row CMPropertyVc Proprw;
+  
+  if (changed!=0) then begin
+    GetWindowRecord(wn,Propr);
+    MatRowGet(Propr,rownr,Proprw); 
+    CUr.Code = Proprw.OwnerCode;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      Proprw.OwnerName = CUr.Name;
+      MatRowPut(Propr,rownr,Proprw);
+      PutWindowRecord(wn,Propr);
+    end; 
+  end;
+
+  CMPropertyDClassOwnerCodeEFAfter = res;
+  return;
+end;
+
+global
+function Boolean CMPropertyDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+
+  if (changed) then begin
+    switch (fieldname) begin
+      case "InsuranceCompany": 
+        res = CMPropertyDClassInsuranceCompanyEFAfter(wn,rownr,changed);
+      case "OwnerCode": 
+        res = CMPropertyDClassOwnerCodeEFAfter(wn,rownr,changed);
+    end;
+  end;
+
+  CMPropertyDClassAfterEditField = res;
+  return;
+end;
+
+function Boolean CredManPropertiesDClassPropertyEFAfter(Integer wn,Integer rownr,Integer changed)
+begin
+  Boolean res;
+  record CUVc CUr;
+  record CMPropertyVc Propr;
+  record CredManPropertiesVc CMPr;
+  row CredManPropertiesVc CMPrw;
+  
+  if (changed!=0) then begin
+    GetWindowRecord(wn,CMPr);
+    MatRowGet(CMPr,rownr,CMPrw); 
+    Propr.SerNr = CMPrw.Property;
+    if (ReadFirstMain(Propr,1,true)) then begin
+      CMPrw.Addr0 = Propr.Addr0;
+      CMPrw.RepVal = Propr.RepVal;
+      CMPrw.EvalVal = Propr.EvalVal;
+      CMPrw.OfficialSerNr = Propr.OfficialSerNr;
+      MatRowPut(CMPr,rownr,CMPrw);
+      PutWindowRecord(wn,CMPr);
+    end; 
+  end;
+
+  CredManPropertiesDClassPropertyEFAfter = res;
+  return;
+end;
+
+global
+function Boolean CredManPropertiesDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+
+  if (changed) then begin
+    switch (fieldname) begin
+      case "Property": 
+        res = CredManPropertiesDClassPropertyEFAfter(wn,rownr,changed);
+    end;
+  end;
+
+  CredManPropertiesDClassAfterEditField = res;
+  return;
+end;

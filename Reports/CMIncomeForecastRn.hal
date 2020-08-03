@@ -1,11 +1,15 @@
 external inner function Boolean SetInSet2(string,string);
+external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,record CredManSetBlock,var record SMVc);
+external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
+external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 
-procedure GetInvoiceValues(record IVVc IVr,var val bal1,var val principle,var val interest,var val fees,var val vat,var val total,var val fees,var val bal2)
+procedure GetInvoiceValuesFromMatrix(record SMVc SMr,record RcVc RepSpec,var val bal1,var val principle,var val interest,var val fees,var val vat,var val total,var val fees,var val bal2,var Date lastduedate)
 begin
   row IVVc IVrw;
   Integer i,rwcnt;
   val calcbal;
   record CredHistVc CredHistr;
+  row SMVc SMrw;
   
   bal1 = 0;
   principle = 0;
@@ -16,39 +20,26 @@ begin
   fees = 0;
   bal2 = 0;
 
-  rwcnt = MatRowCnt(IVr);
+  rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
-    MatRowGet(IVr,i,IVrw);
-    switch (IVrw.ChargeType) begin
-      case 1: 
-        principle = IVrw.Sum; 
-        CredHistr.SerNr = IVrw.CredHistNr;
-        ReadFirstMain(CredHistr,1,true);
-        if (blank(calcbal) or calcbal>CredHistr.Balance) then begin
-          calcbal = CredHistr.Balance;
-        end;
-      case 2: 
-        interest = interest + IVrw.Sum;
-      case 3: 
-        principle = principle + IVrw.Sum;
-        CredHistr.SerNr = IVrw.CredHistNr;
-        ReadFirstMain(CredHistr,1,true);
-        if (blank(calcbal) or calcbal>CredHistr.Balance) then begin
-          calcbal = CredHistr.Balance;
-        end;
-      case 4: 
-        fees = fees + IVrw.Sum;
-      case 9: 
-        fees = fees + IVrw.Sum;
-      case 15: 
-        fees = fees + IVrw.Sum;
+    MatRowGet(SMr,i,SMrw);
+    if (SMrw.DueDate>=RepSpec.sStartDate and SMrw.DueDate<=RepSpec.sEndDate) then begin 
+      if (bal1==0) then begin
+        bal1 = SMrw.CurCredVal;
+      end;
+      principle = SMrw.DebVal; 
+      interest = interest + SMrw.CredVal;
+      fees = fees + SMrw.DebVal2;
+      bal2 = SMrw.CurCredVal;
+      vat = vat + SMrw.FrRate;
+      total = total + SMrw.CurDebVal;
+      lastduedate = SMrw.DueDate;
+    end else begin
+      if (SMrw.DueDate>RepSpec.sEndDate) then begin
+        i = rwcnt;
+      end;
     end;
   end;
-
-  vat = IVr.Sum3;
-  total = IVr.Sum4;
-  bal1 = calcbal + principle;
-  bal2 = calcbal;
 
   return;
 end;
@@ -64,6 +55,11 @@ begin
   val rate;
   record CUVc CUr;
   val totprinc,totint,totfees,totvat,tot;
+  record CredManSetBlock CredManSetb;
+  record CredManPayPlanVc CredManPayPlanr;
+  row CredManPayPlanVc CredManPayPlanrw;
+  record SMVc SMr;
+  Date lastduedate;
   
   StartReportJob(USetStr(200256));
 
@@ -106,74 +102,77 @@ begin
   StartFormat(1);
   Gray_Divider(0,1000);
   EndFormat;
-  
-  TrHs = true;
-  IVr.PayDate = RepSpec.sStartDate;
-  while (LoopKey("PayDate",IVr,2,TrHs)) begin
-    if (IVr.PayDate>RepSpec.sEndDate) then begin
-      TrHs = false;
-    end else begin
-      testf = true;
-      if (nonblank(RepSpec.f1) and RepSpec.f1!=IVr.CustCode) then begin
-        testf = false;
-      end;
-      CredManr.SerNr = IVr.CustCredManNr;
-      if (ReadFirstMain(CredManr,1,true)) then begin end;
-      if (nonblank(RepSpec.f1) and RepSpec.f1!=IVr.CustCode) then begin
-        testf = false;
-      end;
-      if (nonblank(RepSpec.f2) and RepSpec.f2!=CredManr.Type) then begin
-        testf = false;
-      end;
-      if (nonblank(RepSpec.f3) and RepSpec.f3!=CredManr.OrderClass) then begin
-        testf = false;
-      end;
-      if (nonblank(RepSpec.f4) and SetInSet2(RepSpec.f3,CredManr.Classifications)==false) then begin
-        testf = false;
-      end;
-      if (nonblank(RepSpec.f5) and RepSpec.f5!=CredManr.SalesMan) then begin
-        testf = false;
-      end;
-      if (IVr.OKFlag==0) then begin
-        testf = false;
-      end;
 
-      if (testf) then begin
-        StartFormat(15);
-        rate = CredManr.IntRate;
-        if (CredManr.AnnualRate==0) then begin
-          rate = rate*12;
-        end;
-        CUr.Code = CredManr.CustCode;
-        ReadFirstMain(CUr,1,true);
-        OutString(0,"DblCredManVc",CredManr.SerNr,false);
-        OutString(2,"DblCredManTypeVc",CredManr.Type,false);
-        OutString(3,"DblCUVc",CredManr.CustCode,false);
-        OutString(4,0,CUr.RegNr1,false);
-        OutString(5,0,rate,false);
-        OutString(6,0,CredManr.startDate,false);
-        OutString(7,0,CredManr.endDate,false);
-        OutString(8,0,CredManr.InvSum4,true);
-        GetInvoiceValues(IVr,bal1,principle,interest,fees,vat,total,fees,bal2);
-        if (blank(bal2)) then begin
-          bal1 = CredManr.InvSum4;
-          bal2 = CredManr.InvSum4;
-        end;
-        OutString(c10,0,bal1,true);
-        OutString(c11,0,principle,true);
-        OutString(c12,0,interest,true);
-        OutString(c13,0,fees,true);
-        OutString(c14,0,vat,true);
-        OutString(c15,0,total,true);
-        OutString(c16,0,IVr.PayDate,false);
-        OutString(c17,0,bal2,true);
-        totprinc = totprinc + principle;
-        totint = totint + interest;
-        totfees = totfees + fees;
-        totvat = totvat + vat;
-        tot = tot + total;
-        EndFormat;
+  BlockLoad(CredManSetb);
+
+  TrHs = true;
+  while (LoopMain(CredManr,1,true)) begin
+    testf = true;
+    if (nonblank(RepSpec.f1) and RepSpec.f1!=CredManr.CustCode) then begin
+      testf = false;
+    end;
+    if (nonblank(RepSpec.f2) and RepSpec.f2!=CredManr.Type) then begin
+      testf = false;
+    end;
+    if (nonblank(RepSpec.f3) and RepSpec.f3!=CredManr.OrderClass) then begin
+      testf = false;
+    end;
+    if (nonblank(RepSpec.f4) and SetInSet2(RepSpec.f3,CredManr.Classifications)==false) then begin
+      testf = false;
+    end;
+    if (nonblank(RepSpec.f5) and RepSpec.f5!=CredManr.SalesMan) then begin
+      testf = false;
+    end;
+    if (CredManr.OKFlag==0) then begin
+      testf = false;
+    end;
+    if (CredManr.startDate>RepSpec.sEndDate or CredManr.endDate<RepSpec.sStartDate) then begin
+      testf = false;
+    end;
+    if (testf) then begin
+      StartFormat(15);
+      rate = CredManr.IntRate;
+      if (CredManr.AnnualRate==0) then begin
+        rate = rate*12;
       end;
+      RecordClear(SMr);
+      RecordClear(CredManPayPlanr);
+      if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
+        BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+        BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+      end;
+      CUr.Code = CredManr.CustCode;
+      ReadFirstMain(CUr,1,true);
+      OutString(0,"DblCredManVc",CredManr.SerNr,false);
+      OutString(2,"DblCredManTypeVc",CredManr.Type,false);
+      OutString(3,"DblCUVc",CredManr.CustCode,false);
+      OutString(4,0,CUr.RegNr1,false);
+      OutString(5,0,rate,false);
+      OutString(6,0,CredManr.startDate,false);
+      OutString(7,0,CredManr.endDate,false);
+      OutString(8,0,CredManr.InvSum4,true);
+      /*
+      GetInvoiceValues(IVr,bal1,principle,interest,fees,vat,total,fees,bal2);
+      if (blank(bal2)) then begin
+        bal1 = CredManr.InvSum4;
+        bal2 = CredManr.InvSum4;
+      end;*/
+      GetInvoiceValuesFromMatrix(SMr,RepSpec,bal1,principle,interest,fees,vat,total,fees,bal2,lastduedate);
+
+      OutString(c10,0,bal1,true);
+      OutString(c11,0,principle,true);
+      OutString(c12,0,interest,true);
+      OutString(c13,0,fees,true);
+      OutString(c14,0,vat,true);
+      OutString(c15,0,total,true);
+      OutString(c16,0,lastduedate,false);
+      OutString(c17,0,bal2,true);
+      totprinc = totprinc + principle;
+      totint = totint + interest;
+      totfees = totfees + fees;
+      totvat = totvat + vat;
+      tot = tot + total;
+      EndFormat;
     end;
   end;
 

@@ -1330,7 +1330,6 @@ begin
   UseView(AgreementDocVc);
   vs=20; h=120; vs2=16; hm=-100;
   EditField(h,v=6,90,"Number",Normal,SerNr,false,0);
-  CheckBox(h+280,v,0,"Reminder Sent",SentReminder);
   EditField(h,v+=vs,90,"Agreement",Normal,RecordNr,false,0);
   EditField(h,v+=vs,90,"Date",ViewOnly,TransDate,false,0);
   EditField(h2=300,v,90,"Time",ViewOnly,TransTime,false,0);
@@ -1343,8 +1342,11 @@ begin
   CheckBox(h,v+=vs,0,"Signed By Us",SignedByUs);
   EditField(h+180,v,90,"Date",ViewOnly,SignedByUsDate,false,0);
   EditField(h+280,v,90,"",ViewOnly,SignedByUsTime,false,0);
+  CheckBox(h,v+=vs,0,"Reminder Sent",SentReminder);
 
-  HalPushButton(-300,7,-200,27,"AgreementDocDClassSign","Sign");
+  HalPushButton(-300,7,-230,27,"AgreementDocDClassSign","Sign");
+  HalPushButton(-220,7,-150,27,"AgreementDocDClassRegen","Regerate");
+  HalPushButton(-140,7,-10,27,"AgreementDocDClassRegen2","Regenerate and resign");
 
   MatrixBegin(10,v+=40,-30,220,-,10);
   MatCol(1,25,"Code",0,CustCode,false,B2BLoanApp_CUSClass);
@@ -1977,5 +1979,196 @@ begin
   SetWRect(64,80,400,298);
   DataList(0,0,-1,-1,"DLPasteCredSerNrAccount");
   DataListColumn(1,6,-1,AdjLeft,"DLSerNr","Nr",M4Str);
+  EndWindow;
+end;
+
+window SchedYesNoWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v; 
+
+  WindowBegin("Generate Schedule",SchedYesNoWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,300,220);
+  AutoSizeWindow(false);  
+  StaticText(50,26,"Already registered. Overwrite?",false);
+  HalPushButton(-260,-30,-160,-10,"SchedYesNoWClassProceed","Yes");
+  HalPushButton(-120,-30,-20,-10,"SchedYesNoWClassClose","No");
+  EndWindow;
+
+  return;
+end;
+
+window CMPropertyLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Propertys",CMPropertyLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMPropertyDClass);
+  UseView(CMPropertyVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
+  RlCol(100,100,"Official No.",OfficialSerNr,false);
+  RlCol(230,230,"Name",Addr0,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMPropertySClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Propertys",CMPropertySClass,CGslist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMPropertyDClass);
+  UseView(CMPropertyVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
+  RlCol(100,100,"Official No.",OfficialSerNr,false);
+  RlCol(230,230,"Name",Addr0,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMPropertyDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm,h2;
+  WindowBegin("Property",CMPropertyDClass,CGview,-);
+  SetWRect(20,80,600,339);
+  Sizeable(-1,-1,0,0);
+  UseView(CMPropertyVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,100,"Ser. No.",Normal,SerNr,false,);
+  EditField(h2=350,v,150,"Official No.",Normal,OfficialSerNr,false,0);
+  EditField(h,v+=vs,150,"Name",Normal,Addr0,false,0);
+  EditField(h,v+=vs,150,"Country",Normal,Addr1,false,CountrySClass);
+  EditField(h,v+=vs,150,"City",Normal,Addr2,false,0);
+  EditField(h,v+=vs,150,"Address",Normal,Addr3,false,0);
+  EditField(h,v+=vs,150,"ZIP",Normal,Addr4,false,0);
+  EditField(h,v+=vs,100,"Type",Normal,Type,false,CMPropertyTypeSClass);
+  EditField(h,v+=vs,100,"Reported Value",Normal,RepVal,false,0);
+  EditField(h,v+=vs,100,"Evaluated Value",Normal,EvalVal,false,0);
+  EditField(h,v+=vs,100,"Insurance Company",Normal,InsuranceCompany,false,CUSClass);
+  EditField(h2,v,-40,"Name",Normal,InsuranceName,false,0);
+  EditField(h,v+=vs,100,"Insurance Type",Normal,InsuranceType,false,CMInsuranceTypeSClass);
+  EditField(h,v+=vs,100,"Insured Value",Normal,InsuredVal,false,0);
+  EditField(h,v+=vs,100,"Insured Until",Normal,InsuredUntil,false,PasteCurDate);
+  MatrixBegin(10,v+=vs+40,-40,-20,-,99);
+  MatCol(1,24,"Contact",0,OwnerCode,false,CUSClass);
+  MatCol(1,104,"Name",0,OwnerName,false,0);
+  MatCol(1,-154,"Shares %",0,SharesPrc,false,0);
+  MatCol(1,-84,"Shares Value",0,SharesVal,false,0);
+  EndMatrix;
+  EndWindow;
+end;
+
+
+window CMPropertyTypeLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Classifications",CMPropertyTypeLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMPropertyTypeDClass);
+  UseView(CMPropertyTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMPropertyTypeSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Paste Agreement Classification",CMPropertyTypeSClass,CGslist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMPropertyTypeDClass);
+  UseView(CMPropertyTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMPropertyTypeDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Agreement Classification",CMPropertyTypeDClass,CGview,-);
+  SetWRect(20,80,400,239);
+  UseView(CMPropertyTypeVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,100,"Code",Normal,Code,false,);
+  EditField(h,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  EndWindow;
+end;
+
+window CMInsuranceTypeLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Classifications",CMInsuranceTypeLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMInsuranceTypeDClass);
+  UseView(CMInsuranceTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMInsuranceTypeSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Paste Agreement Classification",CMInsuranceTypeSClass,CGslist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMInsuranceTypeDClass);
+  UseView(CMInsuranceTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMInsuranceTypeDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Agreement Classification",CMInsuranceTypeDClass,CGview,-);
+  SetWRect(20,80,400,239);
+  UseView(CMInsuranceTypeVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,100,"Code",Normal,Code,false,);
+  EditField(h,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  EndWindow;
+end;
+
+
+window CredManPropertiesDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Properties",CredManPropertiesDClass,CGview,-);
+  SetWRect(20,80,900,339);
+  UseView(CredManPropertiesVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  MatrixBegin(10,20,-40,-20,-,99);
+  MatCol(1,24,"Property",0,Property,false,CMPropertySClass);
+  MatCol(1,104,"Name",0,Addr0,false,0);
+  MatCol(1,-530,"ID",0,OfficialSerNr,false,0);
+  MatCol(1,-440,"Reported Value",0,RepVal,true,0);
+  MatCol(1,-350,"Evaluated Value",0,EvalVal,true,0);
+  MatCol(1,-260,"Pledge Type",0,PledgeType,false,SetSClass);
+  MatCol(1,-170,"Pledge Val",0,PledgeVal,true,0);
+  MatCol(1,-80,"Pledge Date",0,PledgeDate,false,PasteCurDate);
+  EndMatrix;
   EndWindow;
 end;

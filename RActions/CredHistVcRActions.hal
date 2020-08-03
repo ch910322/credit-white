@@ -1,6 +1,8 @@
 //<halrule>server-only</halrule>
 external  procedure CredManSetDatesCust(var record CredManVc);
 external updating procedure RecreateAgreementSchedule(record CredManVc);
+external procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
+external updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
 
 global
 function LongInt CredHistVcRecordInIndex(record CredHistVc CredHistr,string indexname)
@@ -22,6 +24,7 @@ updating procedure FinishProlongSession(Longint sernr)
 begin
   record ProlongSessionVc PSr,oldPSr;
   record CredManVc CredManr,oldCredManr;
+  record AgreementDocVc ADr;
   
   PSr.CredManNr = sernr;
   PSr.PaidFlag = 0;
@@ -37,7 +40,14 @@ begin
         CredManSetDatesCust(CredManr);
         if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
           if (PSr.RecalcSchedule == 1) then begin
-            RecreateAgreementSchedule(CredManr);
+            //RecreateAgreementSchedule(CredManr);
+            ADr.RecordType = 0;
+            ADr.RecordNr = CredManr.SerNr;
+            ADr.Type = 2;
+            if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
+              GenerateAgreementSchedule(CredManr,true);
+              threadasync.RecreateAgreementDocument(ADr,true);
+            end;
           end;
         end;
       end;

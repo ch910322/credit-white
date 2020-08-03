@@ -89,6 +89,9 @@ begin
   Integer i,rwcnt;
   record IVVc IVr;
   val tot;
+  Integer cnt;
+  val prepval,foundval,noval;
+  Boolean hasivf,prepf,exactf;
   
   //should be a remote call to server
 
@@ -127,7 +130,7 @@ begin
             testf = FilterReceiptInBankTrans(BTr,PCr.IVNr);
           end;
         end;
-        if (testf and PCr.ArtMode>0) then begin
+        if (testf) then begin
           if (BTr.TransNr>0) then begin
             IPr.SerNr = BTr.TransNr;
             if (ReadFirstMain(IPr,1,true)) then begin
@@ -136,6 +139,37 @@ begin
               end;
               if (PCr.ArtMode==2 and IPr.OKFlag!=0) then begin
                 testf = false;
+              end;
+              if (testf) then begin
+                if (PCr.PaidStat>0) then begin
+                  prepf = false;
+                  exactf = true;
+                  hasivf = false;
+                  rwcnt = MatRowCnt(IPr);
+                  for (i=0;i<rwcnt;i=i+1) begin
+                    MatRowGet(IPr,i,IPrw);
+                    if (IPrw.CUPNr>0) then begin
+                      prepf = true;
+                    end else begin
+                      if (IPrw.RecVal!=IPrw.InvOutstand) then begin
+                        exactf = false;
+                      end;
+                      hasivf = true;
+                    end;
+                  end;
+                  if (PCr.PaidStat==3 and prepf==false) then begin
+                    testf = false;
+                  end;
+                  if (hasivf==false and (PCr.PaidStat==1 or PCr.PaidStat==2)) then begin
+                    testf = false;
+                  end;
+                  if (PCr.PaidStat==1 and exactf==true) then begin
+                    testf = false;
+                  end;
+                  if (PCr.PaidStat==2 and exactf==false) then begin
+                    testf = false;
+                  end;
+                end;
               end;
             end;
           end;
@@ -150,11 +184,14 @@ begin
           PCrw.CurncyCode = BTr.CurncyCode;
           PCrw.BankTRNr = BTr.SerNr;
           PCrw.IPNr = BTr.TransNr;
+          PCrw.Status = IPr.OKFlag;
+          cnt = cnt + 1;
           MatRowPut(PCr,MatRowCnt(PCr),PCrw);
           tot = tot + PCrw.Amount;
-          if (BTr.TransNr>0) then begin
-            IPr.SerNr = BTr.TransNr;
-            if (ReadFirstMain(IPr,1,true)) then begin
+//          if (BTr.TransNr>0) then begin
+//            IPr.SerNr = BTr.TransNr;
+//            if (ReadFirstMain(IPr,1,true)) then begin
+            if (BTr.TransNr>0) then begin
               rwcnt = MatRowCnt(IPr);
               for (i=0;i<rwcnt;i=i+1) begin
                 MatRowGet(IPr,i,IPrw);
@@ -168,16 +205,32 @@ begin
                 PCrw.CurncyCode = IPrw.RecCurncy;
                 PCrw.BankTRNr = BTr.SerNr;
                 PCrw.IPNr = BTr.TransNr;
+                if (IPrw.InvoiceNr>-1) then begin
+                  PCrw.IVPaidAmount = IPrw.RecVal;
+                  PCrw.IVOpenAmount = IPrw.InvOutstand;
+                  PCrw.IVOpenAmount2 = IPrw.InvOutstand-IPrw.RecVal;
+                  foundval = foundval + IPrw.RecVal;
+                end else begin
+                  prepval = prepval + IPrw.RecVal;
+                end;
+
                 MatRowPut(PCr,MatRowCnt(PCr),PCrw);
               end;
+            end else begin
+              noval = noval + BTr.Sum;
             end;
-          end;
+//            end;
+//          end;
         end;
       end;
     end;
   end;
 
   PCr.Total = tot;
+  PCr.TransactionCnt = cnt;
+  PCr.OverpaidCnt = prepval;
+  PCr.ConnectedCnt = foundval;
+  PCr.NotRecognizedCnt = noval;
 
   return;
 end;
