@@ -27,6 +27,8 @@ remote updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
 remote function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
 remote updating procedure CreateManualExtraInvoice(record RcVc,var record IVVc);
 remote procedure CredLegalNrSerNrSClassOnOpenWindowRemote(string,string,Date,string,string,var array string);
+remote procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
+
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -1070,6 +1072,41 @@ begin
   return;
 end;
 
+global
+procedure AgreementDocDClassRegen()
+begin 
+  Integer wn;
+  record AgreementDocVc ADr;
+  record RcVc RepSpec;
+
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_Normal) then begin
+    GetWindowRecord(wn,ADr);
+    RecreateAgreementDocument(ADr,false);
+    CloseWindow(wn);
+    OpenWindow("AgreementDocDClass",1,0,"","",ADr);
+  end;
+
+  return;
+end;
+
+global
+procedure AgreementDocDClassRegen2()
+begin 
+  Integer wn;
+  record AgreementDocVc ADr;
+  record RcVc RepSpec;
+
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_Normal) then begin
+    GetWindowRecord(wn,ADr);
+    RecreateAgreementDocument(ADr,true);
+    CloseWindow(wn);
+    OpenWindow("AgreementDocDClass",1,0,"","",ADr);
+  end;
+
+  return;
+end;
 
 global
 procedure DocumentSigningClientDone(string user,record AgreementDocVc ADr)

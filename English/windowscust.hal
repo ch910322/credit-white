@@ -1330,7 +1330,6 @@ begin
   UseView(AgreementDocVc);
   vs=20; h=120; vs2=16; hm=-100;
   EditField(h,v=6,90,"Number",Normal,SerNr,false,0);
-  CheckBox(h+280,v,0,"Reminder Sent",SentReminder);
   EditField(h,v+=vs,90,"Agreement",Normal,RecordNr,false,0);
   EditField(h,v+=vs,90,"Date",ViewOnly,TransDate,false,0);
   EditField(h2=300,v,90,"Time",ViewOnly,TransTime,false,0);
@@ -1343,8 +1342,11 @@ begin
   CheckBox(h,v+=vs,0,"Signed By Us",SignedByUs);
   EditField(h+180,v,90,"Date",ViewOnly,SignedByUsDate,false,0);
   EditField(h+280,v,90,"",ViewOnly,SignedByUsTime,false,0);
+  CheckBox(h,v+=vs,0,"Reminder Sent",SentReminder);
 
-  HalPushButton(-300,7,-200,27,"AgreementDocDClassSign","Sign");
+  HalPushButton(-300,7,-230,27,"AgreementDocDClassSign","Sign");
+  HalPushButton(-220,7,-150,27,"AgreementDocDClassRegen","Regerate");
+  HalPushButton(-140,7,-10,27,"AgreementDocDClassRegen2","Regenerate and resign");
 
   MatrixBegin(10,v+=40,-30,220,-,10);
   MatCol(1,25,"Code",0,CustCode,false,B2BLoanApp_CUSClass);
