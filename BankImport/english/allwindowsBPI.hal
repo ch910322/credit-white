@@ -113,6 +113,7 @@ begin
   RowMenuItem(0,"Refund",'','',0,"ReceiptConnectionRefundDsm");
   RowMenuItem(0,"Redistribute",'','',0,"ReceiptConnectionRedistributeDsm");
   RowMenuItem(0,"OK/UnOK Receipt",'','',0,"ReceiptConnectionOKReceiptDsm");
+  RowMenuItem(0,"Periodic Customer Status",'','',0,"ReceiptConnectionCUPerDsm");
   EndRowMenu;
   EndMatrix;
 
