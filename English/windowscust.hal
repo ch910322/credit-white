@@ -428,7 +428,7 @@ begin
   h = 150; h2 = 250; v=450;
   EditFieldTL(h,v=6,120,"Invoice Date",M4Date,Normal,0,d1,false,PasteCurDate);
   EditFieldTL(h,v+=vs,120,"Item",M4Code,Normal,20,f1,false,INSClass);
-  EditFieldTL(h,v+=vs,120,"Value",M4Qty,Normal,0,vals0,false,0);
+  EditFieldTL(h,v+=vs,120,"Value",M4Val,Normal,0,vals0,false,0);
   HalPushButton(h,v+=vs,h+120,v+20,"ManualExtraFeeWClassCreate","Create");
   EndWindow;
 
