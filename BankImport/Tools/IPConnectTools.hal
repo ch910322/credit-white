@@ -76,6 +76,26 @@ begin
   return;
 end;
 
+function Boolean CheckIfCustomerFound(Longint sernr)
+begin
+  Boolean res;
+  record BankTRVc BTr;
+  record CUVc CUr;
+  
+  res = true;
+  BTr.FileName = "IPVc";
+  BTr.TransNr = sernr;
+  if (ReadFirstKey("FileName",BTr,2,true)) then begin
+    FindCustomer(BTr,CUr);
+    if (blank(CUr.Code)) then begin
+      res = false;
+    end;
+  end;
+
+  CheckIfCustomerFound = res;
+  return;
+end;
+
 global
 procedure FillBankTransactionsAndReceipts(var record IPConVc PCr)
 begin
@@ -196,7 +216,7 @@ begin
           MatRowPut(PCr,MatRowCnt(PCr),PCrw);
           tot = tot + PCrw.Amount;
           rwcnt = MatRowCnt(IPr);
-          foundf = false;
+          foundf = CheckIfCustomerFound(IPr.SerNr);
           for (i=0;i<rwcnt;i=i+1) begin
             MatRowGet(IPr,i,IPrw);
             ClearRow(PCr,PCrw,2);
@@ -214,7 +234,6 @@ begin
               PCrw.IVOpenAmount = IPrw.InvOutstand;
               PCrw.IVOpenAmount2 = IPrw.InvOutstand-IPrw.RecVal;
               foundval = foundval + IPrw.RecVal;
-              foundf = true;
             end else begin
               if (foundf) then begin              
                 prepval = prepval + IPrw.RecVal;
