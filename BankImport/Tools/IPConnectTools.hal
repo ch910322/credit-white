@@ -180,7 +180,7 @@ begin
           PCrw.CustCodeRow = CUr.Code;
           PCrw.CustName = CUr.Name;
           PCrw.CommentRow = BTr.PayReference;
-          PCrw.Amount = BTr.Sum;
+          PCrw.Amount = IPr.CurPayVal;
           PCrw.CurncyCode = BTr.CurncyCode;
           PCrw.BankTRNr = BTr.SerNr;
           PCrw.IPNr = BTr.TransNr;
