@@ -1,0 +1,10 @@
+event startup
+begin
+  
+  SetLangMode(LangLatvian,"LAT",2);
+
+  SString(200080,"Līguma Nr.: ");
+  SString(200081,"Periods: ");
+
+  return;
+end;
