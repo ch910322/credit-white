@@ -198,7 +198,7 @@ begin
       IPr.SerNr = PCrw.IPNr;
       if (ReadFirstMain(IPr,1,true)) then begin
         CreateRefundReceipt(IPr,nIPr);
-        OpenWindow("IPDClass",1,wn,"","",nIPr);
+        OpenWindow("IPDClass",0,0,"","",nIPr);
         FillBankTransactionsAndReceipts(PCr);
         PutWindowRecord(wn,PCr);
       end;
