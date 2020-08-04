@@ -1,0 +1,10 @@
+event startup
+begin
+  
+  SetLangMode(LangLithuanian,"LIT",2);
+
+  SString(200080,"Sutarties Nr.: ");
+  SString(200081,"Periodas: ");
+
+  return;
+end;
