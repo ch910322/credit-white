@@ -487,6 +487,7 @@ begin
   string 255 name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4;
   record CUVc CUr;
   string 255 tstr;
+  val calcfees,fixfees;
 
   Ext_CommonDocumentFields(vVals);
 
@@ -553,6 +554,11 @@ begin
   end else begin
     vVals["F_ANNUALRATE"] = Round(CredManr.IntRate*12,SetRoundModeD(2)) & " %";
   end;
+
+  calcfees = GetMonthlyFees(CredManr,0);
+  fixfees =  GetMonthlyFees(CredManr,1);
+  vVals["F_CALCFEES"] = calcfees & " %";
+  vVals["F_FIXFEES"] = fixfees;
 
   return;
 end;
