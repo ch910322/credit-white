@@ -237,13 +237,24 @@ procedure AddLateFees(record CredManVc CredManr,record CredManSetBlock CMb,var r
 begin
   val laterate;
   record CMInvoicingBlock CIb;
+  Boolean addf;
+  record CredManTypeVc CMTr;
   
   if (lateamount>0) then begin
-    SetupInvoiceRowAndAdd(IVr,CMb.LateFeeItem,"",1,0,0,kEventTypeIssueLateFees,-1);
-    SetupInvoiceRowAndAdd(IVr,CMb.LateRateItem,"",1,lateamount,0,kEventTypeIssueLateFees,-1);
-    BlockLoad(CIb);
-    if (CIb.AddOverdueDetails==1) then begin
-      AddOverdueComments(IVr,lateformula);
+    addf = true;
+    CMTr.Code = CredManr.Type;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      if (CMTr.MinOverdueFee>0 and lateamount<CMTr.MinOverdueFee) then begin
+        addf = false;
+      end;
+    end;
+    if (addf) then begin
+      SetupInvoiceRowAndAdd(IVr,CMb.LateFeeItem,"",1,0,0,kEventTypeIssueLateFees,-1);
+      SetupInvoiceRowAndAdd(IVr,CMb.LateRateItem,"",1,lateamount,0,kEventTypeIssueLateFees,-1);
+      BlockLoad(CIb);
+      if (CIb.AddOverdueDetails==1) then begin
+        AddOverdueComments(IVr,lateformula);
+      end;
     end;
   end;
 
