@@ -7,6 +7,7 @@ external inner procedure PrintCurrencyCode(string,string);
 external inner procedure ValToText(val,Integer,string,string,var string);
 external inner function string 255 CredManOwnBankAccount(Longint);
 external inner function roundmode SetRoundModeD(integer);
+external inner function val GetMonthlyFees(record CredManVc,Integer);
 
 global
 procedure PrintDocumentSigner()
@@ -113,6 +114,7 @@ BEGIN
   record UserVc Userr;
   string 255 name,phone,email,id,addr0,addr1,addr2,addr3,addr4,mobile;
   Integer surety;
+  val calcfees,fixfees;
     
   FDr.repname = RepSpec.repname;
   FDr.shortname = RepSpec.shortname;
@@ -214,6 +216,10 @@ LBREAK:;
         end else begin
           OUTFORMFIELD("F_ANNUALRATE",Round(CredManr.IntRate*12,SetRoundModeD(2)) & " %");
         end;
+        calcfees = GetMonthlyFees(CredManr,0);
+        fixfees =  GetMonthlyFees(CredManr,1);
+        OUTFORMFIELD("F_CALCFEES",calcfees & " %");
+        OUTFORMFIELD("F_FIXFEES",fixfees);
 
         CloseForm;        
       end else begin
