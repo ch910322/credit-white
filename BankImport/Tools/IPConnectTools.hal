@@ -37,40 +37,100 @@ LFilterReceiptInBankTrans:;
   return;
 end;
 
-procedure FindCustomer(record BankTRVc BTr,record CUVc CUr)
+function string 255 ConvertNameToSet(string name)
 begin
-  Boolean foundf;
+  integer i;
+  string 255 res,tstr;
+  Longint pos;
+  array string 255 tarr;
+  
+  For(i=0;i<len(name);i=i+1) begin
+    if(mid(name,i,1)==" ")then begin
+      res = res & ",";
+    end else begin
+      res = res & uppercase(mid(name,i,1));
+    end;
+  end; 
 
-  if (blank(BTr.PayCustCode)) then begin
-    if (nonblank(BTr.PayRegNr1)) then begin
-      CUr.RegNr1 = BTr.PayRegNr1;
+  while (GetNextSubstring(res,pos,",",tstr)) begin
+    tarr[tarr.length] = tstr;
+  end;
+
+  res = "";
+  SortStringArray(tarr);
+  for (i=0;i<tarr.length;i=i+1) begin
+    if (i>0) then begin
+      res = res & ",";
+    end;
+    res = res & tarr[i];
+  end;
+  
+  ConvertNameToSet = res;
+  return;
+end;
+
+global
+procedure FindCustomerForBankImport(string custcode,string regnr,string vatnr,string acc,string name,record CUVc CUr)
+begin
+  Boolean foundf,TrHs;
+  string 255 inname,outname;
+  record CUVc tCUr;
+
+
+  if (blank(custcode)) then begin
+    if (nonblank(regnr)) then begin
+      CUr.RegNr1 = regnr;
       if (ReadFirstKey("RegNr1",CUr,1,true)) then begin
         foundf = true;
       end;
     end;
-    if (foundf==false and nonblank(BTr.PayVATNr)) then begin
+    if (foundf==false and nonblank(vatnr)) then begin
       ResetLoop(CUr);    
-      CUr.VATNr = BTr.PayVATNr;
+      CUr.VATNr = vatnr;
       if (ReadFirstKey("VATNr",CUr,1,true)) then begin
         foundf = true;
       end;
     end;
-    if (foundf==false and nonblank(BTr.PayBankAcc)) then begin
+    if (foundf==false and nonblank(acc)) then begin
       ResetLoop(CUr);    
-      CUr.BankAccount = BTr.PayBankAcc;
+      CUr.BankAccount = acc;
       if (ReadFirstKey("BankAccount",CUr,1,true)) then begin
         foundf = true;
       end;
     end;
-    if (foundf==false and nonblank(BTr.PayName)) then begin
+    if (foundf==false and nonblank(name)) then begin
       ResetLoop(CUr);    
-      CUr.Name = BTr.PayName;
+      CUr.Name = name;
       if (ReadFirstKey("Name",CUr,1,true)) then begin
         foundf = true;
       end;
     end;
+
+    if(foundf==false)then begin
+      if(nonblank(name))then begin
+        inname = ConvertNameToSet(name);
+        tCUr.Name = "";
+        TrHs = true;
+        if(nonblank(inname))then begin
+          ResetLoop(CUr);
+          while (LoopKey("Name",tCUr,1,TrHs)) begin
+            outname = ConvertNameToSet(tCUr.Name);
+            if(inname==outname)then begin
+              TrHs = false;
+              foundf = true;
+              RecordCopy(tCUr,CUr);
+            end;
+          end;
+          if (foundf==false) then begin
+            RecordClear(CUr);
+          end;
+        end;
+      end;
+    end;
+
+
   end else begin
-    CUr.Code = BTr.PayCustCode;
+    CUr.Code = custcode;
     ReadFirstMain(CUr,1,true);
   end;
   return;
@@ -86,7 +146,7 @@ begin
   BTr.FileName = "IPVc";
   BTr.TransNr = sernr;
   if (ReadFirstKey("FileName",BTr,2,true)) then begin
-    FindCustomer(BTr,CUr);
+    FindCustomerForBankImport(BTr.PayCustCode,BTr.PayRegNr1,BTr.PayVATNr,BTr.PayBankAcc,BTr.PayName,CUr);
     if (blank(CUr.Code)) then begin
       res = false;
     end;
@@ -356,7 +416,7 @@ begin
     IPr.OKFlag = 0;
     IPr.Comment = BTr.Reference;
 
-    FindCustomer(BTr,CUr);
+    FindCustomerForBankImport(BTr.PayCustCode,BTr.PayRegNr1,BTr.PayVATNr,BTr.PayBankAcc,BTr.PayName,CUr);
     instr = BPI_ParseInvStr(BTr.PayReference);
     remsum = BTr.Sum;
     BankFillIProws(IPr,CUr.Name,BTr.CurncyCode,remsum,CUr.Code,nonblank(CUr.Code),instr,BTr.PayReference,true);
@@ -392,7 +452,7 @@ begin
     OPr.PayDate = BTr.RcpTransDate;	 
     OPr.SerNr = NextSerNr("OPVc",OPr.TransDate,-1,false,"");		
 
-    FindCustomer(BTr,CUr);
+    FindCustomerForBankImport(BTr.PayCustCode,BTr.PayRegNr1,BTr.PayVATNr,BTr.PayBankAcc,BTr.PayName,CUr);
     instr = BPI_ParseInvStr(BTr.RcpReference);
     remsum = BTr.Sum;
 
