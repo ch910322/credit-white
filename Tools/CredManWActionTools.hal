@@ -302,6 +302,7 @@ global
 updating procedure DoPauseCredMan(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res,var Boolean setf,record RcVc RepSpec)
 begin
   res = false;
+
 //  if (nonblank(td)) then begin
     //RecordCopy(oldCredManr,CredManr);
     if (CanPauseAgreement(CredManr,td,months)) then begin
@@ -317,6 +318,7 @@ begin
           CredManr.ProlongMonths = prolongmonths;
         end;
         CredManSetDatesCust(CredManr);
+        GenerateAgreementSchedule(CredManr,true);
         setf = true;
       end;
       res = true;      
