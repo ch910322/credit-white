@@ -488,6 +488,7 @@ begin
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
+  ChangeMatrixField(vRebate,M4Rate,0,0);
 
   KeyBegin(OrderClass);
   KeySegment(OrderClass);
@@ -575,6 +576,7 @@ begin
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
+  ChangeMatrixField(vRebate,M4Rate,0,0);
 
   KeyBegin(ActCode);
   KeySegment(Code);
