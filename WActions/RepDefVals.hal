@@ -8,7 +8,7 @@ BEGIN
   GetWindowRecord(wn,RepSpec);
   ReportDefaults(RepSpec,"CreditAgreementsRClass");  
   RepSpec.Scaling = 0;
-  RepSpec.BaseWidth = 1000;
+  RepSpec.BaseWidth = 1070;
   PutWindowRecord(wn,RepSpec);
   SelectWindow(wn);
   RETURN;
