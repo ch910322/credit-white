@@ -946,9 +946,6 @@ end;
 global
 procedure TestInvoiceBasedOnScheduleRow(record CredManSchedVc CSr,row CredManSchedVc CSrw,var record IVVc IVr)
 begin
-  row CredManSchedVc CSrw;
-  Integer i,rwcnt,rw;
-  record IVVc IVr,oldIVr;
   record CredManSetBlock CMb;
   record CMApplicationSetBlock ASb;
   Date lastd;

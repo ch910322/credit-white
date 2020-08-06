@@ -1,4 +1,4 @@
-external procedure TestInvoiceBasedOnScheduleRow(record CredManSchedVc,row CredManSchedVc,var record IVVc)
+external procedure TestInvoiceBasedOnScheduleRow(record CredManSchedVc,row CredManSchedVc,var record IVVc);
 
 global
 procedure GetScheduleTotals(record CredManSchedVc CSr,var val princ,var val interest,var val fees,var val total,var val vat,var Date sd,var Date ed)
@@ -83,6 +83,7 @@ begin
   row CredFeesMatrixVc FMrw;
   Integer i,rwcnt;
   val fees;
+  record IVVc IVr;
   
   MatRowGet(CSr,rowno,CSrw);
   UnpackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
@@ -93,7 +94,6 @@ begin
     fees = fees + FMrw.Sum;
   end;
 */
-
 
   TestInvoiceBasedOnScheduleRow(CSr,CSrw,IVr);
 
@@ -174,7 +174,7 @@ begin
   Boolean res;
   record CredManSchedVc SCr;
   
-  if (rownr>0) then begin
+  if (rownr>0 and changed!=0) then begin
     GetWindowRecord(wn,SCr);
     SumupCredManSched(SCr,rownr);
     PutWindowRecord(wn,SCr);
