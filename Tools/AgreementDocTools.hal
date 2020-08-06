@@ -127,25 +127,35 @@ begin
   record AgreementDocVc ADr;
   record DocumentReminderVc DRr;
   Boolean TrHs;
-  
-  while (LoopMain(DRr,1,true)) begin
-    if (DRr.ActiveFlag==1) then begin
-      TrHs = true;
-      ResetLoop(ADr);
-      RecordClear(ADr);
-      ADr.Type = DRr.Type;
-      ADr.SentReminder = 0;
-      while (LoopKey("Status:0",ADr,2,TrHs)) begin
-        if (DocTypeMatches(DRr.Type,ADr.Type)==false or ADr.SentReminder!=0) begin
-          TrHs = false;
-        end else begin
-          if (DateTimeDiff(CurrentDate,CurrentTime,ADr.TransDate,ADr.TransTime)>=DRr.Delay) then begin
-            queued.SendSingleReminder(ADr,DRr.Text);
+  Integer i,rwcnt,oldcomp;
+  record CompaniesBlock Compb;
+
+  oldcomp = CurrentCompany;
+  BlockLoad(Compb);
+  rwcnt = MatRowCnt(Compb);
+  for (i=0;i<rwcnt;i=i+1) begin
+    if (SetCompany(i+1,false)) then begin
+      while (LoopMain(DRr,1,true)) begin
+        if (DRr.ActiveFlag==1) then begin
+          TrHs = true;
+          ResetLoop(ADr);
+          RecordClear(ADr);
+          ADr.Type = DRr.Type;
+          ADr.SentReminder = 0;
+          while (LoopKey("Status:0",ADr,2,TrHs)) begin
+            if (DocTypeMatches(DRr.Type,ADr.Type)==false or ADr.SentReminder!=0) begin
+              TrHs = false;
+            end else begin
+              if (DateTimeDiff(CurrentDate,CurrentTime,ADr.TransDate,ADr.TransTime)>=DRr.Delay) then begin
+                queued.SendSingleReminder(ADr,DRr.Text);
+              end;
+            end;
           end;
         end;
       end;
     end;
   end;
+  ResetCompany(oldcomp);
 
   return;
 end;
