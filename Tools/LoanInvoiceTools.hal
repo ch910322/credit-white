@@ -944,6 +944,30 @@ begin
 end;
 
 global
+procedure TestInvoiceBasedOnScheduleRow(record CredManSchedVc CSr,row CredManSchedVc CSrw,var record IVVc IVr)
+begin
+  row CredManSchedVc CSrw;
+  Integer i,rwcnt,rw;
+  record IVVc IVr,oldIVr;
+  record CredManSetBlock CMb;
+  record CMApplicationSetBlock ASb;
+  Date lastd;
+  Boolean firstf;
+  Boolean res;
+  record CredManVc CredManr;
+  
+  BlockLoad(CMb);
+  BlockLoad(ASb);
+  CredManr.SerNr = CSr.CredManNr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    BuildInvoiceBasedOnSchedule(CredManr,CSrw,CMb,ASb,"",IVr,false,false);
+  end;
+
+  return;
+end;
+
+
+global
 updating procedure CreateSingleAgreementInvoice(record CredManVc CredManr,Date ed,var record IVVc IVr,string ivno)
 begin
   record CredManSetBlock CMb;
@@ -1709,7 +1733,7 @@ begin
       CSrw.Fees = SMrw.DebVal2;
       UnpackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
       PackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
-      CSrw.Total = CSrw.Principle + CSrw.Interest + CSrw.Fees;
+      CSrw.Total = SMrw.CurDebVal;
       if (nonblank(SMrw.ExtraComment)) then begin
         CSrw.Invoiced = 1;
         CSrw.InvoiceNr = SMrw.ExtraComment;
