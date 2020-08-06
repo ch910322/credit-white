@@ -600,6 +600,7 @@ begin
     case "F_LATEFEEVAL": res = RepSpec.vals3;
     case "F_ABOVEHIDDENFULL": res = RepSpec.vals4;
     case "F_TOPAY": res = RepSpec.f10;
+    case "F_OPENAMOUNT": res = RepSpec.f11;
     otherwise
       res = LetVcReplaceTokenCust(RepSpec,token);
   end;

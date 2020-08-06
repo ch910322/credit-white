@@ -152,6 +152,43 @@ begin
 end;
 
 global
+function val GetCustomerOpenAmount(string custcode)
+begin
+  val res;
+  record ARVc ARr;
+  Boolean TrHs;
+  record ARPayVc ARPayr;
+
+  TrHs = true;
+  res = 0;
+  ARr.CustCode = custcode;
+  while (LoopKey("CustCode",ARr,1,TrHs)) begin
+    if (ARr.CustCode!=custcode) then begin
+      TrHs = false;
+    end else begin
+      if (ARr.RVal>0 and ARr.DueDate<CurrentDate) then begin
+        res = res + ARr.RVal;
+      end;
+    end;
+  end;
+  
+  TrHs = true;
+  ARPayr.CustCode = custcode;
+  while (LoopKey("CustCode",ARPayr,1,TrHs)) begin
+    if (ARPayr.CustCode!=custcode) then begin
+      TrHs = false;
+    end else begin
+      if (ARPayr.RVal>0) then begin
+        res = res - ARPayr.RVal;
+      end;
+    end;
+  end;
+
+  GetCustomerOpenAmount = res;
+  return;
+end;
+
+global
 procedure Ext_PrintCustomInvoiceFields(var vector string vVals,record IVVc IVr)
 begin
   record CredManSetBlock CMb;
@@ -173,6 +210,7 @@ begin
   Ext_PrintInvoiceSigner(vVals);
 
   vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(IVr.CustCredManNr);
+  vVals["F_OPENAMOUNT"] = GetCustomerOpenAmount(IVr.CustCode);
 
   vVals["F_LOANPERIOD"] = IVr.CredFromDate & ":" & IVr.CredToDate;
 
