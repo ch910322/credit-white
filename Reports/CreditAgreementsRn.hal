@@ -107,18 +107,19 @@ begin
   end;
 
   rp[2] = 50;
-  rp[3] = 130;
-  rp[4] = 200;
-  rp[5] = 330;
-  rp[6] = 400;
-  rp[7] = 470;
-  rp[8] = 530;
-  rp[9] = 600;
-  rp[10] = 650;
-  rp[11] = 710;
-  rp[12] = 860;
-  rp[13] = 930;
-  rp[14] = 1000;
+  rp[15] = 130;
+  rp[3] = 200;
+  rp[4] = 270;
+  rp[5] = 400;
+  rp[6] = 470;
+  rp[7] = 540;
+  rp[8] = 600;
+  rp[9] = 670;
+  rp[10] = 720;
+  rp[11] = 780;
+  rp[12] = 930;
+  rp[13] = 1000;
+  rp[14] = 1070;
   
 	
 	StartFormat(15);
@@ -131,6 +132,7 @@ begin
 			OutString(70,0,"Be OK",false);
 			OutString(70,0,"Baigtos",false);
 		end;
+		OutString(rp[15],0,"Pirkėjas",false);
 		OutString(rp[3],0,"Įmonės kd.",false);
 //		OutString(35,0,"Klientas",false);
 		OutString(rp[4],0,"Pavadinimas",false);
@@ -185,6 +187,7 @@ begin
         OutString(70,0,Checkbocout(CredManr.OKFlag==0),false);
         OutString(70,0,Checkbocout(curbal==0),false);
       end;
+      OutString(rp[15],"DblCUVc",CUr.Code,false);
       OutStringID(rp[3],"DblCUVc",CUr.RegNr1,false,CUr.Code);
 //      OutString(35,"DblCUVc",CredManr.CustCode,false);
       OutString(rp[4],0,CredManr.Addr0,false);
