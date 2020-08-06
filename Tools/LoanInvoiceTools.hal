@@ -431,20 +431,22 @@ begin
   return;
 end;
 
-function Integer GetRateType(string type)
+function Integer GetRateType(record CredManVc CredManr)
 begin
   record CredManTypeVc CMTr;
   record CMInvoicingBLock CIb;
   Integer res;
 
   res = -1;
-  CMTr.Code = type;
-  if (ReadFirstMain(CMTr,1,true)) then begin
-    if (CMTr.OverdueRateType>0) then begin
-      res = CMTr.OverdueRateType - 1;
-    end else begin
-      BlockLoad(CIb);
-      res = CIb.OverdueRateType;
+  
+  if (CredManr.OverdueRateType>0) then begin
+    res = CredManr.OverdueRateType - 1;
+  end else begin
+    CMTr.Code = CredManr.Type;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      if (CMTr.OverdueRateType>0) then begin
+        res = CMTr.OverdueRateType - 1;
+      end;
     end;
   end;
   if (res==-1) then begin
@@ -476,7 +478,7 @@ begin
       overduetd = GetLastOverdueInvoiceDate(CredManr.SerNr,CMb.LateFeeItem);
       //we should go through the history and check for late payments
       if (nonblank(CIb.OverdueItemClass)) then begin
-        ratetype = GetRateType(CredManr.Type);
+        ratetype = GetRateType(CredManr);
         while (LoopKey("DICode:" & CIb.OverdueItemClass,INr,1,true)) begin
           CheckOverdueInvoicesForItem(CredManr,CMb,CIb.OverdueMonths,invdate,prevtd,latedays,lateamount,INr.Code,overduetd,lateformula,ratetype);
         end;

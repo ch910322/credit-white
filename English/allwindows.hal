@@ -827,6 +827,11 @@ begin
   RadioButton(h2,v,0,0,"Due Date",LateRateOption);
   RadioButton(h2,v+=16,1,0,"Trans. Date",LateRateOption);
 
+  ButtonFrame(h2=h2+170,v=vm,80,3,"Overdue Rate");
+  RadioButton(h2,v,0,0,"Default",OverdueRateType);
+  RadioButton(h2,v+=16,1,0,"Daily",OverdueRateType);
+  RadioButton(h2,v+=16,1,0,"Monthly",OverdueRateType);
+
 //CUST-BEGIN
   Tile(5,290,true,"5",SuretyProvider1); 
 
