@@ -27,7 +27,7 @@ remote updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
 remote function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
 remote updating procedure CreateManualExtraInvoice(record RcVc,var record IVVc);
 remote procedure CredLegalNrSerNrSClassOnOpenWindowRemote(string,string,Date,string,string,var array string);
-remote procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
+remote updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
 remote updating procedure GetCredManPropertyRecord(record CredManVc,var record CredManPropertyVc);
 
 
@@ -262,6 +262,8 @@ begin
     case "PayGrntPayDate2":   res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
     case "PayGrntReportDate1":res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
     case "PayGrntReportDate2":res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
+    case "MinSum":            res = CredManDClassInvSumEFAfter(wn,changed!=0);
+    case "MaxSum":            res = CredManDClassInvSumEFAfter(wn,changed!=0);
     otherwise 
       res = inner.CredManDClassAfterEditField(wn,fieldname,fn,rownr,changed);
   end;
@@ -1074,7 +1076,7 @@ begin
 end;
 
 global
-procedure AgreementDocDClassRegen()
+updating procedure AgreementDocDClassRegen()
 begin 
   Integer wn;
   record AgreementDocVc ADr;
@@ -1092,16 +1094,24 @@ begin
 end;
 
 global
-procedure AgreementDocDClassRegen2()
+updating procedure AgreementDocDClassRegen2()
 begin 
-  Integer wn;
+  Integer wn,cwn;
   record AgreementDocVc ADr;
   record RcVc RepSpec;
+  record CredManVc CredManr;
 
   wn = CurWindow;
   if (WindowState(wn)==Rs_Normal) then begin
     GetWindowRecord(wn,ADr);
     RecreateAgreementDocument(ADr,true);
+    cwn = wn - 1;
+    if (GetWindowClass(cwn)=="CredManDClass") then begin
+      GetWindowRecord(cwn,CredManr);
+      ReadFirstMain(CredManr,1,true);
+      CloseWindow(cwn);
+      OpenWindow("CredManDClass",1,MotherWindow(cwn),"","",CredManr);
+    end;
     CloseWindow(wn);
     OpenWindow("AgreementDocDClass",1,0,"","",ADr);
   end;
