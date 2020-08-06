@@ -35,7 +35,7 @@ BEGIN
 
   BTr.FileName = "IPVc";
   BTr.TransNr = IPr.SerNr;
-  if (ReadFirstKey("FileName",BTr,1,true)) then begin
+  if (ReadFirstKey("FileName",BTr,2,true)) then begin
     if (BTr.Sum!=IPr.CurPayVal) then begin
       RecordCheckError(200260,"",-1,"CurPayVal");
       res = -1;
