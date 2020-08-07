@@ -39,7 +39,7 @@ external function Boolean GetCredLegalNrLine(string,string,Date,string,string,va
 external procedure FindListCredLegalSerNr(string,string,string,string,string,Integer,var array string);
 
 global
-updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr)
+updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
 begin
   record RLinkVc RLr,RL2r;
   record Attach2Vc Attachr;
@@ -57,6 +57,7 @@ begin
     end;
     res = true;
     CreateRecordLink(Archiver,CurrentCompany,Attachr,CurrentCompany);
+    oldname = Attachr.FileName;
     RecordRemove(RLr);
   end;
 
@@ -243,7 +244,7 @@ begin
   ADr.RecordNr = CredManr.SerNr;
   ADr.Type = 2;
   if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
-    ArchiveExistingDocument(ADr);
+    ArchiveExistingDocument(ADr,oldname);
     RecordCopy(oldADr,ADr);
     ADr.SignedByUs = 0;
     ADr.SignedByUsDate = "";
@@ -751,11 +752,11 @@ updating procedure PrintSingleAgreementDoc(record AgreementDocVc ADr,record Cred
 begin
   string 255 fn;
   record RcVc RepSpec;
-  string 255 langcode;
+  string 255 langcode,oldname;
   Integer scnt;
   area filearea;
   
-  ArchiveExistingDocument(ADr);
+  ArchiveExistingDocument(ADr,oldname);
 
   scnt = GetSuretyCnt(CredManr);
   switch (ADr.Type) begin
