@@ -95,7 +95,7 @@ begin
   
   url = GetDokobitUrl(SIb);
   qupdating.StartPaymentSessionDokobit(signerid,regname,id,paysessionid);
-  returnurl = "https://" & PublicHostName;//should be https://
+  returnurl = "https://" & PublicHostName & ":" & ServerHTTPSPort;//should be https://
   callback = FormatLink("/WebAction.hal","action=dokobit.callback&session=" & paysessionid,true,true);
   callback = returnurl & callback;
   AddTextToArea("type=pdf",request);
