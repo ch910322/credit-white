@@ -207,6 +207,32 @@ begin
   return;
 end;
 
+function Boolean FindSingingSession(string session,var record WebNGPaySessionVc WPSr)
+begin
+  Boolean TrHs,res;
+  record WebNGPaySessionVc tWPSr;
+
+  WPSr.UUID = session;
+  if (ReadFirstKey("UUID",WPSr,1,true)) then begin
+    Logtext(0,"FindSingingSession found1");
+    res = true;
+  end else begin
+    Logtext(0,"FindSingingSession failed1");
+    TrHs = true;
+    while (LoopMain(tWPSr,1,TrHs)) begin
+      if (tWPSr.UUID==session) then begin
+        Logtext(0,"FindSingingSession found2");
+        TrHs = false;
+        res = true;
+        RecordCopy(WPSr,tWPSr);
+      end;
+    end;
+  end;
+  Logtext(0,"FindSingingSession finish " & res);
+
+  FindSingingSession = res;
+  return;
+end;
 
 global
 updating procedure TreatDokobitCallBack(area post,string session)
@@ -218,8 +244,7 @@ begin
   record SmartIDBlock SIb;
   
 logtext(0,"TreatDokobitCallBack0.1 2 "  & session);
-  WPSr.UUID = session;
-  if (ReadFirstKey("UUID",WPSr,1,true)) then begin
+  if (FindSingingSession(session,WPSr)) then begin
 logtext(0,"TreatDokobitCallBack0.2 " & WPSr.Status);
     if (WPSr.Status!=10+kCCStatusPaymentOK) then begin
       js = ParseJSONArea(post);
@@ -395,7 +420,7 @@ begin
       WebGetRawPostData(post);
       LogDokobit(post,"dokobit_callback.txt");
       Logtext(0,"dokobit callback " & WebGetArg("session"));
-      qupdating.TreatDokobitCallBack(post,WebGetArg("session"));
+      qupdating.TreatDokobitCallBack(post,Trim(WebGetArg("session")));
       //from dokobit
     case "proceed":
       //to check the signing
