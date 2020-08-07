@@ -324,6 +324,18 @@ begin
       BTRr.SerNr = NextSerNr("BankTRVc",BTRr.TransDate,-1,false,"");
       if (BTRr.SerNr>0) then begin
         RecordInsert(BTRr,false);//CUST RecordStore>>RecordInsert
+//CUST-BEGIN
+        begin
+          record IPVc IPr;
+          if (BTRr.TransNr>0) then begin
+            IPr.SerNr = BTRr.TransNr;
+            if (ReadFirstMain(IPr,1,true)) then begin
+              CreateRecordLink(IPr,CurrentCompany,BTRr,CurrentCompany);
+              CreateRecordLink(BTRr,CurrentCompany,IPr,CurrentCompany);
+            end;
+          end;
+        end;
+//CUST-END
       end;
     end;
 
@@ -376,7 +388,8 @@ begin
     BTRr.CurncyCode = XmlGetAttribute(xdata,ntrykey & "Amt","Ccy");
     BTRr.Sum = ValFromString(XmlGet(xdata,ntrykey & "Amt"),".","");
     BTRr.TypeRef = XmlGet(xdata,ntrykey & "CdtDbtInd");
-    BTRr.TransDate = DateFromString(XmlGet(xdata,ntrykey & "BookgDt/DtTm"),"YYYY-MM-DD");
+//    BTRr.TransDate = DateFromString(XmlGet(xdata,ntrykey & "BookgDt/DtTm"),"YYYY-MM-DD");
+    BTRr.TransDate = DateFromString(XmlGet(xdata,ntrykey & "BookgDt/Dt"),"YYYY-MM-DD");//CUST
 
     BTRr.TRNumber = XmlGet(xdata,ntrykey & "AcctSvcrRef");
     BTRr.Comment = XmlGet(xdata,ntrykey & "NtryDtls/TxDtls/RmtInf/Ustrd");
@@ -402,6 +415,16 @@ begin
         BTRr.RcpName = XmlGet(xdata,ntrykey & "NtryDtls/TxDtls/RltdPties/Cdtr/Nm");
         BTRr.RcpRegNr1 = XmlGet(xdata,ntrykey & "NtryDtls/TxDtls/RltdPties/Cdtr/Id/OrgId/Othr/Id");
         BTRr.RcpReference = XmlGet(xdata,ntrykey & "NtryDtls/TxDtls/RmtInf/Ustrd");
+//CUST-BEGIN
+        begin
+          record OPVc OPr;
+          CustFillOPRecord(BTRr,OPr);
+          if (OPr.SerNr>0) then begin
+            BTRr.FileName = "OPVc";
+            BTRr.TransNr = OPr.SerNr;
+          end;
+        end;
+//CUST-END
 
       case "C":
         BTRr.RcpBankAcc = bankacc;
@@ -422,7 +445,17 @@ begin
         BTRr.PayName = XmlGet(xdata,ntrykey & "NtryDtls/TxDtls/RltdPties/Dbtr/Nm");
         BTRr.PayRegNr1 = XmlGet(xdata,ntrykey & "NtryDtls/TxDtls/RltdPties/Dbtr/Id/OrgId/Othr/Id");
         BTRr.PayReference = XmlGet(xdata,ntrykey & "NtryDtls/TxDtls/RmtInf/Ustrd");
-        CreateReceipt(SRb,PMbrw.Code,BTRr);
+//CUST-BEGIN
+//        CreateReceipt(SRb,PMbrw.Code,BTRr);
+        begin
+          record IPVc IPr;
+          CustFillIPRecord(BTRr,IPr);
+          if (IPr.SerNr>0) then begin
+            BTRr.FileName = "IPVc";
+            BTRr.TransNr = IPr.SerNr;
+          end;
+        end;
+//CUST-END
 
       
     end;
@@ -432,6 +465,18 @@ begin
       BTRr.SerNr = NextSerNr("BankTRVc",BTRr.TransDate,-1,false,"");
       if (BTRr.SerNr>0) then begin
         RecordStore(BTRr,false);
+//CUST-BEGIN
+        begin
+          record IPVc IPr;
+          if (BTRr.TransNr>0) then begin
+            IPr.SerNr = BTRr.TransNr;
+            if (ReadFirstMain(IPr,1,true)) then begin
+              CreateRecordLink(IPr,CurrentCompany,BTRr,CurrentCompany);
+              CreateRecordLink(BTRr,CurrentCompany,IPr,CurrentCompany);
+            end;
+          end;
+        end;
+//CUST-END
       end;
     end;
 

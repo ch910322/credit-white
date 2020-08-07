@@ -986,6 +986,22 @@ BEGIN
 END;
 
 global
+procedure CMIncomeForecastRClassReportDefaults(Integer wn)
+BEGIN
+  record RcVc RepSpec;
+  Date td;
+  
+  DeselectWindow(wn,false);
+  GetWindowRecord(wn,RepSpec);
+  ReportDefaults(RepSpec,"CMIncomeForecastRClass");  
+  RepSpec.Scaling = 0;
+  RepSpec.BaseWidth = 1000;
+  PutWindowRecord(wn,RepSpec);
+  SelectWindow(wn);
+  RETURN;
+END;
+
+global
 procedure DblB2BLoanAppVc(string dblstr,string l,Integer currepwn)
 begin
   Integer wn;

@@ -169,6 +169,7 @@ begin
   RecordField(Source,M4Str,255,0);
   RecordField(Math2,M4TextField,0,0);
   RecordField(AnnualRate,M4Int,0,0);
+  RecordField(OfficialSerNr,M4Str,255,0);
 
   ArrayBegin(Math,-,1);
   ArrayField(Period,M4Str,10,0);
@@ -487,6 +488,7 @@ begin
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
+  ChangeMatrixField(vRebate,M4Rate,0,0);
 
   KeyBegin(OrderClass);
   KeySegment(OrderClass);
@@ -569,9 +571,12 @@ begin
   RecordField(OwnBankAccount,M4UStr,255,0);
   RecordField(AnnualRate,M4Int,0,0);
   RecordField(MinOverdueFee,M4Val,0,0);
+  RecordField(OverdueRateType,M4Int,0,0);
+  RecordField(OverdueLangCode,M4Code,20,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
+  ChangeMatrixField(vRebate,M4Rate,0,0);
 
   KeyBegin(ActCode);
   KeySegment(Code);
@@ -1052,7 +1057,6 @@ begin
   EndRecord;
 
   RecordBegin(CredManSchedVc,-,"");
-  RecordField(SerNr,M4Long,0,0);
   RecordField(CredManNr,M4Long,0,CredManVc);
   RecordField(CustCode,M4Code,20,CUVc);
   RecordField(CustName,M4Str,255,0);
@@ -1073,11 +1077,8 @@ begin
   ArrayField(PayDate,M4Date,0,0);
   ArrayField(FeesMatrix,M4PackedMatrix,0,CredFeesMatrixVc);
   EndArray;
-  MainKeyBegin(SerNr,0);
-  KeySegment(SerNr);
-  KeyBegin(CredManNr);
+  MainKeyBegin(CredManNr,0);
   KeySegment(CredManNr);
-  KeySegment(SerNr);
   EndRecord;
 
   BlockBegin(CMInvoicingBlock,-,"");
@@ -1134,6 +1135,7 @@ begin
   RecordField(ReplaceVATNr,M4Str,255,0);
   RecordField(ReplaceVATNrWith,M4Str,255,0);
   RecordField(ProlongItem,M4Code,20,INVc);
+  RecordField(OverdueRateType,M4Int,0,0);
 
   EndBlock;
 
@@ -1184,7 +1186,73 @@ begin
   KeySegment(PaidFlag);
   KeySegment(SerNr);
   EndRecord;
-  
+
+  RecordAddBegin(IPVc,"IPVc_FIN");
+  ArrayField(CredHistNr,M4Long,0,0);
+  EndRecordAdd;
+
+  RecordBegin(CMPropertyVc,0,"");
+  RecordField(SerNr,M4Long,0,0);
+  RecordField(OfficialSerNr,M4Str,255,0);
+  RecordField(Addr0,M4Str,255,0);
+  RecordField(Addr1,M4Str,255,0);
+  RecordField(Addr2,M4Str,255,0);
+  RecordField(Addr3,M4Str,255,0);
+  RecordField(Addr4,M4Str,255,0);
+  RecordField(Type,M4Code,20,0);
+  RecordField(RepVal,M4Val,0,0);
+  RecordField(EvalVal,M4Val,0,0);
+  RecordField(InsuranceCompany,M4Code,20,CUVc);
+  RecordField(InsuranceName,M4Str,255,0);
+  RecordField(InsuranceType,M4Code,20,0);
+  RecordField(InsuredVal,M4Val,0,0);
+  RecordField(InsuredUntil,M4Date,0,0);
+  RecordField(Math2,M4TextField,0,0);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(OwnerCode,M4Code,20,CUVc);
+  ArrayField(OwnerName,M4Str,255,0);
+  ArrayField(SharesPrc,M4Val,0,0);
+  ArrayField(SharesVal,M4Val,0,0);
+  EndArray;
+  MainKeyBegin(SerNr,0);
+  KeySegment(SerNr);
+  KeyBegin(OfficialSerNr);
+  KeySegment(OfficialSerNr);
+  KeySegment(SerNr);
+  EndRecord;
+
+  RecordBegin(CMPropertyTypeVc,-,"");
+  RecordField(Code,M4Code,20,0);
+  RecordField(Comment,M4Str,250,0);
+  MainKeyBegin(Code,0);
+  KeySegment(Code);
+  EndRecord;
+
+  RecordBegin(CMInsuranceTypeVc,-,"");
+  RecordField(Code,M4Code,20,0);
+  RecordField(Comment,M4Str,250,0);
+  MainKeyBegin(Code,0);
+  KeySegment(Code);
+  EndRecord;
+
+  RecordBegin(CredManPropertiesVc,-,"");
+  RecordField(CredManNr,M4Long,0,CredManVc);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(Property,M4Long,0,CMPropertyVc);
+  ArrayField(Addr0,M4Str,255,0);
+  ArrayField(OfficialSerNr,M4Str,255,0);
+  ArrayField(RepVal,M4Val,0,0);
+  ArrayField(EvalVal,M4Val,0,0);
+  ArrayField(PledgeType,M4Set,2030,0);
+  ArrayField(PledgeVal,M4Val,0,0);
+  ArrayField(PledgeDate,M4Date,0,0);
+  EndArray;
+  MainKeyBegin(CredManNr,0);
+  KeySegment(CredManNr);
+  EndRecord;
+
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Latvian", 0);

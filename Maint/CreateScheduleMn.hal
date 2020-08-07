@@ -1,4 +1,4 @@
-external updating procedure GenerateAgreementSchedule(record CredManVc);
+external updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
 
 global
 updating procedure CreateCredManScheduleMn(record RcVc RepSpec)
@@ -10,8 +10,8 @@ begin
     if (CredManr.OKFlag==1 and CredManr.endDate>CurrentDate) then begin
       ResetLoop(CSr);
       CSr.CredManNr = CredManr.SerNr;
-      if (ReadFirstKey("CredManNr",CSr,1,true)==false) then begin
-        GenerateAgreementSchedule(CredManr);
+      if (ReadFirstMain(CSr,1,true)==false) then begin
+        GenerateAgreementSchedule(CredManr,false);
       end;
     end;
   end;

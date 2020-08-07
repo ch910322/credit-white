@@ -1,4 +1,12 @@
 remote procedure FillBankTransactionsAndReceipts(var record IPConVc);
+remote updating procedure CreateRefundReceipt(record IPVc,var record IPVc);
+remote updating procedure DistributeReceiptRemote(record IPConDistributeVc);
+remote procedure InsertInvoiceToDistribute(var record IPConDistributeVc,Integer);
+remote procedure DistributeInvoicesSClassOnOpenWindowRemote(Longint,var array record IVVc);
+remote function Integer FindBankAccImportBank(string);
+external procedure RecalculateIPDOverpaid(var record IPConDistributeVc);
+remote procedure PayModeBankAccCustSClassArrayOnOpen(var Array string,var Array string);
+external inner procedure PasteFromSysList(Integer ,Integer);
 
 
 global
@@ -39,6 +47,28 @@ begin
   SelectWindow(wn);
   return;
 end;
+
+global
+function boolean LitBankImportIClassAfterEditField(Integer wn,string fieldname,Integer fn,Integer rownr,Integer changed)
+BEGIN
+  Boolean res;
+  record RcVc RepSpec;
+  record SysFormatBlock SFb;
+  Integer stmt;
+
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  if (fieldname=="f20") then begin
+    stmt = FindBankAccImportBank(RepSpec.f20);
+    if (stmt>=0) then begin
+      RepSpec.flags[20] = stmt;
+    end;
+  end;
+  PutWindowRecord(wn,RepSpec);
+  SelectWindow(wn);
+  return;
+end;
+
 
 global
 procedure ReceiptConnectionWClassOnOpenWindow(Integer wn)
@@ -107,14 +137,385 @@ begin
     if (PCrw.IPNr>0) then begin
       IPr.SerNr = PCrw.IPNr;
       if (ReadFirstMain(IPr,1,true)) then begin
-        OpenWindow("IPDClass",1,wn,"","",IPr);      
+        OpenWindow("IPDClass",1,0,"","",IPr);      
       end;
     end else begin
       RecordNew(IPr);
       IPr.TransDate = PCrw.TransDate;
-      OpenWindow("IPDClass",1,wn,"","",IPr);      
+      OpenWindow("IPDClass",1,0,"","",IPr);      
     end;
   end;
 
+  return;
+end;
+
+global
+updating procedure ReceiptConnectionOKReceiptDsm()
+begin
+  Integer wn,rw;
+  record IPConVc PCr;
+  row IPConVc PCrw;
+  record IPVc IPr,oldIPr;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,PCr);
+  rw = WindowActiveRow(wn);
+  if (rw>-1) then begin
+    MatRowGet(PCr,rw,PCrw); 
+    if (PCrw.IPNr>0) then begin
+      IPr.SerNr = PCrw.IPNr;
+      if (ReadFirstMain(IPr,1,true)) then begin
+        RecordCopy(oldIPr,IPr);
+        if (IPr.OKFlag==1) then begin
+          IPr.OKFlag = 0;
+        end else begin
+          IPr.OKFlag = 1;
+        end;
+        RecordUpdate(oldIPr,IPr,true);
+        FillBankTransactionsAndReceipts(PCr);
+        PutWindowRecord(wn,PCr);
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+global
+updating procedure ReceiptConnectionRefundDsm()
+begin
+  Integer wn,rw;
+  record IPConVc PCr;
+  row IPConVc PCrw;
+  record IPVc IPr,nIPr;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,PCr);
+  rw = WindowActiveRow(wn);
+  if (rw>-1) then begin
+    MatRowGet(PCr,rw,PCrw); 
+    if (PCrw.IPNr>0) then begin
+      IPr.SerNr = PCrw.IPNr;
+      if (ReadFirstMain(IPr,1,true)) then begin
+        CreateRefundReceipt(IPr,nIPr);
+        OpenWindow("IPDClass",0,0,"","",nIPr);
+        FillBankTransactionsAndReceipts(PCr);
+        PutWindowRecord(wn,PCr);
+      end;
+    end;
+  end;
+  
+
+  return;
+end;
+
+global
+procedure ReceiptConnectionRedistributeDsm()
+begin
+  Integer wn,rw;
+  record IPConVc PCr;
+  row IPConVc PCrw;
+  record IPVc IPr,nIPr;
+  record IPConDistributeVc IPDr;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,PCr);
+  rw = WindowActiveRow(wn);
+  if (rw>-1) then begin
+    MatRowGet(PCr,rw,PCrw); 
+    if (PCrw.IPNr>0) then begin
+      IPr.SerNr = PCrw.IPNr;
+      if (ReadFirstMain(IPr,1,true)) then begin
+        //fill the matrix
+        IPDr.SerNr = IPr.SerNr;
+        IPDr.Total = IPr.CurPayVal;
+        IPDr.Overpaid = IPr.CurPayVal;
+        OpenWindow("ReceiptConnectionDistributeWClass",0,0,"","",IPDr);
+
+      end;
+    end;
+  end;
+  
+
+  return;
+end;
+
+global
+updating procedure ReceiptConnectionDistributeWClassProceed()
+begin
+  Integer wn,rw,twn;  
+  record IPConDistributeVc IPDr;
+  record IPConVc PCr;
+
+
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,IPDr);
+  DistributeReceiptRemote(IPDr);
+  CloseWindow(wn);
+  twn = FindWindow("ReceiptConnectionWClass");
+  if (twn>0) then begin
+    GetWindowRecord(twn,PCr);
+    FillBankTransactionsAndReceipts(PCr);
+    PutWindowRecord(twn,PCr);
+  end;
+
+  return;
+end;
+
+function Boolean ReceiptConnectionDistributeWClassInvoiceNrEFAfter(Integer wn,Integer changed,Integer rownr)
+begin
+  record IPConDistributeVc IPDr;
+  
+  if (changed!=0) then begin
+    GetWindowRecord(wn,IPDr);
+    InsertInvoiceToDistribute(IPDr,rownr);
+    PutWindowRecord(wn,IPDr);
+  end;
+
+  ReceiptConnectionDistributeWClassInvoiceNrEFAfter = true;
+  return;
+end;
+
+procedure RecalculateDistributeInvoiceTotal(record IPConDistributeVc IPDr,Integer rownr)
+begin
+  Integer setiv,lastiv,rwcnt,i;
+  row IPConDistributeVc IPDrw;
+  val sum;
+  Boolean stopf;
+  
+  setiv = -1;
+  lastiv = -1;
+  rwcnt = MatRowCnt(IPDr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IPDr,i,IPDrw);
+    if (IPDrw.stp==1) then begin
+      lastiv = i;
+      if (stopf) then begin
+        goto LRecalculateDistributeInvoiceTotal;
+      end else begin
+        sum = 0;
+      end;
+    end else begin
+      if (rownr==i) then begin
+        stopf = true;
+        setiv = lastiv;
+      end;
+      sum = sum + IPDrw.Sum4;
+    end;
+  end;
+
+LRecalculateDistributeInvoiceTotal:;
+
+  if (setiv>-1) then begin
+    MatRowGet(IPDr,setiv,IPDrw);
+    IPDrw.Sum = sum;
+    MatRowPut(IPDr,setiv,IPDrw);
+  end;
+
+  return;
+end;
+
+function Boolean ReceiptConnectionDistributeWClassSum4EFAfter(Integer wn,Integer rownr,Integer changed)
+begin
+  record IPConDistributeVc IPDr;
+  row IPConDistributeVc IPDrw;
+
+  if (changed!=0) then begin
+    GetWindowRecord(wn,IPDr);
+    MatRowGet(IPDr,rownr,IPDrw);
+    if (IPDrw.Sum4>IPDrw.Sum) then begin
+      IPDrw.Sum4 = IPDrw.Sum;
+      MatRowPut(IPDr,rownr,IPDrw);
+    end;
+    RecalculateDistributeInvoiceTotal(IPDr,rownr);
+    RecalculateIPDOverpaid(IPDr);
+    PutWindowRecord(wn,IPDr);
+  end;
+  
+
+  ReceiptConnectionDistributeWClassSum4EFAfter = false;
+  return;
+end;
+
+global
+function Boolean ReceiptConnectionDistributeWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+
+  if (changed) then begin
+    switch (fieldname) begin
+      case "InvoiceNr": 
+        res = ReceiptConnectionDistributeWClassInvoiceNrEFAfter(wn,changed,rownr);
+      case "Sum4": 
+        res = ReceiptConnectionDistributeWClassSum4EFAfter(wn,rownr,changed);
+    end;
+  end;
+    
+  ReceiptConnectionDistributeWClassAfterEditField = res;
+  return;
+end;
+
+global
+function Boolean DistributeInvoicesSClassOnOpenWindow(Integer wn)
+begin
+  Integer mwn;
+  Array string 60 acontact;
+  Integer i,acnt;
+  longint pos;
+  string 255 namestr,titlestr,code,custcode;
+  record IPConDistributeVc IPDr;
+  array record IVVc arrIVr;
+  record IVVc IVr;
+  
+  mwn = MotherWindow(wn);
+  GetWindowRecord(mwn,IPDr);
+  ClearStringList(wn);
+  DistributeInvoicesSClassOnOpenWindowRemote(IPDr.SerNr,arrIVr);
+  for (i=0;i<arrIVr.length;i=i+1) begin
+    IVr = arrIVr[i];
+    AddListRow(wn,"DLPasteInvoice",1,IVr.SerNr,0);
+    AddListData(wn,"DLPasteInvoice","DLSerNr",IVr.SerNr);
+    AddListData(wn,"DLPasteInvoice","DLOfficSerNr",IVr.OfficialSerNr);
+    AddListData(wn,"DLPasteInvoice","DLInvDate",IVr.InvDate);
+    AddListData(wn,"DLPasteInvoice","DLSum",IVr.Sum4);
+  end;
+
+  DistributeInvoicesSClassOnOpenWindow = false;
+  return;
+end;
+
+global
+function Boolean DistributeInvoicesSClassOnOKWindow(Integer wn)
+begin
+  Integer mwn;
+  Integer Sel;
+  string 255 tstr;
+  
+  mwn = MotherWindow(wn);
+
+  Sel = SelectedListLine(wn);
+  if (Sel>-1) then begin
+    tstr = GetListTag(wn,Sel);
+    PasteString(mwn,tstr);
+  end;
+  CloseWindow(wn);
+
+  DistributeInvoicesSClassOnOKWindow = false;
+  return;
+end;
+
+global 
+function Boolean ReceiptConnectionDistributeWClassDeleteRowTest(Integer wn,Integer rownr)
+begin
+  Boolean res;
+
+  res = false;
+  ReceiptConnectionDistributeWClassDeleteRowTest = res;
+  return;
+end;
+
+global 
+function Boolean ReceiptConnectionDistributeWClassInsertRowTest(Integer wn,Integer rownr)
+begin
+  Boolean res;
+
+  res = false;
+
+  ReceiptConnectionDistributeWClassInsertRowTest = res;
+  return;
+end;
+
+global
+function Boolean ReceiptConnectionDistributeWClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
+begin
+  Boolean res;
+
+  res = false;
+
+  switch (fieldname) begin
+    case "Sum4": 
+      res = true;
+    case "InvoiceNr": 
+      res = true;
+  end;
+
+  ReceiptConnectionDistributeWClassActiveEditField = res;
+  return;
+end;
+
+
+
+global
+function Boolean PayModeBankAccCustSClassOnOKWindow(Integer wn)
+begin
+  PasteFromSysList(wn,-2);
+  PayModeBankAccCustSClassOnOKWindow = false;
+  return;
+end;
+
+global
+function Boolean PayModeBankAccCustSClassOnOpenWindow(Integer wn)
+begin
+  Array string 255 acode,acomment;
+  Integer i;
+  
+  PayModeBankAccCustSClassArrayOnOpen(acode,acomment);
+  for (i=0;i<acode.length;i=i+1) begin
+    if (nonblank(acode[i])) then begin
+      AddListRow(wn,"PayModeBankAccClass",1,acode[i],0);
+      AddListData(wn,"PayModeBankAccClass","bankacc",acode[i]);
+      AddListData(wn,"PayModeBankAccClass","pmname",acomment[i]);
+    end;
+  end;
+  PayModeBankAccCustSClassOnOpenWindow = false;
+  return;
+end;
+
+global
+function Boolean ReceiptConnectionWClassArtModeButtonAction(Integer wn,Integer value)
+begin
+  record IPConVc PCr;
+
+  GetWindowRecord(wn,PCr);
+  PCr.ArtMode = value;
+  FillBankTransactionsAndReceipts(PCr);
+  PutWindowRecord(wn,PCr);
+
+  ReceiptConnectionWClassArtModeButtonAction = true;
+  return;
+end;
+global
+function Boolean ReceiptConnectionWClassPaidStatButtonAction(Integer wn,Integer value)
+begin
+  record IPConVc PCr;
+
+  GetWindowRecord(wn,PCr);
+  PCr.PaidStat = value;
+  FillBankTransactionsAndReceipts(PCr);
+  PutWindowRecord(wn,PCr);
+
+  ReceiptConnectionWClassPaidStatButtonAction = true;
+  return;
+end;
+
+
+global
+function LongInt IPVcRecordUpdateClient(LongInt wn,var record IPVc IPr,record IPVc IP2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  record IPConVc PCr;
+  Integer pwn;
+
+  pwn = FindWindow("ReceiptConnectionWClass");
+  if (pwn>0) then begin
+    GetWindowRecord(pwn,PCr);
+    FillBankTransactionsAndReceipts(PCr);
+    PutWindowRecord(pwn,PCr);
+  end;
+
+  res = inner.IPVcRecordUpdateClient(wn,IPr,IP2r,stat,long4);
+
+  IPVcRecordUpdateClient = res;
   return;
 end;

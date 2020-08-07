@@ -29,14 +29,17 @@ external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var 
 external inner procedure IPPastePayMode(var record IPVc);
 external inner procedure OPVc_PasteRecVal(var record OPVc,Integer);
 external updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
-external updating procedure GenerateAgreementSchedule(record CredManVc);
+external updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
 external inner function Boolean ExternalDocumentEnabled(string);
 external updating procedure PrintCredManDocument(string,string,record CredManVc,Integer,Boolean,string);
 external inner procedure GetCurUser(var record UserVc);
 external updating procedure CreateProlongInvoice(record CredManVc);
+external inner function string 50 NextLegalSerNr(string,LongInt,Date,string,string,string);
+external function Boolean GetCredLegalNrLine(string,string,Date,string,string,var row CredLegalInvNrBlock,Integer);
+external procedure FindListCredLegalSerNr(string,string,string,string,string,Integer,var array string);
 
 global
-updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr)
+updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
 begin
   record RLinkVc RLr,RL2r;
   record Attach2Vc Attachr;
@@ -54,6 +57,7 @@ begin
     end;
     res = true;
     CreateRecordLink(Archiver,CurrentCompany,Attachr,CurrentCompany);
+    oldname = Attachr.FileName;
     RecordRemove(RLr);
   end;
 
@@ -230,7 +234,7 @@ begin
   record AgreementDocVc ADr,oldADr;
   row AgreementDocVc ADrw;
   record RcVc RepSpec;
-  string 255 fn,langcode;
+  string 255 fn,langcode,oldname;
   Integer i,rwcnt;
   area filearea;
 
@@ -238,7 +242,7 @@ begin
   ADr.RecordNr = CredManr.SerNr;
   ADr.Type = 2;
   if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
-    ArchiveExistingDocument(ADr);
+    ArchiveExistingDocument(ADr,oldname);
     RecordCopy(oldADr,ADr);
     ADr.SignedByUs = 0;
     ADr.SignedByUsDate = "";
@@ -253,8 +257,8 @@ begin
     end;
     if (RecordUpdate(oldADr,ADr,true)==0) then begin
       //should move this out to a function
-      fn = "Schedule.pdf";
-      GenerateAgreementSchedule(CredManr);
+      fn = "Schedule" & CredManr.SerNr & ".pdf";
+      GenerateAgreementSchedule(CredManr,true);
       langcode = GetDocumentLangCode(CredManr,2);
       if (ExternalDocumentEnabled("CredManScheduleForm")) then begin
         RepSpec.long1 = CredManr.InstalmentType;
@@ -725,6 +729,95 @@ begin
   return;
 end;
 
+function string 255 GetAgreementDocumentName(record AgreementDocVc ADr,string base,Boolean regenf)
+begin
+  string 255 res;
+
+  res = base & ADr.RecordNr;
+  if (regenf) then begin
+    res = res & "_new";
+    res = res & DateToString(CurrentDate,"YYYYMMDD");
+  end;
+  res = res & ".pdf";
+
+  GetAgreementDocumentName = res;
+  return;
+end;
+
+updating procedure PrintSingleAgreementDoc(record AgreementDocVc ADr,record CredManVc CredManr,Boolean regenf)
+begin
+  string 255 fn;
+  record RcVc RepSpec;
+  string 255 langcode,oldname;
+  Integer scnt;
+  area filearea;
+  
+  ArchiveExistingDocument(ADr,oldname);
+
+  scnt = GetSuretyCnt(CredManr);
+  switch (ADr.Type) begin
+    case 1://agreement
+      fn = GetAgreementDocumentName(ADr,"Agreement",regenf);
+      langcode = GetDocumentLangCode(CredManr,1);
+      if (ExternalDocumentEnabled("CredManForm")) then begin
+        RepSpec.long1 = CredManr.InstalmentType;
+        if (CredManr.MaxMonthlyPayment>0) then begin
+          RepSpec.flags[10] = 1;
+        end;
+        PrintEBSDocument("CredManForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
+      end else begin
+        PrintCredManDocument("CredManForm",fn,CredManr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
+        //PrintMultiDocDocument("CredManLongForm",fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
+      end;
+    case 2://schedule
+      fn = GetAgreementDocumentName(ADr,"Schedule",regenf);
+      GenerateAgreementSchedule(CredManr,false);
+      langcode = GetDocumentLangCode(CredManr,2);
+      if (ExternalDocumentEnabled("CredManScheduleForm")) then begin
+        RepSpec.long1 = CredManr.InstalmentType;
+        if (CredManr.MaxMonthlyPayment>0) then begin
+          RepSpec.flags[10] = 1;
+        end;
+        PrintEBSDocument("CredManScheduleForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
+      end else begin
+        PrintCredManDocument("CredManScheduleForm",fn,CredManr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
+        //PrintMultiDocDocument("CredManScheduleForm",fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
+      end;
+    case 3://surety
+      fn = GetAgreementDocumentName(ADr,"Surety",regenf);
+      langcode = GetDocumentLangCode(CredManr,3);
+      if (ExternalDocumentEnabled("SuretyAgreementForm")) then begin
+        RepSpec.long1 = CredManr.InstalmentType;
+        if (CredManr.MaxMonthlyPayment>0) then begin
+          RepSpec.flags[10] = 1;
+        end;
+        RepSpec.flags[11] = scnt;
+        PrintEBSDocument("SuretyAgreementForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
+      end else begin
+        PrintCredManDocument("SuretyAgreementForm",fn,CredManr,scnt,(CredManr.MaxMonthlyPayment>0),langcode);
+        //PrintMultiDocDocument("SuretyAgreementForm" & scnt,fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
+      end;
+    case 6://vekselis
+      fn = GetAgreementDocumentName(ADr,"Bill",regenf);
+      langcode = GetDocumentLangCode(CredManr,4);
+      if (ExternalDocumentEnabled("VekselisForm")) then begin
+        RepSpec.long1 = CredManr.InstalmentType;
+        if (CredManr.MaxMonthlyPayment>0) then begin
+          RepSpec.flags[10] = 1;
+        end;
+          RepSpec.flags[11] = scnt;
+          PrintEBSDocument("VekselisForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
+      end else begin
+        PrintCredManDocument("VekselisForm",fn,CredManr,scnt,(CredManr.MaxMonthlyPayment>0),langcode);
+        //PrintMultiDocDocument("VekselisForm" & scnt,fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
+      end;
+  end;
+  RecordLinkFile(fn,0,ADr,CurrentCompany);
+  Delete_File(fn);
+
+  return;
+end;
+
 global
 updating procedure CreateAgreementDoc(record CredManVc CredManr,Integer type,var record AgreementDocVc ADr)
 begin
@@ -734,7 +827,9 @@ begin
   area filearea;
   record RcVc RepSpec;
   Boolean flags1,flags2,flags3;
-  
+  row CredLegalInvNrBlock LegalInvNrrw;
+  record CredManVc oldCredManr;
+
   RecordNew(ADr);
   ADr.SerNr = NextSerNr("AgreementDocVc",CurrentDate,-1,false,"");
   ADr.TransDate = CurrentDate;
@@ -753,66 +848,15 @@ begin
     AddSuretyToDocument(ADr,CredManr);    
   end;
   if (RecordInsert(ADr,true)) then begin
-    scnt = GetSuretyCnt(CredManr);
-    switch (ADr.Type) begin
-      case 1://agreement
-        fn = "Agreement.pdf";
-        langcode = GetDocumentLangCode(CredManr,1);
-        if (ExternalDocumentEnabled("CredManForm")) then begin
-          RepSpec.long1 = CredManr.InstalmentType;
-          if (CredManr.MaxMonthlyPayment>0) then begin
-            RepSpec.flags[10] = 1;
-          end;
-          PrintEBSDocument("CredManForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
-        end else begin
-          PrintCredManDocument("CredManForm",fn,CredManr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
-          //PrintMultiDocDocument("CredManLongForm",fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
-        end;
-      case 2://schedule
-        fn = "Schedule.pdf";
-        GenerateAgreementSchedule(CredManr);
-        langcode = GetDocumentLangCode(CredManr,2);
-        if (ExternalDocumentEnabled("CredManScheduleForm")) then begin
-          RepSpec.long1 = CredManr.InstalmentType;
-          if (CredManr.MaxMonthlyPayment>0) then begin
-            RepSpec.flags[10] = 1;
-          end;
-          PrintEBSDocument("CredManScheduleForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
-        end else begin
-          PrintCredManDocument("CredManScheduleForm",fn,CredManr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
-          //PrintMultiDocDocument("CredManScheduleForm",fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
-        end;
-      case 3://surety
-        fn = "Surety.pdf";
-        langcode = GetDocumentLangCode(CredManr,3);
-        if (ExternalDocumentEnabled("SuretyAgreementForm")) then begin
-          RepSpec.long1 = CredManr.InstalmentType;
-          if (CredManr.MaxMonthlyPayment>0) then begin
-            RepSpec.flags[10] = 1;
-          end;
-          RepSpec.flags[11] = scnt;
-          PrintEBSDocument("SuretyAgreementForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
-        end else begin
-          PrintCredManDocument("SuretyAgreementForm",fn,CredManr,scnt,(CredManr.MaxMonthlyPayment>0),langcode);
-          //PrintMultiDocDocument("SuretyAgreementForm" & scnt,fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
-        end;
-      case 6://vekselis
-        fn = "Vekselis.pdf";
-        langcode = GetDocumentLangCode(CredManr,4);
-        if (ExternalDocumentEnabled("VekselisForm")) then begin
-          RepSpec.long1 = CredManr.InstalmentType;
-          if (CredManr.MaxMonthlyPayment>0) then begin
-            RepSpec.flags[10] = 1;
-          end;
-           RepSpec.flags[11] = scnt;
-           PrintEBSDocument("VekselisForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
-        end else begin
-          PrintCredManDocument("VekselisForm",fn,CredManr,scnt,(CredManr.MaxMonthlyPayment>0),langcode);
-          //PrintMultiDocDocument("VekselisForm" & scnt,fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
-        end;
+    PrintSingleAgreementDoc(ADr,CredManr,false);
+    if (blank(CredManr.OfficialSerNr)) then begin
+      if (GetCredLegalNrLine("CredManVc",CredManr.SerNr,CredManr.startDate,CredManr.Type,CredManr.Classifications,LegalInvNrrw,3)) then begin
+        RecordCopy(oldCredManr,CredManr);
+        CredManr.OfficialSerNr = NextLegalSerNr("CredManVc",CredManr.SerNr,CredManr.startDate,LegalInvNrrw.Serie,LegalInvNrrw.TSerStart,LegalInvNrrw.TSerEnd);
+        RecordUpdate(oldCredManr,CredManr,true);
+      end;
     end;
-    RecordLinkFile(fn,0,ADr,CurrentCompany);
-    Delete_File(fn);
+
   end;
 
   return;
@@ -893,6 +937,67 @@ begin
 
 LGetAgreementDoc2:;
   GetAgreementDoc2 = res;
+  return;
+end;
+
+updating procedure ResetSignatureStatus(var record AgreementDocVc ADr,record CredManVc CredManr)
+begin
+  record AgreementDocVc oldADr;
+  row AgreementDocVc ADrw;
+  Integer i,rwcnt;
+  record CMApplicationSetBlock CMb;
+  record CredManVc oldCredManr;
+  
+  RecordCopy(oldADr,ADr);
+
+  ADr.SignedByUs = 0;
+  ADr.SignedByUsDate = "";
+  ADr.SignedByUsTime = "";
+
+  rwcnt = MatRowCnt(ADr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(ADr,i,ADrw);
+    ADrw.Status = 0;
+    ADrw.SignatureDate = "";
+    ADrw.SignatureTime = "";
+    MatRowPut(ADr,i,ADrw);
+  end;
+
+  if (RecordUpdate(oldADr,ADr,true)==0) then begin
+    RecordCopy(oldCredManr,CredManr);
+    switch (ADr.Type) begin
+      case 1: CredManr.SignAgreement = 0;
+      case 2: CredManr.SignSchedule = 0;
+      case 3: CredManr.SignSurety = 0;
+      case 6: CredManr.SignVekselis = 0;
+    end;
+
+    BlockLoad(CMb);
+    if (nonblank(CMb.SignOrderClass) and CredManr.OrderClass!=CMb.SignOrderClass) then begin
+      CredManr.OrderClass = CMb.SignOrderClass;
+    end;
+
+    RecordUpdate(oldCredManr,CredManr,true);
+  end;
+
+  return;
+end;
+
+global
+updating procedure RecreateAgreementDocument(var record AgreementDocVc ADr,Boolean resignf)
+begin
+  record CredManVc CredManr;
+  
+  if (ADr.RecordType==0) then begin
+    CredManr.SerNr = ADr.RecordNr;
+    if (ReadFirstMain(CredManr,1,true)) then begin
+      PrintSingleAgreementDoc(ADr,CredManr,true);
+      if (resignf) then begin
+        ResetSignatureStatus(ADr,CredManr);
+      end;
+    end;
+  end;
+
   return;
 end;
 
@@ -1144,5 +1249,30 @@ begin
   end;
 
   ContractHasInvoiceCreated = res;
+  return;
+end;
+
+
+global
+procedure CredLegalNrSerNrSClassOnOpenWindowRemote(string filename,string sernr,Date invdate,string agrtype,string agrclass,var array string arrOffSerNr)
+begin
+  
+  FindListCredLegalSerNr(filename,sernr,invdate,agrtype,agrclass,0,arrOffSerNr);
+
+  return;
+end;
+
+global
+updating procedure GetCredManPropertyRecord(record CredManVc CredManr,var record CredManPropertiesVc CMPr)
+begin
+  
+  CMPr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CMPr,1,true)==false) then begin
+    RecordNew(CMPr);
+    CMPr.CredManNr = CredManr.SerNr;
+    RecordInsert(CMPr,true);
+  end;
+
+
   return;
 end;

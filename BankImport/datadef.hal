@@ -15,6 +15,7 @@ begin
 		RecordField(DefVEPayModeSEB,M4Code,5,0);
 		RecordField(DefVEPayModeLUM,M4Code,5,0);
 		RecordField(DefVEPayModeSIA,M4Code,5,0);
+		RecordField(OKIPFlag,M4Int,0,0);
 	EndBlock;
 	
 
@@ -26,6 +27,14 @@ begin
   RecordField(IVNr,M4Long,0,0);
   RecordField(Comment,M4Str,255,0);
   RecordField(Math,M4Matrix,0,0);
+  RecordField(ArtMode,M4Int,0,0);
+  RecordField(Total,M4Qty,0,0);
+  RecordField(PaidStat,M4Int,0,0);
+  RecordField(TransactionCnt,M4Qty,0,0);
+  RecordField(OverpaidCnt,M4Val,0,0);//this is not cnt, but amount
+  RecordField(ConnectedCnt,M4Val,0,0);//this is not cnt, but amount
+  RecordField(NotRecognizedCnt,M4Val,0,0);//this is not cnt, but amount
+  
   ArrayBegin(Math,-,1);
   ArrayField(TransDate,M4Date,0,0);
   ArrayField(CustCodeRow,M4Code,20,0);
@@ -38,6 +47,11 @@ begin
   ArrayField(PrepayNr,M4Long,0,0);
   ArrayField(BankTRNr,M4Long,0,0);
   ArrayField(IPNr,M4Long,0,0);
+  ArrayField(IVOfficNrRow,M4Str,255,0);
+  ArrayField(IVOpenAmount,M4Val,0,0);
+  ArrayField(IVPaidAmount,M4Val,0,0);
+  ArrayField(IVOpenAmount2,M4Val,0,0);
+  ArrayField(Status,M4Set,21000,0);
   EndArray;
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
@@ -46,6 +60,25 @@ begin
   RecordAddBegin(BankTRVc,"BankTRVcCust");
   RecordField(PayCustCode,M4Code,20,0);
   EndRecordAdd;
+
+  RecordBegin(IPConDistributeVc,-,"");
+  RecordField(SerNr,M4Long,0,0);//won't really need it
+  RecordField(Math,M4Matrix,0,0);
+  RecordField(Total,M4Val,0,0);
+  RecordField(Overpaid,M4Val,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(stp,M4Int,0,0);
+  ArrayField(InvoiceNr,M4Long,0,0);
+  ArrayField(Sum,M4Val,0,0);
+  ArrayField(Sum4,M4Val,0,0);
+  ArrayField(ArtCode,M4Code,0,0);
+  ArrayField(Spec,M4Str,255,0);
+  ArrayField(CredHistNr,M4Long,0,0);
+  EndArray;
+  MainKeyBegin(SerNr,0);
+  KeySegment(SerNr);
+  EndRecord;
+  
   
   return;
 end;

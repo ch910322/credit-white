@@ -854,3 +854,47 @@ begin
 	
 return;
 end;
+
+global
+function Integer FindBankAccImportBank(string acc)
+begin
+  record PMBlock PMb;
+  row PMBlock PMbrw;
+  integer i,rwcnt;
+  record BankVc Bankr;
+  Integer res;
+  
+  res = -1;
+  BlockLoad(PMb);
+  rwcnt = MatRowCnt(PMb);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(PMb,i,PMbrw);
+    if (acc == PMbrw.BankNr) then begin
+      i = rwcnt;
+      Bankr.Code = PMbrw.BankCode;
+      if (ReadFirstMain(Bankr,1,true)) then begin
+        res = Bankr.ReceiptBank;
+      end;
+    end;
+  end;
+
+  FindBankAccImportBank = res;
+  return;
+end;
+
+global
+procedure PayModeBankAccCustSClassArrayOnOpen(var Array string acode,var Array string acomment)
+begin
+  record PMBlock PMb;
+  row PMBlock PMbrw;
+  integer i,rwcnt;
+  
+  BlockLoad(PMb);
+  rwcnt = MatRowCnt(PMb);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(PMb,i,PMbrw);
+    acode[acode.length] = PMbrw.BankNr;
+    acomment[acomment.length] = PMbrw.Comment;
+  end;
+  return;
+end;

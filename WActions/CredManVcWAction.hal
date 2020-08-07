@@ -23,9 +23,13 @@ remote function Date GetPauseCredManNextDate(record CredManVc);
 remote updating procedure RecreateAgreementSchedule(record CredManVc);
 remote function Boolean ContractHasInvoiceCreated(record CredManVc);
 remote updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
-remote updating procedure GenerateAgreementSchedule(record CredManVc);
+remote updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
 remote function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
 remote updating procedure CreateManualExtraInvoice(record RcVc,var record IVVc);
+remote procedure CredLegalNrSerNrSClassOnOpenWindowRemote(string,string,Date,string,string,var array string);
+remote updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
+remote updating procedure GetCredManPropertyRecord(record CredManVc,var record CredManPropertyVc);
+
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -258,6 +262,8 @@ begin
     case "PayGrntPayDate2":   res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
     case "PayGrntReportDate1":res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
     case "PayGrntReportDate2":res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
+    case "MinSum":            res = CredManDClassInvSumEFAfter(wn,changed!=0);
+    case "MaxSum":            res = CredManDClassInvSumEFAfter(wn,changed!=0);
     otherwise 
       res = inner.CredManDClassAfterEditField(wn,fieldname,fn,rownr,changed);
   end;
@@ -1069,6 +1075,49 @@ begin
   return;
 end;
 
+global
+updating procedure AgreementDocDClassRegen()
+begin 
+  Integer wn;
+  record AgreementDocVc ADr;
+  record RcVc RepSpec;
+
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_Normal) then begin
+    GetWindowRecord(wn,ADr);
+    RecreateAgreementDocument(ADr,false);
+    CloseWindow(wn);
+    OpenWindow("AgreementDocDClass",1,0,"","",ADr);
+  end;
+
+  return;
+end;
+
+global
+updating procedure AgreementDocDClassRegen2()
+begin 
+  Integer wn,cwn;
+  record AgreementDocVc ADr;
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_Normal) then begin
+    GetWindowRecord(wn,ADr);
+    RecreateAgreementDocument(ADr,true);
+    cwn = wn - 1;
+    if (GetWindowClass(cwn)=="CredManDClass") then begin
+      GetWindowRecord(cwn,CredManr);
+      ReadFirstMain(CredManr,1,true);
+      CloseWindow(cwn);
+      OpenWindow("CredManDClass",1,MotherWindow(cwn),"","",CredManr);
+    end;
+    CloseWindow(wn);
+    OpenWindow("AgreementDocDClass",1,0,"","",ADr);
+  end;
+
+  return;
+end;
 
 global
 procedure DocumentSigningClientDone(string user,record AgreementDocVc ADr)
@@ -1265,13 +1314,49 @@ begin
   Integer wn;
   record CredManVc CredManr;
   record VIVc VIr;
+  record RcVc RepSpec;
+  record CredManSchedVc CSr;
     
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
 
   if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
-    GenerateAgreementSchedule(CredManr);
+    CSr.CredManNr = CredManr.SerNr;
+    if (ReadFirstMain(CSr,1,true)) then begin
+      RepSpec.long1 = CredManr.SerNr;
+      OpenWindow("SchedYesNoWClass",0,0,"","",RepSpec);
+    end else begin
+      GenerateAgreementSchedule(CredManr,false);
+    end;
   end;
+
+  return;
+end;
+
+global
+updating procedure SchedYesNoWClassProceed()
+begin
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  Integer wn;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,RepSpec);
+  
+  CredManr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    GenerateAgreementSchedule(CredManr,true);
+  end;
+
+  CloseWindow(wn);
+  return;
+end;
+
+global
+procedure SchedYesNoWClassClose()
+begin
+  
+  CloseWindow(CurWindow);
 
   return;
 end;
@@ -1337,6 +1422,75 @@ begin
     inner.DblCredManVc(l,l,currepwn);
   end else begin
     inner.DblCredManVc(dblstr,l,currepwn);
+  end;
+  return;
+end;
+
+
+global
+function Boolean CredLegalNrSerNrSClassOnOpenWindow(Integer wn)
+begin
+  array string 255 arrOffSerNr;
+  record B2BLoanApplicationVc LAr;
+  record CredManVc CredManr;
+  Integer mwn,i;
+  
+  mwn = MotherWindow(wn);
+
+  switch (GetWindowClass(mwn)) begin
+    case "B2BLoanApplicationDClass":
+      GetWindowRecord(mwn,LAr);
+      CredLegalNrSerNrSClassOnOpenWindowRemote("B2BLoanApplicationVc",LAr.SerNr,LAr.Type,LAr.TransDate,"",arrOffSerNr);
+    case "CredManDClass":
+      GetWindowRecord(mwn,CredManr);
+      CredLegalNrSerNrSClassOnOpenWindowRemote("CredManVc",CredManr.SerNr,CredManr.startDate,CredManr.Type,CredManr.Classifications,arrOffSerNr);
+  end;
+  ClearStringList(wn);
+  for (i=0;i<arrOffSerNr.length;i=i+1) begin
+    AddListRow(wn,"DLPasteCredSerNrAccount",1,arrOffSerNr[i],0);
+    AddListData(wn,"DLPasteCredSerNrAccount","DLSerNr",arrOffSerNr[i]);
+  end;
+
+  CredLegalNrSerNrSClassOnOpenWindow = false;
+  return;
+end;
+
+
+global
+function Boolean CredLegalNrSerNrSClassOnOKWindow(Integer wn)
+begin
+  Integer mwn;
+  record B2BLoanApplicationVc LAr;
+  record CredManVc CredManr;
+  record BankVc Bankr;
+  Integer Sel;
+  string 255 tstr;
+  
+  mwn = MotherWindow(wn);
+
+  Sel = SelectedListLine(wn);
+  if (Sel>-1) then begin
+    tstr = GetListTag(wn,Sel);
+    PasteString(mwn,tstr);
+  end;
+  CloseWindow(wn);
+
+  CredLegalNrSerNrSClassOnOKWindow = false;
+  return;
+end;
+
+global
+updating procedure CredManDClassOpenProperties()
+begin
+  record CredManVc CredManr;
+  record CredManPropertiesVc CMPr;
+  Integer wn;
+
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_Normal) then begin
+    GetWindowRecord(wn,CredManr);
+    GetCredManPropertyRecord(CredManr,CMPr);
+    OpenWindow("CredManPropertiesDClass",0,0,"","",CMPr);
   end;
   return;
 end;

@@ -428,7 +428,7 @@ begin
   h = 150; h2 = 250; v=450;
   EditFieldTL(h,v=6,120,"Invoice Date",M4Date,Normal,0,d1,false,PasteCurDate);
   EditFieldTL(h,v+=vs,120,"Item",M4Code,Normal,20,f1,false,INSClass);
-  EditFieldTL(h,v+=vs,120,"Value",M4Qty,Normal,0,vals0,false,0);
+  EditFieldTL(h,v+=vs,120,"Value",M4Val,Normal,0,vals0,false,0);
   HalPushButton(h,v+=vs,h+120,v+20,"ManualExtraFeeWClassCreate","Create");
   EndWindow;
 
@@ -670,6 +670,7 @@ begin
   EditField(h2,v+=vs,120,"Bank Name",Normal,BankName,false,0);
   EditField(h2,v+=vs,120,"Bank Account",Normal,BankAccount,false,BankAccountSClass);
   EditField(h2,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  EditField(h2,v+=vs,-40,"Legal No.",Normal,OfficialSerNr,false,CredLegalNrSerNrSClass);
   
   CheckBox(h3,v=6,0,"Request Direct Debit",RequestDirectDebit);
   
@@ -1329,7 +1330,6 @@ begin
   UseView(AgreementDocVc);
   vs=20; h=120; vs2=16; hm=-100;
   EditField(h,v=6,90,"Number",Normal,SerNr,false,0);
-  CheckBox(h+280,v,0,"Reminder Sent",SentReminder);
   EditField(h,v+=vs,90,"Agreement",Normal,RecordNr,false,0);
   EditField(h,v+=vs,90,"Date",ViewOnly,TransDate,false,0);
   EditField(h2=300,v,90,"Time",ViewOnly,TransTime,false,0);
@@ -1342,8 +1342,11 @@ begin
   CheckBox(h,v+=vs,0,"Signed By Us",SignedByUs);
   EditField(h+180,v,90,"Date",ViewOnly,SignedByUsDate,false,0);
   EditField(h+280,v,90,"",ViewOnly,SignedByUsTime,false,0);
+  CheckBox(h,v+=vs,0,"Reminder Sent",SentReminder);
 
-  HalPushButton(-300,7,-200,27,"AgreementDocDClassSign","Sign");
+  HalPushButton(-300,7,-230,27,"AgreementDocDClassSign","Sign");
+  HalPushButton(-220,7,-150,27,"AgreementDocDClassRegen","Regerate");
+  HalPushButton(-140,7,-10,27,"AgreementDocDClassRegen2","Regenerate and resign");
 
   MatrixBegin(10,v+=40,-30,220,-,10);
   MatCol(1,25,"Code",0,CustCode,false,B2BLoanApp_CUSClass);
@@ -1608,6 +1611,24 @@ begin
   EndWindow;
 end;
 
+window CMIncomeForecastRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm,vs;
+  WindowBegin("Specify Income Forecast",CMIncomeForecastRClass,CGRcW,RcType);
+  SetWRect(20,80,420,310);
+  vs = 20;
+  PeriodField(h=140,v=6,"Period");
+  EditFieldTL(h,v+=vs,150,"Customer",   M4UStr,Normal,41,f1,false,CUSClass);
+  EditFieldTL(h,v+=vs,82,"Agreement Type",M4Str,Normal,60,f2,false,CredManTypeSClass);
+  EditFieldTL(h,v+=vs,82,"Class",M4Str,Normal,60,f3,false,OrderClassSClass);
+  EditFieldTL(h,v+=vs,82,"Agreement Classification",M4Str,Normal,60,f4,false,CredManClassSClass);
+  EditFieldTL(h,v+=vs,82,"Manager",M4Str,Normal,60,f5,false,UserSClass);
+  EndWindow;
+end;
+
+
+
 window ReceiptEntryWClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
@@ -1691,16 +1712,15 @@ window CredManSchedLClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Agreement Schedules",CredManSchedLClass,CGmlist,-);
-  SetWRect(20,80,660,298);
+  SetWRect(20,80,560,298);
   Sizeable(-1,-1,0,0);
   SpawnClass(CredManSchedDClass);
   UseView(CredManSchedVc);
   RecordList(4,17,-21,-39);
-  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
-  RlColKey(100,100,"Agreement",CredManNr,false,CredManNr);
-  RlCol(196,196,"Customer",CustCode,false);
-  RlCol(456,456,"Date",TransDate,false);
-  RlCol(526,526,"Time",TransTime,false);
+  RlColKey(4,4,"Agreement",CredManNr,false,CredManNr);
+  RlCol(106,106,"Customer",CustCode,false);
+  RlCol(356,356,"Date",TransDate,false);
+  RlCol(426,426,"Time",TransTime,false);
   SearchField("Search");
   EndWindow;
 end;
@@ -1714,25 +1734,30 @@ begin
   Sizeable(-1,-1,0,0);
   UseView(CredManSchedVc);
   vs=20; h=120; vs2=16; hm=-100; h2 = 350;
-  EditField(h,v=6,90,"Ser. No.",Normal,SerNr,false,);
-  EditField(h2,v,120,"Agreement",ViewOnly,CredManNr,false,CredManSClass);
+  EditField(h,v=6,120,"Agreement",ViewOnly,CredManNr,false,0);
   EditField(h,v+=vs,90,"Customer",ViewOnly,CustCode,false,CUSClass);
   EditField(h2,v,-40,"Name",ViewOnly,CustName,false,0);
   EditField(h,v+=vs,90,"Date",ViewOnly,TransDate,false,0);
   EditField(h2,v,90,"Time",ViewOnly,TransTime,false,0);
-  MatrixBegin(10,v+=vs+40,-40,-20,-,999);
+  MatrixBegin(10,v+=vs+40,-40,-40,-,999);
   MatCol(1,24,"Type",0,Type,false,SetSClass);
-  MatCol(1,104,"Inv. Date",0,InvDate,false,0);
-  MatCol(1,104,"Period From",0,FromDate,false,0);
-  MatCol(1,104,"Period To",0,ToDate,false,0);
-  MatCol(1,184,"Principle",0,Principle,false,0);
-  MatCol(1,274,"Interest",0,Interest,false,0);
-  MatCol(1,354,"Fees",0,Fees,false,0);
-  MatCol(1,434,"Total",0,Total,false,0);
+  MatCol(1,85,"Inv. Date",0,InvDate,false,0);
+  MatCol(1,150,"Period From",0,FromDate,false,0);
+  MatCol(1,215,"Period To",0,ToDate,false,0);
+  MatCol(1,320,"Principle",0,Principle,false,0);
+  MatCol(1,390,"Interest",0,Interest,false,0);
+  MatCol(1,460,"Fees",0,Fees,false,0);
+  MatCol(1,534,"Total",0,Total,false,0);
   MatCol(1,-60,"Invoiced",0,Invoiced,false,SetSClass);
   InsertRowTest;
   DeleteRowTest;
   EndMatrix;
+  SoftEditField(150,-30,150,"Period",ViewOnly,"period",false,0,M4Str,255);
+  SoftEditField(350,-30,60,"",ViewOnly,"totprinc",false,0,M4Val,0);
+  SoftEditField(420,-30,60,"",ViewOnly,"totint",false,0,M4Val,0);
+  SoftEditField(495,-30,60,"",ViewOnly,"totfees",false,0,M4Val,0);
+  SoftEditField(570,-30,60,"",ViewOnly,"tot",false,0,M4Val,0);
+
   SpecialMenu("Open Fees Matrix",' ',1,"OpenCredFeesMatrixSchedDsm");
 
   
@@ -1753,6 +1778,7 @@ begin
   tilenr = 1;
   Tile(0,20,false,"",DetailedInvoice);
   TileButton(tilenr,"General"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Overdue"); tilenr = tilenr + 1;  
   TileButton(tilenr,"Factoring"); tilenr = tilenr + 1;  
   TileButton(tilenr,"Payment Guarantee"); tilenr = tilenr + 1;  
   TileButton(tilenr,"Payments"); tilenr = tilenr + 1;
@@ -1763,8 +1789,6 @@ begin
   CheckBox(h,v+=16,0,"Interest on due Principle",IntDuePrinciple);
   CheckBox(h,v+=16,0,"Manual Contract Fee Invoice Number",ManualInvoiceNumber);
   CheckBox(h,v+=16,0,"Principle below hidden Line",HiddenPrinciple);
-  CheckBox(h,v+=16,0,"Overdue Calculation below hidden Line",AddOverdueDetails);
-
 
   CheckBox(h,v+=30,0,"Automatically issue Invoices",AutoInvoiceFlag);
   EditField(h,v+=20,100,"Time",Normal,AutoInvoiceTime,false,PasteCurTime);
@@ -1772,7 +1796,6 @@ begin
   CheckBox(h,v+=16,0,"Automatically send Invoices created from Contracts",AutoMailsFromInvoices);
 
   EditField(h,v+=vs,100,"Additional Comment",Normal,InvoiceCommentStr,false,0);
-  EditField(h,v+=vs,100,"Overdue Item Class",Normal,OverdueItemClass,false,DISClass);
   EditField(h,v+=vs,140,"Replace VAT Nr.",Normal,ReplaceVATNr,false,0);
   EditField(h+200,v,140,"with",Normal,ReplaceVATNrWith,false,0);
   EditField(h,v+=vs,100,"Prolong Item",Normal,ProlongItem,false,INSClass);  
@@ -1784,14 +1807,6 @@ begin
   RadioButton(h,v+=16,3,0,"Separately for previous Calendar Month, on Day",InterestIVType);  
   EditField(h+360,v,30,"Day of Month",Normal,InterestIVDay,false,0);
 
-  ButtonFrame(h,v+=40,400,3,"Overdue Invoicing");
-  RadioButton(h,v,0,0,"With Principle, same Invoice",OverdueIVType);
-  RadioButton(h,v+=16,1,0,"With Principle, separate Invoice",OverdueIVType);  
-  RadioButton(h,v+=16,2,0,"Separately for previous Calendar Month, on Day",OverdueIVType);  
-  EditField(h+360,v,30,"Day of Month",Normal,OverdueIVDay,false,0);
-
-  EditField(h,v+=30,100,"Overdue Months",Normal,OverdueMonths,false,0);
-  
   v = v + 40;
   ButtonFrame(h,vm=v,200,5,"Invoice Recipients");
   Checkbox(h,v,0,"Primary Contact Email",SendToMainContact);
@@ -1804,8 +1819,25 @@ begin
   RadioButton(h2,v,0,0,"Payment Day",InvoiceDay);
   RadioButton(h2,v+=16,1,0,"Payment Day - Days of Payment Term",InvoiceDay);  
 
+  Tile(2,500,false,"2",DetailedInvoice);
+  CheckBox(h,v=6,0,"Overdue Calculation below hidden Line",AddOverdueDetails);
 
-  Tile(2,95,false,"2",FBuyerPayDeal);
+
+  EditField(h,v+=vs,100,"Overdue Item Class",Normal,OverdueItemClass,false,DISClass);
+  EditField(h,v+=30,100,"Overdue Months",Normal,OverdueMonths,false,0);
+
+  ButtonFrame(h,v+=40,400,3,"Overdue Invoicing");
+  RadioButton(h,v,0,0,"With Principle, same Invoice",OverdueIVType);
+  RadioButton(h,v+=16,1,0,"With Principle, separate Invoice",OverdueIVType);  
+  RadioButton(h,v+=16,2,0,"Separately for previous Calendar Month, on Day",OverdueIVType);  
+  EditField(h+360,v,30,"Day of Month",Normal,OverdueIVDay,false,0);
+
+  ButtonFrame(h,v+=40,150,2,"Overdue Rate");
+  RadioButton(h,v,0,0,"Daily",OverdueRateType);
+  RadioButton(h,v+=16,1,0,"Monthly",OverdueRateType);  
+
+  
+  Tile(3,95,false,"3",FBuyerPayDeal);
   vs=20; h=160; vs2=16; hm=-100;
   ButtonFrame(h-100,v=30,250,5,"Buyer's Invoice");
   EditField(h,v,100,"Payment Terms",Normal,FBuyerPayDeal,false,PDSClass);
@@ -1821,7 +1853,7 @@ begin
   EditField(h,v+=vs,100,"Object",Normal,FSellerObject,false,ObjSClass);
   EditField(h,v+=vs,100,"Payment Mode",Normal,FIVPaymentMode,false,PMSClass);
   
-  Tile(3,95,false,"3",PGBuyerSecurityItem);
+  Tile(4,95,false,"4",PGBuyerSecurityItem);
  
   ButtonFrame(h-100,v=30,250,5,"Buyer's Invoice");
   EditField(h,v,100,"Security Item",Normal,PGBuyerSecurityItem,false,INSClass);
@@ -1833,7 +1865,7 @@ begin
   EditField(h,v,100,"Account",Normal,PGSellerAccount,false,AccSClass);
   EditField(h,v+=vs,100,"VAT Code",Normal,PGSellerVATCode,false,VATCodeSClass);
 
-  Tile(4,95,false,"4",PaymentPayDeal);
+  Tile(5,95,false,"5",PaymentPayDeal);
 
   EditField(h,v=6,100,"Payment Terms",Normal,PaymentPayDeal,false,PDSClass);
   EditField(h,v+=vs,100,"Account",Normal,PaymentAccount,false,AccSClass);
@@ -1857,10 +1889,9 @@ begin
   SetWRect(20,80,900,457);
   Sizeable(-1,-1,0,0);
   h = 8; v = 20;
-  h1=28;
+  h1=24;
   MatrixBegin(h,v+=60,-50,-20,-,499);
-  Flip(0);
-  MatCol(1,h1,"From Date",0,PurchDate,false,PasteCurDate);
+  MatCol(1,h1,"From Date",0,StartDate,false,PasteCurDate);
   MatCol(1,h1+=80,"To Date",0,EndDate,false,PasteCurDate);
   MatCol(1,h1+=80,"Serie",0,Serie,false,0);
   MatCol(1,h1+=80,"From",0,TSerStart,false,0);
@@ -1888,7 +1919,7 @@ begin
   h1=24;
   MatrixBegin(h,v,-25,-10,-,20);
   Flip(0);
-  MatCol(1,h1,"Item",0,ArtCode,false,0);
+  MatCol(1,h1,"Item",0,ArtCode,false,INSClass);
   MatCol(1,-60,"Sum",0,Sum,false,0);
   EndMatrix;
   EndWindow;
@@ -1936,5 +1967,208 @@ begin
   EditField(h,v+=vs,50,"PaidFlag",Normal,PaidFlag,false,0);
   EditField(h,v+=vs,50,"CredManNr",Normal,CredManNr,false,0);
   EditField(h,v+=vs,50,"RecalcSchedule",Normal,RecalcSchedule,false,0);
+  EndWindow;
+end;
+
+window CredLegalNrSerNrSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v;
+
+  WindowBegin("Paste Legal Serial Number",CredLegalNrSerNrSClass,CGother,RcType);
+  SetWRect(64,80,400,298);
+  DataList(0,0,-1,-1,"DLPasteCredSerNrAccount");
+  DataListColumn(1,6,-1,AdjLeft,"DLSerNr","Nr",M4Str);
+  EndWindow;
+end;
+
+window SchedYesNoWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v; 
+
+  WindowBegin("Generate Schedule",SchedYesNoWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,300,220);
+  AutoSizeWindow(false);  
+  StaticText(50,26,"Already registered. Overwrite?",false);
+  HalPushButton(-260,-30,-160,-10,"SchedYesNoWClassProceed","Yes");
+  HalPushButton(-120,-30,-20,-10,"SchedYesNoWClassClose","No");
+  EndWindow;
+
+  return;
+end;
+
+window CMPropertyLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Propertys",CMPropertyLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMPropertyDClass);
+  UseView(CMPropertyVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
+  RlCol(100,100,"Official No.",OfficialSerNr,false);
+  RlCol(230,230,"Name",Addr0,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMPropertySClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Propertys",CMPropertySClass,CGslist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMPropertyDClass);
+  UseView(CMPropertyVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
+  RlCol(100,100,"Official No.",OfficialSerNr,false);
+  RlCol(230,230,"Name",Addr0,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMPropertyDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm,h2;
+  WindowBegin("Property",CMPropertyDClass,CGview,-);
+  SetWRect(20,80,600,339);
+  Sizeable(-1,-1,0,0);
+  UseView(CMPropertyVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,100,"Ser. No.",Normal,SerNr,false,);
+  EditField(h2=350,v,150,"Official No.",Normal,OfficialSerNr,false,0);
+  EditField(h,v+=vs,150,"Name",Normal,Addr0,false,0);
+  EditField(h,v+=vs,150,"Country",Normal,Addr1,false,CountrySClass);
+  EditField(h,v+=vs,150,"City",Normal,Addr2,false,0);
+  EditField(h,v+=vs,150,"Address",Normal,Addr3,false,0);
+  EditField(h,v+=vs,150,"ZIP",Normal,Addr4,false,0);
+  EditField(h,v+=vs,100,"Type",Normal,Type,false,CMPropertyTypeSClass);
+  EditField(h,v+=vs,100,"Reported Value",Normal,RepVal,false,0);
+  EditField(h,v+=vs,100,"Evaluated Value",Normal,EvalVal,false,0);
+  EditField(h,v+=vs,100,"Insurance Company",Normal,InsuranceCompany,false,CUSClass);
+  EditField(h2,v,-40,"Name",Normal,InsuranceName,false,0);
+  EditField(h,v+=vs,100,"Insurance Type",Normal,InsuranceType,false,CMInsuranceTypeSClass);
+  EditField(h,v+=vs,100,"Insured Value",Normal,InsuredVal,false,0);
+  EditField(h,v+=vs,100,"Insured Until",Normal,InsuredUntil,false,PasteCurDate);
+  MatrixBegin(10,v+=vs+40,-40,-20,-,99);
+  MatCol(1,24,"Contact",0,OwnerCode,false,CUSClass);
+  MatCol(1,104,"Name",0,OwnerName,false,0);
+  MatCol(1,-154,"Shares %",0,SharesPrc,false,0);
+  MatCol(1,-84,"Shares Value",0,SharesVal,false,0);
+  EndMatrix;
+  EndWindow;
+end;
+
+
+window CMPropertyTypeLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Classifications",CMPropertyTypeLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMPropertyTypeDClass);
+  UseView(CMPropertyTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMPropertyTypeSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Paste Agreement Classification",CMPropertyTypeSClass,CGslist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMPropertyTypeDClass);
+  UseView(CMPropertyTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMPropertyTypeDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Agreement Classification",CMPropertyTypeDClass,CGview,-);
+  SetWRect(20,80,400,239);
+  UseView(CMPropertyTypeVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,100,"Code",Normal,Code,false,);
+  EditField(h,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  EndWindow;
+end;
+
+window CMInsuranceTypeLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Classifications",CMInsuranceTypeLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMInsuranceTypeDClass);
+  UseView(CMInsuranceTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMInsuranceTypeSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Paste Agreement Classification",CMInsuranceTypeSClass,CGslist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMInsuranceTypeDClass);
+  UseView(CMInsuranceTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMInsuranceTypeDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Agreement Classification",CMInsuranceTypeDClass,CGview,-);
+  SetWRect(20,80,400,239);
+  UseView(CMInsuranceTypeVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,100,"Code",Normal,Code,false,);
+  EditField(h,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  EndWindow;
+end;
+
+
+window CredManPropertiesDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Properties",CredManPropertiesDClass,CGview,-);
+  SetWRect(20,80,900,339);
+  UseView(CredManPropertiesVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  MatrixBegin(10,20,-40,-20,-,99);
+  MatCol(1,24,"Property",0,Property,false,CMPropertySClass);
+  MatCol(1,104,"Name",0,Addr0,false,0);
+  MatCol(1,-530,"ID",0,OfficialSerNr,false,0);
+  MatCol(1,-440,"Reported Value",0,RepVal,true,0);
+  MatCol(1,-350,"Evaluated Value",0,EvalVal,true,0);
+  MatCol(1,-260,"Pledge Type",0,PledgeType,false,SetSClass);
+  MatCol(1,-170,"Pledge Val",0,PledgeVal,true,0);
+  MatCol(1,-80,"Pledge Date",0,PledgeDate,false,PasteCurDate);
+  EndMatrix;
   EndWindow;
 end;
