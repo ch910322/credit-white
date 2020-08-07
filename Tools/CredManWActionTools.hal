@@ -234,7 +234,7 @@ begin
   record AgreementDocVc ADr,oldADr;
   row AgreementDocVc ADrw;
   record RcVc RepSpec;
-  string 255 fn,langcode;
+  string 255 fn,langcode,oldname;
   Integer i,rwcnt;
   area filearea;
 
