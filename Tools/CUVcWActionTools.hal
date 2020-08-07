@@ -32,6 +32,14 @@ begin
 end;
 
 global
+procedure CMGetServerAddressAndPort(var string url)
+begin
+  
+  url = "https://" & PublicHostName & ":" & ServerHttpsPort;
+  return;
+end;
+
+global
 updating function Boolean SendNewUserInvite(record CUVc CUr)
 begin
   record InvitationRequestVc IRr;
