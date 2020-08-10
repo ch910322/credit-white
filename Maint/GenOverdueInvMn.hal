@@ -3,8 +3,9 @@ external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetB
 external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var record IVVc,Date,Date,Date,Boolean,Boolean,string);
 external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val,array string);
 external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
+external function Date GetLastInvoiceDate(record CredManVc,Date);
 
-
+/*
 function Date GetLastInvoiceDate(record CredManVc CredManr,Date ed)
 begin
   Date res;
@@ -18,6 +19,7 @@ begin
   GetLastInvoiceDate = res;
   return;
 end;
+*/
 
 global
 updating procedure GenOverdueInvMn(record RcVc RepSpec)
@@ -37,7 +39,8 @@ begin
   while (LoopMain(CredManr,1,true)) begin
     if (CredManr.OKFlag==1) then begin
       
-      sd = CredManr.FirstInvDate;
+      //sd = CredManr.FirstInvDate;
+      sd = GetLastInvoiceDate(CredManr,RepSpec.d1);
       //ed = GetLastInvoiceDate(CredManr,RepSpec.d1);
       ed = RepSpec.d1;
       GetCredManOverdueInvoices(CredManr,CMb,ed,sd,latedays,lateamount,lateformula);
