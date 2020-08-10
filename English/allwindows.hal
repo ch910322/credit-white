@@ -830,7 +830,7 @@ begin
   ButtonFrame(h2=h2+170,v=vm,80,3,"Overdue Rate");
   RadioButton(h2,v,0,0,"Default",OverdueRateType);
   RadioButton(h2,v+=16,1,0,"Daily",OverdueRateType);
-  RadioButton(h2,v+=16,1,0,"Monthly",OverdueRateType);
+  RadioButton(h2,v+=16,2,0,"Monthly",OverdueRateType);
 
 //CUST-BEGIN
   Tile(5,290,true,"5",SuretyProvider1); 
@@ -996,7 +996,7 @@ begin
   ButtonFrame(h3=h2+170,v=vm,80,3,"Overdue Rate");
   RadioButton(h3,v,0,0,"Default",OverdueRateType);
   RadioButton(h3,v+=16,1,0,"Daily",OverdueRateType);
-  RadioButton(h3,v+=16,1,0,"Monthly",OverdueRateType);
+  RadioButton(h3,v+=16,2,0,"Monthly",OverdueRateType);
 //CUST-END
 /*
   ButtonFrame(h=50,vm=(v+=45),140,2,"Default Interest Type");
