@@ -1,0 +1,36 @@
+//<halrule>server-only</halrule>
+external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
+
+global
+procedure CredManSchedRecalcInterestRemote(var record CredManSchedVc CSr,var val calcbal)
+begin
+  Integer i,rwcnt,monthtype;
+  record CredManVc CredManr;
+  row CredManSchedVc CSrw;
+  
+  CredManr.SerNr = CSr.CredManNr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    rwcnt = MatRowCnt(CSr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(CSr,i,CSrw);
+      if (CSrw.InvDate==CredManr.FirstInvDate) then begin
+        monthtype = 0;
+      end else begin
+        if (rwcnt-1) then begin
+          monthtype = 2;
+        end else begin
+          monthtype = 1;
+        end;
+      end;
+      if (CredManr.ChargeMethod==1) then begin
+        monthtype = 2;
+      end;
+      CSrw.Interest = GetRateAmount(CredManr,CredManr.IntRate,monthtype,"","",calcbal,false);    
+      calcbal = calcbal - CSrw.Principle;
+      MatRowPut(CSr,i,CSrw);
+    end;
+  end;
+
+
+  return;
+end;
