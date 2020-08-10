@@ -39,8 +39,8 @@ begin
   while (LoopMain(CredManr,1,true)) begin
     if (CredManr.OKFlag==1) then begin
       
-      //sd = CredManr.FirstInvDate;
-      sd = GetLastInvoiceDate(CredManr,RepSpec.d1);
+      sd = CredManr.FirstInvDate;
+      //sd = GetLastInvoiceDate(CredManr,RepSpec.d1);
       //ed = GetLastInvoiceDate(CredManr,RepSpec.d1);
       ed = RepSpec.d1;
       GetCredManOverdueInvoices(CredManr,CMb,ed,sd,latedays,lateamount,lateformula);
