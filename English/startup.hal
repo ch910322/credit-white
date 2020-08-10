@@ -209,6 +209,8 @@ begin
 
 
   SString(200260,"Sum doesn't match with Bank Transaction");
+  SString(200261,"Total Principle repayment not the same as in agreement");
+
 
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");

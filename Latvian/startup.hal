@@ -7,6 +7,7 @@ begin
   SString(200081,"Periods: ");
 
   SString(200260,"Summa nesakrīt ar bankas maksājumu");
+  SString(200261,"Total Principle repayment not the same as in agreement");
 
   return;
 end;
