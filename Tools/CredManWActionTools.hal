@@ -33,7 +33,7 @@ external updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
 external inner function Boolean ExternalDocumentEnabled(string);
 external updating procedure PrintCredManDocument(string,string,record CredManVc,Integer,Boolean,string);
 external inner procedure GetCurUser(var record UserVc);
-external updating procedure CreateProlongInvoice(record CredManVc);
+external updating procedure CreateProlongInvoice(record CredManVc,var record IVVc);
 external inner function string 50 NextLegalSerNr(string,LongInt,Date,string,string,string);
 external function Boolean GetCredLegalNrLine(string,string,Date,string,string,var row CredLegalInvNrBlock,Integer);
 external procedure FindListCredLegalSerNr(string,string,string,string,string,Integer,var array string);
@@ -302,7 +302,7 @@ begin
 end;
 
 global
-updating procedure DoPauseCredMan(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res,var Boolean setf,record RcVc RepSpec)
+updating procedure DoPauseCredMan(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res,var Boolean setf,record RcVc RepSpec,var record IVVc IVr)
 begin
   res = false;
 
@@ -311,7 +311,7 @@ begin
     if (CanPauseAgreement(CredManr,td,months)) then begin
       if (RepSpec.flags[2]==1) then begin
         CreateProlongSession(CredManr,td,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1]);
-        CreateProlongInvoice(CredManr);
+        CreateProlongInvoice(CredManr,IVr);
       end;
       if (RepSpec.flags[3]==0) then begin
         CredManr.PauseDate = td;
