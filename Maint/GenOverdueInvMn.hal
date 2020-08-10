@@ -1,5 +1,5 @@
 //<halrule>server-only</halrule>
-external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string);
+external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string,Boolean);
 external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var record IVVc,Date,Date,Date,Boolean,Boolean,string);
 external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val,array string);
 external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
@@ -43,7 +43,7 @@ begin
       //sd = GetLastInvoiceDate(CredManr,RepSpec.d1);
       //ed = GetLastInvoiceDate(CredManr,RepSpec.d1);
       ed = RepSpec.d1;
-      GetCredManOverdueInvoices(CredManr,CMb,ed,sd,latedays,lateamount,lateformula);
+      GetCredManOverdueInvoices(CredManr,CMb,ed,sd,latedays,lateamount,lateformula,false);
       if (lateamount>0) then begin
         RecordClear(IVr);
         SetupLoanInvoice(CredManr,CMb,IVr,CurrentDate,sd,ed,true,false,"");
