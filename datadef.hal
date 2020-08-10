@@ -574,6 +574,8 @@ begin
   RecordField(MinOverdueFee,M4Val,0,0);
   RecordField(OverdueRateType,M4Int,0,0);
   RecordField(OverdueLangCode,M4Code,20,0);
+  RecordField(DaysInYear,M4Int,0,0);
+  RecordField(DaysInMonth,M4Int,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);

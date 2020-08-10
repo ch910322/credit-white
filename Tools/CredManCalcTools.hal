@@ -82,6 +82,46 @@ begin
   return;
 end;
 
+function Integer GetDaysInYear(record CMApplicationSetBlock CMb,record CredManVc CredManr)
+begin
+  record CredManTypeVc CMTr;
+  Integer res;
+
+  CMTr.Code = CredManr.Type;
+  if (ReadFirstMain(CMTr,1,true)) then begin
+    if (CMTr.DaysInYear>0) then begin
+      res = CMTr.DaysInYear;
+    end;
+  end;
+
+  if (res==0) then begin
+    res = CMb.DaysInYear;
+  end;
+
+  GetDaysInYear = res;
+  return;
+end;
+
+function Integer GetDaysInMonth(record CMApplicationSetBlock CMb,record CredManVc CredManr)
+begin
+  record CredManTypeVc CMTr;
+  Integer res;
+
+  CMTr.Code = CredManr.Type;
+  if (ReadFirstMain(CMTr,1,true)) then begin
+    if (CMTr.DaysInMonth>0) then begin
+      res = CMTr.DaysInMonth-1;
+    end;
+  end;
+
+  if (res==0) then begin
+    res = CMb.DaysInMonth;
+  end;
+
+  GetDaysInMonth = res;
+  return;
+end;
+
 global
 function val GetRateAmount(record CredManVc CredManr,val trate,Integer monthtypef,Date frdate,Date todate,val calcbal,Boolean ignoref)
 begin
@@ -102,24 +142,24 @@ begin
       if (frdate.Day!=todate.Day) then begin
         months = months - 1;//MonthDiff returns +1 if there are extra days
       end;
-      if (months>0 and CMB.DaysInMonth==0) then begin
+      if (months>0 and GetDaysInMonth(CMb,CredManr)==0) then begin
         days = DateDiff(todate,AddMonth(frdate,months));
         res = GetAmount(CredManr)*(rate/100)*months;
-        res = res + (GetAmount(CredManr)*(rate/100)*12/CMb.DaysInYear*days);
+        res = res + (GetAmount(CredManr)*(rate/100)*12/GetDaysInYear(CMb,CredManr)*days);
       end else begin
-        res = GetAmount(CredManr)*(rate/100)*12/CMb.DaysInYear*days;
+        res = GetAmount(CredManr)*(rate/100)*12/GetDaysInYear(CMb,CredManr)*days;
       end;
     case kMonthTypeRegular:
-      if (CMB.DaysInMonth==0) then begin
+      if (GetDaysInMonth(CMb,CredManr)==0) then begin
         res = GetAmount(CredManr)*(rate/100);
       end else begin
-        res = GetAmount(CredManr)*(rate/100)*12/CMb.DaysInYear*days;
+        res = GetAmount(CredManr)*(rate/100)*12/GetDaysInYear(CMb,CredManr)*days;
       end;   
     case kMonthTypeLast:
-      if (CMB.DaysInMonth==0) then begin
+      if (GetDaysInMonth(CMb,CredManr)==0) then begin
         res = calcbal*(rate/100);    
       end else begin
-        res = calcbal*(rate/100)*12/CMb.DaysInYear*days;
+        res = calcbal*(rate/100)*12/GetDaysInYear(CMb,CredManr)*days;
       end;
   end;
 
