@@ -26,7 +26,7 @@ begin
   record CredManSetBlock CMb;
   val lateamount;
   Integer latedays;
-  record IVVc IVr;
+  record IVVc IVr,oldIVr;
   array string 255 lateformula;
   
   if (blank(RepSpec.d1)) then begin
@@ -40,11 +40,15 @@ begin
       ed = GetLastInvoiceDate(CredManr,RepSpec.d1);
       GetCredManOverdueInvoices(CredManr,CMb,ed,sd,latedays,lateamount,lateformula);
       if (lateamount>0) then begin
+        RecordClear(IVr);
         SetupLoanInvoice(CredManr,CMb,IVr,CurrentDate,sd,ed,true,false,"");
         AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
         if (IVr.SerNr>-1) then begin
-          IVr.OKFlag = 1;
-          RecordInsert(IVr,true);
+          if (RecordInsert(IVr,true)) then begin
+            RecordCopy(oldIVr,IVr);
+            IVr.OKFlag = 1;
+            RecordUpdate(oldIVr,IVr,true);
+          end;
         end;
       end;
     end;
