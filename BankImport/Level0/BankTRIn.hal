@@ -272,16 +272,6 @@ begin
         BTRr.RcpName = XmlGet(xdata,ntrykey & "NtryDtls/TxDtls/RltdPties/Cdtr/Nm");
         BTRr.RcpRegNr1 = XmlGet(xdata,ntrykey & "NtryDtls/TxDtls/RltdPties/Cdtr/Id/OrgId/Othr/Id");
         BTRr.RcpReference = XmlGet(xdata,ntrykey & "NtryDtls/TxDtls/RmtInf/Ustrd");
-//CUST-BEGIN
-        begin
-          record OPVc OPr;
-          CustFillOPRecord(BTRr,OPr);
-          if (OPr.SerNr>0) then begin
-            BTRr.FileName = "OPVc";
-            BTRr.TransNr = OPr.SerNr;
-          end;
-        end;
-//CUST-END
       case "C":
         BTRr.RcpBankAcc = bankacc;
         if (blank(BTRr.RcpBankAcc)) then begin
@@ -302,14 +292,6 @@ begin
         BTRr.PayReference = XmlGet(xdata,ntrykey & "NtryDtls/TxDtls/RmtInf/Ustrd");
 //CUST-BEGIN
 //        CreateReceipt(SRb,PMbrw.Code,BTRr);
-        begin
-          record IPVc IPr;
-          CustFillIPRecord(BTRr,IPr);
-          if (IPr.SerNr>0) then begin
-            BTRr.FileName = "IPVc";
-            BTRr.TransNr = IPr.SerNr;
-          end;
-        end;
 //CUST-END
     end;
     oBTRr.TRNumber = BTRr.TRNumber;
@@ -320,13 +302,29 @@ begin
 //CUST-BEGIN
         begin
           record IPVc IPr;
-          if (BTRr.TransNr>0) then begin
-            IPr.SerNr = BTRr.TransNr;
-            if (ReadFirstMain(IPr,1,true)) then begin
-              CreateRecordLink(IPr,CurrentCompany,BTRr,CurrentCompany);
-              CreateRecordLink(BTRr,CurrentCompany,IPr,CurrentCompany);
-            end;
-          end;
+          record OPVc OPr;
+          record BankTRVc oldBTRr;
+          switch (Left(BTRr.TypeRef,1)) begin
+            case "D":
+              CustFillOPRecord(BTRr,OPr);
+              if (OPr.SerNr>0) then begin
+                RecordCopy(oldBTRr,BTRr);
+                BTRr.FileName = "OPVc";
+                BTRr.TransNr = OPr.SerNr;
+                RecordUpdate(oldBTRr,BTRr,true);
+              end;
+            case "C":
+              CustFillIPRecord(BTRr,IPr);
+              if (IPr.SerNr>0) then begin
+                RecordCopy(oldBTRr,BTRr);
+                BTRr.FileName = "IPVc";
+                BTRr.TransNr = IPr.SerNr;
+                if (RecordUpdate(oldBTRr,BTRr,true)==0) then begin
+                  CreateRecordLink(IPr,CurrentCompany,BTRr,CurrentCompany);
+                  CreateRecordLink(BTRr,CurrentCompany,IPr,CurrentCompany);
+                end;
+              end;
+          end;      
         end;
         end;
 //CUST-END
@@ -409,16 +407,6 @@ begin
         BTRr.RcpName = XmlGet(xdata,ntrykey & "NtryDtls/TxDtls/RltdPties/Cdtr/Nm");
         BTRr.RcpRegNr1 = XmlGet(xdata,ntrykey & "NtryDtls/TxDtls/RltdPties/Cdtr/Id/OrgId/Othr/Id");
         BTRr.RcpReference = XmlGet(xdata,ntrykey & "NtryDtls/TxDtls/RmtInf/Ustrd");
-//CUST-BEGIN
-        begin
-          record OPVc OPr;
-          CustFillOPRecord(BTRr,OPr);
-          if (OPr.SerNr>0) then begin
-            BTRr.FileName = "OPVc";
-            BTRr.TransNr = OPr.SerNr;
-          end;
-        end;
-//CUST-END
 
       case "C":
         BTRr.RcpBankAcc = bankacc;
@@ -441,14 +429,6 @@ begin
         BTRr.PayReference = XmlGet(xdata,ntrykey & "NtryDtls/TxDtls/RmtInf/Ustrd");
 //CUST-BEGIN
 //        CreateReceipt(SRb,PMbrw.Code,BTRr);
-        begin
-          record IPVc IPr;
-          CustFillIPRecord(BTRr,IPr);
-          if (IPr.SerNr>0) then begin
-            BTRr.FileName = "IPVc";
-            BTRr.TransNr = IPr.SerNr;
-          end;
-        end;
 //CUST-END
 
       
@@ -462,13 +442,29 @@ begin
 //CUST-BEGIN
         begin
           record IPVc IPr;
-          if (BTRr.TransNr>0) then begin
-            IPr.SerNr = BTRr.TransNr;
-            if (ReadFirstMain(IPr,1,true)) then begin
-              CreateRecordLink(IPr,CurrentCompany,BTRr,CurrentCompany);
-              CreateRecordLink(BTRr,CurrentCompany,IPr,CurrentCompany);
-            end;
-          end;
+          record OPVc OPr;
+          record BankTRVc oldBTRr;
+          switch (Left(BTRr.TypeRef,1)) begin
+            case "D":
+              CustFillOPRecord(BTRr,OPr);
+              if (OPr.SerNr>0) then begin
+                RecordCopy(oldBTRr,BTRr);
+                BTRr.FileName = "OPVc";
+                BTRr.TransNr = OPr.SerNr;
+                RecordUpdate(oldBTRr,BTRr,true);
+              end;
+            case "C":
+              CustFillIPRecord(BTRr,IPr);
+              if (IPr.SerNr>0) then begin
+                RecordCopy(oldBTRr,BTRr);
+                BTRr.FileName = "IPVc";
+                BTRr.TransNr = IPr.SerNr;
+                if (RecordUpdate(oldBTRr,BTRr,true)==0) then begin
+                  CreateRecordLink(IPr,CurrentCompany,BTRr,CurrentCompany);
+                  CreateRecordLink(BTRr,CurrentCompany,IPr,CurrentCompany);
+                end;
+              end;
+          end;      
         end;
         end;
 //CUST-END
