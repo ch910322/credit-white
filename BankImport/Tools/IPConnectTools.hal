@@ -37,42 +37,122 @@ LFilterReceiptInBankTrans:;
   return;
 end;
 
-procedure FindCustomer(record BankTRVc BTr,record CUVc CUr)
+function string 255 ConvertNameToSet(string name)
 begin
-  Boolean foundf;
+  integer i;
+  string 255 res,tstr;
+  Longint pos;
+  array string 255 tarr;
+  
+  For(i=0;i<len(name);i=i+1) begin
+    if(mid(name,i,1)==" ")then begin
+      res = res & ",";
+    end else begin
+      res = res & uppercase(mid(name,i,1));
+    end;
+  end; 
 
-  if (blank(BTr.PayCustCode)) then begin
-    if (nonblank(BTr.PayRegNr1)) then begin
-      CUr.RegNr1 = BTr.PayRegNr1;
+  while (GetNextSubstring(res,pos,",",tstr)) begin
+    tarr[tarr.length] = tstr;
+  end;
+
+  res = "";
+  SortStringArray(tarr);
+  for (i=0;i<tarr.length;i=i+1) begin
+    if (i>0) then begin
+      res = res & ",";
+    end;
+    res = res & tarr[i];
+  end;
+  
+  ConvertNameToSet = res;
+  return;
+end;
+
+global
+procedure FindCustomerForBankImport(string custcode,string regnr,string vatnr,string acc,string name,record CUVc CUr)
+begin
+  Boolean foundf,TrHs;
+  string 255 inname,outname;
+  record CUVc tCUr;
+
+
+  if (blank(custcode)) then begin
+    if (nonblank(regnr)) then begin
+      CUr.RegNr1 = regnr;
       if (ReadFirstKey("RegNr1",CUr,1,true)) then begin
         foundf = true;
       end;
     end;
-    if (foundf==false and nonblank(BTr.PayVATNr)) then begin
+    if (foundf==false and nonblank(vatnr)) then begin
       ResetLoop(CUr);    
-      CUr.VATNr = BTr.PayVATNr;
+      CUr.VATNr = vatnr;
       if (ReadFirstKey("VATNr",CUr,1,true)) then begin
         foundf = true;
       end;
     end;
-    if (foundf==false and nonblank(BTr.PayBankAcc)) then begin
+    if (foundf==false and nonblank(acc)) then begin
       ResetLoop(CUr);    
-      CUr.BankAccount = BTr.PayBankAcc;
+      CUr.BankAccount = acc;
       if (ReadFirstKey("BankAccount",CUr,1,true)) then begin
         foundf = true;
       end;
     end;
-    if (foundf==false and nonblank(BTr.PayName)) then begin
+    if (foundf==false and nonblank(name)) then begin
       ResetLoop(CUr);    
-      CUr.Name = BTr.PayName;
+      CUr.Name = name;
       if (ReadFirstKey("Name",CUr,1,true)) then begin
         foundf = true;
       end;
     end;
+
+    if(foundf==false)then begin
+      if(nonblank(name))then begin
+        inname = ConvertNameToSet(name);
+        tCUr.Name = "";
+        TrHs = true;
+        if(nonblank(inname))then begin
+          ResetLoop(CUr);
+          while (LoopKey("Name",tCUr,1,TrHs)) begin
+            outname = ConvertNameToSet(tCUr.Name);
+            if(inname==outname)then begin
+              TrHs = false;
+              foundf = true;
+              RecordCopy(tCUr,CUr);
+            end;
+          end;
+          if (foundf==false) then begin
+            RecordClear(CUr);
+          end;
+        end;
+      end;
+    end;
+
+
   end else begin
-    CUr.Code = BTr.PayCustCode;
+    CUr.Code = custcode;
     ReadFirstMain(CUr,1,true);
   end;
+  return;
+end;
+
+function Boolean CheckIfCustomerFound(Longint sernr)
+begin
+  Boolean res;
+  record BankTRVc BTr;
+  record CUVc CUr;
+  
+  res = true;
+  BTr.FileName = "IPVc";
+  BTr.TransNr = sernr;
+  if (ReadFirstKey("FileName",BTr,2,true)) then begin
+    FindCustomerForBankImport(BTr.PayCustCode,BTr.PayRegNr1,BTr.PayVATNr,BTr.PayBankAcc,BTr.PayName,CUr);
+    if (blank(CUr.Code)) then begin
+      res = false;
+    end;
+  end;
+
+  CheckIfCustomerFound = res;
   return;
 end;
 
@@ -91,7 +171,9 @@ begin
   val tot;
   Integer cnt;
   val prepval,foundval,noval;
-  Boolean hasivf,prepf,exactf;
+  Boolean hasivf,prepf,exactf,custf,invf,foundf;
+  record RLinkVc RLr;
+  record IPVc rIPr;
   
   //should be a remote call to server
 
@@ -104,123 +186,141 @@ begin
     from = StringToDate(FirstInRange(PCr.Period,20));
     to = StringToDate(LastInRange(PCr.Period,20));
     TrHs = true;
-    BTr.TransDate = from;
-    while (LoopKey("TransDate",BTr,1,TrHs)) begin
-      if (BTr.TransDate>to) then begin
+
+    IPr.TransDate = from;
+    while (LoopKey("TransDate",IPr,1,TrHs)) begin
+      if (IPr.TransDate>to) then begin
         TrHs = false;
       end else begin
         testf = true;
-        /*
-        if (nonblank(PCr.PMCode) and PCr.PMCode!=BTr.) then begin
+        if (nonblank(PCr.PMCode) and PCr.PMCode!=IPr.PayMode) then begin
           testf = false;
         end;
-        */
-        if (BTr.TypeRef!="CRDT") then begin
+        if (IPr.RefundFlag==1) then begin
           testf = false;
         end;
-        if (nonblank(PCr.Comment) and InString(BTr.PayReference,PCr.Comment)==0) then begin
-          testf = false;
-        end;
-        FindCustomer(BTr,CUr);
         if (nonblank(PCr.CustCode) and CUr.Code!=PCr.CustCode) then begin
           testf = false;
         end;
-        if (testf) then begin
-          if (PCr.IVNr>0) then begin
-            testf = FilterReceiptInBankTrans(BTr,PCr.IVNr);
-          end;
+        if (PCr.ArtMode==1 and IPr.OKFlag!=1) then begin
+          testf = false;
+        end;
+        if (PCr.ArtMode==2 and IPr.OKFlag!=0) then begin
+          testf = false;
+        end;
+        if (nonblank(PCr.Comment) and InString(IPr.Comment,PCr.Comment)==0) then begin
+          testf = false;
         end;
         if (testf) then begin
-          if (BTr.TransNr>0) then begin
-            IPr.SerNr = BTr.TransNr;
-            if (ReadFirstMain(IPr,1,true)) then begin
-              if (PCr.ArtMode==1 and IPr.OKFlag!=1) then begin
-                testf = false;
+          prepf = false;
+          exactf = true;
+          hasivf = false;
+          custf = true;
+          invf = true;
+          if (nonblank(PCr.CustCode)) then begin
+            custf = false;
+          end;
+          if (PCr.IVNr>0) then begin
+            invf = false;
+          end;
+          rwcnt = MatRowCnt(IPr);
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(IPr,i,IPrw);
+            if (i==0) then begin
+              CUr.Code = IPrw.CustCode;
+              ReadFirstMain(CUr,1,true);
+            end;
+            if (IPrw.CustCode==PCr.CustCode) then begin
+              custf = true;
+            end;
+            if (PCr.IVNr>0 and IPrw.InvoiceNr==PCr.IVNr) then begin
+              invf = true;
+            end;
+            if (IPrw.CUPNr>0) then begin
+              prepf = true;
+              exactf = false;
+            end else begin
+              if (IPrw.RecVal!=IPrw.InvOutstand) then begin
+                exactf = false;
               end;
-              if (PCr.ArtMode==2 and IPr.OKFlag!=0) then begin
-                testf = false;
-              end;
-              if (testf) then begin
-                if (PCr.PaidStat>0) then begin
-                  prepf = false;
-                  exactf = true;
-                  hasivf = false;
-                  rwcnt = MatRowCnt(IPr);
-                  for (i=0;i<rwcnt;i=i+1) begin
-                    MatRowGet(IPr,i,IPrw);
-                    if (IPrw.CUPNr>0) then begin
-                      prepf = true;
-                    end else begin
-                      if (IPrw.RecVal!=IPrw.InvOutstand) then begin
-                        exactf = false;
-                      end;
-                      hasivf = true;
-                    end;
-                  end;
-                  if (PCr.PaidStat==3 and prepf==false) then begin
-                    testf = false;
-                  end;
-                  if (hasivf==false and (PCr.PaidStat==1 or PCr.PaidStat==2)) then begin
-                    testf = false;
-                  end;
-                  if (PCr.PaidStat==1 and exactf==true) then begin
-                    testf = false;
-                  end;
-                  if (PCr.PaidStat==2 and exactf==false) then begin
-                    testf = false;
-                  end;
-                end;
-              end;
+              hasivf = true;
+            end;
+          end;
+          if (PCr.PaidStat>0) then begin
+            if (PCr.PaidStat==3 and prepf==false) then begin
+              testf = false;
+            end;
+            if (hasivf==false and (PCr.PaidStat==1 or PCr.PaidStat==2)) then begin
+              testf = false;
+            end;
+            if (PCr.PaidStat==1 and exactf==true) then begin
+              testf = false;
+            end;
+            if (PCr.PaidStat==2 and exactf==false) then begin
+              testf = false;
             end;
           end;
         end;
         if (testf) then begin
           ClearRow(PCr,PCrw,1);
-          PCrw.TransDate = BTr.TransDate;
+          PCrw.TransDate = IPr.TransDate;
           PCrw.CustCodeRow = CUr.Code;
           PCrw.CustName = CUr.Name;
-          PCrw.CommentRow = BTr.PayReference;
-          PCrw.Amount = BTr.Sum;
-          PCrw.CurncyCode = BTr.CurncyCode;
-          PCrw.BankTRNr = BTr.SerNr;
-          PCrw.IPNr = BTr.TransNr;
+          PCrw.CommentRow = IPr.Comment;
+          PCrw.Amount = IPr.CurPayVal;
+          PCrw.CurncyCode = IPr.PayCurCode;
+          //PCrw.BankTRNr = BTr.SerNr;
+          PCrw.IPNr = IPr.SerNr;
           PCrw.Status = IPr.OKFlag;
           cnt = cnt + 1;
           MatRowPut(PCr,MatRowCnt(PCr),PCrw);
           tot = tot + PCrw.Amount;
-//          if (BTr.TransNr>0) then begin
-//            IPr.SerNr = BTr.TransNr;
-//            if (ReadFirstMain(IPr,1,true)) then begin
-            if (BTr.TransNr>0) then begin
-              rwcnt = MatRowCnt(IPr);
-              for (i=0;i<rwcnt;i=i+1) begin
-                MatRowGet(IPr,i,IPrw);
-                ClearRow(PCr,PCrw,2);
-                IVr.SerNr = IPrw.InvoiceNr;
-                ReadFirstmain(IVr,1,true);
-                PCrw.IVNrRow = IPrw.InvoiceNr;
-                PCrw.IVOfficNrRow = IVr.OfficialSerNr;
-                PCrw.PrepayNr = IPrw.CUPNr;
-                PCrw.Amount = IPrw.RecVal;
-                PCrw.CurncyCode = IPrw.RecCurncy;
-                PCrw.BankTRNr = BTr.SerNr;
-                PCrw.IPNr = BTr.TransNr;
-                if (IPrw.InvoiceNr>-1) then begin
-                  PCrw.IVPaidAmount = IPrw.RecVal;
-                  PCrw.IVOpenAmount = IPrw.InvOutstand;
-                  PCrw.IVOpenAmount2 = IPrw.InvOutstand-IPrw.RecVal;
-                  foundval = foundval + IPrw.RecVal;
-                end else begin
-                  prepval = prepval + IPrw.RecVal;
-                end;
-
-                MatRowPut(PCr,MatRowCnt(PCr),PCrw);
-              end;
+          rwcnt = MatRowCnt(IPr);
+          foundf = CheckIfCustomerFound(IPr.SerNr);
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(IPr,i,IPrw);
+            ClearRow(PCr,PCrw,2);
+            IVr.SerNr = IPrw.InvoiceNr;
+            ReadFirstmain(IVr,1,true);
+            PCrw.IVNrRow = IPrw.InvoiceNr;
+            PCrw.IVOfficNrRow = IVr.OfficialSerNr;
+            PCrw.PrepayNr = IPrw.CUPNr;
+            PCrw.Amount = IPrw.RecVal;
+            PCrw.CurncyCode = IPrw.RecCurncy;
+            //PCrw.BankTRNr = BTr.SerNr;
+            PCrw.IPNr = IPr.SerNr;
+            if (IPrw.InvoiceNr>-1) then begin
+              PCrw.IVPaidAmount = IPrw.RecVal;
+              PCrw.IVOpenAmount = IPrw.InvOutstand;
+              PCrw.IVOpenAmount2 = IPrw.InvOutstand-IPrw.RecVal;
+              foundval = foundval + IPrw.RecVal;
             end else begin
-              noval = noval + BTr.Sum;
+              if (foundf) then begin              
+                prepval = prepval + IPrw.RecVal;
+              end;
+              PCrw.IVOpenAmount2 = IPrw.RecVal;
             end;
-//            end;
-//          end;
+            /*
+            if (nonblank(IPrw.CustCode)) then begin
+              foundf = true;
+            end;
+            */
+            MatRowPut(PCr,MatRowCnt(PCr),PCrw);
+          end;
+          i = 1;
+          while (ReadRecordLink(IPr,i,rIPr,RLr)) begin
+            if (rIPr.RefundFlag==1) then begin
+              ClearRow(PCr,PCrw,3);
+              PCrw.Amount = rIPr.CurPayVal;
+              PCrw.IPNr = rIPr.SerNr;
+              PCrw.CurncyCode = IPr.PayCurCode;
+              MatRowPut(PCr,MatRowCnt(PCr),PCrw);
+            end;
+            i = i + 1;
+          end;
+          if (!foundf) then begin
+            noval = noval + IPr.CurPayVal;
+          end;
         end;
       end;
     end;
@@ -316,7 +416,7 @@ begin
     IPr.OKFlag = 0;
     IPr.Comment = BTr.Reference;
 
-    FindCustomer(BTr,CUr);
+    FindCustomerForBankImport(BTr.PayCustCode,BTr.PayRegNr1,BTr.PayVATNr,BTr.PayBankAcc,BTr.PayName,CUr);
     instr = BPI_ParseInvStr(BTr.PayReference);
     remsum = BTr.Sum;
     BankFillIProws(IPr,CUr.Name,BTr.CurncyCode,remsum,CUr.Code,nonblank(CUr.Code),instr,BTr.PayReference,true);
@@ -352,7 +452,7 @@ begin
     OPr.PayDate = BTr.RcpTransDate;	 
     OPr.SerNr = NextSerNr("OPVc",OPr.TransDate,-1,false,"");		
 
-    FindCustomer(BTr,CUr);
+    FindCustomerForBankImport(BTr.PayCustCode,BTr.PayRegNr1,BTr.PayVATNr,BTr.PayBankAcc,BTr.PayName,CUr);
     instr = BPI_ParseInvStr(BTr.RcpReference);
     remsum = BTr.Sum;
 
@@ -372,14 +472,16 @@ begin
 end;
 
 global
-updating procedure CreateRefundReceipt(record IPVc IPr,var record IPVc nIPr)
+updating procedure CreateRefundReceipt(record IPVc IPr,var record IPVc nIPr,Date td)
 begin
   record IPVc oldIPr;
   row IPVc IPrw;
   Integer i,rwcnt;
   
   RecordCopy(nIPr,IPr);
-  nIPr.TransDate = CurrentDate;
+  nIPr.TransDate = td;
+  nIPr.RefundFlag = 1;
+  nIPr.OKFlag = 0;
   nIPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
   rwcnt = MatRowCnt(nIPr);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -389,9 +491,11 @@ begin
     IPVc_PasteRecVal(nIPr,i);
   end;
   if (RecordInsert(nIPr,true)) then begin
-    RecordCopy(oldIPr,nIPr);
-    nIPr.OKFlag = 1;
-    RecordUpdate(oldIPr,nIPr,true);
+    CreateRecordLink(nIPr,CurrentCompany,IPr,CurrentCompany);
+    CreateRecordLink(IPr,CurrentCompany,nIPr,CurrentCompany);
+    //RecordCopy(oldIPr,nIPr);
+    //nIPr.OKFlag = 1;
+    //RecordUpdate(oldIPr,nIPr,true);
   end;
 
   return;

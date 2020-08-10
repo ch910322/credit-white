@@ -105,11 +105,15 @@ begin
   MatCol(2,-220,"Paid",0,IVPaidAmount,true,0);
   MatCol(2,-140,"Balance",0,IVOpenAmount2,true,0);
   MatCol(2,-60,"Currency",0,CurncyCode,false,0);
+  MatText(3,-250,"Refund",true);
+  MatCol(3,-140,"Amount",0,Amount,true,0);
+  MatCol(3,-60,"Currency",0,CurncyCode,false,0);
   RowMenuBegin("");
   RowMenuItem(0,"Open Receipt",'I','I',0,"ReceiptConnectionOpenReceiptDsm");
   RowMenuItem(0,"Refund",'','',0,"ReceiptConnectionRefundDsm");
   RowMenuItem(0,"Redistribute",'','',0,"ReceiptConnectionRedistributeDsm");
   RowMenuItem(0,"OK/UnOK Receipt",'','',0,"ReceiptConnectionOKReceiptDsm");
+  RowMenuItem(0,"Periodic Customer Status",'','',0,"ReceiptConnectionCUPerDsm");
   EndRowMenu;
   EndMatrix;
 
@@ -197,4 +201,21 @@ begin
   DataListColumn(1,206,-10,AdjLeft,"bankacc","Bank A/C",M4Str);
   SearchField("Search");
   EndWindow;
+end;
+
+window ReceiptConnectionRefundWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v,h,vs;
+  vs = 20;
+  WindowBegin("Refund",ReceiptConnectionRefundWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,400,150);
+  AutoSizeWindow(false);  
+  h = 150; v=450;
+  EditFieldTL(h,v=6,120,"Payment Date",M4Date,Normal,0,d1,false,PasteCurDate);
+
+  HalPushButton(h,v+=vs,h+120,v+20,"ReceiptConnectionRefundDo","Refund");
+  EndWindow;
+
 end;

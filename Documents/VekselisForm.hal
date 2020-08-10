@@ -7,6 +7,7 @@ external inner procedure ValToText(val,Integer,string,string,var string);
 external inner function Boolean FindCustomerRelationCred(string,string,var record CUVc);
 external inner procedure PrintCurrencyCode(string,string);
 external inner function string 255 CredManOwnBankAccount(Longint);
+external inner function roundmode SetRoundModeD(Integer);
 
 procedure GetSuretyValues(record CredManVc CredManr,Integer num,var string name,var string phone,var string mobile,var string email,var string id,var string addr0,var string addr1,var string addr2,var string addr3,var string addr4)
 begin
@@ -141,6 +142,12 @@ LBREAK:;
           OUTFORMFIELD("F_CREDMULSUMTEXT",tstr);
         end;
         OUTFORMFIELD("F_CUSTOWNBANKACC",CredManOwnBankAccount(CredManr.SerNr));
+
+        if (CredManr.AnnualRate==1) then begin
+          OUTFORMFIELD("F_ANNUALRATE",Round(CredManr.IntRate,SetRoundModeD(2)) & " %");
+        end else begin
+          OUTFORMFIELD("F_ANNUALRATE",Round(CredManr.IntRate*12,SetRoundModeD(2)) & " %");
+        end;
 
         CloseForm;        
       end else begin

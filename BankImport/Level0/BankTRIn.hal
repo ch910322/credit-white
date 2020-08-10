@@ -10,6 +10,8 @@ external function Date DateFromString(string,string);
 //CUST-BEGIN
 external outer updating procedure CustFillIPRecord(record BankTRVc,var record IPVc);
 external outer updating procedure CustFillOPRecord(record BankTRVc,var record OPVc);
+external outer procedure FindCustomerForBankImport(string,string,string,string,string,record CUVc);
+
 //CUST-END
 function Boolean BankAccountNumberMatches(string pmbanknr,string bankacc)
 begin
@@ -137,20 +139,11 @@ begin
     goto LCreateReceipt;
   end;
   if (btv>0) then begin
-    cufound = true;
+    //cufound = false;
     if (blank(custcode)) then begin
-      CUr.RegNr1 = BTRr.PayRegNr1;
-      cufound = ReadFirstKey("RegNr1",CUr,1,true);
-      custcode = CUr.Code;
-      if (blank(CUr.RegNr1)) then begin cufound = false; custcode = ""; end;
-      if (cufound==false) then begin
-        CUr.IBANCode = BTRr.PayBankAcc;
-        cufound = ReadFirstKey("ActIBAN",CUr,1,true);
-        custcode = CUr.Code;
-      end;
-      if (cufound==false) then begin
-        CUr.BankAccount = BTRr.PayBankAcc;
-        cufound = ReadFirstKey("BankAccount",CUr,1,true);
+      FindCustomerForBankImport(BTRr.PayCustCode,BTRr.PayRegNr1,BTRr.PayVATNr,BTRr.PayBankAcc,BTRr.PayName,CUr);
+      if (nonblank(CUr.Code)) then begin
+        cufound = true;
         custcode = CUr.Code;
       end;
     end;

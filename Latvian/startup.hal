@@ -6,5 +6,7 @@ begin
   SString(200080,"Līguma Nr.: ");
   SString(200081,"Periods: ");
 
+  SString(200260,"Summa nesakrīt ar bankas maksājumu");
+
   return;
 end;

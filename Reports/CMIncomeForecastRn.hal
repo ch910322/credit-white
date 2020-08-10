@@ -27,7 +27,7 @@ begin
       if (bal1==0) then begin
         bal1 = SMrw.CurCredVal;
       end;
-      principle = SMrw.DebVal; 
+      principle = principle + SMrw.DebVal; 
       interest = interest + SMrw.CredVal;
       fees = fees + SMrw.DebVal2;
       bal2 = SMrw.CurCredVal;

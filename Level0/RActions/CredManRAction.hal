@@ -47,6 +47,7 @@ BEGIN
 //  CredManr.RateItem = CredManSetb.RateItem;
   if (CredManr.RateType==0) then begin
     CredManr.IntRate = GetIntRate(CredManr.Type,CredManr.TransDate);
+    CredManr.PrincipleDelayInterest = CredManr.IntRate;
   end;
   CredManVc_PasteCurncyCode(CredManr);
   AddCredManTypeMatrix(CredManr,CredManTyper);

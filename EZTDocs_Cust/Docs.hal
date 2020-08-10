@@ -658,6 +658,11 @@ begin
   end;
   vVals["F_NUMMER2"] = GetCredManNr(CredManr.SerNr);
   vVals["F_CREDMANCREATEDATE"] = CredManr.CreatedDate;
+  if (CredManr.AnnualRate==1) then begin
+    vVals["F_ANNUALRATE"] = Round(CredManr.IntRate,SetRoundModeD(2)) & " %";
+  end else begin
+    vVals["F_ANNUALRATE"] = Round(CredManr.IntRate*12,SetRoundModeD(2)) & " %";
+  end;
 
   Ext_PrintDocumentSigner(vVals);
 

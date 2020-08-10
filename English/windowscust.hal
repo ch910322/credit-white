@@ -2049,14 +2049,16 @@ begin
   EditField(h,v+=vs,150,"ZIP",Normal,Addr4,false,0);
   EditField(h,v+=vs,100,"Type",Normal,Type,false,CMPropertyTypeSClass);
   EditField(h,v+=vs,100,"Reported Value",Normal,RepVal,false,0);
+  EditField(h,v+=vs,100,"Evaluator",Normal,Evaluator,false,CUSClass);
   EditField(h,v+=vs,100,"Evaluated Value",Normal,EvalVal,false,0);
+  EditField(h2,v,100,"Evaluation Date",Normal,EvalDate,false,PasteCurDate);
   EditField(h,v+=vs,100,"Insurance Company",Normal,InsuranceCompany,false,CUSClass);
   EditField(h2,v,-40,"Name",Normal,InsuranceName,false,0);
   EditField(h,v+=vs,100,"Insurance Type",Normal,InsuranceType,false,CMInsuranceTypeSClass);
   EditField(h,v+=vs,100,"Insured Value",Normal,InsuredVal,false,0);
   EditField(h,v+=vs,100,"Insured Until",Normal,InsuredUntil,false,PasteCurDate);
   MatrixBegin(10,v+=vs+40,-40,-20,-,99);
-  MatCol(1,24,"Contact",0,OwnerCode,false,CUSClass);
+  MatCol(1,24,"Contact",0,OwnerCode,false,AllCUSClass);
   MatCol(1,104,"Name",0,OwnerName,false,0);
   MatCol(1,-154,"Shares %",0,SharesPrc,false,0);
   MatCol(1,-84,"Shares Value",0,SharesVal,false,0);

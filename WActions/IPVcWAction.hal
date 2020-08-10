@@ -1,0 +1,37 @@
+
+function Boolean IPDClassInvoiceNrEFAfter(Integer wn, Integer rownr,Integer changed,Integer fn)
+BEGIN
+  Boolean res;
+  record IPVc IPr;
+  row IPVc IPrw;
+  val chk;
+
+  res = true;
+  if (changed!=0) then begin
+    GetWindowRecord(wn,IPr);
+    if (rownr>-1) then begin
+      MatRowGet(IPr,rownr,IPrw);
+      if (IPrw.InvoiceNr>0 and IPrw.CUPNr>0) then begin
+        IPrw.CUPNr = -1;
+        MatRowPut(IPr,rownr,IPrw);
+        PutWindowRecord(wn,IPr);    
+      end;
+    end;
+  end;
+  IPDClassInvoiceNrEFAfter = res;
+  RETURN;
+END;
+
+global
+function Boolean IPDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+BEGIN
+  Boolean res;
+
+  res = inner.IPDClassAfterEditField(wn,fieldname,fn,rownr,changed);
+
+  switch (fieldname) begin
+    case "InvoiceNr": res = IPDClassInvoiceNrEFAfter(wn,rownr,changed,fn);
+  end;
+  IPDClassAfterEditField = res;
+  RETURN;
+END;

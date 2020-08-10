@@ -114,7 +114,7 @@ begin
 end;
 
 global
-procedure CredManSetDatesCust(var record CredManVc CredManr)
+procedure CredManSetDatesCust(var record CredManVc CredManr,Boolean allf)
 begin
   record CredManSetBlock CredManSetb;
   Date startd,finv,fint,tsd;
@@ -127,13 +127,15 @@ begin
   end;
   startd = CredManr.startDate;
   //finv = AddMonth(startd,1); //CUST-CHANGED
-  finv = AddDay(startd,25);//29
-  tsd = finv;
-  finv = AddDay(finv,invday - GetDay(finv));//-14
-  if (tsd>finv) then begin
-    finv = AddMonth(finv,1);
+  if (allf) then begin
+    finv = AddDay(startd,25);//29
+    tsd = finv;
+    finv = AddDay(finv,invday - GetDay(finv));//-14
+    if (tsd>finv) then begin
+      finv = AddMonth(finv,1);
+    end;
+    CredManr.FirstInvDate = finv;
   end;
-  CredManr.FirstInvDate = finv;
   CredManr.FirstIntDate = CredManr.startDate;
   CredManr.MoneyTransferDate = CredManr.startDate;
   CredManUpdate(CredManr,-1,"");
@@ -303,6 +305,7 @@ global
 updating procedure DoPauseCredMan(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res,var Boolean setf,record RcVc RepSpec)
 begin
   res = false;
+
 //  if (nonblank(td)) then begin
     //RecordCopy(oldCredManr,CredManr);
     if (CanPauseAgreement(CredManr,td,months)) then begin
@@ -317,7 +320,8 @@ begin
           CredManr.ProlongDate = td;
           CredManr.ProlongMonths = prolongmonths;
         end;
-        CredManSetDatesCust(CredManr);
+        CredManSetDatesCust(CredManr,false);
+        GenerateAgreementSchedule(CredManr,true);
         setf = true;
       end;
       res = true;      
@@ -461,7 +465,7 @@ begin
   CredManr.ClientContact = tCredManr.ClientContact;
   CredManr.MonthlyPaymentDay = RepSpec.flags[1];
   CredManr.InstalmentMonths = RepSpec.flags[0];
-  CredManSetDatesCust(CredManr); 
+  CredManSetDatesCust(CredManr,true); 
   CopyCredManSurety(CredManr,tCredManr);
   CredManr.LoanApplication = tCredManr.LoanApplication;
   CredManr.SerNr = NextSerNr("CredManVc",CredManr.startDate,-1,false,"");

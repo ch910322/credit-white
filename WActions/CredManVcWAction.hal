@@ -4,7 +4,7 @@ remote updating procedure TerminateCredMan(var record CredManVc,var record IVVc)
 remote updating procedure DoBuyOutAgreement(record CredManVc,var record IVVc);
 remote procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 remote inner procedure SetupCustPS2Rn(string,var record RcVc);
-remote procedure CredManSetDatesCust(var record CredManVc);
+remote procedure CredManSetDatesCust(var record CredManVc,Boolean);
 remote procedure GetCredManEventList(record CredManVc,var record ORVc);
 external procedure GetCredManEventList2(Longint,var record ORVc);
 remote updating procedure DoPauseCredMan(var record CredManVc,val,val,Date,var Boolean,var Boolean,record RcVc);
@@ -152,13 +152,13 @@ begin
   return;
 end;
 
-function Boolean CredManDClassstartDateEFAfter(Integer wn,Boolean changedf)
+function Boolean CredManDClassstartDateEFAfter(Integer wn,Boolean changedf,Boolean allf)
 begin
   record CredManVc CredManr;
 
   if (changedf) then begin  
     GetWindowRecord(wn,CredManr);
-    CredManSetDatesCust(CredManr);
+    CredManSetDatesCust(CredManr,allf);
     PutWindowRecord(wn,CredManr);   
   end; 
   CredManDClassstartDateEFAfter = true;
@@ -252,8 +252,8 @@ begin
   switch (fieldname) begin
     case "StdProlongFee":     res = CredManDClassStdProlongFeeEFAfter(wn,rownr,changed!=0);
     case "StdProlongPrc":     res = CredManDClassStdProlongPrcEFAfter(wn,rownr,changed!=0);
-    case "startDate":         res = CredManDClassstartDateEFAfter(wn,changed!=0);
-    case "MonthlyPaymentDay": res = CredManDClassstartDateEFAfter(wn,changed!=0);
+    case "startDate":         res = CredManDClassstartDateEFAfter(wn,changed!=0,true);
+    case "MonthlyPaymentDay": res = CredManDClassstartDateEFAfter(wn,changed!=0,true);
     case "SuretyProvider1":   res = CredManDClassSuretyProviderEFAfter(wn,changed!=0,1);
     case "SuretyProvider2":   res = CredManDClassSuretyProviderEFAfter(wn,changed!=0,2);
     case "SuretyProvider3":   res = CredManDClassSuretyProviderEFAfter(wn,changed!=0,3);
@@ -271,7 +271,7 @@ begin
     res = CredManDClassCustCodeEFAfter(wn,rownr,changed!=0);
   end;
   if (fieldname=="InstalmentMonths") then begin//to update the dates correctly
-    res = CredManDClassstartDateEFAfter(wn,changed!=0);
+    res = CredManDClassstartDateEFAfter(wn,changed!=0,false);
   end;
   if (fieldname=="InvSum4" or fieldname=="vRebate" or fieldname=="Type") then begin//to update the fees
     res = CredManDClassInvSumEFAfter(wn,changed!=0);

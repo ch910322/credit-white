@@ -1,6 +1,6 @@
 remote inner procedure CredManVc_PasteType(var record CredManVc);
 external inner function roundmode SetRoundModeD(Integer);
-external  procedure CredManSetDatesCust(var record CredManVc);
+external  procedure CredManSetDatesCust(var record CredManVc,Boolean);
 external procedure CalculateSuretyAge(record B2BLoanApplicationVc,Integer);
 external inner updating function Boolean AddContactCUDsmRemote(record CUVc,string);
 external inner updating procedure SendCustomerLetterWithDetails(record RCVc,string,string,string);
@@ -246,6 +246,7 @@ begin
     CredManr.Type = LAr.Type;
     CredManVc_PasteType(CredManr);
     CredManr.IntRate = LAr.InterestRate;
+    CredManr.PrincipleDelayInterest = CredManr.IntRate;
     CredManr.CustCode = LAr.CustCode;
     CredManr.Addr0 = LAr.CustName;
     CredManr.SalesMan = LAr.Manager;
@@ -264,7 +265,7 @@ begin
     CredManr.ClientContact = LAr.ContactName;
     CredManr.MonthlyPaymentDay = LAr.MonthlyPaymentDay;
     CredManr.DepositSum = Round(CredManr.DepositPrc/100 * CredManr.InvSum4,SetRoundModeD(2));
-    CredManSetDatesCust(CredManr);
+    CredManSetDatesCust(CredManr,true);
     CredManr.BankCode = LAr.BankCode;
     CredManr.BankName = LAr.BankName;
     CredManr.BankAccount = LAr.BankAccount;
@@ -600,6 +601,7 @@ begin
     case "F_LATEFEEVAL": res = RepSpec.vals3;
     case "F_ABOVEHIDDENFULL": res = RepSpec.vals4;
     case "F_TOPAY": res = RepSpec.f10;
+    case "F_OPENAMOUNT": res = RepSpec.f11;
     otherwise
       res = LetVcReplaceTokenCust(RepSpec,token);
   end;

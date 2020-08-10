@@ -207,6 +207,9 @@ begin
   SString(200255,"Remaining");
   SString(200256,"Income Forecast");
 
+
+  SString(200260,"Sum doesn't match with Bank Transaction");
+
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");
   StrSetText(B2BLoanApplicationVc,"B2B Loan Applications");
