@@ -467,14 +467,14 @@ begin
   record CUVc CUr;
   Integer ratetype;
 
+  ClearStringArray(lateformula);
+  latedays = 0;
+  lateamount = 0;
   CUr.Code = CredManr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
     if (CUr.InterestFlag==1) then begin
       BlockLoad(CIb);
 
-      ClearStringArray(lateformula);
-      latedays = 0;
-      lateamount = 0;
       overduetd = GetLastOverdueInvoiceDate(CredManr.SerNr,CMb.LateFeeItem);
       //we should go through the history and check for late payments
       if (nonblank(CIb.OverdueItemClass)) then begin
@@ -583,12 +583,14 @@ updating procedure StoreLoanInvoice(var record IVVc IVr,record CredManVc CredMan
 begin
   record IVVc oldIVr;
   
-  IVr.SerNr = NextSerNr("IVVc",IVr.InvDate,-1,false,"");
-  if (RecordInsert(IVr,true)) then begin
-    RecordCopy(oldIVr,IVr);
-    IVr.OKFlag = 1;
-    RecordUpdate(oldIVr,IVr,true);
-    LinkCredManAndInvoice(IVr,CredManr);
+  if (IVr.Sum4>0) then begin
+    IVr.SerNr = NextSerNr("IVVc",IVr.InvDate,-1,false,"");
+    if (RecordInsert(IVr,true)) then begin
+      RecordCopy(oldIVr,IVr);
+      IVr.OKFlag = 1;
+      RecordUpdate(oldIVr,IVr,true);
+      LinkCredManAndInvoice(IVr,CredManr);
+    end;
   end;
 
   return;
@@ -887,12 +889,7 @@ begin
       if (CSrw.InvDate<=ed and CSrw.Invoiced==0) then begin
         BuildInvoiceBasedOnSchedule(CredManr,CSrw,CMb,ASb,lastd,IVr,true,true);
         if (IVr.SerNr>-1) then begin
-          if (RecordInsert(IVr,true)) then begin
-            RecordCopy(oldIVr,IVr);
-            IVr.OKFlag = 1;
-            RecordUpdate(oldIVr,IVr,true);
-            LinkCredManAndInvoice(IVr,CredManr);
-          end;
+          StoreLoanInvoice(IVr,CredManr);
 
           if (firstf==false) then begin
             RecordCopy(firstIVr,IVr);
