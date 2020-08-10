@@ -29,7 +29,8 @@ remote updating procedure CreateManualExtraInvoice(record RcVc,var record IVVc);
 remote procedure CredLegalNrSerNrSClassOnOpenWindowRemote(string,string,Date,string,string,var array string);
 remote updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
 remote updating procedure GetCredManPropertyRecord(record CredManVc,var record CredManPropertyVc);
-
+remote procedure CredManCalcLastMonthPrinciple(var record CredManVc);
+remote procedure CredManCalcMaxMonthlyPayment(var record CredManVc);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -235,6 +236,34 @@ begin
   return;
 end;
 
+function Boolean CredManDClassMaxMonthlyPaymentEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManVc CredManr;
+
+  if (changedf) then begin  
+    DeselectWindow(wn,true);
+    GetWindowRecord(wn,CredManr);
+    CredManCalcLastMonthPrinciple(CredManr);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassMaxMonthlyPaymentEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassLastMonthPrincEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManVc CredManr;
+
+  if (changedf) then begin  
+    DeselectWindow(wn,true);
+    GetWindowRecord(wn,CredManr);
+    CredManCalcMaxMonthlyPayment(CredManr);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassLastMonthPrincEFAfter = true;
+  return;
+end;
+
 
 global
 function Boolean CredManDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
@@ -272,6 +301,12 @@ begin
   end;
   if (fieldname=="InstalmentMonths") then begin//to update the dates correctly
     res = CredManDClassstartDateEFAfter(wn,changed!=0,false);
+  end;
+  if (fieldname=="MaxMonthlyPayment") then begin
+    res = CredManDClassMaxMonthlyPaymentEFAfter(wn,changed!=0);
+  end;
+  if (fieldname=="LastMonthPrinc") then begin
+    res = CredManDClassLastMonthPrincEFAfter(wn,changed!=0);
   end;
   if (fieldname=="InvSum4" or fieldname=="vRebate" or fieldname=="Type") then begin//to update the fees
     res = CredManDClassInvSumEFAfter(wn,changed!=0);
