@@ -316,7 +316,7 @@ begin
     if (ReadFirstKey("TRNumber",oBTRr,1,true)==false) then begin
       BTRr.SerNr = NextSerNr("BankTRVc",BTRr.TransDate,-1,false,"");
       if (BTRr.SerNr>0) then begin
-        RecordInsert(BTRr,false);//CUST RecordStore>>RecordInsert
+        if (RecordInsert(BTRr,true)) then begin//CUST RecordStore>>RecordInsert
 //CUST-BEGIN
         begin
           record IPVc IPr;
@@ -327,6 +327,7 @@ begin
               CreateRecordLink(BTRr,CurrentCompany,IPr,CurrentCompany);
             end;
           end;
+        end;
         end;
 //CUST-END
       end;
@@ -457,7 +458,7 @@ begin
     if (ReadFirstKey("TRNumber",oBTRr,1,true)==false) then begin
       BTRr.SerNr = NextSerNr("BankTRVc",BTRr.TransDate,-1,false,"");
       if (BTRr.SerNr>0) then begin
-        RecordStore(BTRr,false);
+        if (RecordInsert(BTRr,true)) then begin//CUST RecordStore>>RecordInsert
 //CUST-BEGIN
         begin
           record IPVc IPr;
@@ -468,6 +469,7 @@ begin
               CreateRecordLink(BTRr,CurrentCompany,IPr,CurrentCompany);
             end;
           end;
+        end;
         end;
 //CUST-END
       end;
