@@ -33,13 +33,15 @@ BEGIN
   LongInt res;
   record BankTRVc BTr;
 
-  BTr.FileName = "IPVc";
-  BTr.TransNr = IPr.SerNr;
-  if (ReadFirstKey("FileName",BTr,2,true)) then begin
-    if (BTr.Sum!=IPr.CurPayVal) then begin
-      RecordCheckError(200260,"",-1,"CurPayVal");
-      res = -1;
-      goto LIPVcRecordCheck;
+  if (UserCanAction("ReceiptBankTRDiffAmounts",false)==false) then begin
+    BTr.FileName = "IPVc";
+    BTr.TransNr = IPr.SerNr;
+    if (ReadFirstKey("FileName",BTr,2,true)) then begin
+      if (BTr.Sum!=IPr.CurPayVal) then begin
+        RecordCheckError(200260,"",-1,"CurPayVal");
+        res = -1;
+        goto LIPVcRecordCheck;
+      end;
     end;
   end;
 
