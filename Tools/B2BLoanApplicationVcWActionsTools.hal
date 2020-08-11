@@ -684,26 +684,23 @@ begin
     Mailrw.AddrCode = email;
     MatRowPut(Mailr,1,Mailrw);
 
-    if (LTxtr.HtmlFlag==0) then begin
-      if (qupdating.B2BLoanAppCreateCredMan(LAr,CredManr,false)) then begin
-        BlockLoad(CredManSetb);
-        BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
-        BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
-        rwcnt = MatRowCnt(SMr);
-        for (i=0;i<rwcnt;i=i+1) begin
-          MatRowGet(SMr,i,SMrw);
-          fees = fees + SMrw.DebVal2;
-          interest = interest + SMrw.CredVal;
-          tot = tot + SMrw.CurDebVal;
-        end;
-        RepSpec.f3 = CredManr.CurncyCode;
-        RepSpec.vals0 = fees;
-        RepSpec.vals1 = interest;
-        RepSpec.vals2 = tot;
+    if (qupdating.B2BLoanAppCreateCredMan(LAr,CredManr,false)) then begin
+      BlockLoad(CredManSetb);
+      BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+      BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+      rwcnt = MatRowCnt(SMr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(SMr,i,SMrw);
+        fees = fees + SMrw.DebVal2;
+        interest = interest + SMrw.CredVal;
+        tot = tot + SMrw.CurDebVal;
       end;
-
-
-
+      RepSpec.f3 = CredManr.CurncyCode;
+      RepSpec.vals0 = fees;
+      RepSpec.vals1 = interest;
+      RepSpec.vals2 = tot;
+    end;
+    if (LTxtr.HtmlFlag==0) then begin
       ParseTextField(a,LTxtr,RepSpec,"LtxtVcReplaceToken");
       l = GetAreaLength(a);
       pos = 0;

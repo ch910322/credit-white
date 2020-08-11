@@ -1041,7 +1041,7 @@ begin
 end;
 
 global
-updating procedure CreateProlongInvoice(record CredManVc CredManr,var record IVVc tIVr)
+updating procedure CreateProlongInvoice(record CredManVc CredManr)
 begin
   record CMInvoicingBlock CIb;
   record CredManSetBlock CMb;
@@ -1070,7 +1070,6 @@ begin
       IVr.OKFlag = 1;
       RecordUpdate(oldIVr,IVr,true);
       LinkCredManAndInvoice(IVr,CredManr);
-      RecordCopy(tIVr,IVr);
     end;  
   end;
 
