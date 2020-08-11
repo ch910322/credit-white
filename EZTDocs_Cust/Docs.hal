@@ -826,3 +826,68 @@ begin
 
   return;
 end;
+
+global
+procedure ReadImportTagExternalFormDefVcRecord(record ExternalFormDefVc ExternalFormDefr)
+begin
+  string 255 tstr;
+  row ExternalFormDefVc ExternalFormDefrw;
+  integer rwcnt;
+  string 255 docname;
+  
+  RecordNew(ExternalFormDefr);
+  
+  ExternalFormDefr.UUID = StringToUUID(ImportField); // NewAutosyncRegister
+  ImportField; // NewAutosyncRegister
+  ImportField; // NewAutosyncRegister
+  ExternalFormDefr.DocName = ImportField;
+  ExternalFormDefr.Comment = ImportField;
+  ExternalFormDefr.IntVal1 = StringToInt(ImportField);
+  ExternalFormDefr.IntVal2 = StringToInt(ImportField);
+  ExternalFormDefr.IntVal3 = StringToInt(ImportField);
+  
+  rwcnt = 0;
+  
+  while (NextImportLine(false)) begin
+    ClearRow(ExternalFormDefr,ExternalFormDefrw,1);
+    ExternalFormDefrw.LangCode = ImportField;
+    ExternalFormDefrw.TemplateName = ImportField;
+    ExternalFormDefrw.FirstField = ImportField;
+    MatRowPut(ExternalFormDefr,rwcnt,ExternalFormDefrw);
+    rwcnt = rwcnt + 1;
+  end;
+  
+  return;
+end;
+
+
+global
+function string 120 ReadRecordIdStrExternalFormDefVc(Integer compnr,string thetag)
+begin
+  record ExternalFormDefVc ExternalFormDefr;
+  
+  ReadRecordIdStrExternalFormDefVc = BuildRecordIdStr(ExternalFormDefr,compnr);
+  return;
+end;
+
+global
+updating procedure ReadImportTagExternalFormBlock(string thetag)
+begin
+  record ExternalFormBlock ExternalFormr;
+  row ExternalFormBlock ExternalFormrw;
+  Integer i,rwcnt
+  
+  rwcnt = 0;
+  
+  while (NextImportLine(false)) begin
+    ClearRow(ExternalFormr,ExternalFormrw,1);
+    ExternalFormrw.DocName = ImportField;
+    ExternalFormrw.Status = StringToInt(ImportField);
+    MatRowPut(ExternalFormr,rwcnt,ExternalFormrw);
+    rwcnt = rwcnt + 1;
+  end;
+  
+  BlockStore(ExternalFormr);
+  
+  return;
+end;
