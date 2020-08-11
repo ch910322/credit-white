@@ -649,13 +649,13 @@ begin
 //CUST-BEGIN
   EditField(h2,v+=vs,82,"Monthly Paym. Day",Normal,MonthlyPaymentDay,false,0);
 //CUST-END
-  EditField(h3,v=vm,82,"Monthly #Instalment#",ViewOnly,MonthlySum,false,0);
+  EditField(h3,v=vm,72,"Monthly #Instalment#",ViewOnly,MonthlySum,false,0);
 //CUST-BEGIN
-  EditField(h3,v+=vs,82,"Order Class",Normal,OrderClass,false,OrderClassSClass);
-  EditField(h3,v+=vs,82,"Overdue percentage",Normal,OverduePercentage,false,0);
-  EditField(h3,v+=vs,82,"Surety Interest Rate",Normal,SuretyInterestRate,false,0);
-  EditField(h3,v+=vs,82,"Std Prolongation Fee",Normal,StdProlongFee,false,0);
-  EditField(h3,v+=vs,82,"Std Prolongation Fee %",Normal,StdProlongPrc,false,0);
+  EditField(h3,v+=vs,72,"Order Class",Normal,OrderClass,false,OrderClassSClass);
+  EditField(h3,v+=vs,72,"Overdue percentage",Normal,OverduePercentage,false,0);
+  EditField(h3,v+=vs,72,"Surety Interest Rate",Normal,SuretyInterestRate,false,0);
+  EditField(h3,v+=vs,72,"Std Prolongation Fee",Normal,StdProlongFee,false,0);
+  EditField(h3,v+=vs,72,"Std Prolongation Fee %",Normal,StdProlongPrc,false,0);
   
 //CUST-BEGIN
   if (HasMoneyTransferDate) then begin
@@ -665,6 +665,10 @@ begin
   end;
 //CUST-END
   EditField(h4,v+=vs,-40,"Max Monthly Payment",Normal,MaxMonthlyPayment,false,0);
+//CUST-BEGIN
+  EditField(h4,v+=vs,-40,"Last Month's Principle",Normal,LastMonthPrinc,false,0);
+
+//CUST-END
   EditField(h4,v+=vs,-40,"Princ. Delay Months",Normal,PrincipleDelayMonths,false,0);
   EditField(h4,v+=vs,-40,"Princ. Delay Interest %",Normal,PrincipleDelayInterest,false,0);
 /*

@@ -486,6 +486,7 @@ begin
   RecordFIeld(SkipOverDue,M4Int,0,0);
   RecordField(OfficialSerNr,M4Str,100,0);
   RecordField(OverdueRateType,M4Int,0,0);
+  RecordField(LastMonthPrinc,M4Val,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);

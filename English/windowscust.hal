@@ -1759,6 +1759,7 @@ begin
   SoftEditField(570,-30,60,"",ViewOnly,"tot",false,0,M4Val,0);
 
   SpecialMenu("Open Fees Matrix",' ',1,"OpenCredFeesMatrixSchedDsm");
+  SpecialMenu("Recalculate Interest",' ',1,"CredManSchedRecalcInterestDsm");
 
   
   EndWindow;
