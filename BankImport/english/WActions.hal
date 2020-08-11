@@ -88,6 +88,7 @@ begin
   record IPConVc PCr;
   
   if (changed!=0) then begin
+    DeselectWindow(wn,true);
     GetWindowRecord(wn,PCr);
     threadremote.FillBankTransactionsAndReceipts(PCr);
     PutWindowRecord(wn,PCr);
@@ -224,12 +225,14 @@ begin
     IPr.SerNr = RepSpec.long1;
     if (ReadFirstMain(IPr,1,true)) then begin
       CreateRefundReceipt(IPr,nIPr,RepSpec.d1);
+      CloseWindow(wn);
       twn = FindWindow("ReceiptConnectionWClass");
       if (twn>0) then begin
         GetWindowRecord(twn,PCr);
         threadremote.FillBankTransactionsAndReceipts(PCr);
         PutWindowRecord(twn,PCr);
       end;
+      OpenWindow("IPDClass",1,0,"","",nIPr);
     end;
   end;
   

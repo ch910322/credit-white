@@ -199,9 +199,6 @@ begin
         if (IPr.RefundFlag==1) then begin
           testf = false;
         end;
-        if (nonblank(PCr.CustCode) and CUr.Code!=PCr.CustCode) then begin
-          testf = false;
-        end;
         if (PCr.ArtMode==1 and IPr.OKFlag!=1) then begin
           testf = false;
         end;
@@ -230,7 +227,7 @@ begin
               CUr.Code = IPrw.CustCode;
               ReadFirstMain(CUr,1,true);
             end;
-            if (IPrw.CustCode==PCr.CustCode) then begin
+            if (nonblank(PCr.CustCode) and IPrw.CustCode==PCr.CustCode) then begin
               custf = true;
             end;
             if (PCr.IVNr>0 and IPrw.InvoiceNr==PCr.IVNr) then begin
@@ -245,6 +242,12 @@ begin
               end;
               hasivf = true;
             end;
+          end;
+          if (invf==false) then begin
+            testf = false;
+          end;
+          if (custf==false) then begin
+            testf = false;
           end;
           if (PCr.PaidStat>0) then begin
             if (PCr.PaidStat==3 and prepf==false) then begin
