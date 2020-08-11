@@ -259,6 +259,7 @@ begin
       CredManr.AnnualRate = CMTr.AnnualRate;
       CredManr.PayDeal = CMTr.PayDeal;
       CredManr.Classifications = CMTr.Classifications;
+      CredManr.OverdueRateType = CMTr.OverdueRateType;
     end else begin  
       CredManr.PayDeal = CUr.PayDeal;
     end;

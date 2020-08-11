@@ -179,6 +179,23 @@ begin
   return;
 end;
 
+function Boolean CredManDClassTypeEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManVc CredManr;
+  record CredManTypeVc CMTr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    CMTr.Code = CredManr.Type;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      CredManr.OverdueRateType = CMTr.OverdueRateType;
+    end;
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassTypeEFAfter = true;
+  return;
+end;
+
 function Boolean CredManDClassSuretyProviderEFAfter(Integer wn,Boolean changedf,Integer num)
 begin
   record CredManVc CredManr;
@@ -310,6 +327,9 @@ begin
   end;
   if (fieldname=="InvSum4" or fieldname=="vRebate" or fieldname=="Type") then begin//to update the fees
     res = CredManDClassInvSumEFAfter(wn,changed!=0);
+  end;
+  if (fieldname=="Type") then begin//to update the fees
+    res = CredManDClassTypeEFAfter(wn,changed!=0);
   end;
 /*
   if (changed!=0) then begin
