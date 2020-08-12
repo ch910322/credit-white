@@ -1,7 +1,7 @@
 remote updating procedure SetCustomerPassword(var record CUVc,var string);
 remote updating procedure ResetCustomerPassword(var record CUVc);
 remote updating function Boolean SendNewUserInvite(record CUVc);
-remote procedure CMGetServerAddressAndPort(var string);
+remote procedure CMGetServerAddressAndPort(var string,Integer);
 
 global
 procedure OpenCUBankAccountsDsm()

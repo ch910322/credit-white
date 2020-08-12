@@ -37,7 +37,7 @@ begin
   string 255 tmp;
 
   tmp = PublicHostName;
-  if (right(res,3)==".lt" and compno==2) then begin//do the same with each new company
+  if (right(tmp,3)==".lt" and compno==2) then begin//do the same with each new company
     tmp = "noviti.lv";
   end;
 
