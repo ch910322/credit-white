@@ -189,6 +189,9 @@ begin
     CMTr.Code = CredManr.Type;
     if (ReadFirstMain(CMTr,1,true)) then begin
       CredManr.OverdueRateType = CMTr.OverdueRateType;
+      if (CredManr.PrincipleDelayInterest==0) then begin
+        CredManr.PrincipleDelayInterest = CredManr.IntRate;
+      end;
     end;
     PutWindowRecord(wn,CredManr);   
   end; 

@@ -272,6 +272,9 @@ begin
     CredManr.BankAccount = LAr.BankAccount;
     CredManr.PrincipleDelayMonths = LAr.PrincipleDelayMonths;
     CredManr.PrincipleDelayInterest = LAr.PrincipleDelayInterest;
+    if (CredManr.PrincipleDelayInterest==0) then begin
+      CredManr.PrincipleDelayInterest = CredManr.IntRate;
+    end;
     CredManr.MaxMonthlyPayment = LAr.MaxMonthlyPayment;
     CredManr.LoanApplication = LAr.SerNr;
 //Pasting sureties
