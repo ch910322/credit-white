@@ -1,5 +1,5 @@
-remote procedure IPVc_PasteRecVal(var record IPVc,Integer);
-remote function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var LongInt);
+remote inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
+remote inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var LongInt);
 
 function Boolean UpdatePrepayRow(var record IPVc IPr,val addsum)
 begin
@@ -68,7 +68,7 @@ BEGIN
               k = MatRowCnt(IPr);
               IPrw.CustCode = custcode;
               matrowput(IPr,k,IPrw);
-              IPVc_PasteCustCode(IPr,0,error);
+              IPVc_PasteCustCode(IPr,k,error);
               matrowget(IPr,k,IPrw);
               IPrw.RecVal = BTr.Sum-IPr.CurPayVal;
               IPrw.BankVal = BTr.Sum-IPr.CurPayVal;
