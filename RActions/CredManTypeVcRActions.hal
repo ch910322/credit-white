@@ -19,10 +19,13 @@ function LongInt CredManTypeVcRecordDefaults(var record CredManTypeVc CredManTyp
 BEGIN
   LongInt res;
   record CMInvoicingBlock CIb;
+  record CMApplicationSetBlock CMb;
 
   res = 1;
   BlockLoad(CIb);
+  BlockLoad(CMb);
   CredManTyper.OverdueRateType = CIb.OverdueRateType+1;
+  CredManTyper.DaysInYear = CMb.DaysInYear;
 
   CredManTypeVcRecordDefaults = res;
   return;
