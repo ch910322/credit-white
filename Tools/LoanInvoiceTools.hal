@@ -874,6 +874,7 @@ begin
       case 0: AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
       case 1: 
         SetupLoanInvoice(CredManr,CMb,oIVr,CSrw.InvDate,CSrw.FromDate,CSrw.ToDate,true,false,"");
+        SetupOverdueLangCode(IVr,CredManr.Type);
         AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
         if (updf) then begin
           qupdating.StoreLoanInvoice(oIVr,CredManr);
@@ -949,6 +950,7 @@ begin
         end;
         if (addf) then begin
           SetupLoanInvoice(CredManr,CMb,IVr,invdat2,sd,ted,true,false,"");
+          SetupOverdueLangCode(IVr,CredManr.Type);
           AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
           StoreLoanInvoice(IVr,CredManr);
           if (firstf==false) then begin
