@@ -31,6 +31,7 @@ external function Boolean HasMultiCurrency();
 external function Boolean HasObjects();
 //CUST-BEGIN TAG TOOLS
 external outer function Boolean HasMoneyTransferDate();
+external outer function Boolean CanEditCredManCreateDate();
 //CUST-END
 
 window CUDClass:14
@@ -645,8 +646,12 @@ begin
   EditField(h2,v+=vs,82,"First Invoice Date",Normal,FirstInvDate,false,PasteCurDate);
 //CUST-END
   EditField(h2,v+=vs,82,"End Date",ViewOnly,endDate,false,PasteCurDate);
-  EditField(h2,v+=vs,82,"Create Date",ViewOnly,TransDate,false,PasteCurDate);
 //CUST-BEGIN
+  if (CanEditCredManCreateDate) then begin
+    EditField(h2,v+=vs,82,"Agreement Date",Normal,TransDate,false,PasteCurDate);
+  end else begin
+    EditField(h2,v+=vs,82,"Create Date",ViewOnly,TransDate,false,PasteCurDate);
+  end;
   EditField(h2,v+=vs,82,"Monthly Paym. Day",Normal,MonthlyPaymentDay,false,0);
 //CUST-END
   EditField(h3,v=vm,72,"Monthly #Instalment#",ViewOnly,MonthlySum,false,0);
