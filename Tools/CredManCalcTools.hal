@@ -257,13 +257,13 @@ begin
 end;
 
 global
-procedure AddInterest(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Integer monthtypef,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,Longint factinv)
+procedure AddInterest(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Integer monthtypef,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,Longint factinv,Boolean overridef)
 begin
   Integer sendmonthtypef;
   
   if (nonblank(frdate)) then begin
     sendmonthtypef = monthtypef;
-    if (CredManr.ChargeMethod==1) then begin
+    if (CredManr.ChargeMethod==1 and overridef==false) then begin
       sendmonthtypef = kMonthTypeLast;
     end;
     AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.IntRate,sendmonthtypef,frdate,todate,calcbal,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
@@ -661,7 +661,7 @@ begin
       TrHs = false;
     end else begin
       tcalcbal = CMIr.TotalSum*inCredManr.LoanToValue/100;
-      AddInterest(inCredManr,CredManPayPlanr,CredManSetb,kMonthTypeLast,invdate,acumint,tcalcbal,CMIr.InvDate,CMIr.PaymentDate,CMIr.SerNr);  
+      AddInterest(inCredManr,CredManPayPlanr,CredManSetb,kMonthTypeLast,invdate,acumint,tcalcbal,CMIr.InvDate,CMIr.PaymentDate,CMIr.SerNr,false);  
       tcalcbal = CMIr.TotalSum*inCredManr.LoanToValue/100;
       AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesOneTime,kMonthTypeLast,invdate,acumint,tcalcbal,CMIr.InvDate,CMIr.PaymentDate,CMIr.SerNr);//kPlannedFeesOneTime or kPlannedFeesMonthly?
     end;
@@ -864,12 +864,12 @@ begin
           end;
           if (curmonth>=inCredManr.PrincipleDelayMonths and CredManIsPaused(inCredManr,invdat)==false) then begin
             AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype2,invdat,acumint,calcbal,frdat,todat,-1);
-            AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,calcbal,int_frdat,int_todat,-1);
+            AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,calcbal,int_frdat,int_todat,-1,false);
             AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,2,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth-delaymonths,usesum,usemonths);
           end else begin
             if (CredManIsPaused(inCredManr,invdat)) then begin
               AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype2,invdat,acumint,calcbal,frdat,todat,-1);
-              AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,calcbal,int_frdat,int_todat,-1);
+              AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,calcbal,int_frdat,int_todat,-1,false);
            end else begin
               AddInterestDelay(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,calcbal,int_frdat,int_todat,-1);
             end;
@@ -889,12 +889,12 @@ begin
           end;
           if (curmonth>=inCredManr.PrincipleDelayMonths and CredManIsPaused(inCredManr,invdat)==false) then begin
             AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype2,invdat,acumint,  calcbal,frdat,todat,-1);
-            AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype2,int_invdat,acumint,calcbal,int_frdat,int_todat,-1);
+            AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype2,int_invdat,acumint,calcbal,int_frdat,int_todat,-1,false);
             AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,1,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth-delaymonths,usesum,usemonths);
           end else begin
             if (CredManIsPaused(inCredManr,invdat)) then begin
               AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype2,invdat,acumint,calcbal,frdat,todat,-1);
-              AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype2,int_invdat,acumint,calcbal,int_frdat,int_todat,-1);
+              AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype2,int_invdat,acumint,calcbal,int_frdat,int_todat,-1,false);
             end else begin
               AddInterestDelay(inCredManr,CredManPayPlanr,CredManSetb,monthtype2,int_invdat,acumint,calcbal,int_frdat,int_todat,-1);
             end;
@@ -902,7 +902,7 @@ begin
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
         case 3://Bullet
           AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype,invdat,acumint,calcbal,frdat,todat,-1);
-          AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype,int_invdat,acumint,calcbal,int_frdat,int_todat,-1);
+          AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype,int_invdat,acumint,calcbal,int_frdat,int_todat,-1,false);
           if (i==months-1) then begin
             AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,0,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths)
           end;
@@ -941,7 +941,7 @@ begin
     if (nonblank(inCredManr.PrincipleDelayMonths)) then begin
       AddInterestDelay(inCredManr,CredManPayPlanr,CredManSetb,kMonthTypeRegular,td,acumint,bal,"","",-1);
     end else begin
-      AddInterest(inCredManr,CredManPayPlanr,CredManSetb,kMonthTypeRegular,td,acumint,bal,"","",-1);
+      AddInterest(inCredManr,CredManPayPlanr,CredManSetb,kMonthTypeRegular,td,acumint,bal,"","",-1,false);
     end;
   end;
   if (BitAnd(type,4)) then begin
