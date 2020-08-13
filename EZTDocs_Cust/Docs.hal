@@ -49,6 +49,7 @@ external inner function val GetMonthlyFees(record CredManVc,Integer);
 external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,record CredManSetBlock,var record SMVc);
 external function string 255 GetCredManNr(Longint);
 external inner function string 255 StrReplace(string,string,string);
+external function val GetCustomerOpenAmount(string);
 
 procedure GetCredManCustContact(record CredManVc CredManr,var string contactid,var string contactname)
 begin
@@ -406,7 +407,8 @@ begin
   record CredManSetBlock CredManSetb;
   record CUVc CUr;
   Integer num;
-  string 255 strnum;
+  string 255 strnum,tstr;
+  val topay2,openamount;
  
   CUr.Code = CredManr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
@@ -452,6 +454,15 @@ LNextRow:;
   vVals["F_CREDTOTPAY"] = totpayment;
   vVals["F_CREDFULLTOTPAY"] = totfullpayment;
   vVals["F_CREDTOTVAT"] = totfullvat;
+
+  openamount = GetCustomerOpenAmount(CredManr.CustCode);
+
+  topay2 = openamount;
+  vVals["F_OPENAMOUNT"] = openamount;
+  vVals["F_TOPAY2"] = topay2;
+  ValToText(topay2,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  vVals["F_TOPAY2_TEXT"] = tstr;
+
 
   return;
 end;
