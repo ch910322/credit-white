@@ -183,7 +183,9 @@ begin
 
   IVr = aIVr[0];
   invfr = IVr.SerNr;
-  IVr = aIVr[aIVr.length-1];
+  if (aIVr.length>0) then begin
+    IVr = aIVr[aIVr.length-1];
+  end;
   invto = IVr.SerNr;
 
 LGetInvoiceSequence:;
@@ -219,44 +221,46 @@ begin
     
   end;
 */
-  BlockLoad(CIb);
-  RecordClear(RepSpec);
-  ReportDefaults(RepSpec,"IVToMailVClass");
-  if (GetInvoiceSequence(aIVr,invfr,invto,datefr,dateto)) then begin
-    RepSpec.f2 = invfr & ":" & invto;
-    RepSpec.sStartDate = datefr;
-    RepSpec.sEndDate = dateto;
-    RepSpec.ArtMode = 0;
-    if (CIb.AutoInvoiceSend==1) then begin
-      RepSpec.flags[1] = 1;
-    end else begin
-      RepSpec.flags[1] = 0;
-    end;
-    RepSpec.flags[4] = 1;
-    RepSpec.flags[5] = 1;
-    RepSpec.flags[6] = 1;
-    RepSpec.flags[7] = 1;
-    RepSpec.flags[3] = 1;
-    qupdating.IVToMailMn(RepSpec);
-  end else begin
-    RepSpec.ArtMode = 0;
-    if (CIb.AutoInvoiceSend==1) then begin
-      RepSpec.flags[1] = 1;
-    end else begin
-      RepSpec.flags[1] = 0;
-    end;
-    RepSpec.flags[4] = 1;
-    RepSpec.flags[5] = 1;
-    RepSpec.flags[6] = 1;
-    RepSpec.flags[7] = 1;
-    RepSpec.flags[3] = 1;
-    for (i=0;i<aIVr.length;i=i+1) begin
-      IVr = aIVr[i];
-      RepSpec.sStartDate = IVr.TransDate;
-      RepSpec.sEndDate = IVr.TransDate;
-
-      RepSpec.f2 = IVr.SerNr;
+  if (aIVr.length>0) then begin
+    BlockLoad(CIb);
+    RecordClear(RepSpec);
+    ReportDefaults(RepSpec,"IVToMailVClass");
+    if (GetInvoiceSequence(aIVr,invfr,invto,datefr,dateto)) then begin
+      RepSpec.f2 = invfr & ":" & invto;
+      RepSpec.sStartDate = datefr;
+      RepSpec.sEndDate = dateto;
+      RepSpec.ArtMode = 0;
+      if (CIb.AutoInvoiceSend==1) then begin
+        RepSpec.flags[1] = 1;
+      end else begin
+        RepSpec.flags[1] = 0;
+      end;
+      RepSpec.flags[4] = 1;
+      RepSpec.flags[5] = 1;
+      RepSpec.flags[6] = 1;
+      RepSpec.flags[7] = 1;
+      RepSpec.flags[3] = 1;
       qupdating.IVToMailMn(RepSpec);
+    end else begin
+      RepSpec.ArtMode = 0;
+      if (CIb.AutoInvoiceSend==1) then begin
+        RepSpec.flags[1] = 1;
+      end else begin
+        RepSpec.flags[1] = 0;
+      end;
+      RepSpec.flags[4] = 1;
+      RepSpec.flags[5] = 1;
+      RepSpec.flags[6] = 1;
+      RepSpec.flags[7] = 1;
+      RepSpec.flags[3] = 1;
+      for (i=0;i<aIVr.length;i=i+1) begin
+        IVr = aIVr[i];
+        RepSpec.sStartDate = IVr.TransDate;
+        RepSpec.sEndDate = IVr.TransDate;
+
+        RepSpec.f2 = IVr.SerNr;
+        qupdating.IVToMailMn(RepSpec);
+      end;
     end;
   end;
   BlockLoad(CIb);

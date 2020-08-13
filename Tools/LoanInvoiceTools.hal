@@ -450,6 +450,7 @@ begin
   return;
 end;
 
+global
 function Integer GetRateType(record CredManVc CredManr)
 begin
   record CredManTypeVc CMTr;
@@ -1146,7 +1147,7 @@ begin
 end;
 
 global
-updating procedure CreateProlongInvoice(record CredManVc CredManr)
+updating procedure CreateProlongInvoice(record CredManVc CredManr,var record IVVc nIVr)
 begin
   record CMInvoicingBlock CIb;
   record CredManSetBlock CMb;
@@ -1175,6 +1176,7 @@ begin
       IVr.OKFlag = 1;
       RecordUpdate(oldIVr,IVr,true);
       LinkCredManAndInvoice(IVr,CredManr);
+      RecordCopy(nIVr,IVr);
     end;  
   end;
 
