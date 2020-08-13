@@ -255,7 +255,8 @@ begin
               tstr = tstr & StringFromText(Noter,pos,255);
               pos = pos + 255;
             end;
-*/
+*/          
+            tstr = "";
             for (i=0;i<LineTextCnt2(Noter);i=i+1) begin
               tstr = tstr & LineTextGet2(Noter,i);
             end;
