@@ -379,7 +379,7 @@ begin
   
   overdueprc = CredManr.OverduePercentage;
   if (CredManr.AnnualRate==1) then begin
-    overdueprc = overdueprc/12;
+    //overdueprc = overdueprc/12; overdues should not be affected by annual
   end;
   TrHs = true;
   CredHistr.ArtCode = item;
