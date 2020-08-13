@@ -399,7 +399,7 @@ begin
           end else begin
             latefee = latefee + (amounts[i]*(overdueprc/100)/lastdaycnt);
           end;
-          if (lastamount!=amounts[i] and lastamount>0) then begin
+          if ((lastamount!=amounts[i] and lastamount>0) or (ratetype==1 and lastdaycnt!=daycnt[i])) then begin
             if (ratetype==0) then begin //as default
               lateformula[lateformula.length] = odays & " Days " &  " - " & item & " - " & lastamount & " * " & ValToString((overdueprc/100),M45Val,"",",",0) & "=" & (lastamount*(overdueprc/100) * odays);
             end else begin
