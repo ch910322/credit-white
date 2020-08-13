@@ -38,6 +38,7 @@ external inner function string 50 NextLegalSerNr(string,LongInt,Date,string,stri
 external function Boolean GetCredLegalNrLine(string,string,Date,string,string,var row CredLegalInvNrBlock,Integer);
 external procedure FindListCredLegalSerNr(string,string,string,string,string,Integer,var array string);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
+external updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -305,6 +306,7 @@ end;
 global
 updating procedure DoPauseCredMan(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res,var Boolean setf,record RcVc RepSpec,var record IVVc IVr)
 begin
+  record AgreementDocVc ADr;
   res = false;
 
 //  if (nonblank(td)) then begin
@@ -323,6 +325,14 @@ begin
         end;
         CredManSetDatesCust(CredManr,false);
         GenerateAgreementSchedule(CredManr,true);
+        if (RepSpec.flags[1]==1) then begin
+          ADr.RecordType = 0;
+          ADr.RecordNr = CredManr.SerNr;
+          ADr.Type = 2;
+          if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
+            RecreateAgreementDocument(ADr,true);
+          end;
+        end;
         setf = true;
       end;
       res = true;      
