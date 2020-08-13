@@ -28,6 +28,31 @@ BEGIN
 end;
 
 global
+updating function LongInt IPVcRecordCheck(var record IPVc IPr,record IPVc IP2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  record BankTRVc BTr;
+
+  if (UserCanAction("ReceiptBankTRDiffAmounts",false)==false) then begin
+    BTr.FileName = "IPVc";
+    BTr.TransNr = IPr.SerNr;
+    if (ReadFirstKey("FileName",BTr,2,true)) then begin
+      if (BTr.Sum!=IPr.CurPayVal) then begin
+        RecordCheckError(200260,"",-1,"CurPayVal");
+        res = -1;
+        goto LIPVcRecordCheck;
+      end;
+    end;
+  end;
+
+  res = inner.IPVcRecordCheck(IPr,IP2r,stat,long4);
+
+LIPVcRecordCheck:;
+  IPVcRecordCheck = res;
+  return;
+end;
+
+global
 updating function LongInt IPVcRecordSaveAfter(var record IPVc IPr,record IPVc IP2r,LongInt stat,LongInt long4)
 BEGIN
   LongInt res;

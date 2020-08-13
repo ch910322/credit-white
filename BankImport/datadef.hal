@@ -79,6 +79,9 @@ begin
   KeySegment(SerNr);
   EndRecord;
   
+  RecordAddBegin(IPVc,"IPVc_BPI");
+  RecordField(RefundFlag,M4Int,0,0);
+  EndRecordAdd;
   
   return;
 end;

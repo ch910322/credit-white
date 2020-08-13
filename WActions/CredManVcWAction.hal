@@ -4,10 +4,10 @@ remote updating procedure TerminateCredMan(var record CredManVc,var record IVVc)
 remote updating procedure DoBuyOutAgreement(record CredManVc,var record IVVc);
 remote procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 remote inner procedure SetupCustPS2Rn(string,var record RcVc);
-remote procedure CredManSetDatesCust(var record CredManVc);
+remote procedure CredManSetDatesCust(var record CredManVc,Boolean);
 remote procedure GetCredManEventList(record CredManVc,var record ORVc);
 external procedure GetCredManEventList2(Longint,var record ORVc);
-remote updating procedure DoPauseCredMan(var record CredManVc,val,val,Date,var Boolean,var Boolean,record RcVc);
+remote updating procedure DoPauseCredMan(var record CredManVc,val,val,Date,var Boolean,var Boolean,record RcVc,var record IVVc);
 remote procedure PasteSuretyInCredMan(var record CredManVc,string,Integer,var string);
 remote procedure GetRefinCredManData(Longint,Integer,var record RcVc,Boolean);
 remote updating function Boolean DoRefinCredMan(record RcVc,var string,var record CredManVc);
@@ -29,7 +29,8 @@ remote updating procedure CreateManualExtraInvoice(record RcVc,var record IVVc);
 remote procedure CredLegalNrSerNrSClassOnOpenWindowRemote(string,string,Date,string,string,var array string);
 remote updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
 remote updating procedure GetCredManPropertyRecord(record CredManVc,var record CredManPropertyVc);
-
+remote procedure CredManCalcLastMonthPrinciple(var record CredManVc);
+remote procedure CredManCalcMaxMonthlyPayment(var record CredManVc);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -152,13 +153,13 @@ begin
   return;
 end;
 
-function Boolean CredManDClassstartDateEFAfter(Integer wn,Boolean changedf)
+function Boolean CredManDClassstartDateEFAfter(Integer wn,Boolean changedf,Boolean allf)
 begin
   record CredManVc CredManr;
 
   if (changedf) then begin  
     GetWindowRecord(wn,CredManr);
-    CredManSetDatesCust(CredManr);
+    CredManSetDatesCust(CredManr,allf);
     PutWindowRecord(wn,CredManr);   
   end; 
   CredManDClassstartDateEFAfter = true;
@@ -175,6 +176,26 @@ begin
     PutWindowRecord(wn,CredManr);   
   end; 
   CredManDClassInvSumEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassTypeEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManVc CredManr;
+  record CredManTypeVc CMTr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    CMTr.Code = CredManr.Type;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      CredManr.OverdueRateType = CMTr.OverdueRateType;
+      if (CredManr.PrincipleDelayInterest==0) then begin
+        CredManr.PrincipleDelayInterest = CredManr.IntRate;
+      end;
+    end;
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassTypeEFAfter = true;
   return;
 end;
 
@@ -235,6 +256,34 @@ begin
   return;
 end;
 
+function Boolean CredManDClassMaxMonthlyPaymentEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManVc CredManr;
+
+  if (changedf) then begin  
+    DeselectWindow(wn,true);
+    GetWindowRecord(wn,CredManr);
+    CredManCalcLastMonthPrinciple(CredManr);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassMaxMonthlyPaymentEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassLastMonthPrincEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManVc CredManr;
+
+  if (changedf) then begin  
+    DeselectWindow(wn,true);
+    GetWindowRecord(wn,CredManr);
+    CredManCalcMaxMonthlyPayment(CredManr);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassLastMonthPrincEFAfter = true;
+  return;
+end;
+
 
 global
 function Boolean CredManDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
@@ -252,8 +301,8 @@ begin
   switch (fieldname) begin
     case "StdProlongFee":     res = CredManDClassStdProlongFeeEFAfter(wn,rownr,changed!=0);
     case "StdProlongPrc":     res = CredManDClassStdProlongPrcEFAfter(wn,rownr,changed!=0);
-    case "startDate":         res = CredManDClassstartDateEFAfter(wn,changed!=0);
-    case "MonthlyPaymentDay": res = CredManDClassstartDateEFAfter(wn,changed!=0);
+    case "startDate":         res = CredManDClassstartDateEFAfter(wn,changed!=0,true);
+    case "MonthlyPaymentDay": res = CredManDClassstartDateEFAfter(wn,changed!=0,true);
     case "SuretyProvider1":   res = CredManDClassSuretyProviderEFAfter(wn,changed!=0,1);
     case "SuretyProvider2":   res = CredManDClassSuretyProviderEFAfter(wn,changed!=0,2);
     case "SuretyProvider3":   res = CredManDClassSuretyProviderEFAfter(wn,changed!=0,3);
@@ -271,10 +320,19 @@ begin
     res = CredManDClassCustCodeEFAfter(wn,rownr,changed!=0);
   end;
   if (fieldname=="InstalmentMonths") then begin//to update the dates correctly
-    res = CredManDClassstartDateEFAfter(wn,changed!=0);
+    res = CredManDClassstartDateEFAfter(wn,changed!=0,false);
+  end;
+  if (fieldname=="MaxMonthlyPayment") then begin
+    res = CredManDClassMaxMonthlyPaymentEFAfter(wn,changed!=0);
+  end;
+  if (fieldname=="LastMonthPrinc") then begin
+    res = CredManDClassLastMonthPrincEFAfter(wn,changed!=0);
   end;
   if (fieldname=="InvSum4" or fieldname=="vRebate" or fieldname=="Type") then begin//to update the fees
     res = CredManDClassInvSumEFAfter(wn,changed!=0);
+  end;
+  if (fieldname=="Type") then begin//to update the fees
+    res = CredManDClassTypeEFAfter(wn,changed!=0);
   end;
 /*
   if (changed!=0) then begin
@@ -525,10 +583,11 @@ end;
 global
 updating procedure PauseCredManWClassPause()
 begin
-  Integer wn,mwn;
+  Integer wn,mwn,iwn;
   record CredManVc CredManr;
   record RcVc RepSpec;
   Boolean res,setf;
+  record IVVc IVr;
 
   wn = CurWindow;
   DeselectWindow(wn,true);
@@ -537,20 +596,28 @@ begin
     mwn = MotherWindow(wn);
     if (WindowState(mwn)==Rs_Normal) then begin
       GetWindowRecord(mwn,CredManr);
-      DoPauseCredMan(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec);
+      DoPauseCredMan(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr);
       if (res) then begin
         PutWindowRecord(mwn,CredManr);
         if (WindowDoOK(mwn,0)) then begin
           if (setf and RepSpec.flags[1]==1) then begin
             RecreateAgreementSchedule(CredManr);
           end;
-        end;  
+        end;
+        if (IVr.SerNr>0) then begin
+          UpdateBrowses("CredHistVc");
+          iwn = OpenWindow("IVDClass",1,0,"","",IVr);
+          SelectWindow(iwn);
+        end;
       end else begin
         MessageBox(200109,"");
       end;
       //SetWindowState(mwn,Rs_Normal);
     end;
     CloseWindow(wn);
+    if (iwn>0) then begin
+      SelectWindow(iwn);
+    end;
   //end;
   return;
 end;

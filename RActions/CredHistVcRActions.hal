@@ -1,5 +1,5 @@
 //<halrule>server-only</halrule>
-external  procedure CredManSetDatesCust(var record CredManVc);
+external  procedure CredManSetDatesCust(var record CredManVc,Boolean);
 external updating procedure RecreateAgreementSchedule(record CredManVc);
 external updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
 external updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
@@ -37,7 +37,7 @@ begin
         CredManr.ProlongDate = PSr.ProlongDate;
         CredManr.PauseMonths = PSr.PauseMonths;
         CredManr.ProlongMonths = PSr.ProlongMonths;
-        CredManSetDatesCust(CredManr);
+        CredManSetDatesCust(CredManr,false);
         if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
           if (PSr.RecalcSchedule == 1) then begin
             //RecreateAgreementSchedule(CredManr);

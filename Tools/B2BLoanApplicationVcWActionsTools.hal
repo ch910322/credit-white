@@ -1,6 +1,6 @@
 remote inner procedure CredManVc_PasteType(var record CredManVc);
 external inner function roundmode SetRoundModeD(Integer);
-external  procedure CredManSetDatesCust(var record CredManVc);
+external  procedure CredManSetDatesCust(var record CredManVc,Boolean);
 external procedure CalculateSuretyAge(record B2BLoanApplicationVc,Integer);
 external inner updating function Boolean AddContactCUDsmRemote(record CUVc,string);
 external inner updating procedure SendCustomerLetterWithDetails(record RCVc,string,string,string);
@@ -246,6 +246,7 @@ begin
     CredManr.Type = LAr.Type;
     CredManVc_PasteType(CredManr);
     CredManr.IntRate = LAr.InterestRate;
+    CredManr.PrincipleDelayInterest = CredManr.IntRate;
     CredManr.CustCode = LAr.CustCode;
     CredManr.Addr0 = LAr.CustName;
     CredManr.SalesMan = LAr.Manager;
@@ -258,18 +259,22 @@ begin
       CredManr.AnnualRate = CMTr.AnnualRate;
       CredManr.PayDeal = CMTr.PayDeal;
       CredManr.Classifications = CMTr.Classifications;
+      CredManr.OverdueRateType = CMTr.OverdueRateType;
     end else begin  
       CredManr.PayDeal = CUr.PayDeal;
     end;
     CredManr.ClientContact = LAr.ContactName;
     CredManr.MonthlyPaymentDay = LAr.MonthlyPaymentDay;
     CredManr.DepositSum = Round(CredManr.DepositPrc/100 * CredManr.InvSum4,SetRoundModeD(2));
-    CredManSetDatesCust(CredManr);
+    CredManSetDatesCust(CredManr,true);
     CredManr.BankCode = LAr.BankCode;
     CredManr.BankName = LAr.BankName;
     CredManr.BankAccount = LAr.BankAccount;
     CredManr.PrincipleDelayMonths = LAr.PrincipleDelayMonths;
     CredManr.PrincipleDelayInterest = LAr.PrincipleDelayInterest;
+    if (CredManr.PrincipleDelayInterest==0) then begin
+      CredManr.PrincipleDelayInterest = CredManr.IntRate;
+    end;
     CredManr.MaxMonthlyPayment = LAr.MaxMonthlyPayment;
     CredManr.LoanApplication = LAr.SerNr;
 //Pasting sureties
@@ -600,6 +605,9 @@ begin
     case "F_LATEFEEVAL": res = RepSpec.vals3;
     case "F_ABOVEHIDDENFULL": res = RepSpec.vals4;
     case "F_TOPAY": res = RepSpec.f10;
+    case "F_OPENAMOUNT": res = RepSpec.f11;
+    case "F_TOPAY2": res = RepSpec.f12;
+    case "F_TOPAY2_TEXT": res = RepSpec.f13;
     otherwise
       res = LetVcReplaceTokenCust(RepSpec,token);
   end;
@@ -682,26 +690,23 @@ begin
     Mailrw.AddrCode = email;
     MatRowPut(Mailr,1,Mailrw);
 
-    if (LTxtr.HtmlFlag==0) then begin
-      if (qupdating.B2BLoanAppCreateCredMan(LAr,CredManr,false)) then begin
-        BlockLoad(CredManSetb);
-        BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
-        BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
-        rwcnt = MatRowCnt(SMr);
-        for (i=0;i<rwcnt;i=i+1) begin
-          MatRowGet(SMr,i,SMrw);
-          fees = fees + SMrw.DebVal2;
-          interest = interest + SMrw.CredVal;
-          tot = tot + SMrw.CurDebVal;
-        end;
-        RepSpec.f3 = CredManr.CurncyCode;
-        RepSpec.vals0 = fees;
-        RepSpec.vals1 = interest;
-        RepSpec.vals2 = tot;
+    if (qupdating.B2BLoanAppCreateCredMan(LAr,CredManr,false)) then begin
+      BlockLoad(CredManSetb);
+      BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+      BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+      rwcnt = MatRowCnt(SMr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(SMr,i,SMrw);
+        fees = fees + SMrw.DebVal2;
+        interest = interest + SMrw.CredVal;
+        tot = tot + SMrw.CurDebVal;
       end;
-
-
-
+      RepSpec.f3 = CredManr.CurncyCode;
+      RepSpec.vals0 = fees;
+      RepSpec.vals1 = interest;
+      RepSpec.vals2 = tot;
+    end;
+    if (LTxtr.HtmlFlag==0) then begin
       ParseTextField(a,LTxtr,RepSpec,"LtxtVcReplaceToken");
       l = GetAreaLength(a);
       pos = 0;

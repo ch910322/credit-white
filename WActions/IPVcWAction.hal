@@ -1,0 +1,102 @@
+remote inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
+remote inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var LongInt);
+
+function Boolean UpdatePrepayRow(var record IPVc IPr,val addsum)
+begin
+  Integer i,rwcnt;
+  row IPVc IPrw;
+  Boolean res;
+
+  rwcnt = MatRowCnt(IPr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IPr,i,IPrw);
+    if (IPrw.InvoiceNr==-1) then begin
+      IPrw.RecVal = IPrw.RecVal + addsum;
+      MatRowPut(IPr,i,IPrw);
+      IPVc_PasteRecVal(IPr,i);
+      i = rwcnt;
+      res = true;
+    end;
+  end;  
+
+  UpdatePrepayRow = res;
+  return;
+end;
+
+function Boolean FindBankTransaction(record IPVc IPr,var record BankTRVc BTr)
+begin
+  Boolean res;
+  record BankTRVc tBTr;
+
+  tBTr.FileName = "IPVc";
+  tBTr.TransNr = IPr.SerNr;
+  if (ReadFirstKey("FileName",tBTr,2,true)) then begin
+    res = true;
+    RecordCopy(BTr,tBTr);
+  end;
+
+  FindBankTransaction = res;
+  return;
+end;
+
+function Boolean IPDClassInvoiceNrEFAfter(Integer wn, Integer rownr,Integer changed,Integer fn)
+BEGIN
+  Boolean res;
+  record IPVc IPr;
+  row IPVc IPrw;
+  val chk;
+  string 255 custcode;
+  Integer k;
+  record BankTRVc BTr;
+  Longint error;
+
+  res = true;
+  if (changed!=0) then begin
+    GetWindowRecord(wn,IPr);
+    if (rownr>-1) then begin
+      MatRowGet(IPr,rownr,IPrw);
+      if (IPrw.InvoiceNr>0 and IPrw.CUPNr>0) then begin
+        IPrw.CUPNr = -1;
+        MatRowPut(IPr,rownr,IPrw);
+      end;
+      if (IPrw.InvoiceNr>0) then begin
+        custcode = IPrw.CustCode;
+        if (FindBankTransaction(IPr,BTr)) then begin
+          if (IPr.CurPayVal!=BTr.Sum) then begin
+            if (UpdatePrepayRow(IPr,BTr.Sum-IPr.CurPayVal)==false) then begin
+              clearrow(IPr,IPrw,1);
+              k = MatRowCnt(IPr);
+              IPrw.CustCode = custcode;
+              matrowput(IPr,k,IPrw);
+              IPVc_PasteCustCode(IPr,k,error);
+              matrowget(IPr,k,IPrw);
+              IPrw.RecVal = BTr.Sum-IPr.CurPayVal;
+              IPrw.BankVal = BTr.Sum-IPr.CurPayVal;
+              IPrw.PayDate = IPr.TransDate;
+              IPrw.CUPNr = IPr.SerNr;
+              matrowput(IPr,k,IPrw);
+              IPVc_PasteRecVal(IPr,k);
+            end;
+          end;
+        end;
+      end;
+      PutWindowRecord(wn,IPr);    
+    end;
+  end;
+  IPDClassInvoiceNrEFAfter = res;
+  RETURN;
+END;
+
+global
+function Boolean IPDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+BEGIN
+  Boolean res;
+
+  res = inner.IPDClassAfterEditField(wn,fieldname,fn,rownr,changed);
+
+  switch (fieldname) begin
+    case "InvoiceNr": res = IPDClassInvoiceNrEFAfter(wn,rownr,changed,fn);
+  end;
+  IPDClassAfterEditField = res;
+  RETURN;
+END;

@@ -12,6 +12,7 @@ external function val GetCredManItemValue(record IVVc,string,Boolean);
 external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
 external inner function boolean AddEMailRecipients(var record MailVc,string,string,integer);
 external inner function Boolean FindCustomerRelation(string,string,var record CUVc);
+external inner procedure ValToText(val,Integer,string,string,var string);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -152,6 +153,43 @@ begin
 end;
 
 global
+function val GetCustomerOpenAmount(string custcode)
+begin
+  val res;
+  record ARVc ARr;
+  Boolean TrHs;
+  record ARPayVc ARPayr;
+
+  TrHs = true;
+  res = 0;
+  ARr.CustCode = custcode;
+  while (LoopKey("CustCode",ARr,1,TrHs)) begin
+    if (ARr.CustCode!=custcode) then begin
+      TrHs = false;
+    end else begin
+      if (ARr.RVal>0 and ARr.DueDate<CurrentDate) then begin
+        res = res + ARr.RVal;
+      end;
+    end;
+  end;
+  
+  TrHs = true;
+  ARPayr.CustCode = custcode;
+  while (LoopKey("CustCode",ARPayr,1,TrHs)) begin
+    if (ARPayr.CustCode!=custcode) then begin
+      TrHs = false;
+    end else begin
+      if (ARPayr.RVal>0) then begin
+        res = res - ARPayr.RVal;
+      end;
+    end;
+  end;
+
+  GetCustomerOpenAmount = res;
+  return;
+end;
+
+global
 procedure Ext_PrintCustomInvoiceFields(var vector string vVals,record IVVc IVr)
 begin
   record CredManSetBlock CMb;
@@ -169,14 +207,26 @@ begin
   string 255 vatnr;
   record CUVc CUr;
   record CredManVc CredManr;
+  val topay2,openamount;
 
   Ext_PrintInvoiceSigner(vVals);
 
   vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(IVr.CustCredManNr);
 
+
   vVals["F_LOANPERIOD"] = IVr.CredFromDate & ":" & IVr.CredToDate;
 
   GetHiddenInvoiceValues(IVr,abovehiddenbase,abovehiddenvat);
+  openamount = GetCustomerOpenAmount(IVr.CustCode);
+
+  topay2 = (abovehiddenbase + abovehiddenvat + GetCredManItemValue(IVr,CMb.InstalmentItem,true) + openamount);
+  if (topay2<0) then begin
+    topay2 = 0;
+  end;
+  vVals["F_OPENAMOUNT"] = openamount;
+  vVals["F_TOPAY2"] = topay2;
+  ValToText(topay2,M4Val,IVr.CurncyCode,CredManr.LangCode,tstr);
+  vVals["F_TOPAY2_TEXT"] = tstr;
 
   vVals["F_ABOVEHIDDENBASE"] = abovehiddenbase;
   vVals["F_ABOVEHIDDENVAT"] = abovehiddenvat;
@@ -208,7 +258,8 @@ begin
               tstr = tstr & StringFromText(Noter,pos,255);
               pos = pos + 255;
             end;
-*/
+*/          
+            tstr = "";
             for (i=0;i<LineTextCnt2(Noter);i=i+1) begin
               tstr = tstr & LineTextGet2(Noter,i);
             end;

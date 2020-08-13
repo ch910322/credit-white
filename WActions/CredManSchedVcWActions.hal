@@ -1,3 +1,5 @@
+external procedure TestInvoiceBasedOnScheduleRow(record CredManSchedVc,row CredManSchedVc,var record IVVc);
+remote procedure CredManSchedRecalcInterestRemote(var record CredManSchedVc,var val);
 
 global
 procedure GetScheduleTotals(record CredManSchedVc CSr,var val princ,var val interest,var val fees,var val total,var val vat,var Date sd,var Date ed)
@@ -82,15 +84,21 @@ begin
   row CredFeesMatrixVc FMrw;
   Integer i,rwcnt;
   val fees;
+  record IVVc IVr;
   
   MatRowGet(CSr,rowno,CSrw);
   UnpackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
+/*
   rwcnt = MatRowCnt(FMr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(FMr,i,FMrw);
     fees = fees + FMrw.Sum;
   end;
-  CSrw.Total = CSrw.Principle + CSrw.Interest + CSrw.Fees;
+*/
+
+  TestInvoiceBasedOnScheduleRow(CSr,CSrw,IVr);
+
+  CSrw.Total = IVr.Sum4;
   MatRowPut(CSr,rowno,CSrw);
 
   return;
@@ -167,7 +175,7 @@ begin
   Boolean res;
   record CredManSchedVc SCr;
   
-  if (rownr>0) then begin
+  if (rownr>0 and changed!=0) then begin
     GetWindowRecord(wn,SCr);
     SumupCredManSched(SCr,rownr);
     PutWindowRecord(wn,SCr);
@@ -192,5 +200,23 @@ begin
   UpdateCredManSchedSoftFields(wn);
 
   CredManSchedDClassOnOpenWindow = false;
+  return;
+end;
+
+global
+procedure CredManSchedRecalcInterestDsm()
+begin
+  record CredManSchedVc CSr;
+  Integer wn;
+  val calcbal;
+  
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,CSr);
+  calcbal = StringToVal(GetWindowString(wn,"totprinc"),M4Val);
+  CredManSchedRecalcInterestRemote(CSr,calcbal);
+  PutWindowRecord(wn,CSr);
+
+
   return;
 end;

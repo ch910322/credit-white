@@ -1,5 +1,5 @@
 remote procedure FillBankTransactionsAndReceipts(var record IPConVc);
-remote updating procedure CreateRefundReceipt(record IPVc,var record IPVc);
+remote updating procedure CreateRefundReceipt(record IPVc,var record IPVc,Date);
 remote updating procedure DistributeReceiptRemote(record IPConDistributeVc);
 remote procedure InsertInvoiceToDistribute(var record IPConDistributeVc,Integer);
 remote procedure DistributeInvoicesSClassOnOpenWindowRemote(Longint,var array record IVVc);
@@ -76,7 +76,7 @@ begin
   record IPConVc PCr;
 
   GetWindowRecord(wn,PCr);
-  FillBankTransactionsAndReceipts(PCr);
+  threadremote.FillBankTransactionsAndReceipts(PCr);
   PutWindowRecord(wn,PCr);
 
   return;
@@ -88,8 +88,9 @@ begin
   record IPConVc PCr;
   
   if (changed!=0) then begin
+    DeselectWindow(wn,true);
     GetWindowRecord(wn,PCr);
-    FillBankTransactionsAndReceipts(PCr);
+    threadremote.FillBankTransactionsAndReceipts(PCr);
     PutWindowRecord(wn,PCr);
   end;
 
@@ -172,7 +173,7 @@ begin
           IPr.OKFlag = 1;
         end;
         RecordUpdate(oldIPr,IPr,true);
-        FillBankTransactionsAndReceipts(PCr);
+        threadremote.FillBankTransactionsAndReceipts(PCr);
         PutWindowRecord(wn,PCr);
       end;
     end;
@@ -188,6 +189,7 @@ begin
   record IPConVc PCr;
   row IPConVc PCrw;
   record IPVc IPr,nIPr;
+  record RcVc RepSpec;
 
   wn = CurWindow;
   GetWindowRecord(wn,PCr);
@@ -197,10 +199,8 @@ begin
     if (PCrw.IPNr>0) then begin
       IPr.SerNr = PCrw.IPNr;
       if (ReadFirstMain(IPr,1,true)) then begin
-        CreateRefundReceipt(IPr,nIPr);
-        OpenWindow("IPDClass",0,0,"","",nIPr);
-        FillBankTransactionsAndReceipts(PCr);
-        PutWindowRecord(wn,PCr);
+        RepSpec.long1 = IPr.SerNr;
+        OpenWindow("ReceiptConnectionRefundWClass",1,0,"","",RepSpec);
       end;
     end;
   end;
@@ -208,6 +208,38 @@ begin
 
   return;
 end;
+
+global
+updating procedure ReceiptConnectionRefundDo()
+begin
+  Integer wn,rw,twn;
+  record IPConVc PCr;
+  row IPConVc PCrw;
+  record IPVc IPr,nIPr;
+  record RcVc RepSpec;
+
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  if (RepSpec.long1>0) then begin
+    IPr.SerNr = RepSpec.long1;
+    if (ReadFirstMain(IPr,1,true)) then begin
+      CreateRefundReceipt(IPr,nIPr,RepSpec.d1);
+      CloseWindow(wn);
+      twn = FindWindow("ReceiptConnectionWClass");
+      if (twn>0) then begin
+        GetWindowRecord(twn,PCr);
+        threadremote.FillBankTransactionsAndReceipts(PCr);
+        PutWindowRecord(twn,PCr);
+      end;
+      OpenWindow("IPDClass",1,0,"","",nIPr);
+    end;
+  end;
+  
+
+  return;
+end;
+
 
 global
 procedure ReceiptConnectionRedistributeDsm()
@@ -256,7 +288,7 @@ begin
   twn = FindWindow("ReceiptConnectionWClass");
   if (twn>0) then begin
     GetWindowRecord(twn,PCr);
-    FillBankTransactionsAndReceipts(PCr);
+    threadremote.FillBankTransactionsAndReceipts(PCr);
     PutWindowRecord(twn,PCr);
   end;
 
@@ -479,7 +511,7 @@ begin
 
   GetWindowRecord(wn,PCr);
   PCr.ArtMode = value;
-  FillBankTransactionsAndReceipts(PCr);
+  threadremote.FillBankTransactionsAndReceipts(PCr);
   PutWindowRecord(wn,PCr);
 
   ReceiptConnectionWClassArtModeButtonAction = true;
@@ -492,7 +524,7 @@ begin
 
   GetWindowRecord(wn,PCr);
   PCr.PaidStat = value;
-  FillBankTransactionsAndReceipts(PCr);
+  threadremote.FillBankTransactionsAndReceipts(PCr);
   PutWindowRecord(wn,PCr);
 
   ReceiptConnectionWClassPaidStatButtonAction = true;
@@ -510,12 +542,54 @@ begin
   pwn = FindWindow("ReceiptConnectionWClass");
   if (pwn>0) then begin
     GetWindowRecord(pwn,PCr);
-    FillBankTransactionsAndReceipts(PCr);
+    threadremote.FillBankTransactionsAndReceipts(PCr);
     PutWindowRecord(pwn,PCr);
   end;
 
   res = inner.IPVcRecordUpdateClient(wn,IPr,IP2r,stat,long4);
 
   IPVcRecordUpdateClient = res;
+  return;
+end;
+
+global
+procedure ReceiptConnectionCUPerDsm()
+begin
+  record PeriodBlock PeriodRec;
+  row PeriodBlock Periodrw;
+  Date startdate,enddate;
+  record RcVc RepSpec;
+  record IPConVc PCr;
+  row IPConVc PCrw;
+  record IPVc IPr,nIPr;
+  record IPConDistributeVc IPDr;
+  Integer rw,wn;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,PCr);
+  rw = WindowActiveRow(wn);
+  if (rw>-1) then begin
+    MatRowGet(PCr,rw,PCrw); 
+    if (nonblank(PCrw.CustCodeRow)) then begin
+
+      BlockLoad(PeriodRec);
+      if (MatRowCnt(PeriodRec)>0) then begin
+        MatRowGet(PeriodRec,0,Periodrw);
+        startdate = Periodrw.FromDate;
+        enddate = Periodrw.ToDate;
+      end;
+
+      
+      RepSpec.repname = "CUPerRn";
+      ReportDefaults(RepSpec,"CUPerRClass");
+      RepSpec.Media = mtScreen;
+      RepSpec.sStartDate = startdate;
+      RepSpec.sEndDate = enddate;
+      RepSpec.ArtMode = 1;
+      RepSpec.f1 = PCrw.CustCodeRow;
+      RunReport(RepSpec,0);
+    end;
+  end;
+
   return;
 end;

@@ -31,6 +31,7 @@ external function Boolean HasMultiCurrency();
 external function Boolean HasObjects();
 //CUST-BEGIN TAG TOOLS
 external outer function Boolean HasMoneyTransferDate();
+external outer function Boolean CanEditCredManCreateDate();
 //CUST-END
 
 window CUDClass:14
@@ -645,17 +646,21 @@ begin
   EditField(h2,v+=vs,82,"First Invoice Date",Normal,FirstInvDate,false,PasteCurDate);
 //CUST-END
   EditField(h2,v+=vs,82,"End Date",ViewOnly,endDate,false,PasteCurDate);
-  EditField(h2,v+=vs,82,"Create Date",ViewOnly,TransDate,false,PasteCurDate);
 //CUST-BEGIN
+  if (CanEditCredManCreateDate) then begin
+    EditField(h2,v+=vs,82,"Agreement Date",Normal,TransDate,false,PasteCurDate);
+  end else begin
+    EditField(h2,v+=vs,82,"Create Date",ViewOnly,TransDate,false,PasteCurDate);
+  end;
   EditField(h2,v+=vs,82,"Monthly Paym. Day",Normal,MonthlyPaymentDay,false,0);
 //CUST-END
-  EditField(h3,v=vm,82,"Monthly #Instalment#",ViewOnly,MonthlySum,false,0);
+  EditField(h3,v=vm,72,"Monthly #Instalment#",ViewOnly,MonthlySum,false,0);
 //CUST-BEGIN
-  EditField(h3,v+=vs,82,"Order Class",Normal,OrderClass,false,OrderClassSClass);
-  EditField(h3,v+=vs,82,"Overdue percentage",Normal,OverduePercentage,false,0);
-  EditField(h3,v+=vs,82,"Surety Interest Rate",Normal,SuretyInterestRate,false,0);
-  EditField(h3,v+=vs,82,"Std Prolongation Fee",Normal,StdProlongFee,false,0);
-  EditField(h3,v+=vs,82,"Std Prolongation Fee %",Normal,StdProlongPrc,false,0);
+  EditField(h3,v+=vs,72,"Order Class",Normal,OrderClass,false,OrderClassSClass);
+  EditField(h3,v+=vs,72,"Overdue percentage",Normal,OverduePercentage,false,0);
+  EditField(h3,v+=vs,72,"Surety Interest Rate",Normal,SuretyInterestRate,false,0);
+  EditField(h3,v+=vs,72,"Std Prolongation Fee",Normal,StdProlongFee,false,0);
+  EditField(h3,v+=vs,72,"Std Prolongation Fee %",Normal,StdProlongPrc,false,0);
   
 //CUST-BEGIN
   if (HasMoneyTransferDate) then begin
@@ -665,6 +670,10 @@ begin
   end;
 //CUST-END
   EditField(h4,v+=vs,-40,"Max Monthly Payment",Normal,MaxMonthlyPayment,false,0);
+//CUST-BEGIN
+  EditField(h4,v+=vs,-40,"Last Month's Principle",Normal,LastMonthPrinc,false,0);
+
+//CUST-END
   EditField(h4,v+=vs,-40,"Princ. Delay Months",Normal,PrincipleDelayMonths,false,0);
   EditField(h4,v+=vs,-40,"Princ. Delay Interest %",Normal,PrincipleDelayInterest,false,0);
 /*
@@ -827,6 +836,11 @@ begin
   RadioButton(h2,v,0,0,"Due Date",LateRateOption);
   RadioButton(h2,v+=16,1,0,"Trans. Date",LateRateOption);
 
+  ButtonFrame(h2=h2+170,v=vm,80,3,"Overdue Rate");
+  RadioButton(h2,v,0,0,"Default",OverdueRateType);
+  RadioButton(h2,v+=16,1,0,"Daily",OverdueRateType);
+  RadioButton(h2,v+=16,2,0,"Monthly",OverdueRateType);
+
 //CUST-BEGIN
   CheckBox(h2,v+=30,0,"No Overdue Fees",SkipOverDue);
   
@@ -971,14 +985,22 @@ begin
   EditField(h,vm2=(v+=vs),40,"Fixed Deposit",Normal,DepositSum,true,0);//CUST 82>>40
   EditField(h2,v,82,"Princ. Delay Interest %",Normal,PrincipleDelayInterest,false,0);//CUST added
   //CUST-BEGIN
-  EditField(h,v+=vs,40,"Language",Normal,LangCode,false,LangSClass);
-  EditField(h,v+=vs,40,"Overdue Language",Normal,OverdueLangCode,false,LangSClass);
-  EditField(h2,v,40,"First Invoice Language",Normal,LangCode2,false,LangSClass);
+  
+  EditField(h,v+=vs,40,"Days in Year",Normal,DaysInYear,false,0);
+  vm2 = v;
+  ButtonFrame(h2,v+=20,82,3,"Days in Month");
+  RadioButton(h2,v,0,0,"Default",DaysInMonth);
+  RadioButton(h2,v+=16,1,0,"30",DaysInMonth);
+  RadioButton(h2,v+=16,2,0,"Actual",DaysInMonth); 
+
+  EditField(h,v=vm2+vs,40,"Overdue Language",Normal,OverdueLangCode,false,LangSClass);
+  
+  h2 = 330;
   h2 = h2 + 110;
   CheckBox(h2,v,0,"Closed",Closed);
-  EditField(h,v+=vs,262,"Classifications",Normal,Classifications,false,CredManClassSClass);
+  EditField(h,v+=vs,150,"Classifications",Normal,Classifications,false,CredManClassSClass);
   CheckBox(h2,v,0,"Annual Rate",AnnualRate);
-  EditField(h,vm2=(v+=vs),262,"Bank Account",Normal,OwnBankAccount,false,0);
+  EditField(h,vm2=(v+=vs),150,"Bank Account",Normal,OwnBankAccount,false,0);
   EditField(h2+150,v=vm-20,-40,"Minimum Overdue Fee",Normal,MinOverdueFee,false,0);
   vm = vm + 20;
   //CUST-END
@@ -993,7 +1015,7 @@ begin
   ButtonFrame(h3=h2+170,v=vm,80,3,"Overdue Rate");
   RadioButton(h3,v,0,0,"Default",OverdueRateType);
   RadioButton(h3,v+=16,1,0,"Daily",OverdueRateType);
-  RadioButton(h3,v+=16,1,0,"Monthly",OverdueRateType);
+  RadioButton(h3,v+=16,2,0,"Monthly",OverdueRateType);
 //CUST-END
 /*
   ButtonFrame(h=50,vm=(v+=45),140,2,"Default Interest Type");
@@ -1056,6 +1078,8 @@ begin
   CheckBox(h5,v,0,"Us",VekselisUs);
   EditField(h6,v,40,"Language",Normal,VekselisLangCode,false,LangSClass);
 
+  EditField(h2,v+=40,40,"Language",Normal,LangCode,false,LangSClass);
+  EditField(h4,v,40,"First Invoice Language",Normal,LangCode2,false,LangSClass);
 
 //CUST-END
   EndWindow;

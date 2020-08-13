@@ -6,5 +6,8 @@ begin
   SString(200080,"Sutarties Nr.: ");
   SString(200081,"Periodas: ");
 
+  SString(200260,"Sum doesn't match with Bank Transaction");
+  SString(200261,"Total Principle repayment not the same as in agreement");
+
   return;
 end;
