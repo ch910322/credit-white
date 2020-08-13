@@ -103,7 +103,7 @@ BEGIN
 END;
 
 global
-function Boolean GetCredLegalNrLine(string filename,string sernr,string invdate,string agrtype,string agrclass,var row CredLegalInvNrBlock resLegalInvNrrw,Integer type)
+function Boolean GetCredLegalNrLine(string filename,string sernr,Date invdate,string agrtype,string agrclass,var row CredLegalInvNrBlock resLegalInvNrrw,Integer type)
 begin
   string 255 tstr;
   record CredLegalInvNrBlock LegalInvNrRec;
