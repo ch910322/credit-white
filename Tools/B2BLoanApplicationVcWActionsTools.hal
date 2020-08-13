@@ -607,6 +607,7 @@ begin
     case "F_TOPAY": res = RepSpec.f10;
     case "F_OPENAMOUNT": res = RepSpec.f11;
     case "F_TOPAY2": res = RepSpec.f12;
+    case "F_TOPAY2_TEXT": res = RepSpec.f13;
     otherwise
       res = LetVcReplaceTokenCust(RepSpec,token);
   end;
