@@ -459,6 +459,9 @@ LNextRow:;
 
   topay2 = openamount;
   vVals["F_OPENAMOUNT"] = openamount;
+  if (topay2<0) then begin
+    topay2 = 0;
+  end;
   vVals["F_TOPAY2"] = topay2;
   ValToText(topay2,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
   vVals["F_TOPAY2_TEXT"] = tstr;

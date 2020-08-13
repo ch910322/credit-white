@@ -220,6 +220,9 @@ begin
   openamount = GetCustomerOpenAmount(IVr.CustCode);
 
   topay2 = (abovehiddenbase + abovehiddenvat + GetCredManItemValue(IVr,CMb.InstalmentItem,true) + openamount);
+  if (topay2<0) then begin
+    topay2 = 0;
+  end;
   vVals["F_OPENAMOUNT"] = openamount;
   vVals["F_TOPAY2"] = topay2;
   ValToText(topay2,M4Val,IVr.CurncyCode,CredManr.LangCode,tstr);
