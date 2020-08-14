@@ -103,6 +103,7 @@ begin
   row IVVc IVrw;
   string 255 oldlang;
   record CMInvoicingBlock CIb;
+  string 255 del;
 
   BlockLoad(LMb);
   BlockLoad(CIb);
@@ -146,7 +147,12 @@ begin
     MatRowPut(IVr,0,IVrw);
     if (nonblank(fromdate)) then begin
       ClearRow(IVr,IVrw,1);
-      IVrw.Spec = CIb.InvoiceCommentStr & USetStr(200081) & fromdate & ":" & todate;
+      del = ":";
+      if (nonblank(CIb.PeriodDelimiter)) then begin
+        del = CIb.PeriodDelimiter;
+      end;
+
+      IVrw.Spec = CIb.InvoiceCommentStr & USetStr(200081) & fromdate & del & todate;
       MatRowPut(IVr,1,IVrw);
     end else begin
       ClearRow(IVr,IVrw,1);
@@ -341,13 +347,10 @@ begin
         end;
         if (CredPayr.TransDate>ed) then begin//no need to continue for later payments
           TrHs = false;
-        end else begin
-          tempsd = CredPayr.TransDate;
         end;
+        tempsd = CredPayr.TransDate;
       end;
-      if (CredPayr.TransDate<=ed) then begin
-        paysum = paysum - CredPayr.Sum;
-      end;
+      paysum = paysum - CredPayr.Sum;
     end;
   end;
   if (paysum>0 and tempsd<ed) then begin
@@ -382,7 +385,7 @@ begin
   
   overdueprc = CredManr.OverduePercentage;
   if (CredManr.AnnualRate==1) then begin
-    //overdueprc = overdueprc/12; overdues should not be affected by annual
+    overdueprc = overdueprc/12;
   end;
   TrHs = true;
   CredHistr.ArtCode = item;
@@ -453,7 +456,6 @@ begin
   return;
 end;
 
-global
 function Integer GetRateType(record CredManVc CredManr)
 begin
   record CredManTypeVc CMTr;
@@ -1150,7 +1152,7 @@ begin
 end;
 
 global
-updating procedure CreateProlongInvoice(record CredManVc CredManr,var record IVVc nIVr)
+updating procedure CreateProlongInvoice(record CredManVc CredManr)
 begin
   record CMInvoicingBlock CIb;
   record CredManSetBlock CMb;
@@ -1179,7 +1181,6 @@ begin
       IVr.OKFlag = 1;
       RecordUpdate(oldIVr,IVr,true);
       LinkCredManAndInvoice(IVr,CredManr);
-      RecordCopy(nIVr,IVr);
     end;  
   end;
 

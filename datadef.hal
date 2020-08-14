@@ -1140,6 +1140,7 @@ begin
   RecordField(ReplaceVATNrWith,M4Str,255,0);
   RecordField(ProlongItem,M4Code,20,INVc);
   RecordField(OverdueRateType,M4Int,0,0);
+  RecordField(PeriodDelimiter,M4Str,20,0);
 
   EndBlock;
 
