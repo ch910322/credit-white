@@ -341,10 +341,13 @@ begin
         end;
         if (CredPayr.TransDate>ed) then begin//no need to continue for later payments
           TrHs = false;
+        end else begin
+          tempsd = CredPayr.TransDate;
         end;
-        tempsd = CredPayr.TransDate;
       end;
-      paysum = paysum - CredPayr.Sum;
+      if (CredPayr.TransDate<=ed) then begin
+        paysum = paysum - CredPayr.Sum;
+      end;
     end;
   end;
   if (paysum>0 and tempsd<ed) then begin
