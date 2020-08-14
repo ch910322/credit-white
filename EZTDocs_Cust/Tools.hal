@@ -204,7 +204,7 @@ begin
   Longint pos,l;
   string 255 tstr;
   record CMInvoicingBlock CIb;
-  string 255 vatnr;
+  string 255 vatnr,del;
   record CUVc CUr;
   record CredManVc CredManr;
   val topay2,openamount;
@@ -213,8 +213,11 @@ begin
 
   vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(IVr.CustCredManNr);
 
-
-  vVals["F_LOANPERIOD"] = IVr.CredFromDate & ":" & IVr.CredToDate;
+  del = ":";
+  if (nonblank(CIb.PeriodDelimiter)) then begin
+    del = CIb.PeriodDelimiter;
+  end;
+  vVals["F_LOANPERIOD"] = IVr.CredFromDate & del & IVr.CredToDate;
 
   GetHiddenInvoiceValues(IVr,abovehiddenbase,abovehiddenvat);
   openamount = GetCustomerOpenAmount(IVr.CustCode);
