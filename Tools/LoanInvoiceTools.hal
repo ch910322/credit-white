@@ -359,7 +359,7 @@ begin
   if (paysum>0 and tempsd<=ed) then begin
     daydiff = DateDiff(ed,tempsd)+1;
     daydiff2 = DateDiff(ed,CredHistr.PayDate);
-    if (CredManr.LateFeeDays<=daydiff2) then begin
+    if (CredManr.LateFeeDays<daydiff2) then begin
       for (i=0;i<daydiff;i=i+1) begin
         amounts[amounts.length] = paysum;
         daycnt[daycnt.length] = GetMonthDays(AddDay(ed,i));
