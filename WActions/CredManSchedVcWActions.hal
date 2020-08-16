@@ -180,6 +180,9 @@ begin
     SumupCredManSched(SCr,rownr);
     PutWindowRecord(wn,SCr);
     UpdateCredManSchedSoftFields(wn);
+    if (fieldname=="Principle") then begin
+      PutWindowString(wn,"RecalcMessage","true");
+    end;
   end;
 
   CredManSchedDClassAfterEditField = res;
@@ -204,6 +207,22 @@ begin
 end;
 
 global
+function Boolean CredManSchedDClassOnOKWindow(Integer wn)
+begin
+  Boolean res;
+  record RcVc RepSpec;
+  
+  res = true;
+  if (GetWindowString(wn,"RecalcMessage")=="true") then begin
+    OpenWindow("RecalcInterestWClass",1,wn,"","",RepSpec);
+    res = false;
+  end;
+
+  CredManSchedDClassOnOKWindow = res;
+  return;
+end;
+
+global
 procedure CredManSchedRecalcInterestDsm()
 begin
   record CredManSchedVc CSr;
@@ -213,10 +232,43 @@ begin
   wn = CurWindow;
   DeselectWindow(wn,true);
   GetWindowRecord(wn,CSr);
+  PutWindowString(wn,"RecalcMessage","");
   calcbal = StringToVal(GetWindowString(wn,"totprinc"),M4Val);
   CredManSchedRecalcInterestRemote(CSr,calcbal);
   PutWindowRecord(wn,CSr);
+  SelectWindow(wn);
 
+  return;
+end;
+
+global
+updating procedure RecalcInterestWClassProceed()
+begin
+  Integer wn,mwn;
+  
+  wn = CurWindow;
+  mwn = MotherWindow(wn);
+  
+  CloseWindow(wn);
+  SelectWindow(mwn);
+  CredManSchedRecalcInterestDsm;
+  WindowDoOK(mwn,0);
+
+  return;
+end;
+
+global
+updating procedure RecalcInterestWClassSave()
+begin
+  Integer wn,mwn;
+  
+  wn = CurWindow;
+  mwn = MotherWindow(wn);
+  
+  CloseWindow(wn);
+  SelectWindow(mwn);
+  PutWindowString(mwn,"RecalcMessage","");
+  WindowDoOK(mwn,0);
 
   return;
 end;

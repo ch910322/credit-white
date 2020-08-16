@@ -192,8 +192,10 @@ begin
       if (CredManr.PrincipleDelayInterest==0) then begin
         CredManr.PrincipleDelayInterest = CredManr.IntRate;
       end;
+      Credmanr.LoanType = CMTr.LoanType;
     end;
     PutWindowRecord(wn,CredManr);   
+    RerunWindowDef(wn);
   end; 
   CredManDClassTypeEFAfter = true;
   return;
@@ -1561,3 +1563,197 @@ begin
   end;
   return;
 end;
+
+global
+function Boolean CredMan2LClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  subsetname = 1;
+
+  CredMan2LClassUpdateWindowSubset = true;
+  return;
+end;
+
+
+global
+function Boolean CredMan2LClassOnOpenWindow(Integer wn)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  SetWindowSubset(wn,1);
+
+  CredMan2LClassOnOpenWindow = true;
+  return;
+end;
+
+global
+function Boolean CredMan3LClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  subsetname = 2;
+
+  CredMan3LClassUpdateWindowSubset = true;
+  return;
+end;
+
+global
+function Boolean CredMan3LClassOnOpenWindow(Integer wn)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  SetWindowSubset(wn,2);
+
+  CredMan3LClassOnOpenWindow = true;
+  return;
+end;
+
+
+global
+function Boolean CredMan4LClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  subsetname = 3;
+
+  CredMan4LClassUpdateWindowSubset = true;
+  return;
+end;
+
+global
+function Boolean CredMan4LClassOnOpenWindow(Integer wn)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  SetWindowSubset(wn,3);
+
+  CredMan4LClassOnOpenWindow = true;
+  return;
+end;
+
+
+
+global
+function Boolean CredMan5LClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  subsetname = 4;
+
+  CredMan5LClassUpdateWindowSubset = true;
+  return;
+end;
+
+global
+function Boolean CredMan5LClassOnOpenWindow(Integer wn)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  SetWindowSubset(wn,4);
+
+  CredMan5LClassOnOpenWindow = true;
+  return;
+end;
+
+
+global
+function Boolean CredMan6LClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  subsetname = 5;
+
+  CredMan6LClassUpdateWindowSubset = true;
+  return;
+end;
+
+global
+function Boolean CredMan6LClassOnOpenWindow(Integer wn)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  SetWindowSubset(wn,5);
+
+  CredMan6LClassOnOpenWindow = true;
+  return;
+end;
+
+global
+procedure CredManLClassBtn()
+begin
+  record CredManVc CredManr;
+  
+  CloseWindow(CurWindow);
+  OpenWindow("CredManLClass",0,0,"","",CredManr);
+
+  return;
+end;
+
+global
+procedure CredManLClass1Btn()
+begin
+  record CredManVc CredManr;
+  
+  CloseWindow(CurWindow);
+  OpenWindow("CredMan2LClass",0,0,"1","",CredManr);
+
+  return;
+end;
+
+global
+procedure CredManLClass2Btn()
+begin
+  record CredManVc CredManr;
+  
+  CloseWindow(CurWindow);
+  OpenWindow("CredMan3LClass",0,0,"2","",CredManr);
+
+  return;
+end;
+
+
+global
+procedure CredManLClass3Btn()
+begin
+  record CredManVc CredManr;
+  
+  CloseWindow(CurWindow);
+  OpenWindow("CredMan4LClass",0,0,"3","",CredManr);
+
+  return;
+end;
+
+global
+procedure CredManLClass4Btn()
+begin
+  record CredManVc CredManr;
+  
+  CloseWindow(CurWindow);
+  OpenWindow("CredMan5LClass",0,0,"4","",CredManr);
+
+  return;
+end;
+
+global
+procedure CredManLClass5Btn()
+begin
+  record CredManVc CredManr;
+  
+  CloseWindow(CurWindow);
+  OpenWindow("CredMan6LClass",0,0,"5","",CredManr);
+
+  return;
+end;
+
+

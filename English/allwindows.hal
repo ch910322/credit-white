@@ -609,9 +609,18 @@ window CredManDClass:1
 begin
   real h,h2,h3,h4,t,v,vm,vs;
   string 255 label1,label2,label3,label4,label5;
+  record CredManVc CredManr;
+  Integer type;
+
+  if (CurWindow>0) then begin
+    GetWindowRecord(CurWindow,CredManr);
+    type = CredManr.LoanType;
+  end;
+
   WindowBegin("Credit Agreement",CredManDClass,CGview,-);
   SetWRect(20,80,940,500);
   Sizeable(-1,-1,0,0);
+  DynamicWindow;
   UseView(CredManVc);
   FormName(CredManForm);
   h = 120; h2 = 320; h3 = 550; h4 = 760; vs = 20;
@@ -636,14 +645,20 @@ begin
 //CUST-BEGIN
   CheckBox(h+35,v,0,"Annual",AnnualRate);
 //CUST-END
-  EditField(h,v+=vs,30,"Months",Normal,InstalmentMonths,false,0);
+  if (type!=4 and type!=5) then begin
+    EditField(h,v+=vs,30,"Months",Normal,InstalmentMonths,false,0);
+  end;
   EditField(h,v+=vs,30,"Pay. Terms",Normal,PayDeal,false,PDSClass);
-  EditField(h,v+=vs,30,"Deposit % ",Normal,DepositPrc,false,0);
-  EditField(h,v+=vs,82,"Deposit Sum",Normal,DepositSum,true,0);
+  if (type!=1 and type!=4 and type!=5) then begin
+    EditField(h,v+=vs,30,"Deposit % ",Normal,DepositPrc,false,0);
+    EditField(h,v+=vs,82,"Deposit Sum",Normal,DepositSum,true,0);
+  end;
   EditField(h2,v=vm,82,"Start Date",Normal,startDate,false,PasteCurDate);
 //CUST-BEGIN switched fields and renamed FirstIntDate
   EditField(h2,v+=vs,82,"Interest From Date",Normal,FirstIntDate,false,PasteCurDate);
-  EditField(h2,v+=vs,82,"First Invoice Date",Normal,FirstInvDate,false,PasteCurDate);
+  if (type!=4 and type!=5) then begin
+    EditField(h2,v+=vs,82,"First Invoice Date",Normal,FirstInvDate,false,PasteCurDate);
+  end;
 //CUST-END
   EditField(h2,v+=vs,82,"End Date",ViewOnly,endDate,false,PasteCurDate);
 //CUST-BEGIN
@@ -654,7 +669,11 @@ begin
   end;
   EditField(h2,v+=vs,82,"Monthly Paym. Day",Normal,MonthlyPaymentDay,false,0);
 //CUST-END
-  EditField(h3,v=vm,72,"Monthly #Instalment#",ViewOnly,MonthlySum,false,0);
+  if (type!=4 and type!=5) then begin
+    EditField(h3,v=vm,72,"Monthly #Instalment#",ViewOnly,MonthlySum,false,0);
+  end else begin
+    v = vm-vs;
+  end;
 //CUST-BEGIN
   EditField(h3,v+=vs,72,"Order Class",Normal,OrderClass,false,OrderClassSClass);
   EditField(h3,v+=vs,72,"Overdue percentage",Normal,OverduePercentage,false,0);
@@ -669,13 +688,47 @@ begin
     v = vm-vs;
   end;
 //CUST-END
-  EditField(h4,v+=vs,-40,"Max Monthly Payment",Normal,MaxMonthlyPayment,false,0);
+  if (type!=4 and type!=5) then begin
+    EditField(h4,v+=vs,-40,"Max Monthly Payment",Normal,MaxMonthlyPayment,false,0);
 //CUST-BEGIN
-  EditField(h4,v+=vs,-40,"Last Month's Principle",Normal,LastMonthPrinc,false,0);
-
+    if (type==2 or type==3) then begin
+      EditField(h4,v+=vs,-40,"Remaining Value",Normal,LastMonthPrinc,false,0);    
+    end else begin
+      EditField(h4,v+=vs,-40,"Last Month's Principle",Normal,LastMonthPrinc,false,0);
+    end;
+  end;
 //CUST-END
-  EditField(h4,v+=vs,-40,"Princ. Delay Months",Normal,PrincipleDelayMonths,false,0);
-  EditField(h4,v+=vs,-40,"Princ. Delay Interest %",Normal,PrincipleDelayInterest,false,0);
+  if (type!=4 and type!=5) then begin
+    EditField(h4,v+=vs,-40,"Princ. Delay Months",Normal,PrincipleDelayMonths,false,0);
+    EditField(h4,v+=vs,-40,"Princ. Delay Interest %",Normal,PrincipleDelayInterest,false,0);
+    if (type==2 or type==3) then begin
+      EditField(h4,v+=vs,-40,"#VAT# Invoice Months",Normal,VATInvoiceMonths,false,0);
+    end;
+  end;
+  if (type==4) then begin
+    v = vm + 80;
+    EditField(h,v+=vs,100,"Loan to Value %",Normal,LoanToValue,false,0);
+    //EditField(h,v+=vs,100,"Invoice Amount",Normal,FactInvAmount,false,0);
+    //EditField(h,v+=vs,100,"Invoice Number",Normal,FactInvNumber,false,0);
+    EditField(h,v+=vs,400,"Comment",Normal,FactComment,false,0);
+    CheckBox(h,v+=vs,0,"Insured",FactInsured);
+    v = v - 40;
+    HalPushButton(h3,v,h3+100,v+20,"OpenCredManFactoringBtn","Buyers");v = v + 30;
+    HalPushButton(h3,v,h3+100,v+20,"OpenCredManFactoringInvoicesBtn","Invoices");
+    
+  end;
+  if (type==5) then begin
+    EditField(h4,v=vm,100,"Comment",Normal,PayGrntComment,false,0);
+    EditField(h4,v+=vs,100,"Payment day 1 ",Normal,PayGrntPayDate1,true,0);
+    EditField(h4,v+=vs,100,"Payment day 2",Normal,PayGrntPayDate2,true,0);
+    EditField(h4,v+=vs,100,"Report day 1 ",Normal,PayGrntReportDate1,true,0);
+    EditField(h4,v+=vs,100,"Report day 2",Normal,PayGrntReportDate2,true,0);
+    CheckBox(h4,v+=vs,0,"Insured",PayGrntInsured);
+
+    v = v + vs;
+    HalPushButton(h4,v,h4+100,v+20,"OpenCredManPayGrntSellersBtn","Sellers");v = v + 30;
+    HalPushButton(h4,v,h4+100,v+20,"OpenCredManPayGrntReportsBtn","Reports");v = v + 30;
+  end;
 /*
   SoftEditField(h4,v+=vs,-40,"Annual Interest",ViewOnly,"annualrate",true,0,M4Str,255);
   SoftEditField(h4,v+=vs,-40,"Monthly Calc. Fees",ViewOnly,"monthlycalcfees",true,0,M4Str,255);
@@ -698,8 +751,10 @@ begin
   TileButton(4,"Terms");
 //CUST-BEGIN
   TileButton(5,"Surety");
-  TileButton(6,"Factoring");
-  TileButton(7,"Payment Guarantee");
+  if (type!=1 and type!=2 and type!=3) then begin
+    TileButton(6,"Factoring");
+    TileButton(7,"Payment Guarantee");
+  end;
 //CUST-END
   Tile(1,500,true,"",Approved);//CUST CurncyCode>>Approved
   CheckBox(20,-41,0,"Approved",Approved);
@@ -843,6 +898,15 @@ begin
 
 //CUST-BEGIN
   CheckBox(h2,v+=30,0,"No Overdue Fees",SkipOverDue);
+
+  
+  ButtonFrame(h3=h2+120,v=vm,100,6,"Type");
+  RadioButton(h3,v,0,0,"Not set",LoanType);
+  RadioButton(h3,v+=16,1,0,"Loan",LoanType);
+  RadioButton(h3,v+=16,2,0,"Leasing",LoanType);
+  RadioButton(h3,v+=16,3,0,"Mortgage",LoanType);
+  RadioButton(h3,v+=16,4,0,"Factoring",LoanType);
+  RadioButton(h3,v+=16,5,0,"Paymnt. Grnt.",LoanType);
   
   Tile(5,290,true,"5",SuretyProvider1); 
 
@@ -896,29 +960,30 @@ begin
   EditField(h3,v+=vs,130,label3,Normal,Surety3Addr2,false,0);
   EditField(h3,v+=vs,130,label4,Normal,Surety3Addr3,false,0);
   EditField(h3,v+=vs,130,label5,Normal,Surety3Addr4,false,0);
+  if (type!=1 and type!=2 and type!=3) then begin
+    Tile(6,290,true,"6",LoanToValue); 
 
-  Tile(6,290,true,"6",LoanToValue); 
+    EditField(h,v=6,100,"Loan to Value %",Normal,LoanToValue,false,0);
+    //EditField(h,v+=vs,100,"Invoice Amount",Normal,FactInvAmount,false,0);
+    //EditField(h,v+=vs,100,"Invoice Number",Normal,FactInvNumber,false,0);
+    EditField(h,v+=vs,430,"Comment",Normal,FactComment,false,0);
+    CheckBox(h,v+=vs,0,"Insured",FactInsured);
+    v = v + vs;
+    HalPushButton(h,v,h+100,v+20,"OpenCredManFactoringBtn","Buyers");v = v + 30;
+    HalPushButton(h,v,h+100,v+20,"OpenCredManFactoringInvoicesBtn","Invoices");v = v + 30;
+    
+    Tile(7,600,true,"7",PayGrntComment); 
+    EditField(h,v=6,100,"Comment",Normal,PayGrntComment,false,0);
+    EditField(h,v+=vs,100,"Payment day 1 ",Normal,PayGrntPayDate1,true,0);
+    EditField(h,v+=vs,100,"Payment day 2",Normal,PayGrntPayDate2,true,0);
+    EditField(h,v+=vs,100,"Report day 1 ",Normal,PayGrntReportDate1,true,0);
+    EditField(h,v+=vs,100,"Report day 2",Normal,PayGrntReportDate2,true,0);
+    CheckBox(h,v+=vs,0,"Insured",PayGrntInsured);
 
-  EditField(h,v=6,100,"Loan to Value %",Normal,LoanToValue,false,0);
-  //EditField(h,v+=vs,100,"Invoice Amount",Normal,FactInvAmount,false,0);
-  //EditField(h,v+=vs,100,"Invoice Number",Normal,FactInvNumber,false,0);
-  EditField(h,v+=vs,430,"Comment",Normal,FactComment,false,0);
-  CheckBox(h,v+=vs,0,"Insured",FactInsured);
-  v = v + vs;
-  HalPushButton(h,v,h+100,v+20,"OpenCredManFactoringBtn","Buyers");v = v + 30;
-  HalPushButton(h,v,h+100,v+20,"OpenCredManFactoringInvoicesBtn","Invoices");v = v + 30;
-  
-  Tile(7,600,true,"7",PayGrntComment); 
-  EditField(h,v=6,100,"Comment",Normal,PayGrntComment,false,0);
-  EditField(h,v+=vs,100,"Payment day 1 ",Normal,PayGrntPayDate1,true,0);
-  EditField(h,v+=vs,100,"Payment day 2",Normal,PayGrntPayDate2,true,0);
-  EditField(h,v+=vs,100,"Report day 1 ",Normal,PayGrntReportDate1,true,0);
-  EditField(h,v+=vs,100,"Report day 2",Normal,PayGrntReportDate2,true,0);
-  CheckBox(h,v+=vs,0,"Insured",PayGrntInsured);
-
-  v = v + vs;
-  HalPushButton(h,v,h+100,v+20,"OpenCredManPayGrntSellersBtn","Sellers");v = v + 30;
-  HalPushButton(h,v,h+100,v+20,"OpenCredManPayGrntReportsBtn","Reports");v = v + 30;
+    v = v + vs;
+    HalPushButton(h,v,h+100,v+20,"OpenCredManPayGrntSellersBtn","Sellers");v = v + 30;
+    HalPushButton(h,v,h+100,v+20,"OpenCredManPayGrntReportsBtn","Reports");v = v + 30;
+  end;
 
   SpecialMenu("Open #NL# Transaction",'t',2,"OpenTRFromCredMan");
   //SpecialMenu("Open Subsystem Record",' ',3,"OpenSubsysCredManDsm");//CUST-REMOVED
@@ -1016,6 +1081,15 @@ begin
   RadioButton(h3,v,0,0,"Default",OverdueRateType);
   RadioButton(h3,v+=16,1,0,"Daily",OverdueRateType);
   RadioButton(h3,v+=16,2,0,"Monthly",OverdueRateType);
+
+  ButtonFrame(h3,v+=40,100,6,"Type");
+  RadioButton(h3,v,0,0,"Not set",LoanType);
+  RadioButton(h3,v+=16,1,0,"Loan",LoanType);
+  RadioButton(h3,v+=16,2,0,"Leasing",LoanType);
+  RadioButton(h3,v+=16,3,0,"Mortgage",LoanType);
+  RadioButton(h3,v+=16,4,0,"Factoring",LoanType);
+  RadioButton(h3,v+=16,5,0,"Paymnt. Grnt.",LoanType);
+
 //CUST-END
 /*
   ButtonFrame(h=50,vm=(v+=45),140,2,"Default Interest Type");

@@ -8,6 +8,37 @@ external function Boolean HasLimitedAccess();
 external function Boolean HasCustomerStatusReport();
 external outer function Boolean HasB2BCreateOffer();
 
+procedure ShowCredManLClassWindow()
+begin
+  real v,h;
+  
+  SetWRect(10,80,700,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManDClass);
+  UseView(CredManVc);
+  HalPushButton(h=5,v=5,h+=100,v+=20,"CredManLClass1Btn","Loans");
+  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass2Btn","Lease");
+  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass3Btn","Mortgage");
+  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass4Btn","Factoring");
+  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass5Btn","Paymnt. Grnt.");
+  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClassBtn","All");
+  RecordList(4,v+=20,-21,-39);
+  RlColKey(4,2,"N_o.",SerNr,false,TypeSerNr);
+  RlColKeyTL(90,90,"OK",M4Mark,OKFlag,false,TypeOKFlag);
+  RlColKeyTL(140,140,"Approved",M4Mark,Approved,false,TypeApproved);
+  RlColKey(200,200,"Cust.",CustCode,false,TypeCustCode);
+  RlColKey(270,270,"Name",Addr0,false,TypeName);
+  RlColKey(-270,-270,"Start",startDate,false,TypestartDate);
+  RlColKey(-180,-180,"End",endDate,false,TypeendDate);
+  RlColKey(-90,-90,"Sum",InvSum4,false,TypeInvSum4);
+  SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0);
+  SpecialMenu("Receipt",'r',1,"ReceiptCredManLsm");
+  SearchField("Search");
+
+  return;
+end;
+
+
 event DefineWindows
 begin
   real v,vs,h,h2,h3,t,tilenr,vm,pos;
@@ -2204,4 +2235,71 @@ begin
   RlCol(-40,-40,"Cur.",CurncyCode,true);
   SearchField("Search");
   EndWindow;
+end;
+
+
+window CredMan2LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Loan Agreements",CredMan2LClass,CGmlist,-);
+  ShowCredManLClassWindow;
+  EndWindow;
+end;
+
+window CredMan3LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Leasing Agreements",CredMan3LClass,CGmlist,-);
+  ShowCredManLClassWindow;
+  EndWindow;
+end;
+
+window CredMan4LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Martgage Agreements",CredMan4LClass,CGmlist,-);
+  ShowCredManLClassWindow;
+  EndWindow;
+end;
+
+window CredMan5LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Factoring Agreements",CredMan5LClass,CGmlist,-);
+  ShowCredManLClassWindow;
+  EndWindow;
+end;
+
+window CredMan6LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Payment Guarantee Agreements",CredMan6LClass,CGmlist,-);
+  ShowCredManLClassWindow;
+  EndWindow;
+end;
+
+window CredManLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Credit Agreements",CredManLClass,CGmlist,-);
+  ShowCredManLClassWindow;
+  EndWindow;
+end;
+
+
+window RecalcInterestWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v; 
+
+  WindowBegin("Recalculate Interest",RecalcInterestWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,300,220);
+  AutoSizeWindow(false);  
+  StaticText(50,26,"Interest not recalculated",false);
+  HalPushButton(-260,-30,-160,-10,"RecalcInterestWClassProceed","Recalculate");
+  HalPushButton(-120,-30,-20,-10,"RecalcInterestWClassSave","OK");
+  EndWindow;
+
+  return;
 end;

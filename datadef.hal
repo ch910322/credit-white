@@ -487,6 +487,8 @@ begin
   RecordField(OfficialSerNr,M4Str,100,0);
   RecordField(OverdueRateType,M4Int,0,0);
   RecordField(LastMonthPrinc,M4Val,0,0);
+  RecordField(LoanType,M4Int,0,0);
+  RecordField(VATInvoiceMonths,M4Qty,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -522,7 +524,60 @@ begin
 
   KeyBegin2(OfficialSerNr,8533);
   KeySegment(OfficialSerNr);
-  KeySegment(SerNr); 
+  KeySegment(SerNr);
+
+
+
+  SubsetKeyBegin2(TypeSerNr);
+  StoreInBaseKey;
+  AppendFieldToKeyName(LoanType);
+  KeySegment(SerNr);
+
+  KeyBegin(TypeCustCode);
+  StoreInBaseKey;
+  AppendFieldToKeyName(LoanType);
+  KeySegment(CustCode);
+  KeySegment(SerNr);
+
+  KeyBegin(TypeOKFlag);
+  StoreInBaseKey;
+  AppendFieldToKeyName(LoanType);
+  KeySegment(OKFlag);
+  KeySegment(SerNr);
+
+  KeyBegin(TypeApproved);
+  StoreInBaseKey;
+  AppendFieldToKeyName(LoanType);
+  KeySegment(Approved);
+  KeySegment(SerNr);
+
+  KeyBegin(TypeName);
+  StoreInBaseKey;
+  AppendFieldToKeyName(LoanType);
+  KeySegment(Addr0);
+  KeySegment(SerNr);
+
+
+  KeyBegin(TypestartDate);
+  StoreInBaseKey;
+  AppendFieldToKeyName(LoanType);
+  KeySegment(startDate);
+  KeySegment(endDate);
+  KeySegment(SerNr);
+
+  KeyBegin(TypeendDate);
+  StoreInBaseKey;
+  AppendFieldToKeyName(LoanType);
+  KeySegment(endDate);
+  KeySegment(startDate);
+  KeySegment(SerNr);
+
+  KeyBegin(TypeInvSum4);
+  StoreInBaseKey;
+  AppendFieldToKeyName(LoanType);
+  KeySegment(InvSum4);
+  KeySegment(SerNr);
+
 
   EndRecordAdd;
 
@@ -577,6 +632,7 @@ begin
   RecordField(OverdueLangCode,M4Code,20,0);
   RecordField(DaysInYear,M4Int,0,0);
   RecordField(DaysInMonth,M4Int,0,0);
+  RecordField(LoanType,M4Int,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
