@@ -4,6 +4,7 @@ external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var 
 external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val,array string);
 external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
 external function Date GetLastInvoiceDate(record CredManVc,Date);
+external procedure SetupOverdueLangCode(var record IVVc,string);
 
 /*
 function Date GetLastInvoiceDate(record CredManVc CredManr,Date ed)
@@ -48,6 +49,7 @@ begin
         RecordClear(IVr);
         SetupLoanInvoice(CredManr,CMb,IVr,CurrentDate,sd,ed,true,false,"");
         AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
+        SetupOverdueLangCode(IVr,CredManr.Type);
         StoreLoanInvoice(IVr,CredManr);
       end;
     end;
