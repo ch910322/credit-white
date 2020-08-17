@@ -37,6 +37,7 @@ begin
   record CredManSchedVc CSr;
   val princ,interest,fees,total,vat;
   Date sd,ed;
+  record CredManVc CredManr;
 
   GetWindowRecord(wn,CSr);
   GetScheduleTotals(CSr,princ,interest,fees,total,vat,sd,ed);
@@ -46,6 +47,10 @@ begin
   PutWindowString(wn,"totint",interest);
   PutWindowString(wn,"totfees",fees);
   PutWindowString(wn,"tot",total);
+  CredManr.SerNr = CSr.CredManNr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    PutWindowString(wn,"totrealprinc",CredManr.InvSum4);  
+  end;
 
   return;
 end;

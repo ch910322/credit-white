@@ -1,5 +1,6 @@
 //<halrule>server-only</halrule>
 external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
+external procedure TestInvoiceBasedOnScheduleRow(record CredManSchedVc,row CredManSchedVc,var record IVVc);
 
 global
 procedure CredManSchedRecalcInterestRemote(var record CredManSchedVc CSr,var val calcbal)
@@ -7,6 +8,7 @@ begin
   Integer i,rwcnt,monthtype;
   record CredManVc CredManr;
   row CredManSchedVc CSrw;
+  record IVVc IVr;
   
   CredManr.SerNr = CSr.CredManNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
@@ -27,6 +29,11 @@ begin
       end;
       CSrw.Interest = GetRateAmount(CredManr,CredManr.IntRate,monthtype,CSrw.FromDate,CSrw.ToDate,calcbal,false);;    
       calcbal = calcbal - CSrw.Principle;
+      RecordClear(IVr);
+      TestInvoiceBasedOnScheduleRow(CSr,CSrw,IVr);
+
+      CSrw.Total = IVr.Sum4;
+
       MatRowPut(CSr,i,CSrw);
     end;
   end;

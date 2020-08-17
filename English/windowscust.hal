@@ -1770,7 +1770,8 @@ begin
   EditField(h2,v,-40,"Name",ViewOnly,CustName,false,0);
   EditField(h,v+=vs,90,"Date",ViewOnly,TransDate,false,0);
   EditField(h2,v,90,"Time",ViewOnly,TransTime,false,0);
-  MatrixBegin(10,v+=vs+40,-40,-40,-,999);
+  SoftEditField(350,v+=vs,60,"Total",ViewOnly,"totrealprinc",false,0,M4Val,0);
+  MatrixBegin(10,v+=vs+20,-40,-40,-,999);
   MatCol(1,24,"Type",0,Type,false,SetSClass);
   MatCol(1,85,"Inv. Date",0,InvDate,false,0);
   MatCol(1,150,"Period From",0,FromDate,false,0);
