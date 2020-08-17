@@ -1,4 +1,4 @@
-external procedure TestInvoiceBasedOnScheduleRow(record CredManSchedVc,row CredManSchedVc,var record IVVc);
+remote procedure TestInvoiceBasedOnScheduleRow(record CredManSchedVc,row CredManSchedVc,var record IVVc);
 remote procedure CredManSchedRecalcInterestRemote(var record CredManSchedVc,var val);
 
 global
@@ -87,7 +87,7 @@ begin
   record IVVc IVr;
   
   MatRowGet(CSr,rowno,CSrw);
-  UnpackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
+//  UnpackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
 /*
   rwcnt = MatRowCnt(FMr);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -175,7 +175,7 @@ begin
   Boolean res;
   record CredManSchedVc SCr;
   
-  if (rownr>0 and changed!=0) then begin
+  if (rownr>=0 and changed!=0) then begin
     GetWindowRecord(wn,SCr);
     SumupCredManSched(SCr,rownr);
     PutWindowRecord(wn,SCr);

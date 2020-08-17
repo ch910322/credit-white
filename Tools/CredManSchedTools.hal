@@ -25,7 +25,7 @@ begin
       if (CredManr.ChargeMethod==1) then begin
         monthtype = 2;
       end;
-      CSrw.Interest = GetRateAmount(CredManr,CredManr.IntRate,monthtype,"","",calcbal,false);    
+      CSrw.Interest = GetRateAmount(CredManr,CredManr.IntRate,monthtype,CSrw.FromDate,CSrw.ToDate,calcbal,false);;    
       calcbal = calcbal - CSrw.Principle;
       MatRowPut(CSr,i,CSrw);
     end;
