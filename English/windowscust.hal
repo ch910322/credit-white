@@ -1376,7 +1376,7 @@ begin
   CheckBox(h,v+=vs,0,"Reminder Sent",SentReminder);
 
   HalPushButton(-300,7,-230,27,"AgreementDocDClassSign","Sign");
-  HalPushButton(-220,7,-150,27,"AgreementDocDClassRegen","Regerate");
+  HalPushButton(-220,7,-150,27,"AgreementDocDClassRegen","Regenerate");
   HalPushButton(-140,7,-10,27,"AgreementDocDClassRegen2","Regenerate and resign");
 
   MatrixBegin(10,v+=40,-30,220,-,10);
