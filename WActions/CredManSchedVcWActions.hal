@@ -50,6 +50,7 @@ begin
   CredManr.SerNr = CSr.CredManNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
     PutWindowString(wn,"totrealprinc",CredManr.InvSum4);  
+    PutWindowString(wn,"diff",CredManr.InvSum4-princ);
   end;
 
   return;

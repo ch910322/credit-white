@@ -751,7 +751,7 @@ begin
   TileButton(4,"Terms");
 //CUST-BEGIN
   TileButton(5,"Surety");
-  if (type!=1 and type!=2 and type!=3) then begin
+  if (type!=1 and type!=2 and type!=3 and type!=4 and type!=5) then begin
     TileButton(6,"Factoring");
     TileButton(7,"Payment Guarantee");
   end;
@@ -960,7 +960,7 @@ begin
   EditField(h3,v+=vs,130,label3,Normal,Surety3Addr2,false,0);
   EditField(h3,v+=vs,130,label4,Normal,Surety3Addr3,false,0);
   EditField(h3,v+=vs,130,label5,Normal,Surety3Addr4,false,0);
-  if (type!=1 and type!=2 and type!=3) then begin
+  if (type!=1 and type!=2 and type!=3 and type!=4 and type!=5) then begin//should just remove
     Tile(6,290,true,"6",LoanToValue); 
 
     EditField(h,v=6,100,"Loan to Value %",Normal,LoanToValue,false,0);
