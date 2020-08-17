@@ -330,7 +330,7 @@ end;
 procedure AddDeposit(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate)
 begin
   
-  AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.DepositItem,"",kEventTypeCalcDeposit,CredManr.DepositSum,0,acumint,calcbal,frdate,todate,-1,-1,0);
+  AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.DepositItem,"",kEventTypeCalcInstalment,CredManr.DepositSum,0,acumint,calcbal,frdate,todate,-1,-1,0);//kEventTypeCalcDeposit>>kEventTypeCalcInstalment
 
   return;
 end;
@@ -610,6 +610,7 @@ procedure AddInitialInvoice(record CredManVc CredManr,var record CredmanPayPlanV
 begin
   
   AddPlannedFees(CredManr,CredManPayPlanr,CMb,kPlannedFeesOneTime,kMonthTypeRegular,CredManr.startDate,acumint,calcbal,frdate,todate,-1);
+  AddDeposit(CredManr,CredManPayPlanr,CMb,CredManr.startDate,acumint,calcbal,frdate,todate);
 
   return;
 end;
@@ -912,9 +913,9 @@ begin
         case 5://Payment guarantee
 
       end;
-      if (i==0) then begin
-        AddDeposit(inCredManr,CredManPayPlanr,CredManSetb,invdat,acumint,calcbal,frdat,todat);
-      end;
+      //if (i==0) then begin
+      //  AddDeposit(inCredManr,CredManPayPlanr,CredManSetb,invdat,acumint,calcbal,frdat,todat);
+      //end;
     end;
   end;
 

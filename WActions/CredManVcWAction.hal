@@ -1399,7 +1399,7 @@ begin
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
 
-  if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
+//  if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
     CSr.CredManNr = CredManr.SerNr;
     if (ReadFirstMain(CSr,1,true)) then begin
       RepSpec.long1 = CredManr.SerNr;
@@ -1407,7 +1407,7 @@ begin
     end else begin
       GenerateAgreementSchedule(CredManr,false);
     end;
-  end;
+//  end;
 
   return;
 end;
