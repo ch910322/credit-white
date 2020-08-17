@@ -181,6 +181,13 @@ begin
   return;
 end;
 
+global
+procedure RerunWindowDefHAL(string wn)
+begin
+  RerunWindowDef(StringToInt(wn));
+  return;
+end;
+
 function Boolean CredManDClassTypeEFAfter(Integer wn,Boolean changedf)
 begin
   record CredManVc CredManr;
@@ -196,8 +203,9 @@ begin
       end;
       Credmanr.LoanType = CMTr.LoanType;
     end;
-    PutWindowRecord(wn,CredManr);   
-    RerunWindowDef(wn);
+    PutWindowRecord(wn,CredManr); 
+    NewTimedTask("rerun window def","rerunwindowdef","RerunWindowDefHAL",wn,CurrentDate,AddSeconds(CurrentTime,1),"","");  
+    //
   end; 
   CredManDClassTypeEFAfter = true;
   return;
