@@ -726,6 +726,8 @@ begin
   record CredManPropertiesVc CMPr;
   row CredManPropertiesVc CMPrw;
   record CMPropertyVc Propr;
+  row CMPropertyVc Proprw;
+  record CMInsuranceTypeVc ITr;
 
   GetLangNr(CredManr.LangCode,LangNrr);      
   Ext_CommonDocumentFields(vVals);
@@ -764,13 +766,15 @@ begin
 */
 
   CMPr.CredManNr = CredManr.SerNr;
-  if (ReadFirstMain(CMPr,1,true)==false) then begin
+  if (ReadFirstMain(CMPr,1,true)) then begin
     rwcnt = MatRowCnt(CMPr);
     for (i=0;i<rwcnt;i=i+1) begin
       Propr.SerNr = CMPrw.Property;
       if (ReadFirstMain(Propr,1,true)) then begin
         M4PadString(i,3,"0",true,strnum);
+        MatRowGet(Propr,0,Proprw);
         vVals["ROW_" & strnum & "_F_PROPNAME"] = CMPrw.Addr0;
+        vVals["ROW_" & strnum & "_F_PROPOFFICIALNR"] = CMPrw.OfficialSerNr;
         vVals["ROW_" & strnum & "_F_PROPCOUNTRY"] = Propr.Addr1;
         vVals["ROW_" & strnum & "_F_PROPCITY"] = Propr.Addr2;
         vVals["ROW_" & strnum & "_F_PROPADDRESS"] = Propr.Addr3;
@@ -781,6 +785,11 @@ begin
         vVals["ROW_" & strnum & "_F_PROPINSCOMPNAME"] = Propr.InsuranceName;
         vVals["ROW_" & strnum & "_F_PROPINSUNTIL"] = Propr.InsuredUntil;
         vVals["ROW_" & strnum & "_F_PROPINSVAL"] = Propr.InsuredVal;
+        vVals["ROW_" & strnum & "_F_PROPOWNER"] = Proprw.OwnerName;
+        ITr.Code = Propr.InsuranceType;
+        if (ReadFirstMain(ITr,1,true)) then begin
+          vVals["ROW_" & strnum & "_F_PROPINSURANCETYPE"] = ITr.Comment;
+        end;
         tstr = "";
         for (i=0;i<LineTextCnt2(Propr);i=i+1) begin
           tstr = tstr & LineTextGet2(Propr,i);
