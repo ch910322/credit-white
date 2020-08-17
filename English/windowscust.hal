@@ -1635,7 +1635,10 @@ begin
   EditFieldTL(h,v+=vs,82,"Inv. Date",M4Date,Normal,0,RegDate,false,PasteCurDate);
   EditFieldTL(h,v+=vs,82,"Agreement Type",M4Str,Normal,60,f8,false,CredManTypeSClass);
   EditFieldTL(h,v+=vs,82,"Agreement Classification",M4Str,Normal,60,f9,false,CredManClassSClass);
-  ButtonFrame(h,vm=(v+=41),123,3,"Months");
+  ButtonFrame(h=50,vm=(v+=41),123,2,"View");
+  RadioButton(h,v,0,0,"Overview",ArtMode);
+  RadioButton(h,v+=16,1,0,"Detailed",ArtMode);
+  ButtonFrame(h=200,v=vm,123,3,"Months");
   RadioButton(h,v,3,0,"3",flags[0]);
   RadioButton(h,v+=16,6,0,"6",flags[0]);
   RadioButton(h,v+=16,12,0,"12",flags[0]);//Default value
