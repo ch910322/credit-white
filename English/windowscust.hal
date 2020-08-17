@@ -1927,7 +1927,7 @@ begin
   SetBlid(CredLegalInvNrBlock);
   SetWRect(20,80,900,457);
   Sizeable(-1,-1,0,0);
-  h = 8; v = 20;
+  h = 8; v = 20; vs = 20;
   h1=24;
   MatrixBegin(h,v,-50,-20,-,499);
   Flip(0);
@@ -1947,9 +1947,9 @@ begin
   MatCol(1,h1+=105,"First Inv. Serie",0,FirstInvSerie,false,InvLegalInvSerieSClass);
   MatCol(1,h1+=105,"Regular Inv. Serie",0,RegularInvSerie,false,InvLegalInvSerieSClass);
   MatCol(1,h1+=105,"Overdue Inv. Serie",0,OverdueInvSerie,false,InvLegalInvSerieSClass);
-  VTab(-40,v,-6,v+=vs,ToolFlip,1,"A");
-  VTab(-40,v,-6,v+=vs,ToolFlip,2,"B");
   EndMatrix;
+  VTab(-35,v,-16,v+=vs,ToolFlip,1,"A");
+  VTab(-35,v,-16,v+=vs,ToolFlip,2,"B");
   EndWindow;
 end;
 
