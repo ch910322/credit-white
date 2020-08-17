@@ -1,0 +1,2333 @@
+external function string 60 UserDefined(string,string);
+external function Boolean HasCustomerSearchKey();
+external function Boolean HasCategories();
+external function Boolean HasDepartments();
+external function Boolean HasStandardCommunicator();
+external function Boolean CUVATNrColumn;
+external function Boolean HasLimitedAccess();
+external function Boolean HasCustomerStatusReport();
+external outer function Boolean HasB2BCreateOffer();
+
+SetLangMode(LangLithuanian,"LIT",2);
+
+procedure ShowCredManLClassWindow()
+begin
+  real v,h;
+  
+  SetWRect(10,80,700,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManDClass);
+  UseView(CredManVc);
+  HalPushButton(h=5,v=5,h+=100,v+=20,"CredManLClass1Btn","Loans");
+  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass2Btn","Lease");
+  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass3Btn","Mortgage");
+  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass4Btn","Factoring");
+  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass5Btn","Paymnt. Grnt.");
+  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClassBtn","All");
+  RecordList(4,v+=20,-21,-39);
+  RlColKey(4,2,"N_o.",SerNr,false,TypeSerNr);
+  RlColKeyTL(90,90,"OK",M4Mark,OKFlag,false,TypeOKFlag);
+  RlColKeyTL(140,140,"Approved",M4Mark,Approved,false,TypeApproved);
+  RlColKey(200,200,"Cust.",CustCode,false,TypeCustCode);
+  RlColKey(270,270,"Name",Addr0,false,TypeName);
+  RlColKey(-270,-270,"Start",startDate,false,TypestartDate);
+  RlColKey(-180,-180,"End",endDate,false,TypeendDate);
+  RlColKey(-90,-90,"Sum",InvSum4,false,TypeInvSum4);
+  SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0);
+  SpecialMenu("Receipt",'r',1,"ReceiptCredManLsm");
+  SearchField("Search");
+
+  return;
+end;
+
+
+event DefineWindows
+begin
+  real v,vs,h,h2,h3,t,tilenr,vm,pos;
+  vs = 20;
+ 
+  SetLangMode(LangLithuanian,"LIT",2);
+
+  WindowBegin("B2B Loan Applications",B2BLoanApplicationLClass,CGmList,-);
+  Sizeable(-1,-1,0,0);
+  SetWRect(64,80,800,298);
+  SpawnClass(B2BLoanApplicationDClass);
+  UseView(B2BLoanApplicationVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
+  RlColKey(101,101,"Data",TransDate,false,TransDate);
+  RlColKey(181,181,"Pradžios Data",StartDate,false,StartDate);
+  RlColKey(260,260,"Klientas",CustName,false,CustName);
+  RlColKey(-240,-240,"Klasė",OrderClass,false,OrderClass);
+  RlCol   (-200,-200,"Tipas",Type,false);
+  RlCol   (-120,-120,"Rate %",InterestRate,true);
+  RlCol   (-70,-70,"Bendra Suma",Sum,true);
+  SpecialMenu("Kliento Statusas",'e',1,"CUStatusB2BLoanAppLsm");
+  SpecialMenu("Vertinimo ataskaita",' ',2,"DoEvalReportLsm");
+  SearchField("Paieška");
+  EndWindow;
+
+  WindowBegin("Paste B2B Loan Application",B2BLoanApplicationSClass,CGsList,-);
+  Sizeable(-1,-1,0,0);
+  SetWRect(64,80,800,298);
+  SpawnClass(B2BLoanApplicationDClass);
+  UseView(B2BLoanApplicationVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
+  RlColKey(101,101,"Data",TransDate,false,TransDate);
+  RlColKey(181,181,"Pradžios Data",StartDate,false,StartDate);
+  RlColKey(260,260,"Klientas",CustName,false,CustName);
+  RlColKey(-240,-240,"Klasė",OrderClass,false,OrderClass);
+  RlCol   (-200,-200,"Tipas",Type,false);
+  RlCol   (-120,-120,"Rate %",InterestRate,true);
+  RlCol   (-70,-70,"Bendra Suma",Sum,true);
+  SpecialMenu("Kliento statusas",'e',1,"CUStatusB2BLoanAppLsm");
+  SpecialMenu("Vertinimo ataskaita",' ',2,"");
+  EndWindow;
+
+  WindowBegin("Number Series - B2B Loan Applications",B2BLoanAppSerTClass,CGHbl,HBlRecType);
+  SetBlid(B2BLoanAppSerBlock);
+  SetWRect(20,80,600,351);
+  Sizeable(-1,-1,0,0);
+  MatrixBegin(h,v,-31,-20,-,199);
+  MatCol(1,24,"From No.",0,TSerStart,false,0);
+  MatCol(1,104,"To No.",0,TSerEnd,false,0);
+  MatCol(1,184,"From Date",0,StartDate,false,PasteCurDate);
+  MatCol(1,264,"To Date",0,EndDate,false,PasteCurDate);
+  MatCol(1,344,"Komentaras",0,TSerCom,false,0);
+  EndMatrix;
+  EndWindow;
+  
+  WindowBegin("Credit Management Settings",CMApplicationSetTClass,CGSbl,SRType);
+  SetBlid(CMApplicationSetBlock);
+  SetWRect(20,80,670,298);
+  Sizeable(-1,-1,0,0);
+  EditField(h=180,v=6,100,"Savininko Vardas",Normal,OwnerTitle,false,JobTitleSClass);
+  EditField(h,v+=vs,100,"Nuosavybės Metai",Normal,OwnershipYears,false,0);
+
+  EditField(h,v+=vs,100,"CEO Title",Normal,CEOTitle,false,JobTitleSClass);
+  EditField(h,v+=vs,100,"CFO Title",Normal,CFOTitle,false,JobTitleSClass);
+  EditField(h,v+=vs,100,"Years to access private data",Normal,PrivateDataYears,false,0);
+
+  EditField(h,v+=vs,100,"Prašyti Parašo klasė",Normal,SignOrderClass,false,OrderClassSClass);
+  EditField(h,v+=vs,100,"Aktyvios Sutarties Užsakymo klasė",Normal,ActiveCredOrderClass,false,OrderClassSClass);
+
+  EditField(h,v+=vs,100,"Surety Email",Normal,SuretyLetter,false,0);
+  EditField(h,v+=vs,100,"Surety Email without Password",Normal,NoPassSuretyLetter,false,0);
+  EditField(h,v+=vs,100,"New Customer Email",Normal,NewCustLetter,false,0);
+  EditField(h,v+=vs,100,"Surety Invitation Email",Normal,SuretyInviteLetter,false,0);
+  EditField(h,v+=vs,100,"New User Invitation Email",Normal,ContactInviteLetter,false,0);
+  if (HasB2BCreateOffer) then begin  
+    EditField(h,v+=vs,100,"Offer Email Text",Normal,EmailOfferText,false,LTxtSClass);
+    EditField(h,v+=vs,100,"Offer Email Row Text",Normal,EmailOfferTextRow,false,LTxtSClass);
+
+  end;
+  EditField(h,v+=vs,100,"Schudule Text",Normal,ScheduleText,false,LTxtSClass);
+
+
+
+  EditField(h,v+=vs,100,"Mailing List",Normal,MailingList,false,PersColSClass);
+
+  ButtonFrame(h,v+=40,200,2,"Surety Provider by default");
+  RadioButton(h,v,0,0,"Contact",ContactPasteSpecial);
+  RadioButton(h,v+=16,1,0,"Contact Person",ContactPasteSpecial);  
+
+  ButtonFrame(h,v+=40,200,2,"Credit Agreement Info Report Date");
+  RadioButton(h,v,1,0,"Due date",CMInfoReportDate);
+  RadioButton(h,v+=16,0,0,"Invoice date",CMInfoReportDate);  
+
+
+  EditField(h,v+=40,100,"Days in Year",Normal,DaysInYear,false,0);
+  ButtonFrame(h,v+=40,150,2,"Days in Month");
+  RadioButton(h,v,0,0,"30",DaysInMonth);
+  RadioButton(h,v+=16,1,0,"Actual",DaysInMonth); 
+  
+  EditField(h,v+=30,100,"Document Signer",Normal,DocumentSigner,false,UserSClass);
+  EditField(h,v+=vs,100,"Signer's Job Description",Normal,DocumentSignerPosition,false,0);
+  EditField(h,v+=30,100,"Invoice Signer",Normal,InvoiceSigner,false,UserSClass);
+  
+
+  EndWindow;
+
+  WindowBegin("Įvertinimas",ScoringSupLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  //Sizeable(-1,-1,0,0);
+  SpawnClass(ScoringSupDClass);
+  UseView(ScoringSupVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"SerNr",SerNr,false,SerNr);
+  SearchField("Paieška");
+  EndWindow;
+
+  WindowBegin("Įvertinimas",ScoringSupDClass,CGView,-);
+  SetWRect(20,80,730,539);
+  UseView(ScoringSupVc);
+  AutoSizeWindow(false);  
+  vs = 20; h=135; h2=375; h3=575;
+  EditField(h,v=6,100,"Rizikos Klasė",Normal,RiskClass,false,0);
+  EditField(h2,v,100,"Skolos",Normal,Debts,false,0);
+  CheckBox(h3,v,0,"Credit History",CreditHistory);
+  EditField(h,v+=vs,100,"Mėnesiai be Skolų",Normal,DebtFreeMonths,false,0);
+  EditField(h2,v,100,"6 Mėnesių Atlyginimas",Normal,Salary6Months,false,0);
+  EditField(h3,v,100,"Įsidarbinimo Data",Normal,DateEmployed,false,PasteCurDate);
+  EditField(h,v+=vs,100,"Įmonė",Normal,Company,false,0);
+  EditField(h2,v,100,"Pareigos",Normal,Position,false,0);
+ 
+  EditField(h,v+=vs,100,"Vėlavimo Kreditai",Normal,LateCredits,false,0);
+  EditField(h2,v,100,"Vėlavimo Dienos",Normal,LateDays,false,0);
+  
+  EditField(h2,v+=vs,100,"Bendras Mėnesinis Įsipareigojimo Mokėjimas",Normal,MonthlyOblPayment,false,0);
+  EditField(h2,v+=vs,100,"Bendros Mėnesinės Pajamos Iš Kitų Įmonių",Normal,TotIncomeFromCompanies,false,0);
+
+  vm = v+40;
+  ButtonFrame(h,v=vm,190,4,"Turtas");
+  RadioButton(h,v,0,0,"No",AssetsType);
+  RadioButton(h,v+=16,1,0,"Hipoteka",AssetsType);  
+  RadioButton(h,v+=16,2,0,"Nuosavybė <20k",AssetsType);  
+  RadioButton(h,v+=16,3,0,"Nuosavybė 20+k arba 3+ Turtas",AssetsType);
+    
+  ButtonFrame(h2,v=vm,150,2,"Lytis");
+  RadioButton(h2,v,0,0,"Vyras",SexType);
+  RadioButton(h2,v+=16,1,0,"Moteris",SexType);  
+  
+  ButtonFrame(h3,v=vm,150,2,"Rezidencija");
+  RadioButton(h3,v,0,0,"Gyventojas",ResidencyType);
+  RadioButton(h3,v+=16,1,0,"Ne Gyventojas",ResidencyType);  
+
+  MatrixBegin(10,v+=vs+60,-55,-1,-,50);
+  Flip(0);
+  MatCol(1,20,"Laikotarpis",0,Period,false,0);
+  Flip(1);
+  MatCol(1,80,"Industrija",0,Industry,false,0);
+  MatCol(1,-300,"Patikrinti Mėnesį",0,MonthChecks,false,0);
+  MatCol(1,-200,"Patikrinti Kervirtį",0,QuarterChecks,false,0);
+  MatCol(1,-100,"Patikrinti Puse Metų",0,HalfYearChecks,false,0);
+  Flip(2);
+  MatCol(1,80,"Atlyginimas",0,Salary,false,0);
+  MatCol(1,180,"Papildomas Atlyginimas",0,ExtraSalary,false,0);
+  Flip(3);
+  MatCol(1,80,"Turtas",0,Asset,false,0);
+  MatCol(1,200,"Turto Tipas",0,AssetType,false,0);
+  MatCol(1,270,"Vietovė",0,Location,false,0);
+  MatCol(1,400,"Legal Status",0,LegalStatus,false,0);
+  MatCol(1,-50,"Vertė",0,AssetValue,false,0);
+  Flip(4);
+  MatCol(1,80,"Įsipareigojimai",0,Obligations,false,0);
+  MatCol(1,150,"Vertė",0,ObligationsValue,false,0);
+  MatCol(1,220,"Paskolos",0,Loans,false,0);
+  MatCol(1,290,"Kredito Kortelės",0,CreditCards,false,0);
+  MatCol(1,360,"Kredito limitai",0,CreditLimits,false,0);
+  MatCol(1,430,"Lizingas",0,Leasing,false,0);
+  EndMatrix;
+
+  VTab(-40,v,-6,v+=vs,ToolFlip,1,"A");
+  VTab(-40,v,-6,v+=vs,ToolFlip,2,"B");
+  VTab(-40,v,-6,v+=vs,ToolFlip,3,"C");
+  VTab(-40,v,-6,v+=vs,ToolFlip,4,"D");
+
+  EndWindow;
+ 
+  WindowBegin("Įklijuokiti klientą",B2BLoanApp_CUSClass,CGslist,-);
+  SetWRect(20,80,700,298);
+  Sizeable(-1,-1,0,0);
+  UseView(CUVc);
+  SpawnClass(CUDClass);
+  
+  HalPushButton(-300,v=7,-200,v+=20,"CustSwitchToContacts","Kontaktiniai asmenys");
+ 
+  RecordList(4,20,-21,-39);
+  RlColKey(4,4,"Nr.",Code,false,Code);
+  pos = 96;
+  if (HasCustomerSearchKey) then begin
+    RlColKey(pos,pos,"Short",SearchKey,false,SearchKey);
+    pos = pos + 50;
+  end;
+  
+  if (HasCategories) then begin
+    RlColKey(pos,pos,"C_at",CustCat,false,ActGroup);
+    pos = pos + 50;
+  end;
+  if (IsStandardProduct) then begin
+    if (HasLocalization("FIN,POL")) then begin
+      RlColKey(pos,pos,"#VAT Reg. No.#",VATNr,false,VATNr);
+      pos = pos + 120;
+    end;
+  end;
+  RlColKey(pos,pos,"Vardas",Name,false,Name);  
+  if (HasDepartments) then begin
+    RlColKey(-230,-230,"Departamentas",Department,false,Department);
+  end;
+  if (HasStandardCommunicator) then begin
+    if (CUVATNrColumn) then begin
+      RlColKey(-110,-110,"#VAT Reg. No.#",VATNr,false,VATNr);
+    end else begin
+      RlColKey(-110,-110,"#Reg. No.#",RegNr1,false,RegNr1);
+    end;
+  end;
+  if (HasLimitedAccess) then begin
+    BrowseSubsetButton(-40,-15);
+  end;
+  SearchField("Search");
+  if (GuiType!=kGuiiPhone and GuiType!=kGuiAndroid) then begin
+    if (HasCustomerStatusReport) then begin
+      SpecialMenu("Kliento Statusas",'e',0,"CUStatusCUSsm");
+    end;
+  end;
+  SpecialMenu("Paieška",'F',1,"CUSearchLsm");
+  EndWindow;
+
+  WindowBegin("Order Class Colors",OrderClassColorTClass,CGHBl,-);
+  SetWRect(80,80,400,280);
+  SetBlid(OrderClassColorBlock);
+  MatrixBegin(10,20,-30,-10,-,50);
+  MatCol(1,25,"Order Class",0,OrderClass,false,OrderClassSClass);
+  MatCol(1,100,"Spalva",0,Color,false,SetSClass);
+  EndMatrix;
+  EndWindow;
+
+  WindowBegin("Kredito Istorija",CredHistLClass,CGmList,-);
+  Sizeable(-1,-1,0,0);
+  SetWRect(64,80,800,298);
+  SpawnClass(CredHistDClass);
+  UseView(CredHistVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Serijos Nr.",SerNr,false,SerNr);
+  RlColKey(101,101,"Data",TransDate,false,TransDate);
+  RlColKey(181,181,"Įrašo Nr.",RecordNr,false,RecordNr);
+  RlCol   (260,260,"Tipas",RecordType,false);
+  RlCol   (340,340,"Sutartis",CredManNr,false);
+  SearchField("Paieška");
+  EndWindow;
+
+  WindowBegin("Kredito Sutartis",CredHistDClass,CGview,-);
+  SetWRect(20,80,640,380);
+  h = 150; h2 = 300; h3 = 440; v = 6; vs=20;
+  UseView(CredHistVc);
+  EditField(h,v,80,"Serijos Nr.",ViewOnly,SerNr,false,0);
+  EditField(h2,v,120,"Klientas",Normal,CustCode,false,CUSClass);
+  EditField(h,v+=vs,120,"Įrašo Nr.",Normal,RecordNr,false,0);
+  EditField(h,v+=vs,120,"Ankstesnis Įr.",Normal,PreviousNr,false,0);
+  EditField(h,v+=vs,120,"Data",Normal,TransDate,false,0);
+  EditField(h,v+=vs,120,"Mokesčio Tipas",Normal,ChargeType,false,0);
+  EditField(h,v+=vs,120,"Įrašo Tipas",Normal,RecordType,false,0);
+  EditField(h,v+=vs,120,"Suma",Normal,Sum,false,0);
+  EditField(h,v+=vs,120,"Mokėjimos Terminas",Normal,PayDate,false,0);
+  EditField(h,v+=vs,120,"Prekė",Normal,ArtCode,false,0);
+  EditField(h,v+=vs,120,"CredManNr",Normal,CredManNr,false,0);
+  EditField(h,v+=vs,120,"Pradžios Data",Normal,CredFromDate,false,0);
+  EditField(h,v+=vs,120,"Pabaigos Data",Normal,CredToDate,false,0);
+  EditField(h,v+=vs,120,"Sąskaitos Suma",Normal,InvSum,false,0);
+  EditField(h,v+=vs,120,"Sumokėta Suma",Normal,PaidSum,false,0);
+  EditField(h,v+=vs,120,"Likutis",Normal,Balance,false,0);
+  EditField(h,v+=vs,120,"Faktoringo Sąsk.",Normal,FactoringInvoice,false,0);
+  CheckBox(h,v+=vs,0,"Pagrindinis Įrašas",MainRecord);
+  EndWindow;
+
+  WindowBegin("Nurodykite Kredito Sutarties Sąskaitas Faktūras",GenLoanInvoicesVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 150; v = 6; vs = 20;
+  EditFieldTL(h,v,120,"Data iki",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,153,"Kredito Sutartis",M4Long,Normal,0,long2,false,CredManSClass);
+  EditFieldTL(h,v+=vs,153,"Klientas",M4Code,Normal,20,f1,false,CUSClass);
+  EditFieldTL(h,v+=vs,153,"Manager",M4Code,Normal,10,f2,false,UserSClass);
+  EndWindow;
+
+  WindowBegin("Specify Mails from Schedules",SendScheduleEmailsVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 150; v = 6; vs = 20;
+  PeriodField(h=140,v=6,"Period");
+  EditFieldTL(h,v+=vs,153,"Credit Agreement",M4Long,Normal,0,long1,false,CredManSClass);
+  EditFieldTL(h,v+=vs,153,"Customer",M4Code,Normal,20,f1,false,CUSClass);
+  EditFieldTL(h,v+=vs,153,"Manager",M4Code,Normal,10,f2,false,UserSClass);
+  EditFieldTL(h,v+=vs,153,"Agreement Type",M4Code,Normal,20,f3,false,CredManTypeSClass);
+  CheckBox(h,v+=vs,0,"Re-generate Schedules",flags[1]);
+  CheckBox(h,v+=vs,0,"Send E-mails Automatically",flags[2]);
+  EndWindow;
+
+  WindowBegin("Specify Recreate Invoices with Prolong months",CredManRecreateDocsVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 150; v = 6; vs = 20;
+  EndWindow;
+
+
+  WindowBegin("Nurodykite Mokėjimo Garantijų Sąskaitas Faktūras",PmtGrntInvoiceVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 150; v = 6; vs = 20;
+  EditFieldTL(h,v,120,"Data",M4Date,Normal,0,d1,false,PasteCurDate);
+  EndWindow;
+
+  WindowBegin("Nurodykite Pradelstas Sąskaitas Faktūras",GenOverdueInvVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 150; v = 6; vs = 20;
+  EditFieldTL(h,v,120,"Data iki",M4Date,Normal,0,d1,false,PasteCurDate);
+  EndWindow;
+
+  WindowBegin("Nurodykite Fiksuotą Kredito Istoriją",CredManRedoCredHistVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 150; v = 6; vs = 20;
+  EditFieldTL(h,v,120,"Sutartis",M4Long,Normal,0,long1,false,CredManSClass);
+  EndWindow;
+
+  WindowBegin("Specify Agreement Schedules",CreateCredManScheduleVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 150; v = 6; vs = 20;
+  EndWindow;
+
+
+  WindowBegin("Papildoma Banko Sąskaita",CUBankAccDClass,CGView,-);
+  SetWRect(20,80,400,250);
+  AutoSizeWindow(false);  
+  UseView(CUBankAccVc);
+  MatrixBegin(0,16,-1,-1,-,10);
+  MatCol(1,25,"Banko Kodas",0,BankCode,false,BankSClass);
+  MatCol(1,140,"Banko Sąskaitos Numeris",0,BankAccount,false,0);
+  EndMatrix;
+  EndWindow;
+
+  WindowBegin("Patikrinti Išpirkimo Vertę",CheckBuyoutValueWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,400,220);
+  AutoSizeWindow(false);  
+  h = 150; h2 = 250; v=450;
+  EditFieldTL(h,v=6,120,"Išpirkimo Data",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,120,"Bendra Skola",M4Val,ViewOnly,0,vals0,true,0);
+  EditFieldTL(h,v+=vs,120,"Sukaupta Bauda",M4Str,ViewOnly,255,f12,true,0);
+  EditFieldTL(h,v+=vs,120,"Paskutinės Sąskaitos Faktūros Vertė",M4Val,ViewOnly,0,vals1,true,0);
+  EditFieldTL(h,v+=vs,120,"Laukiamas Mokėjimas",M4Val,ViewOnly,0,vals2,true,0);
+
+  HalPushButton(h,v+=vs,h+120,v+20,"CalculateBuyOutValue","Suskaičiuoti");
+  EndWindow;
+
+  WindowBegin("Create Invoice",CredManInvNoWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,400,150);
+  h = 150; h2 = 250; v=450;
+  EditFieldTL(h,v=6,120,"Invoice No.",M4Str,Normal,255,f1,false,0);
+
+  HalPushButton(h,v+=vs,h+120,v+20,"CredManInvNoWClassProceed","Create");
+  EndWindow;
+
+  WindowBegin("Nurodykite Kredito Sutarties Grafiką",CredManScheduleRClass,CGRcW,RcType);
+  SetWRect(20,80,400,220);
+  vs=20;
+  EditFieldTL(h=160,v=6,120,"Kredito Sutartis",M4Long,Normal,0,long1,false,CredManSClass);
+  EndWindow;
+
+  WindowBegin("Nurodykite B2B Paskolos Paraiškos Formą",LoanAppRClass,CGRcW,RcType);
+  SetWRect(20,80,400,220);
+  vs=20;
+  EditFieldTL(h=160,v=6,120,"Paskolos Paraiška",M4Long,Normal,0,long1,false,B2BLoanApplicationSClass);
+  EndWindow;
+
+  WindowBegin("Nurodykite Laidavimo Sutarties Formą",SuretyAgreementRClass,CGRcW,RcType);
+  SetWRect(20,80,400,220);
+  vs=20;
+  EditFieldTL(h=160,v=6,120,"Sutartis",M4Long,Normal,0,long1,false,CredManSClass);
+  EndWindow;
+
+  WindowBegin("Nurodykite Vekselio Formą",VekselisRClass,CGRcW,RcType);
+  SetWRect(20,80,400,220);
+  vs=20;
+  EditFieldTL(h=160,v=6,120,"Sutartis",M4Long,Normal,0,long1,false,CredManSClass);
+  EndWindow;
+
+
+  WindowBegin("Nurodykite Laidavimo Paraiškos Formą",SuretyApplicationRClass,CGRcW,RcType);
+  SetWRect(20,80,400,220);
+  vs=20;
+  EditFieldTL(h=160,v=6,120,"Paskolos Paraiška",M4Long,Normal,0,long1,false,B2BLoanApplicationSClass);
+  EditFieldTL(h,v+=vs,120,"Laidavimas (1,2,3)",M4Int,Normal,0,flags[0],false,0);
+  EndWindow;
+
+  WindowBegin("Pause/prolong Credit Agreement",PauseCredManWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,400,250);
+  AutoSizeWindow(false);  
+  h = 150; h2 = 250; v=450;
+  EditFieldTL(h,v=6,120,"Pause/Prolong Start Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,120,"Pause Months",M4Qty,Normal,0,vals0,false,0);
+  EditFieldTL(h,v+=vs,120,"Prolong Months",M4Qty,Normal,0,vals1,false,0);
+  CheckBox(h,v+=vs,0,"Re-sign Schedule",flags[1]);
+  CheckBox(h,v+=vs,0,"Issue Prolong Invoice",flags[2]);
+  CheckBox(h,v+=vs,0,"Prolong only when Invoice is paid",flags[3]);
+  HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassPause","Pause/Prolong");
+  EndWindow;
+
+  WindowBegin("Create Extra Fee Invoice",ManualExtraFeeWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,400,200);
+  AutoSizeWindow(false);  
+  h = 150; h2 = 250; v=450;
+  EditFieldTL(h,v=6,120,"Invoice Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,120,"Item",M4Code,Normal,20,f1,false,INSClass);
+  EditFieldTL(h,v+=vs,120,"Value",M4Val,Normal,0,vals0,false,0);
+  HalPushButton(h,v+=vs,h+120,v+20,"ManualExtraFeeWClassCreate","Create");
+  EndWindow;
+
+  WindowBegin("Refinansavimo Sutartis",RefinCredManWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,240,235);
+  AutoSizeWindow(false);  
+  h = 20;
+  HalPushButton(h,v=36,h+180,v+20,"RefinCredManWClassRefinance","Refinansuoti");
+//  HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassProlong","Pratęsti");
+  HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassTransfer","Pervesti Laidavimo Tiekėjui");
+  HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassPartial","Dalinis Išpirkimas");
+  EndWindow;
+
+  WindowBegin("Refinansuoti Sutartį",RefinCredMan2WClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,400,440);
+  AutoSizeWindow(true);  
+  h = 150; h2 = 250; v=350;
+  EditFieldTL(h,v=6,120,"Bendra Skola",M4Val,ViewOnly,0,vals0,false,0);
+  EditFieldTL(h,v+=vs,120,"Esamas likutis",M4Val,Normal,0,vals1,false,0);
+  EditFieldTL(h,v+=vs,120,"Papildoma Vertė",M4Val,Normal,0,vals2,false,0);
+  EditFieldTL(h,v+=vs,120,"Refinansavimo Vertė",M4Val,Normal,0,vals3,false,0);
+  EditFieldTL(h,v+=vs,120,"Refinansavimo Data",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,120,"Naujas Sutarties Tipas",M4Code,Normal,20,f1,false,CredManTypeSClass);
+  EditFieldTL(h,v+=vs,120,"Mėnesi ai",M4Int,Normal,0,flags[0],false,0);
+  EditFieldTL(h,v+=vs,120,"Naujas Klientas",M4Code,Normal,20,f2,false,CUSClass);
+  EditFieldTL(h,v+=vs,120,"Nauja Mokėjimo Diena",M4Int,Normal,0,flags[1],false,0);
+  EditFieldTL(h,v+=vs,120,"Nauja Mėnesinė Norma %",M4Val,Normal,0,vals4,false,0);
+  ButtonFrame(h,v=v+40,200,3,"Refinance Type");
+  RadioButton(h,v,0,0,"Refinance",ArtMode);
+  RadioButton(h,v+=16,1,0,"Prolong",ArtMode);
+  RadioButton(h,v+=16,2,0,"Transfer to Surety Provider",ArtMode);  
+  HalPushButton(h,v+=40,h+120,v+20,"RefinCredMan2WClassSubmit","Refinance");
+  EndWindow;
+
+  WindowBegin("Refinansavimo Sutartis - Dalinis Išpirkimas",RefinCredManPartialWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,400,440);
+  AutoSizeWindow(true);  
+  h = 150; h2 = 250; v=350;
+  EditFieldTL(h,v=6,120,"Data",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,120,"Suma",M4Val,Normal,0,vals0,false,0);
+  HalPushButton(h,v+=40,h+120,v+20,"RefinCredManPartialWClassSubmit","Patvirtinti");
+  EndWindow;
+
+  WindowBegin("Prekės Prioritetas",ItemPriorityTClass,CGHBl,-);
+  SetWRect(80,80,400,280);
+  SetBlid(ItemPriorityBlock);
+  MatrixBegin(10,20,-30,-10,-,99);
+  MatCol(1,25,"Prekė",0,ArtCode,false,INSClass);
+  MatCol(1,100,"Pavadinimas",0,Name,false,0);
+  MatCol(1,-50,"Prioritetas",0,Priority,false,0);
+  EndMatrix;
+  EndWindow;
+
+  WindowBegin("Priminimai",SMSReminderLClass,CGmList,-);
+  Sizeable(-1,-1,0,0);
+  SetWRect(64,80,600,298);
+  SpawnClass(SMSReminderDClass);
+  UseView(SMSReminderVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Serijos Nr.",SerNr,false,SerNr);
+  RlCol   (101,101,"Tipas",Type,false);
+  RlCol   (201,201,"Pavadinimas",Comment,false);
+  RlColKeyTL(-30,-30,"Act.",M4Mark,ActiveFlag,false,ActiveFlag);
+  EndWindow;
+
+  WindowBegin("Priminimai",SMSReminderDClass,CGview,-);
+  SetWRect(20,80,760,380);
+  h = 120; h2 = 300; h3 = 440; v = 6; vs=20;
+  UseView(SMSReminderVc);
+  EditField(h,v,80,"Serijos Nr.",Normal,SerNr,false,0);
+  CheckBox(h2-50,v,0,"Aktyvus",ActiveFlag);
+  EditField(h,v+=vs,250,"Komentaras",Normal,Comment,false,0);
+  EditField(h,v+=vs,100,"Priminimų Tipas",Normal,ReminderType,false,SetSClass);
+  EditField(h2,v,70,"Tipas",Normal,Type,false,SetSClass);
+  EditField(h,v+=vs,100,"Dienos",Normal,Days,false,0);
+  EditField(h2,v,70,"Klientas",Normal,CustCode,false,CUSClass);
+  EditField(h,v+=vs,100,"Paskutinį Kartą Išsiųstas",Normal,LastSentDate,false,0);
+  EditField(h2,v,70,"Iki EUR",Normal,MinAmount,false,0);//Very confusing label
+  CheckBox(h,v+=vs,0,"Pirmadienis",Day1);
+  EditField(h2,v,70,"Laikas",Normal,Time1,false,PasteCurTime);
+  CheckBox(h,v+=vs,0,"Antradienis",Day2);
+  EditField(h2,v,70,"Laikas",Normal,Time2,false,PasteCurTime);
+  CheckBox(h,v+=vs,0,"Trečiadienis",Day3);
+  EditField(h2,v,70,"Laikas",Normal,Time3,false,PasteCurTime);
+  CheckBox(h,v+=vs,0,"Ketvirtadienis",Day4);
+  EditField(h2,v,70,"Laikas",Normal,Time4,false,PasteCurTime);
+  CheckBox(h,v+=vs,0,"Penktadienis",Day5);
+  EditField(h2,v,70,"Laikas",Normal,Time5,false,PasteCurTime);
+  CheckBox(h,v+=vs,0,"Šeštadienis",Day6);
+  EditField(h2,v,70,"Laikas",Normal,Time6,false,PasteCurTime);
+  CheckBox(h,v+=vs,0,"Sekmadienis",Day7);
+  EditField(h2,v,70,"Laikas",Normal,Time7,false,PasteCurTime);
+
+  CheckBox(h,v+=vs,0,"Švenčių Dienomis",BankHolidays);
+
+  ButtonFrame(h,v=v+40,320,4,"Nepavyko Priminti");
+  CheckBox(h,v,0,"Sukurkite Veiklą, Jei Priminimo Negalima Išsiųsti",CreateActivity);
+  EditField(h+50,v+=vs,70,"Asmuo",Normal,ActPerson,false,UserSClass);
+  EditField(h2,v,70,"Tipas",Normal,ActType,false,ActTypeSClass);
+  EditField(h+50,v+=vs,250,"Tekstas",Normal,ActText,false,0);
+
+  
+
+  EditField(h2=420,v=10,-20,"El.Laiško Tema",Normal,Subject,false,0);
+  StaticText(h2,v+=30,"Tekstas",false);
+  TextField(h2,v+=10,-20,190,Message,0);
+
+  EndWindow;
+
+  WindowBegin("Priminimo Eilės",SMSReminderQueueLClass,CGmList,-);
+  Sizeable(-1,-1,0,0);
+  SetWRect(64,80,600,298);
+  UseView(SMSReminderQueueVc);
+  SpawnClass(SMSReminderQueueDClass);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Serijos Nr.",SerNr,false,SerNr);
+  RlCol   (101,101,"Sąskaitos Data",InvDate,false);
+  RlCol   (201,201,"Sąskaitos Nr.",InvoiceNr,false);
+  RlCol   (271,271,"Priminimai",ReminderNr,false);
+  RlColKeyTL(-30,-30,"Išsiųstas",M4Mark,SentFlag,false,SentFlag);
+  EndWindow;
+
+  WindowBegin("Priminimo Eilės",SMSReminderQueueDClass,CGview,-);
+  SetWRect(20,80,460,380);
+  h = 120; h2 = 300; h3 = 440; v = 6; vs=20;
+  UseView(SMSReminderQueueVc);
+  EditField(h,v,120,"Serijos Nr.",Normal,SerNr,false,0);
+  EditField(h,v+=vs,120,"Sąskaitos Data",Normal,InvDate,false,0);
+  EditField(h,v+=vs,120,"Sąskaitos Nr.",Normal,InvoiceNr,false,0);
+  EditField(h,v+=vs,120,"Priminimo Nr.",Normal,ReminderNr,false,0);
+  ButtonFrame(h,v=v+40,150,4,"Statusas");
+  RadioButton(h,v,0,0,"Sukurtas",SentFlag);
+  RadioButton(h,v+=16,1,0,"Išsiųstas",SentFlag);
+  RadioButton(h,v+=16,2,0,"Sumokėjo Prieš Išsiuntimą",SentFlag);  
+  RadioButton(h,v+=16,3,0,"Klaida",SentFlag);  
+  EndWindow;
+  
+  return;
+end;
+
+window B2BLoanApp_ContactSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v;
+
+  WindowBegin("Įklijuoti Kontaktą",B2BLoanApp_ContactSClass,CGother,RcType);
+  SetWRect(64,80,500,298);
+  HalPushButton(-120,v=8,-6,v+=20,"ContactsSwitchToCust","Kontaktai");
+  DataList(9,v+10,-22,-6,"DLPasteContact");
+  DataListColumn(1,6,250,AdjLeft,"DLContactName","Pavadinimas",M4Str);
+  DataListColumn(1,256,-32,AdjLeft,"DLContactTitle","Courtesy Title",M4Str);  
+  EndWindow;
+end;
+
+window B2BLoanApplicationDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v,vs,h,h2,h3,t,tilenr,vm,pos;
+  string 255 label1,label2,label3,label4,label5;
+  record B2BLoanApplicationVc LAr;
+
+  WindowBegin("B2B Paskolos Paraiškos",B2BLoanApplicationDClass,CGview,-);
+  SetWRect(64,80,859,300);
+  UseView(B2BLoanApplicationVc);
+  DynamicWindow;
+  FormName(LoanAppForm);
+  vs = 20; h=135; h2=375; h3=595;
+  Tile(0,95,false,"",SerNr);
+  EditField(h,v=6,100,"Serijos Nr.",Normal,SerNr,false,TSerSClass);
+  EditField(h2,v,80,"Data",Normal,TransDate,false,PasteCurDate);
+  EditField(h3+30,v,-40,"Sąsaja",Normal,InterfaceLanguage,false,0);
+  EditField(h,v+=vs,100,"Klientas",Normal,CustCode,false,CUSClass);
+  EditField(h2,v,130,"Pavadinimas",Normal,CustName,false,0);
+  EditField(h3+30,v,-40,"OS",Normal,BrowserOS,false,0);
+  EditField(h,v+=vs,100,"Kontaktas",Normal,ContactName,false,B2BLoanApp_ContactSClass);
+  EditField(h2,v,130,"El. paštas",Normal,eMail,false,0);
+  EditField(h3+30,v,-40,"Telefonas",Normal,PhoneNo,false,0);
+  EditField(h,v+=vs,100,"Kontakto El. paštas",Normal,ContacteMail,false,0);
+  EditField(h2,v,130,"Kontakto Telefonas",Normal,ContactPhoneNo,false,0);
+  EditField(h3+30,v,-40,"Kontakto Mobilus",Normal,ContactMobile,false,0);
+  EditField(h,v+=vs,100,"Vadovas",Normal,Manager,false,UserSClass);
+  //EditField(h2,v,-40,"Pavadinimas",Normal,ManagerName,false,0);
+  EditField(h2,v,130,"Eilės Klasė",Normal,OrderClass,false,OrderClassSClass);
+  EditField(h3+30,v,-40,"Mėnesio Mokėjimo Diena",Normal,MonthlyPaymentDay,true,0);
+  EditField(h,v+=vs,100,"Tipas",Normal,Type,false,CredManTypeSClass);
+  vm = v;
+  EditField(h,v+=vs,100,"Bendra Suma",Normal,Sum,true,0);
+  EditField(h,v+=vs,100,"Mėnesiai",Normal,Months,true,0);
+  EditField(h,v+=vs,100,"Princ. Delay Int. %",ViewOnly,PrincipleDelayInterest,true,0);
+  EditField(h,v+=vs,100,"Princ. Delay Months",ViewOnly,PrincipleDelayMonths,true,0);
+  EditField(h,v+=vs,230,"Šaltinio Nuoroda",ViewOnly,Source,false,0);
+  //EditField(h,v+=vs,100,"Monthly Rate %",Normal,InterestRate,true,0);
+  //EditField(h,v+=vs,100,"Pradžios Data",Normal,StartDate,false,PasteCurDate);
+  //EditField(h,v+=vs,100,"Pabaigos Data",ViewOnly,EndDate,false,0);
+  v = vm;
+  
+  EditField(h3=h3+30,v,-40,"Maks. Mėnesinis Mokestis",ViewOnly,MaxMonthlyPayment,true,0);
+  EditField(h3,v+=vs,-40,"Max Rec. Sum",ViewOnly,MaxRecSum,true,0);
+  EditField(h3,v+=vs,-40,"Value based on Surety",Normal,MaxValSurety,true,0);
+  EditField(h3,v+=vs,-40,"Value based on Comp.",Normal,MaxValCompany,true,0);
+  EditField(h3,v+=vs,-40,"Creditinfo Riba",Normal,CreditinfoLimit,true,0);
+  v = vm;
+  ButtonFrame(h2,v=v+20,100,5,"Kredituojamas");
+  RadioButton(h2,v,0,0,"Neapskaičiuota",Creditable);
+  RadioButton(h2,v+=16,1,0,"Taip A",Creditable);
+  RadioButton(h2,v+=16,2,0,"Taip B",Creditable);  
+  RadioButton(h2,v+=16,3,0,"4-akys",Creditable);  
+  RadioButton(h2,v+=16,4,0,"Ne",Creditable);
+  v=v+vs;
+  HalPushButton(h3-90,v,h3+10,v+25,"B2BLoanAppCalculate","Skaičiuoti");
+  HalPushButton(h3+30,v,h3+130,v+25,"B2BLoanAppEvaluate","Vertinti");
+
+  h3=h3-30;
+  tilenr = 1;
+  TileButton(tilenr,"Kontaktas"); tilenr = tilenr + 1;
+  TileButton(tilenr,"Laiduotojas"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Vertinimas"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Faktoringas"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Komentaras"); tilenr = tilenr + 1;  
+  tilenr = 1;
+  Tile(tilenr,290,true,tilenr,Addr0); tilenr = tilenr + 1;
+  v = 6;
+  label1 = UserDefined("CUVc","InvAddr0");
+  EditField(h,v,150,label1,Normal,Addr0,false,0);
+  label2 = UserDefined("CUVc","InvAddr1");
+  EditField(h,v+=vs,150,label2,Normal,Addr1,false,0);
+  label3 = UserDefined("CUVc","InvAddr2");
+  EditField(h,v+=vs,150,label3,Normal,Addr2,false,0);
+  label4 = UserDefined("CUVc","InvAddr3");
+  EditField(h,v+=vs,150,label4,Normal,Addr3,false,0);
+  label5 = UserDefined("CUVc","InvAddr4");
+  EditField(h,v+=vs,150,label5,Normal,Addr4,false,0);
+  vm = v;
+  v = 6;
+  EditField(h2=400,v,120,"Banko kodas",Normal,BankCode,false,BankSClass);
+  EditField(h2,v+=vs,120,"Banko Pavadinimas",Normal,BankName,false,0);
+  EditField(h2,v+=vs,120,"Bank Sąskaita",Normal,BankAccount,false,BankAccountSClass);
+  EditField(h2,v+=vs,-40,"Komentaras",Normal,Comment,false,0);
+  EditField(h2,v+=vs,-40,"Legal No.",Normal,OfficialSerNr,false,CredLegalNrSerNrSClass);
+  
+  CheckBox(h3,v=6,0,"Prašyti Tiesioginio Debeto",RequestDirectDebit);
+  
+  v = vm + v;
+  ButtonFrame(h,v=v+40,700,1,"Owner");
+  EditField(h+100,v,100,"Kontakto kodas",Normal,OwnerCustCode,false,B2BLoanApp_CUSClass);
+  EditField(h2+50,v,100,"Savininko Vardas",Normal,OwnerName,false,0);
+  EditField(h2+280,v,100,"Savininko Atstovas",Normal,OwnerRep,false,0);
+  ButtonFrame(h,v=v+40,700,1,"CEO");
+  EditField(h+100,v,100,"Kontakto kodas",Normal,CEOCustCode,false,B2BLoanApp_CUSClass);
+  EditField(h2+50,v,100,"Generalinio Direktoriaus Vardas",Normal,CEOName,false,0);
+  EditField(h2+280,v,100,"Generalinio direktoriaus Atstovas",Normal,CEORep,false,0);
+ 
+  Tile(tilenr,290,true,tilenr,MajorityOwner1); tilenr = tilenr + 1;  
+  
+  StaticText(h,v=26,"Laidavimo Paslaugų Teikėjas 1",false);
+  CheckBox(h,v=v+vs,0,"Daugumos Savininkas",MajorityOwner1);
+  EditField(h,v+=vs,100,"Kontakto kodas 1",Normal,SuretyProvider1,false,B2BLoanApp_CUSClass);
+  EditField(h,v+=vs,100,"Prieiga Prie Duomenų iki",ViewOnly,Surety1AccessToDataUntil,false,PasteCurDate);
+  vm = v;
+  CheckBox(h,v=v+vs,0,"Turto Areštai",Surety1AssetArrests);
+  CheckBox(h,v=v+vs,0,"Bankrotas",Surety1Bankruptcy);
+  CheckBox(h,v=v+vs,0,"Nekredituojamas",Surety1NotCreditable);
+  CheckBox(h,v=v+vs,0,"Praėjusių metų teismo bylos",Surety1Courts);
+  v = vm;
+  ButtonFrame(h-100,v+=40,90,2,"Tipas");
+  RadioButton(h-100,v,0,0,"Entrepreneur",Surety1Type);
+  RadioButton(h-100,v+=16,1,0,"Specialist",Surety1Type);  
+  HalPushButton(h-90,v+=25,h-10,v+25,"PrintSurety1Dm","Print");
+  HalPushButton(h,v+=25,h+120,v+25,"ShowB2BAppScoring1","Scoring Rate");
+  HalPushButton(h-90,v,h-10,v+25,"ShowB2BAppRemSur1","Remove"); v = v + 10;
+  EditField(h,v+=vs,100,"Name",Normal,Surety1Name,false,0);
+  EditField(h,v+=vs,100,"Position",Normal,Surety1Position,false,JobTitleSClass);
+  EditField(h,v+=vs,100,"Phone",Normal,Surety1Phone,false,0);
+  EditField(h,v+=vs,100,"Email",Normal,Surety1eMail,false,0);
+  EditField(h,v+=vs,100,"ID",Normal,Surety1ID,false,0);
+
+  EditField(h,v+=vs,130,label1,Normal,Surety1Addr0,false,0);
+  EditField(h,v+=vs,130,label2,Normal,Surety1Addr1,false,0);
+  EditField(h,v+=vs,130,label3,Normal,Surety1Addr2,false,0);
+  EditField(h,v+=vs,130,label4,Normal,Surety1Addr3,false,0);
+  EditField(h,v+=vs,130,label5,Normal,Surety1Addr4,false,0);
+  ButtonFrame(h,v=v+40,150,4,"Age Group");
+  RadioButton(h,v,0,0,"Under 21",Surety1AgeGroup);
+  RadioButton(h,v+=16,1,0,"21-27",Surety1AgeGroup);  
+  RadioButton(h,v+=16,2,0,"28-64",Surety1AgeGroup);  
+  RadioButton(h,v+=16,3,0,"65+",Surety1AgeGroup);
+  if (GetWindowClass(CurWindow)=="B2BLoanApplicationDClass") then begin  
+    GetWindowRecord(CurWindow,LAr);
+  end;
+  if (LAr.SuretyCnt>=2) then begin
+    StaticText(h2=365,v=26,"Surety Provider 2",false);
+    CheckBox(h2,v=v+vs,0,"Majority Owner",MajorityOwner2);
+    EditField(h2,v+=vs,100,"Contact Code 2",Normal,SuretyProvider2,false,B2BLoanApp_CUSClass);
+    EditField(h2,v+=vs,100,"Access to Data till",ViewOnly,Surety2AccessToDataUntil,false,PasteCurDate);
+    vm = v;
+    CheckBox(h2,v=v+vs,0,"Asset Arrests",Surety2AssetArrests);
+    CheckBox(h2,v=v+vs,0,"Bankruptcy",Surety2Bankruptcy);
+    CheckBox(h2,v=v+vs,0,"Not Creditable",Surety2NotCreditable);
+    CheckBox(h2,v=v+vs,0,"Court Cases last Year",Surety2Courts);
+    v = vm;
+    ButtonFrame(h2-100,v=v+40,90,2,"Type");
+    RadioButton(h2-100,v,0,0,"Entrepreneur",Surety2Type);
+    RadioButton(h2-100,v+=16,1,0,"Specialist",Surety2Type);  
+    HalPushButton(h2-90,v+=25,h2-10,v+25,"PrintSurety2Dm","Print");
+    HalPushButton(h2,v+=25,h2+120,v+25,"ShowB2BAppScoring2","Scoring Rate");
+    HalPushButton(h2-90,v,h2-10,v+25,"ShowB2BAppRemSur2","Remove"); v = v + 10;
+    EditField(h2,v+=vs,100,"Name",Normal,Surety2Name,false,0);
+    EditField(h2,v+=vs,100,"Position",Normal,Surety2Position,false,JobTitleSClass);
+    EditField(h2,v+=vs,100,"Phone",Normal,Surety2Phone,false,0);
+    EditField(h2,v+=vs,100,"Email",Normal,Surety2eMail,false,0);
+    EditField(h2,v+=vs,100,"ID",Normal,Surety2ID,false,0);
+
+    EditField(h2,v+=vs,130,label1,Normal,Surety2Addr0,false,0);
+    EditField(h2,v+=vs,130,label2,Normal,Surety2Addr1,false,0);
+    EditField(h2,v+=vs,130,label3,Normal,Surety2Addr2,false,0);
+    EditField(h2,v+=vs,130,label4,Normal,Surety2Addr3,false,0);
+    EditField(h2,v+=vs,130,label5,Normal,Surety2Addr4,false,0);
+    ButtonFrame(h2,v=v+40,150,4,"Age Group");
+    RadioButton(h2,v,0,0,"Under 21",Surety2AgeGroup);
+    RadioButton(h2,v+=16,1,0,"21-27",Surety2AgeGroup);  
+    RadioButton(h2,v+=16,2,0,"28-64",Surety2AgeGroup);  
+    RadioButton(h2,v+=16,3,0,"65+",Surety2AgeGroup);  
+  end;
+  if (LAr.SuretyCnt>=3) then begin
+    StaticText(h3,v=26,"Surety Provider 3",false);
+    CheckBox(h3,v=v+vs,0,"Majority Owner",MajorityOwner3);
+    EditField(h3,v+=vs,100,"Contact Code 3",Normal,SuretyProvider3,false,B2BLoanApp_CUSClass);
+    EditField(h3,v+=vs,100,"Access to Data till",ViewOnly,Surety3AccessToDataUntil,false,PasteCurDate);
+    vm = v;
+    CheckBox(h3,v=v+vs,0,"Asset Arrests",Surety3AssetArrests);
+    CheckBox(h3,v=v+vs,0,"Bankruptcy",Surety3Bankruptcy);
+    CheckBox(h3,v=v+vs,0,"Not Creditable",Surety3NotCreditable);
+    CheckBox(h2,v=v+vs,0,"Court Cases last Year",Surety3Courts);
+    v = vm;
+    ButtonFrame(h3-100,v=v+40,90,2,"Type");
+    RadioButton(h3-100,v,0,0,"Entrepreneur",Surety3Type);
+    RadioButton(h3-100,v+=16,1,0,"Specialist",Surety3Type);  
+    HalPushButton(h3-90,v+=25,h3-10,v+25,"PrintSurety3Dm","Print");
+    HalPushButton(h3,v+=25,h3+120,v+25,"ShowB2BAppScoring3","Scoring Rate");
+    HalPushButton(h3-90,v,h3-10,v+25,"ShowB2BAppRemSur3","Remove"); v = v + 10;
+    EditField(h3,v+=vs,100,"Name",Normal,Surety3Name,false,0);
+    EditField(h3,v+=vs,100,"Position",Normal,Surety3Position,false,JobTitleSClass);
+    EditField(h3,v+=vs,100,"Phone",Normal,Surety3Phone,false,0);
+    EditField(h3,v+=vs,100,"Email",Normal,Surety3eMail,false,0);
+    EditField(h3,v+=vs,100,"ID",Normal,Surety3ID,false,0);
+
+    EditField(h3,v+=vs,130,label1,Normal,Surety3Addr0,false,0);
+    EditField(h3,v+=vs,130,label2,Normal,Surety3Addr1,false,0);
+    EditField(h3,v+=vs,130,label3,Normal,Surety3Addr2,false,0);
+    EditField(h3,v+=vs,130,label4,Normal,Surety3Addr3,false,0);
+    EditField(h3,v+=vs,130,label5,Normal,Surety3Addr4,false,0);
+    ButtonFrame(h3,v=v+40,150,4,"Age Group");
+    RadioButton(h3,v,0,0,"Under 21",Surety3AgeGroup);
+    RadioButton(h3,v+=16,1,0,"21-27",Surety3AgeGroup);  
+    RadioButton(h3,v+=16,2,0,"28-64",Surety3AgeGroup);  
+    RadioButton(h3,v+=16,3,0,"65+",Surety3AgeGroup);  
+  end;
+  switch (LAr.SuretyCnt) begin
+    case 0:  
+      HalPushButton(h2,v=26,h2+120,v+25,"B2BLoanAppAddSurety","Add Surety"); v = v + 10;
+    case 1:  
+      HalPushButton(h2,v=26,h2+120,v+25,"B2BLoanAppAddSurety","Add Surety"); v = v + 10;
+    case 2:
+      HalPushButton(h3,v=26,h3+120,v+25,"B2BLoanAppAddSurety","Add Surety"); v = v + 10;
+  end;
+
+  Tile(tilenr,600,true,tilenr,LateRating); tilenr = tilenr + 1;
+  EditField(h,v=6,100,"Late Rating",Normal,LateRating,true,0);
+  EditField(h2=365,v,100,"Bankruptcy Rating",Normal,BankruptcyRating,true,0);
+  EditField(h3,v,100,"Established",Normal,Established,false,PasteCurDate);
+  EditField(h,v+=vs,100,"Monthly Loan Payment",Normal,MonthlyLoadPayment,true,0);
+  EditField(h2,v,100,"Current Debts",Normal,CurrentDebts,true,0);
+  EditField(h3,v,100,"Last Debt Repayment",Normal,LastRepaymentDate,false,PasteCurDate); 
+  CheckBox(h,v+=vs,0,"Ongoing Court Cases",OngoingCourtCases);
+  CheckBox(h2,v,0,"Historical Court Cases",HistoricalCourtCases);
+  CheckBox(h3,v,0,"Ongoing Asset Arrests",OngoingAssetArrests);
+  CheckBox(h,v+=vs,0,"Historical Asset Arrests",HistoricalAssetArrests);
+  CheckBox(h2,v,0,"Bankruptcy",BankruptcyFlag);
+  CheckBox(h3,v,0,"Liquidation",LiquidationFlag);
+  CheckBox(h,v+=vs,0,"Ownership Changes",OwnershipChanges);
+  CheckBox(h2,v,0,"Publicity Information",Publicity);
+  CheckBox(h3,v,0,"Being Sued",BeingSued);
+  CheckBox(h,v+=vs,0,"Ongoing Debt Collections",DebtCollections);
+  CheckBox(h2,v,0,"Unreliable Company",UnreliableComp);
+  CheckBox(h3,v,0,"Available fin. statements",AvailableFinStatements);
+
+//  EditField(h,v+=vs,100,"Long Term Asset Value",Normal,AssetValue,false,0);
+  EditField(h,v+=vs,100,"50% Rev. Customers",Normal,HalfRevenueCustomers,true,0);
+  EditField(h2,v,100,"Equity",Normal,Equity,true,0);
+  EditField(h3,v,100,"50% Cost Suppliers",Normal,HalfCostSuppliers,true,0);
+  EditField(h,v+=vs,100,"Months",Normal,RevMonths,true,0);
+  EditField(h2,v,100,"Revenue",Normal,Revenue,true,0);
+  EditField(h3,v,100,"Annual Revenue",Normal,AnnualRevenue,true,0);
+
+  ButtonFrame(h-50,v=v+40,640,1,"Current");
+  EditField(h,v,80,"Profit",Normal,CurProfit,true,0);
+  EditField(h2=320,v,80,"Receivables",Normal,CurReceivables,true,0);
+  EditField(h3-100,v,80,"Payables",Normal,CurPayables,true,0);
+  EditField(h3+40,v,80,"Total",Normal,CurTotal,true,0);
+
+  ButtonFrame(h-50,v=v+40,640,1,"Previous");
+  EditField(h,v,80,"Profit",Normal,PrevProfit,true,0);
+  EditField(h2,v,80,"Receivables",Normal,PrevReceivables,true,0);
+  EditField(h3-100,v,80,"Payables",Normal,PrevPayables,true,0);
+  EditField(h3+40,v,80,"Total",Normal,PrevTotal,true,0);
+
+  vm = v + 50;
+  MatrixBegin(10,v+=50,-55,-1,-,99);
+  Flip(1);
+  MatCol(1,20,"Period",0,Period,false,0);
+  MatCol(1,80,"Late Rating",0,LateRating,true,0);
+  MatCol(1,180,"Bankruptcy Rating",0,BankruptcyRating,true,0);
+  MatCol(1,280,"Turnover",0,Turnover,true,0);
+  MatCol(1,380,"Gross Profit",0,GrossProfit,true,0);
+  Flip(2);
+  MatCol(1,80,"Year",0,Year,false,0);
+  MatCol(1,180,"Turnover",0,Turnover,true,0);
+  MatCol(1,280,"Employees",0,EmployeeCnt,true,0);
+  MatCol(1,380,"Av. Salary",0,AvSalary,true,0);
+  Flip(3);
+  MatCol(1,80,"Months",0,Month,false,0);    
+  MatCol(1,180,"Comp. owned Cars",0,OwnedCompanyCars,true,0);
+  MatCol(1,280,"Value",0,OwnedCarsValue,true,0);
+  MatCol(1,380,"Comp. used Cars",0,UsedCompanyCars,true,0);
+  MatCol(1,480,"Value",0,UsedCarsValue,true,0);
+  Flip(4);
+  MatCol(1,80,"Industry",0,Industry,false,0);
+  MatCol(1,200,"Check. Month",0,MonthChecks,false,0);
+  MatCol(1,300,"Check. Quarter",0,QuarterChecks,false,0);
+  MatCol(1,400,"Check. Half Year",0,HalfYearChecks,false,0);
+  Flip(5);
+  MatCol(1,80,"Months",0,Month,false,0);
+  MatCol(1,150,"Receivables",0,Receivables,true,0);
+  MatCol(1,220,"Payables",0,Payables,true,0);
+  MatCol(1,290,"Total",0,DiffRecPay,true,0);
+  Flip(6);
+  MatCol(1,80,"Months",0,Month,false,0);    
+  MatCol(1,150,"Estates",0,EstateCnt,true,0);
+  MatCol(1,220,"Value",0,EstateValue,true,0);
+  MatCol(1,290,"Employees",0,EmployeeCnt,true,0);  
+  MatCol(1,380,"Av. Salary",0,AvSalary,true,0);
+  Flip(7);
+  MatCol(1,80,"Months",0,Month,false,0);    
+  MatCol(1,150,"Claim Date",0,ClaimDate,false,0);
+  MatCol(1,220,"Payment Date",0,PaymentDate,false,0);
+  MatCol(1,290,"Creditor",0,CreditorName,false,0);  
+  MatCol(1,380,"Amount",0,CreditAmount,true,0);
+  EndMatrix;
+
+    ArrayField(ClaimDate,M4Date,0,0);
+  ArrayField(PaymentDate,M4Date,0,0);
+  ArrayField(CreditorName,M4Str,250,0);
+  ArrayField(CreditAmount,M4Val,0,0);
+
+
+  VTab(-40,v=vm,-6,v+=vs,ToolFlip,1,"A");
+  VTab(-40,v,-6,v+=vs,ToolFlip,2,"B");
+  VTab(-40,v,-6,v+=vs,ToolFlip,3,"C");
+  VTab(-40,v,-6,v+=vs,ToolFlip,4,"D");
+  VTab(-40,v,-6,v+=vs,ToolFlip,5,"E");
+  VTab(-40,v,-6,v+=vs,ToolFlip,6,"F");
+  VTab(-40,v,-6,v+=vs,ToolFlip,7,"G");
+
+  Tile(tilenr,600,true,tilenr,BuyBankruptcyRating); tilenr = tilenr + 1;
+  EditField(h,v=6,100,"Buyer's Bankrup. Rating",Normal,BuyBankruptcyRating,true,0);
+  EditField(h2=365,v,100,"Buyer Established ",Normal,BuyerEstablished,false,PasteCurDate);
+  EditField(h,v+=vs,100,"Buyer's Turnover",Normal,BuyerTurnover,true,0);
+ 
+  ButtonFrame(h,v=v+40,200,3,"Factoring Type");
+  RadioButton(h,v,0,0,"Open",FactoringType);
+  RadioButton(h,v+=16,1,0,"Closed to our Account",FactoringType);  
+  RadioButton(h,v+=16,2,0,"Closed to Customer Account",FactoringType);  
+
+  Tile(tilenr,600,true,tilenr,Math2); tilenr = tilenr + 1;
+  StaticText(50,v=30,"Comments",true);
+  TextField(60,v-5,-20,370,Math2,0);
+
+  SpecialMenu("Fill Data from rekvizitai.lt",' ',1,"");
+  SpecialMenu("Fill Data from SoDra",' ',2,"");
+  SpecialMenu("Get Company Credit Data",' ',3,"");
+  SpecialMenu("Get Surety Provider Data",' ',4,"");
+  SpecialMenu("Evaluation Report",' ',5,"DoEvalReportDsm");
+  SpecialMenu("Customer Status",'e',6,"CUStatusB2BLoanAppDsm");
+  SpecialMenu("Creditinfo.lt",'',6,"GetCreditinfoStatDsm");
+  SpecialMenu("Invite additional Surety Provider",'',6,"InviteSuretyDsm");
+  
+  SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0); 
+  SpecialMenu("E-mail",' ',1,""); 
+  SpecialMenu("Credit Agreement",' ',1,"B2BLoanAppCreateCredManDsm"); 
+  if (HasB2BCreateOffer) then begin  
+    SpecialMenu("Offer Email",' ',1,"B2BLoanApplicationMakeEmailOffer"); 
+  end;
+
+  EndWindow;
+end;
+
+window BankAccountSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v;
+
+  WindowBegin("Paste Bank Account",BankAccountSClass,CGother,RcType);
+  SetWRect(64,80,500,298);
+  DataList(0,0,-1,-1,"DLPasteBankAccount");
+  DataListColumn(1,6,120,AdjLeft,"DLBankCode","Bank Code",M4Str);
+  DataListColumn(1,256,-32,AdjLeft,"DLBankAccount","Bank Account",M4Str);  
+  EndWindow;
+end;
+
+window CreditAgreementsRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v;
+  WindowBegin("Specify Credit Agreements report",CreditAgreementsRClass,CGRcW,RcType);
+  SetWRect(20,80,440,150);
+  PeriodField(h=140,v=6,"Period");
+  EditFieldTL(h,v+=20,150,"Client",M4UStr,Normal,40,f1,false,CUSClass);
+  EditFieldTL(h,v+=20,150,"Type",M4UStr,Normal,40,f2,false,CredManTypeSClass);
+  EditFieldTL(h,v+=20,150,"Class",M4Code,Normal,40,f3,false,OrderClassSClass);
+  EditFieldTL(h,v+=20,150,"Balance Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=20,150,"Classifications",M4UStr,Normal,255,f4,false,CredManClassSClass);
+  EditFieldTL(h,v+=20,150,"Manager",M4UStr,Normal,255,f5,false,UserSClass);
+  CheckBox(h,v+=30,0,"Include unapproved",flags[3]);
+  CheckBox(h,v+=30,0,"Not OK'ed",flags[4]);
+  CheckBox(h,v+=30,0,"Include Completed",flags[5]);
+  CheckBox(h,v+=30,0,"Show Email address",flags[6]);
+  
+  EndWindow;
+end;
+
+window LoanApplicationListRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v;
+  WindowBegin("Specify Application Overview Report",LoanApplicationListRClass,CGRcW,RcType);
+  SetWRect(20,80,440,150);
+  PeriodField(h=140,v=6,"Period");
+  EditFieldTL(h,v+=20,150,"Customer",M4Code,Normal,40,f1,false,CUSClass);
+  EditFieldTL(h,v+=20,150,"Agreement Type",M4Code,Normal,40,f2,false,CredManTypeSClass);
+  EditFieldTL(h,v+=20,150,"Manager",M4Code,Normal,255,f3,false,UserSClass);
+  EditFieldTL(h,v+=20,150,"Order Class",M4Code,Normal,40,f4,false,OrderClassSClass);
+  EditFieldTL(h,v+=20,150,"Source",M4Str,Normal,255,f5,false,0);  
+  EndWindow;
+end;
+
+window MailingListRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v;
+  WindowBegin("Specify Mailing List Report",MailingListRClass,CGRcW,RcType);
+  SetWRect(20,80,440,150);
+  PeriodField(h=140,v=6,"Period");
+  EditFieldTL(h,v+=20,150,"Mailing List",M4Code,Normal,40,f1,false,PersColSClass);
+  EndWindow;
+end;
+
+window CredManFactLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Factoring Limits",CredManFactLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManFactDClass);
+  UseView(CredManFactVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Credit Agreement",CredManNr,false,CredManNr);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CredManFactDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+
+  WindowBegin("Factoring Limits",CredManFactDClass,CGview,-);
+  SetWRect(20,80,760,339);
+  DynamicWindow;
+  UseView(CredManFactVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  MatrixBegin(0,16,-16,-50,-,30);
+  MatCol(1,24,"Customer",0,CustCode,false,CUSClass);
+  MatCol(1,120,"Name",0,CustName,false,0);
+  MatCol(1,-360,"Type",0,Type,false,SetSClass);
+  MatCol(1,-300,"Used",0,Used,true,0);
+  MatCol(1,-240,"Open",0,OpenTotal,true,0);
+  MatCol(1,-160,"Eval. Limit",0,EvalLimit,true,0);
+  MatCol(1,-80,"Max Limit",0,MaxLimit,true,0);
+  InsertRowTest;
+  DeleteRowTest;
+  EndMatrix;
+  SoftEditField(-280,-30,80,"Limit Total",ViewOnly,"credmanlimit",true,0,M4Val,0);
+  EditField(-120,-30,80,"Total",ViewOnly,Total,true,0);
+  SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0);
+  SpecialMenu("Contact",'',1,"CredManFactCreateContactDsm");
+
+  EndWindow;
+end;
+
+window CredManPmtGrntLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Sellers",CredManPmtGrntLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManPmtGrntDClass);
+  UseView(CredManPmtGrntVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Credit Agreement",CredManNr,false,CredManNr);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CredManPmtGrntDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+
+  WindowBegin("Sellers",CredManPmtGrntDClass,CGview,-);
+  SetWRect(20,80,760,339);
+  DynamicWindow;
+  UseView(CredManPmtGrntVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  MatrixBegin(0,16,-16,-50,-,30);
+  MatCol(1,24,"Supplier",0,CustCode,false,VESClass);
+  MatCol(1,120,"Name",0,CustName,false,0);
+  MatCol(1,-420,"Used",0,Used,true,0);
+  MatCol(1,-360,"Open",0,OpenTotal,true,0);
+  MatCol(1,-300,"Eval. Limit",0,EvalLimit,true,0);
+  MatCol(1,-220,"Max Limit",0,MaxLimit,true,0);
+  MatCol(1,-140,"Delay Days",0,DelayDays,true,0);
+  MatCol(1,-70,"Delay Days",0,DelayMonths,true,0);
+  InsertRowTest;
+  DeleteRowTest;
+  RowMenuBegin("");
+  RowMenuItem(0,"Sign Certificate",'','',0,"CredManPmtGrntOpenCertificateDsm");
+  EndRowMenu;
+  EndMatrix;
+  SoftEditField(-280,-30,80,"Limit Total",ViewOnly,"credmanlimit",true,0,M4Val,0);
+  EditField(-120,-30,80,"Total",ViewOnly,Total,true,0);
+  //SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0);
+  //SpecialMenu("Contact",'',1,"CredManFactCreateContactDsm");
+
+  EndWindow;
+end;
+
+window CredManFactInvoiceLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Factoring Invoices",CredManFactInvoiceLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManFactInvoiceDClass);
+  UseView(CredManFactInvoiceVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"SerNr",SerNr,false,SerNr);
+  RlCol(100,100,"Agreement",CredManNr,false);
+  RlCol(196,196,"Customer",CustCode,false);
+  RlCol(196,196,"Invoice Nr.",InvoiceNr,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CustCredManFactInvoiceWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Factoring Invoices",CustCredManFactInvoiceWClass,CGOther,RcType);
+  SetWRect(20,80,760,298);
+  UseView(RcVc);
+  EditField(h=100,v=55,50,"Dummy",Normal,f1,false,0);
+  if (GuiType==kGuiCocoa) then begin
+    RecordList2(4,17,-21,-1,"CredManFactInvoiceVc");
+  end else begin
+    RecordList2(4,17,-21,-35,"CredManFactInvoiceVc");    
+  end;
+  RlColKey(4,4,"Ser Nr.",SerNr,false,SerNr);
+  RlCol(170,170,"Customer",CustName,false);
+  RlCol(290,290,"Invoice Nr.",InvoiceNr,false);
+  RlCol(-360,-360,"Due Date",DueDate,false);
+  RlCol(-270,-270,"Total",TotalSum,false);
+  RlCol(-210,-210,"Received",ReceivedAmount,false);
+  RlColTL(-150,-150,"SL",M4Mark,InitSLInvFlag,false);
+  RlColTL(-120,-120,"Paid",M4Mark,CustPaidFlag,false);
+  RlColTL(-90,-90,"PL",M4Mark,InitPLInvFlag,false);
+  RlColTL(-60,-60,"Paid",M4Mark,CustPaid2Flag,false);
+  RlColTL(-30,-30,"Fee",M4Mark,FeeGenFlag,false);
+  //SpecialMenu("Regress",'',1,"CUStatusB2BLoanAppLsm");
+  SpecialMenu("Add Invoice",'',1,"CustCredManFactInvoiceAddSm");
+  SpecialMenu("Generate Fee Invoice",'',1,"CustCredManFactInvoiceCreateFeeInvSm");
+  SpecialMenu("Open Sales Invoice",'',1,"CustCredManFactInvoiceOpenSLSm");
+  SpecialMenu("Open Purchase Invoice",'',1,"CustCredManFactInvoiceOpenPLSm");
+  SpecialMenu("Recreate Invoices",'',1,"CustCredManFactInvoiceRecreateSm");
+  SpecialMenu("Delete Invoice",'',1,"CustCredManFactInvoiceDeleteSm");
+  SpecialMenu("Upload Invoice",'',1,"FactInvoiceUploadFileSm");
+  
+  EndWindow;
+end;
+
+window CredManFactInvoiceDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Factoring Invoice",CredManFactInvoiceDClass,CGview,-);
+  SetWRect(20,80,600,339);
+  UseView(CredManFactInvoiceVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,50,"SerNr",Normal,SerNr,false,0);
+  EditField(h,v+=vs,50,"Cred. Agr.",Normal,CredManNr,false,CredManSClass);
+  EditField(h,v+=vs,50,"Customer",Normal,CustCode,false,CUSClass);
+  EditField(h,v+=vs,50,"InvoiceNr",Normal,InvoiceNr,false,0);
+  EditField(h,v+=vs,50,"Inv. Date",Normal,InvDate,false,0);
+  EditField(h,v+=vs,50,"Due Date",Normal,DueDate,false,0);
+  EditField(h,v+=vs,50,"Total Sum",Normal,TotalSum,false,0);
+  EditField(h,v+=vs,50,"Received Amount",Normal,ReceivedAmount,false,0);
+  CheckBox(h,v+=20,0,"Buyer Invoice",InitSLInvFlag);
+  CheckBox(h,v+=20,0,"Customer Invoice",InitPLInvFlag);
+  CheckBox(h,v+=20,0,"Buyer has Paid",CustPaidFlag);
+  CheckBox(h,v+=20,0,"Fee Invoice",FeeGenFlag);
+  EndWindow;
+end;
+
+window NewCredManFactInvoiceWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm,h2;
+  WindowBegin("Factoring Invoice",NewCredManFactInvoiceWClass,CGOther,RcType);
+  SetWRect(20,80,600,259);
+  UseView(RcVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v+=vs,100,"Customer",Normal,f1,false,FactoringBuyersSClass);
+  EditField(h2=300,v,-40,"Name",Normal,searchstr,false,0);
+  EditField(h,v+=vs,100,"Invoice Nr.",Normal,ObjStr,false,0);
+  EditField(h,v+=vs,90,"Inv. Date",Normal,d1,false,PasteCurDate);
+  EditField(h,v+=vs,90,"Due Date",Normal,d2,false,PasteCurDate);
+  EditField(h,v+=vs,90,"Total Sum",Normal,vals0,false,0);
+  HalPushButton(h,v+=vs,h+150,v+=20,"NewCredManFactInvoiceWClassProceed","Add and Create Invoices");
+  EndWindow;
+end;
+
+/*pmt grnt report*/
+window CredManGrntReportLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Payment Guarantee Reports",CredManGrntReportLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManGrntReportDClass);
+  UseView(CredManGrntReportVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"SerNr",SerNr,false,SerNr);
+  RlCol(100,100,"Agreement",CredManNr,false);
+  RlCol(196,196,"Supplier",CustCode,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CredManGrntReportWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Payment Guarantee Reports",CredManGrntReportWClass,CGOther,RcType);
+  SetWRect(20,80,760,298);
+  UseView(RcVc);
+  EditField(h=100,v=55,50,"Dummy",Normal,f1,false,0);
+  if (GuiType==kGuiCocoa) then begin
+    RecordList2(4,17,-21,-1,"CredManGrntReportVc");
+  end else begin
+    RecordList2(4,17,-21,-35,"CredManGrntReportVc");    
+  end;
+  RlColKey(4,4,"Ser Nr.",SerNr,false,SerNr);
+  RlCol(100,100,"Supplier",CustName,false);
+  RlCol(-450,-450,"Report Date",ReportDate,false);
+  RlCol(-360,-360,"Due Date",DueDate,false);
+  RlCol(-270,-270,"Total",TotalSum,false);
+  RlCol(-210,-210,"Received",ReceivedAmount,false);
+  RlColTL(-150,-150,"SL",M4Mark,InitSLInvFlag,false);
+  RlColTL(-120,-120,"Paid",M4Mark,CustPaidFlag,false);
+  RlColTL(-90,-90,"PL",M4Mark,InitPLInvFlag,false);
+  RlColTL(-60,-60,"Paid",M4Mark,CustPaid2Flag,false);
+  RlColTL(-30,-30,"Fee",M4Mark,FeeGenFlag,false);
+  SpecialMenu("Add Amount",'',1,"CredManGrntReportAddSm");
+  SpecialMenu("Open Sales Invoice",'',1,"CredManGrntReportOpenSLSm");
+  SpecialMenu("Open Purchase Invoice",'',1,"CredManGrntReportOpenPLSm");
+  SpecialMenu("Delete Total Amount",'',1,"CredManGrntReportDeleteSm");
+  EndWindow;
+end;
+
+window CredManGrntReportDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Payment Guarantee Report",CredManGrntReportDClass,CGview,-);
+  SetWRect(20,80,600,339);
+  UseView(CredManGrntReportVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,50,"SerNr",Normal,SerNr,false,0);
+  EditField(h,v+=vs,50,"Cred. Agr.",Normal,CredManNr,false,CredManSClass);
+  EditField(h,v+=vs,50,"Customer",Normal,CustCode,false,CUSClass);
+  EditField(h,v+=vs,50,"Inv. Date",Normal,ReportDate,false,0);
+  EditField(h,v+=vs,50,"Due Date",Normal,DueDate,false,0);
+  EditField(h,v+=vs,50,"Total Sum",Normal,TotalSum,false,0);
+  EditField(h,v+=vs,50,"Received Amount",Normal,ReceivedAmount,false,0);
+  CheckBox(h,v+=20,0,"Buyer Invoice",InitSLInvFlag);
+  CheckBox(h,v+=20,0,"Seller Invoice",InitPLInvFlag);
+  CheckBox(h,v+=20,0,"Buyer has Paid",CustPaidFlag);
+  CheckBox(h,v+=20,0,"Fee Invoice",FeeGenFlag);
+  EndWindow;
+end;
+
+window NewCredManGrntReportWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm,h2;
+  WindowBegin("Amount Report",NewCredManGrntReportWClass,CGOther,RcType);
+  SetWRect(20,80,600,259);
+  UseView(RcVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v+=vs,100,"Supplier",Normal,f1,false,PmtGrntSellerSClass);
+  EditField(h2=300,v,-40,"Name",Normal,f3,false,0);
+  EditField(h,v+=vs,90,"Report Date",Normal,d1,false,PasteCurDate);
+  EditField(h,v+=vs,90,"Due Date",Normal,d2,false,PasteCurDate);
+  EditField(h,v+=vs,90,"Total Sum",Normal,vals0,false,0);
+  HalPushButton(h,v+=vs,h+150,v+=20,"NewCredManGrntReportWClassProceed","Add");
+  EndWindow;
+end;
+
+window FactoringBuyersSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v;
+  WindowBegin("Paste Factoring Customer",FactoringBuyersSClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(40,80,350,298);
+  Sizeable(-1,-1,-1,0);
+  v=6;
+  DataList(0,0,-1,-1,"customers");
+  DataListColumn(1,6,120,AdjLeft,"custcode","Code",M4Str);
+  DataListColumn(1,130,-1,AdjLeft,"custname","Name",M4Str);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window PmtGrntSellerSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v;
+  WindowBegin("Paste Seller",PmtGrntSellerSClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(40,80,350,298);
+  Sizeable(-1,-1,-1,0);
+  v=6;
+  DataList(0,0,-1,-1,"customers");
+  DataListColumn(1,6,120,AdjLeft,"custcode","Code",M4Str);
+  DataListColumn(1,130,-1,AdjLeft,"custname","Name",M4Str);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CredManCloseTaskTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Automatically Closed Tasks",CredManCloseTaskTClass,CGSbl,-);
+  SetBlid(CredManCloseTaskBlock);
+  SetWRect(20,80,500,298);
+  vs=20; h=250; vs2=16; hm=-100;
+  EditField(h,v=6,100,"Close Tasks for Applications with Classes",Normal,LoanAppOrderClass,false,OrderClassSClass);
+  EditField(h,v+=vs,100,"Close Tasks for Agreements with Classes",Normal,CredManOrderClass,false,OrderClassSClass);
+  EndWindow;
+end;
+
+window AgreementDocLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Documents",AgreementDocLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(AgreementDocDClass);
+  UseView(AgreementDocVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Number",SerNr,false,SerNr);
+  RlColKey(100,100,"Agreement",RecordNr,false,RecordNr);
+  RlCol(196,196,"Date",TransDate,false);
+  RlColKey(322,322,"Type",Type,false,Type);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window AgreementDocDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h2,v,vs,v2,vs2,hm;
+  WindowBegin("Agreement Document",AgreementDocDClass,CGview,-);
+  SetWRect(20,80,600,459);
+  UseView(AgreementDocVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,90,"Number",Normal,SerNr,false,0);
+  EditField(h,v+=vs,90,"Agreement",Normal,RecordNr,false,0);
+  EditField(h,v+=vs,90,"Date",ViewOnly,TransDate,false,0);
+  EditField(h2=300,v,90,"Time",ViewOnly,TransTime,false,0);
+  EditField(h,v+=vs,150,"Type",Normal,Type,false,SetSClass);
+/*
+  CheckBox(h,v+=vs,0,"Signed By Customer",SignedByCustomer,);
+  EditField(h+180,v,90,"Date",ViewOnly,SignedByCustomerDate,false,0);
+  EditField(h+280,v,90,"",ViewOnly,SignedByCustomerTime,false,0);
+*/
+  CheckBox(h,v+=vs,0,"Signed By Us",SignedByUs);
+  EditField(h+180,v,90,"Date",ViewOnly,SignedByUsDate,false,0);
+  EditField(h+280,v,90,"",ViewOnly,SignedByUsTime,false,0);
+  CheckBox(h,v+=vs,0,"Reminder Sent",SentReminder);
+
+  HalPushButton(-300,7,-230,27,"AgreementDocDClassSign","Sign");
+  HalPushButton(-220,7,-150,27,"AgreementDocDClassRegen","Regenerate");
+  HalPushButton(-140,7,-10,27,"AgreementDocDClassRegen2","Regenerate and resign");
+
+  MatrixBegin(10,v+=40,-30,220,-,10);
+  MatCol(1,25,"Code",0,CustCode,false,B2BLoanApp_CUSClass);
+  MatCol(1,120,"Name",0,CustName,false,0);
+  MatCol(1,-270,"Status",0,Status,false,0);
+  MatCol(1,-180,"Date",0,SignatureDate,false,0);
+  MatCol(1,-90,"Time",0,SignatureTime,false,0);
+  EndMatrix;
+
+  EndWindow;
+end;
+
+window DocSigningWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm,h2;
+  WindowBegin("Sign Document",DocSigningWClass,CGOther,RcType);
+  SetWRect(20,80,800,700);
+  AutoSizeWindow(false);
+  UseView(RcVc);
+  WebPage(0,0,-1,-1,"","$SIGNAREA");
+  EndWindow;
+end;
+
+/*
+window CreditalInvoiceTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm,h2,tilenr;
+  WindowBegin("Invoice Settings",CreditalInvoiceTClass,CGSbl,-);
+  SetBlid(CreditalInvoiceBlock);
+  h = 200;
+  SetWRect(20,80,550,298);
+  tilenr = 1;
+  Tile(0,20,false,"",FBuyerPayDeal);
+  TileButton(tilenr,"Factoring"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Payment Guarantee"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Payments"); tilenr = tilenr + 1;
+
+  Tile(1,95,false,"1",FBuyerPayDeal);
+  vs=20; h=160; vs2=16; hm=-100;
+  ButtonFrame(h-100,v=30,250,5,"Buyer's Invoice");
+  EditField(h,v,100,"Payment Terms",Normal,FBuyerPayDeal,false,PDSClass);
+  EditField(h,v+=vs,100,"Object",Normal,FBuyerObject,false,ObjSClass);
+  EditField(h,v+=vs,100,"Item",Normal,FBuyerItem,false,INSClass);
+  EditField(h,v+=vs,100,"Payment Mode",Normal,FVIPaymentMode,false,PMSClass);
+
+  ButtonFrame(h-100,v+=50,250,7,"Seller's Invoice");
+  EditField(h,v,100,"Payment Terms",Normal,FSellerPayDeal,false,PDSClass);
+  EditField(h,v+=vs,100,"Account",Normal,FSellerAccount,false,AccSClass);
+  EditField(h,v+=vs,100,"Fee Account",Normal,FSellerFeeAccount,false,AccSClass);
+  EditField(h,v+=vs,100,"VAT Code",Normal,FSellerVATCode,false,VATCodeSClass);
+  EditField(h,v+=vs,100,"Object",Normal,FSellerObject,false,ObjSClass);
+  EditField(h,v+=vs,100,"Payment Mode",Normal,FIVPaymentMode,false,PMSClass);
+  
+  Tile(2,95,false,"2",PGBuyerSecurityItem);
+ 
+  ButtonFrame(h-100,v=30,250,5,"Buyer's Invoice");
+  EditField(h,v,100,"Security Item",Normal,PGBuyerSecurityItem,false,INSClass);
+  EditField(h,v+=vs,100,"Security Prc",Normal,PGBuyerSecurityPrc,false,0);
+  EditField(h,v+=vs,100,"PayDeal",Normal,PGBuyerPayDeal,false,PDSClass);
+  EditField(h,v+=vs,100,"Item",Normal,PGBuyerItem,false,INSClass);
+
+  ButtonFrame(h-100,v+=50,250,2,"Seller's Invoice");
+  EditField(h,v,100,"Account",Normal,PGSellerAccount,false,AccSClass);
+  EditField(h,v+=vs,100,"VAT Code",Normal,PGSellerVATCode,false,VATCodeSClass);
+
+  Tile(3,95,false,"3",PaymentPayDeal);
+
+  EditField(h,v=6,100,"Payment Terms",Normal,PaymentPayDeal,false,PDSClass);
+  EditField(h,v+=vs,100,"Account",Normal,PaymentAccount,false,AccSClass);
+  EditField(h,v+=vs,100,"VAT Code",Normal,PaymentVATCode,false,VATCodeSClass);
+  EditField(h,v+=vs,100,"Object",Normal,PaymentObject,false,ObjSClass);
+  EditField(h,v+=vs,100,"Payment Mode",Normal,PaymentMode,false,PMSClass);
+
+  EndWindow;
+end;
+*/
+
+window CredManAutoTaskTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Automatic Tasks",CredManAutoTaskTClass,CGHbl,HBlRecType);
+  SetBlid(CredManAutoTaskBlock);
+  SetWRect(20,80,900,351);
+  Sizeable(-1,-1,0,0);
+  if (GuiType==kGuiCocoa) then begin
+    MatrixBegin(h,v,-31,-20,-,199);
+  end else begin
+    MatrixBegin(h,v+16,-18,-20,-,199);    
+  end;
+  MatCol(1,24,"Type",0,Type,false,SetSClass);
+  MatCol(1,130,"Class",0,OrderClass,false,OrderClassSClass);
+  MatCol(1,200,"Del. Hours",0,DelayHours,false,0);
+  MatCol(1,260,"Del. Days",0,DelayDays,false,0);
+  MatCol(1,320,"Person Type",0,PersonType,false,SetSClass);
+  MatCol(1,440,"Manager",0,Manager,false,UserSClass);
+  MatCol(1,510,"Act. Type",0,ActType,false,ActTypeSClass);
+  MatCol(1,580,"Act. Text",0,ActText,false,0);
+  EndMatrix;
+  EndWindow;
+end;
+
+window InvitationRequestLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Invitation Requests",InvitationRequestLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(InvitationRequestDClass);
+  UseView(InvitationRequestVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"UUID",UUID,false,MainKey);
+  RlCol(74,74,"Date",TransDate,false);
+  RlCol(204,204,"Time",TransTime,false);
+  RlColKey(300,300,"Contact",ContactCode,false,ContactCode);
+  RlCol(370,370,"Status",Status,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window InvitationRequestDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Invitation Request",InvitationRequestDClass,CGview,-);
+  SetWRect(20,80,600,339);
+  Sizeable(-1,-1,0,0);
+  UseView(InvitationRequestVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,50,"TransDate",Normal,TransDate,false,);
+  EditField(h,v+=vs,50,"ContactCode",Normal,ContactCode,false,CUSClass);
+  EditField(h,v+=vs,50,"Status",Normal,Status,false,0);
+  EditField(h,v+=vs,50,"FillDate",Normal,FillDate,false,0);
+  EditField(h,v+=vs,50,"FillTime",Normal,FillTime,false,0);
+  EndWindow;
+end;
+
+window InviteSuretyWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm,h2;
+  WindowBegin("Invite Additional Surety Provider",InviteSuretyWClass,CGOther,RcType);
+  SetWRect(20,80,400,189);
+  UseView(RcVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v+=vs,150,"Email Address",Normal,f1,false,0);
+  HalPushButton(h,v+=vs,h+150,v+=20,"InviteSuretyWClassSend","Send");
+  EndWindow;
+end;
+
+window DocumentReminderLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Document Signing Reminders",DocumentReminderLClass,CGmlist,-);
+  SetWRect(20,80,560,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(DocumentReminderDClass);
+  UseView(DocumentReminderVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Type",Type,false,Type);
+  RlCol(134,134,"Text",Text,false);
+  RlCol(260,260,"Delay",Delay,false);
+  RlColTL (-70,-70,"Active",M4Mark,ActiveFlag,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window DocumentReminderDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Document Signing Reminder",DocumentReminderDClass,CGview,-);
+  SetWRect(20,80,500,339);
+  UseView(DocumentReminderVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,150,"Type",Normal,Type,false,SetSClass);
+  CheckBox(h+200,v,0,"Active",ActiveFlag);
+  EditField(h,v+=vs,150,"Delay",Normal,Delay,false,0);
+  EditField(h,v+=vs,150,"Text",Normal,Text,false,LTxtSClass);
+  EndWindow;
+end;
+
+window CredManExtTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Agreement/Application Extensions",CredManExtTClass,CGHbl,HBlRecType);
+  SetBlid(CredManExtBlock);
+  SetWRect(20,80,500,351);
+  Sizeable(-1,-1,0,0);
+  if (GuiType==kGuiCocoa) then begin
+    MatrixBegin(h,v,-31,-20,-,199);
+  end else begin
+    MatrixBegin(h,v+16,-18,-20,-,199);    
+  end;
+  MatCol(1,24,"Order Class",0,OrderClass,false,OrderClassSClass);
+  MatCol(1,130,"Action",0,ShowFlag,false,SetSClass);
+  EndMatrix;
+  EndWindow;
+end;
+
+window CMOrderClassTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm,h2,tilenr;
+  WindowBegin("Automatic Order Classes",CMOrderClassTClass,CGSbl,-);
+  SetBlid(CMOrderClassBlock);
+  h = 200;
+  SetWRect(20,80,550,298);
+  tilenr = 1;
+  Tile(0,20,false,"",DefOrderClass);
+  TileButton(tilenr,"Applications"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Agreements"); tilenr = tilenr + 1;  
+
+  Tile(1,95,false,"1",DefOrderClass);
+  vs=20; h=160; vs2=16; hm=-100;
+  EditField(h,v=6,100,"Default Class",Normal,DefOrderClass,false,OrderClassSClass);
+  EditField(h,v+=vs,100,"Unfinished Appl. Class",Normal,WebAppClass,false,OrderClassSClass);
+  EditField(h,v+=vs,100,"Signed Appl. Class",Normal,VerWebAppClass,false,OrderClassSClass);
+  EditField(h,v+=vs,100,"Not signed Appl. Class",Normal,OtherWebAppClass,false,OrderClassSClass);
+  EditField(h,v+=vs,100,"Appl. Class to check Contacts",Normal,CheckWebAppClass,false,OrderClassSClass);
+  EditField(h,v+=vs,100,"Accepted Appl. Class",Normal,AcceptedAppOrderClass,false,OrderClassSClass);
+
+  
+  Tile(2,95,false,"2",CMDefOrderClass);
+ 
+  EditField(h,v=6,100,"Default Class",Normal,CMDefOrderClass,false,OrderClassSClass);
+  EditField(h,v+=vs,100,"Customer Signed Class",Normal,CMCustSignedOrderClass,false,OrderClassSClass);
+  EditField(h,v+=vs,100,"Signed by Us Class",Normal,CMUsSignedOrderClass,false,OrderClassSClass);
+  EditField(h,v+=vs,100,"Termination Class",Normal,TerminatedOrderClass,false,OrderClassSClass);
+  EditField(h,v+=vs,100,"Refinance Class",Normal,RefinClass,false,OrderClassSClass);
+  EditField(h,v+=vs,100,"Active Class",Normal,ActiveCredOrderClass,false,OrderClassSClass);
+  EditField(h,v+=vs,100,"Finished Class",Normal,FinishCredOrderClass,false,OrderClassSClass);
+
+  EndWindow;
+end;
+
+
+window EBSIncomeAnalysisRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm,vs;
+  WindowBegin("Specify Income Analysis",EBSIncomeAnalysisRClass,CGRcW,RcType);
+  SetWRect(20,80,420,310);
+  vs = 20;
+  EditFieldTL(h=150,v=10,82,"To Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,150,"Customer",   M4UStr,Normal,41,f1,false,CUSClass);
+  EditFieldTL(h,v+=vs,50,"Customer Category",M4UStr,Normal,5,f7,false,CCatSClass);
+  EditFieldTL(h,v+=vs,150,"Customer Classification",M4UStr,Normal,30,Stext,false,CClassSClass);
+  EditFieldTL(h,v+=vs,150,"Item",M4Str,Normal,60,f5,false,INSClass);   
+  EditFieldTL(h,v+=vs,82, "Item Group",   M4UStr,Normal,10,AccStr,false,ITSClass);
+  EditFieldTL(h,v+=vs,150,"Item Classification",M4UStr,Normal,100,f6,false,DISClass);
+  EditFieldTL(h,v+=vs,82,"Inv. Date",M4Date,Normal,0,RegDate,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,82,"Agreement Type",M4Str,Normal,60,f8,false,CredManTypeSClass);
+  EditFieldTL(h,v+=vs,82,"Agreement Classification",M4Str,Normal,60,f9,false,CredManClassSClass);
+  ButtonFrame(h=50,vm=(v+=41),123,2,"View");
+  RadioButton(h,v,0,0,"Overview",ArtMode);
+  RadioButton(h,v+=16,1,0,"Detailed",ArtMode);
+  ButtonFrame(h=200,v=vm,123,3,"Months");
+  RadioButton(h,v,3,0,"3",flags[0]);
+  RadioButton(h,v+=16,6,0,"6",flags[0]);
+  RadioButton(h,v+=16,12,0,"12",flags[0]);//Default value
+  EndWindow;
+end;
+
+window CMIncomeForecastRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm,vs;
+  WindowBegin("Specify Income Forecast",CMIncomeForecastRClass,CGRcW,RcType);
+  SetWRect(20,80,420,310);
+  vs = 20;
+  PeriodField(h=140,v=6,"Period");
+  EditFieldTL(h,v+=vs,150,"Customer",   M4UStr,Normal,41,f1,false,CUSClass);
+  EditFieldTL(h,v+=vs,82,"Agreement Type",M4Str,Normal,60,f2,false,CredManTypeSClass);
+  EditFieldTL(h,v+=vs,82,"Class",M4Str,Normal,60,f3,false,OrderClassSClass);
+  EditFieldTL(h,v+=vs,82,"Agreement Classification",M4Str,Normal,60,f4,false,CredManClassSClass);
+  EditFieldTL(h,v+=vs,82,"Manager",M4Str,Normal,60,f5,false,UserSClass);
+  EndWindow;
+end;
+
+
+
+window ReceiptEntryWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,h2,h3,h4,h5;
+
+  WindowBegin("Receipt Entry",ReceiptEntryWClass,CGother,-);
+  UseView(SMVc);
+  SetWRect(20,80,580,621);
+  h = 120; v = 27; h2 = 300; h3 = 480;
+  vs = 20;
+	EditField(h,v=6,82,"Date",Normal,RegDate,false,PasteCurDate);
+	EditField(h,v+=vs,50,"Payment Mode",Normal,Sign,false,PMSClass);
+
+  MatrixBegin(10,v+=40,-30,-60,-,100);
+  MatCol(1,34,"Customer",0,Objects,false,CUSClass);
+  MatCol(1,124,"Name",0,Comment,false,0);
+  MatCol(1,-180,"Amount",0,DebVal,false,0);
+  MatCol(1,-70,"Currency",0,CurncyCode,false,CurncyCodeSClass);
+  EndMatrix;
+
+  HalPushButton(h,-40,h+130,-20,"ReceiptEntryWClassProceed","Generate Receipts");
+
+  EndWindow;
+  return;
+end;
+
+window CredManClassLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Classifications",CredManClassLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManClassDClass);
+  UseView(CredManClassVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CredManClassSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Paste Agreement Classification",CredManClassSClass,CGslist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManClassDClass);
+  UseView(CredManClassVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CredManClassDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Agreement Classification",CredManClassDClass,CGview,-);
+  SetWRect(20,80,400,239);
+  UseView(CredManClassVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,100,"Code",Normal,Code,false,);
+  EditField(h,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  EndWindow;
+end;
+
+window AgreementTypeSetSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Paste Agreement Type",AgreementTypeSetSClass,CGother,HBlRecType);
+  SetWRect(240,80,600,348);
+  StringList(9,9,-19,-19);
+  EndWindow;
+end;
+
+
+window CredManSchedLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Schedules",CredManSchedLClass,CGmlist,-);
+  SetWRect(20,80,560,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManSchedDClass);
+  UseView(CredManSchedVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Agreement",CredManNr,false,CredManNr);
+  RlCol(106,106,"Customer",CustCode,false);
+  RlCol(356,356,"Date",TransDate,false);
+  RlCol(426,426,"Time",TransTime,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CredManSchedDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm,h2;
+  WindowBegin("Agreement Schedule",CredManSchedDClass,CGview,-);
+  SetWRect(20,80,830,639);
+  UseView(CredManSchedVc);
+  AutoSizeWindow(false);
+  vs=20; h=120; vs2=16; hm=-100; h2 = 350;
+  EditField(h,v=6,120,"Agreement",ViewOnly,CredManNr,false,0);
+  EditField(h,v+=vs,90,"Customer",ViewOnly,CustCode,false,CUSClass);
+  EditField(h2,v,-40,"Name",ViewOnly,CustName,false,0);
+  EditField(h,v+=vs,90,"Date",ViewOnly,TransDate,false,0);
+  EditField(h2,v,90,"Time",ViewOnly,TransTime,false,0);
+  SoftEditField(350,v+=vs,60,"Total",ViewOnly,"totrealprinc",false,0,M4Val,0);
+  MatrixBegin(10,v+=vs+20,-40,-40,-,999);
+  MatCol(1,24,"Type",0,Type,false,SetSClass);
+  MatCol(1,85,"Inv. Date",0,InvDate,false,0);
+  MatCol(1,150,"Period From",0,FromDate,false,0);
+  MatCol(1,215,"Period To",0,ToDate,false,0);
+  MatCol(1,320,"Principle",0,Principle,true,0);
+  MatCol(1,390,"Interest",0,Interest,true,0);
+  MatCol(1,460,"Fees",0,Fees,true,0);
+  MatCol(1,534,"Total",0,Total,true,0);
+  MatCol(1,-120,"Invoiced",0,Invoiced,false,SetSClass);
+  MatCol(1,-60,"Balance",0,Balance,true,0);
+  InsertRowTest;
+  DeleteRowTest;
+  EndMatrix;
+  SoftEditField(90,-30,150,"Period",ViewOnly,"period",false,0,M4Str,255);
+  SoftEditField(280,-30,60,"Diff.",ViewOnly,"diff",false,0,M4Str,255);
+  SoftEditField(350,-30,60,"",ViewOnly,"totprinc",false,0,M4Val,0);
+  SoftEditField(420,-30,60,"",ViewOnly,"totint",false,0,M4Val,0);
+  SoftEditField(495,-30,60,"",ViewOnly,"totfees",false,0,M4Val,0);
+  SoftEditField(570,-30,60,"",ViewOnly,"tot",false,0,M4Val,0);
+
+  SpecialMenu("Open Fees Matrix",' ',1,"OpenCredFeesMatrixSchedDsm");
+  SpecialMenu("Recalculate Interest",' ',1,"CredManSchedRecalcInterestDsm");
+
+  
+  EndWindow;
+end;
+
+window CMInvoicingTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,vs2,hm,h2,vm;
+  Integer tilenr;
+  vs = 20;
+  WindowBegin("Invoicing Settings",CMInvoicingTClass,CGSbl,SRType);
+  SetBlid(CMInvoicingBlock);
+  SetWRect(20,80,670,298);
+  Sizeable(-1,-1,0,0);
+  
+  tilenr = 1;
+  Tile(0,20,false,"",DetailedInvoice);
+  TileButton(tilenr,"General"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Overdue"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Factoring"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Payment Guarantee"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Payments"); tilenr = tilenr + 1;
+
+  Tile(1,700,false,"1",DetailedInvoice);
+  CheckBox(h=180,v=6,0,"Details on Invoice",DetailedInvoice);
+  CheckBox(h,v+=16,0,"Automatically connect Prepayments to Invoices",AddPrepayments);
+  CheckBox(h,v+=16,0,"Interest on due Principle",IntDuePrinciple);
+  CheckBox(h,v+=16,0,"Manual Contract Fee Invoice Number",ManualInvoiceNumber);
+  CheckBox(h,v+=16,0,"Principle below hidden Line",HiddenPrinciple);
+
+  CheckBox(h,v+=30,0,"Automatically issue Invoices",AutoInvoiceFlag);
+  EditField(h,v+=20,100,"Time",Normal,AutoInvoiceTime,false,PasteCurTime);
+  CheckBox(h,v+=20,0,"Automatically send issued Invoices",AutoInvoiceSend);
+  CheckBox(h,v+=16,0,"Automatically send Invoices created from Contracts",AutoMailsFromInvoices);
+
+  EditField(h,v+=vs,100,"Additional Comment",Normal,InvoiceCommentStr,false,0);
+  EditField(h,v+=vs,140,"Replace VAT Nr.",Normal,ReplaceVATNr,false,0);
+  EditField(h+200,v,140,"with",Normal,ReplaceVATNrWith,false,0);
+  EditField(h,v+=vs,100,"Prolong Item",Normal,ProlongItem,false,INSClass);  
+  EditField(h,v+=vs,100,"Period Delimiter",Normal,PeriodDelimiter,false,0);  
+  
+  ButtonFrame(h,v+=40,400,4,"Interest Invoicing");
+  RadioButton(h,v,0,0,"With Principle, same Invoice",InterestIVType);
+  RadioButton(h,v+=16,1,0,"With Principle, separate Invoice",InterestIVType);  
+  RadioButton(h,v+=16,2,0,"Separately for actual Period, on Day",InterestIVType);  
+  RadioButton(h,v+=16,3,0,"Separately for previous Calendar Month, on Day",InterestIVType);  
+  EditField(h+360,v,30,"Day of Month",Normal,InterestIVDay,false,0);
+
+  v = v + 40;
+  ButtonFrame(h,vm=v,200,5,"Invoice Recipients");
+  Checkbox(h,v,0,"Primary Contact Email",SendToMainContact);
+  Checkbox(h,v+=16,0,"Company Contact Email",SendToCompany);
+  Checkbox(h+20,v+=16,0,"Only if no Contact Person",SendToCompNoContact);
+  Checkbox(h,v+=16,0,"Additional Recipients",SendToAddRecip);
+  EditField(h+100,v+=20,100,"Job Title",Normal,SendToJobDescr,false,0);
+
+  ButtonFrame(h2=400,v=vm,230,2,"Invoice Date");
+  RadioButton(h2,v,0,0,"Payment Day",InvoiceDay);
+  RadioButton(h2,v+=16,1,0,"Payment Day - Days of Payment Term",InvoiceDay);  
+
+  Tile(2,500,false,"2",DetailedInvoice);
+  CheckBox(h,v=6,0,"Overdue Calculation below hidden Line",AddOverdueDetails);
+
+
+  EditField(h,v+=vs,100,"Overdue Item Class",Normal,OverdueItemClass,false,DISClass);
+  EditField(h,v+=30,100,"Overdue Months",Normal,OverdueMonths,false,0);
+
+  ButtonFrame(h,v+=40,400,3,"Overdue Invoicing");
+  RadioButton(h,v,0,0,"With Principle, same Invoice",OverdueIVType);
+  RadioButton(h,v+=16,1,0,"With Principle, separate Invoice",OverdueIVType);  
+  RadioButton(h,v+=16,2,0,"Separately for previous Calendar Month, on Day",OverdueIVType);  
+  EditField(h+360,v,30,"Day of Month",Normal,OverdueIVDay,false,0);
+
+  ButtonFrame(h,v+=40,150,2,"Overdue Rate");
+  RadioButton(h,v,0,0,"Daily",OverdueRateType);
+  RadioButton(h,v+=16,1,0,"Monthly",OverdueRateType);  
+
+  
+  Tile(3,95,false,"3",FBuyerPayDeal);
+  vs=20; h=160; vs2=16; hm=-100;
+  ButtonFrame(h-100,v=30,250,5,"Buyer's Invoice");
+  EditField(h,v,100,"Payment Terms",Normal,FBuyerPayDeal,false,PDSClass);
+  EditField(h,v+=vs,100,"Object",Normal,FBuyerObject,false,ObjSClass);
+  EditField(h,v+=vs,100,"Item",Normal,FBuyerItem,false,INSClass);
+  EditField(h,v+=vs,100,"Payment Mode",Normal,FVIPaymentMode,false,PMSClass);
+
+  ButtonFrame(h-100,v+=50,250,7,"Seller's Invoice");
+  EditField(h,v,100,"Payment Terms",Normal,FSellerPayDeal,false,PDSClass);
+  EditField(h,v+=vs,100,"Account",Normal,FSellerAccount,false,AccSClass);
+  EditField(h,v+=vs,100,"Fee Account",Normal,FSellerFeeAccount,false,AccSClass);
+  EditField(h,v+=vs,100,"VAT Code",Normal,FSellerVATCode,false,VATCodeSClass);
+  EditField(h,v+=vs,100,"Object",Normal,FSellerObject,false,ObjSClass);
+  EditField(h,v+=vs,100,"Payment Mode",Normal,FIVPaymentMode,false,PMSClass);
+  
+  Tile(4,95,false,"4",PGBuyerSecurityItem);
+ 
+  ButtonFrame(h-100,v=30,250,5,"Buyer's Invoice");
+  EditField(h,v,100,"Security Item",Normal,PGBuyerSecurityItem,false,INSClass);
+  EditField(h,v+=vs,100,"Security Prc",Normal,PGBuyerSecurityPrc,false,0);
+  EditField(h,v+=vs,100,"PayDeal",Normal,PGBuyerPayDeal,false,PDSClass);
+  EditField(h,v+=vs,100,"Item",Normal,PGBuyerItem,false,INSClass);
+
+  ButtonFrame(h-100,v+=50,250,2,"Seller's Invoice");
+  EditField(h,v,100,"Account",Normal,PGSellerAccount,false,AccSClass);
+  EditField(h,v+=vs,100,"VAT Code",Normal,PGSellerVATCode,false,VATCodeSClass);
+
+  Tile(5,95,false,"5",PaymentPayDeal);
+
+  EditField(h,v=6,100,"Payment Terms",Normal,PaymentPayDeal,false,PDSClass);
+  EditField(h,v+=vs,100,"Account",Normal,PaymentAccount,false,AccSClass);
+  EditField(h,v+=vs,100,"VAT Code",Normal,PaymentVATCode,false,VATCodeSClass);
+  EditField(h,v+=vs,100,"Object",Normal,PaymentObject,false,ObjSClass);
+  EditField(h,v+=vs,100,"Payment Mode",Normal,PaymentMode,false,PMSClass);
+
+
+  EndWindow;
+  return;
+end;
+
+window CredLegalInvNrTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h1,h2,v,vs,hm;
+  Integer f,flipnr;
+  
+  WindowBegin("Legal Record Numbers",CredLegalInvNrTClass,CGHbl,HBlRecType);
+  SetBlid(CredLegalInvNrBlock);
+  SetWRect(20,80,900,457);
+  Sizeable(-1,-1,0,0);
+  h = 8; v = 20; vs = 20;
+  h1=24;
+  MatrixBegin(h,v,-50,-20,-,499);
+  Flip(0);
+  MatCol(1,h1,"From Date",0,StartDate,false,PasteCurDate);
+  MatCol(1,h1+=80,"To Date",0,EndDate,false,PasteCurDate);
+  MatCol(1,h1+=80,"Serie",0,Serie,false,0);
+  MatCol(1,h1+=80,"From",0,TSerStart,false,0);
+  MatCol(1,h1+=85,"To",0,TSerEnd,false,0);
+  Flip(1);
+  hm = h1;
+  MatCol(1,h1+=125,"Agr. Type",0,CredManType,false,CredManTypeSClass);
+  MatCol(1,h1+=125,"Agr. Type Class",0,CredManClass,false,CredManClassSClass);
+  MatCol(1,h1+=85,"Register",0,RegType,false,SetSClass);
+  MatCol(1,h1+=85,"Selection",0,SelectionType,false,SetSClass);
+  Flip(2);
+  h1 = hm;
+  MatCol(1,h1+=105,"First Inv. Serie",0,FirstInvSerie,false,InvLegalInvSerieSClass);
+  MatCol(1,h1+=105,"Regular Inv. Serie",0,RegularInvSerie,false,InvLegalInvSerieSClass);
+  MatCol(1,h1+=105,"Overdue Inv. Serie",0,OverdueInvSerie,false,InvLegalInvSerieSClass);
+  EndMatrix;
+  VTab(-35,v,-16,v+=vs,ToolFlip,1,"A");
+  VTab(-35,v,-16,v+=vs,ToolFlip,2,"B");
+  EndWindow;
+end;
+
+
+
+window CredFeesMatrixVClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h1,v;
+  WindowBegin("Tax Matrix",CredFeesMatrixVClass,CGother,-);
+  UseView(CredFeesMatrixVc);
+  SetWRect(20,80,400,357);
+  Sizeable(-1,-1,0,0);
+  AutoSizeWindow(false);
+  h = 8; v = 20;
+  h1=24;
+  MatrixBegin(h,v,-25,-10,-,20);
+  Flip(0);
+  MatCol(1,h1,"Item",0,ArtCode,false,INSClass);
+  MatCol(1,-60,"Sum",0,Sum,false,0);
+  EndMatrix;
+  EndWindow;
+end;
+
+
+window ProlongSessionLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Prolong Sessions",ProlongSessionLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(ProlongSessionDClass);
+  UseView(ProlongSessionVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"SerNr",SerNr,false,SerNr);
+  RlCol(100,100,"TransDate",TransDate,false);
+  RlCol(170,170,"TransTime",TransTime,false);
+  RlCol(226,226,"SalesMan",SalesMan,false);
+  RlCol(852,852,"PaidFlag",PaidFlag,false);
+  RlCol(948,948,"CredManNr",CredManNr,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+
+window ProlongSessionDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Prolong Session",ProlongSessionDClass,CGview,-);
+  SetWRect(20,80,600,339);
+  Sizeable(-1,-1,0,0);
+  UseView(ProlongSessionVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,50,"SerNr",Normal,SerNr,false,);
+  EditField(h,v+=vs,50,"TransDate",Normal,TransDate,false,0);
+  EditField(h,v+=vs,50,"TransTime",Normal,TransTime,false,0);
+  EditField(h,v+=vs,50,"SalesMan",Normal,SalesMan,false,UserSClass);
+  EditField(h,v+=vs,50,"PauseDate",Normal,PauseDate,false,0);
+  EditField(h,v+=vs,50,"ProlongDate",Normal,ProlongDate,false,0);
+  EditField(h,v+=vs,50,"PauseMonths",Normal,PauseMonths,false,0);
+  EditField(h,v+=vs,50,"ProlongMonths",Normal,ProlongMonths,false,0);
+  EditField(h,v+=vs,50,"ProlongWhenPaid",Normal,ProlongWhenPaid,false,0);
+  EditField(h,v+=vs,50,"PaidFlag",Normal,PaidFlag,false,0);
+  EditField(h,v+=vs,50,"CredManNr",Normal,CredManNr,false,0);
+  EditField(h,v+=vs,50,"RecalcSchedule",Normal,RecalcSchedule,false,0);
+  EndWindow;
+end;
+
+window CredLegalNrSerNrSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v;
+
+  WindowBegin("Paste Legal Serial Number",CredLegalNrSerNrSClass,CGother,RcType);
+  SetWRect(64,80,400,298);
+  DataList(0,0,-1,-1,"DLPasteCredSerNrAccount");
+  DataListColumn(1,6,-1,AdjLeft,"DLSerNr","Nr",M4Str);
+  EndWindow;
+end;
+
+window SchedYesNoWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v; 
+
+  WindowBegin("Generate Schedule",SchedYesNoWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,300,220);
+  AutoSizeWindow(false);  
+  StaticText(50,26,"Already registered. Overwrite?",false);
+  HalPushButton(-260,-30,-160,-10,"SchedYesNoWClassProceed","Yes");
+  HalPushButton(-120,-30,-20,-10,"SchedYesNoWClassClose","No");
+  EndWindow;
+
+  return;
+end;
+
+window CMPropertyLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Propertys",CMPropertyLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMPropertyDClass);
+  UseView(CMPropertyVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
+  RlCol(100,100,"Official No.",OfficialSerNr,false);
+  RlCol(230,230,"Name",Addr0,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMPropertySClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Propertys",CMPropertySClass,CGslist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMPropertyDClass);
+  UseView(CMPropertyVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
+  RlCol(100,100,"Official No.",OfficialSerNr,false);
+  RlCol(230,230,"Name",Addr0,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMPropertyDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm,h2;
+  WindowBegin("Property",CMPropertyDClass,CGview,-);
+  SetWRect(20,80,600,339);
+  Sizeable(-1,-1,0,0);
+  UseView(CMPropertyVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,100,"Ser. No.",Normal,SerNr,false,);
+  EditField(h2=350,v,150,"Official No.",Normal,OfficialSerNr,false,0);
+  EditField(h,v+=vs,150,"Name",Normal,Addr0,false,0);
+  EditField(h,v+=vs,150,"Country",Normal,Addr1,false,CountrySClass);
+  EditField(h,v+=vs,150,"City",Normal,Addr2,false,0);
+  EditField(h,v+=vs,150,"Address",Normal,Addr3,false,0);
+  EditField(h,v+=vs,150,"ZIP",Normal,Addr4,false,0);
+  EditField(h,v+=vs,100,"Type",Normal,Type,false,CMPropertyTypeSClass);
+  EditField(h,v+=vs,100,"Reported Value",Normal,RepVal,false,0);
+  EditField(h,v+=vs,100,"Evaluator",Normal,Evaluator,false,CUSClass);
+  EditField(h,v+=vs,100,"Evaluated Value",Normal,EvalVal,false,0);
+  EditField(h2,v,100,"Evaluation Date",Normal,EvalDate,false,PasteCurDate);
+  EditField(h,v+=vs,100,"Insurance Company",Normal,InsuranceCompany,false,CUSClass);
+  EditField(h2,v,-40,"Name",Normal,InsuranceName,false,0);
+  EditField(h,v+=vs,100,"Insurance Type",Normal,InsuranceType,false,CMInsuranceTypeSClass);
+  EditField(h,v+=vs,100,"Insured Value",Normal,InsuredVal,false,0);
+  EditField(h,v+=vs,100,"Insured Until",Normal,InsuredUntil,false,PasteCurDate);
+  TextField(h,v+=vs,-20,60,Math2,0);
+  MatrixBegin(10,v+=vs+70,-40,-20,-,99);
+  MatCol(1,24,"Contact",0,OwnerCode,false,AllCUSClass);
+  MatCol(1,104,"Name",0,OwnerName,false,0);
+  MatCol(1,-154,"Shares %",0,SharesPrc,false,0);
+  MatCol(1,-84,"Shares Value",0,SharesVal,false,0);
+  EndMatrix;
+  EndWindow;
+end;
+
+
+window CMPropertyTypeLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Classifications",CMPropertyTypeLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMPropertyTypeDClass);
+  UseView(CMPropertyTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMPropertyTypeSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Paste Agreement Classification",CMPropertyTypeSClass,CGslist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMPropertyTypeDClass);
+  UseView(CMPropertyTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMPropertyTypeDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Agreement Classification",CMPropertyTypeDClass,CGview,-);
+  SetWRect(20,80,400,239);
+  UseView(CMPropertyTypeVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,100,"Code",Normal,Code,false,);
+  EditField(h,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  EndWindow;
+end;
+
+window CMInsuranceTypeLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Classifications",CMInsuranceTypeLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMInsuranceTypeDClass);
+  UseView(CMInsuranceTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMInsuranceTypeSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Paste Agreement Classification",CMInsuranceTypeSClass,CGslist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CMInsuranceTypeDClass);
+  UseView(CMInsuranceTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CMInsuranceTypeDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Agreement Classification",CMInsuranceTypeDClass,CGview,-);
+  SetWRect(20,80,400,239);
+  UseView(CMInsuranceTypeVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,100,"Code",Normal,Code,false,);
+  EditField(h,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  EndWindow;
+end;
+
+
+window CredManPropertiesDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Properties",CredManPropertiesDClass,CGview,-);
+  SetWRect(20,80,900,339);
+  UseView(CredManPropertiesVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  MatrixBegin(10,20,-40,-20,-,99);
+  MatCol(1,24,"Property",0,Property,false,CMPropertySClass);
+  MatCol(1,104,"Name",0,Addr0,false,0);
+  MatCol(1,-530,"ID",0,OfficialSerNr,false,0);
+  MatCol(1,-440,"Reported Value",0,RepVal,true,0);
+  MatCol(1,-350,"Evaluated Value",0,EvalVal,true,0);
+  MatCol(1,-260,"Pledge Type",0,PledgeType,false,SetSClass);
+  MatCol(1,-170,"Pledge Val",0,PledgeVal,true,0);
+  MatCol(1,-80,"Pledge Date",0,PledgeDate,false,PasteCurDate);
+  EndMatrix;
+  EndWindow;
+end;
+
+
+window IVSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real pos;
+  Boolean acptf;
+  
+  WindowBegin("Invoices",IVSClass,CGslist,-);
+  pos = 820;
+  SetWRect(20,80,pos,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(IVDClass);
+  UseView(IVVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"No.",SerNr,false,SerNr);
+  RlColKey(79,79,"OK",OKFlag,false,OKFlag);
+  RlColKey(111,111,"Invoice Date",InvDate,false,InvDate);
+  RlColKey(191,191,"Official No.",OfficialSerNr,false,OfficialSerNr);
+  RlColKey(301,301,"Order No.",OrderNr,false,OrderNr);
+  pos = 381;
+  RlColKey(pos,pos,"Customer",CustCode,false,CustCode); pos = pos + 60;
+  RlColKey(pos,pos,"Name",Addr0,false,Name);
+  RlColKey(-130,-130,"Total",Sum4,true,Sum4);
+  RlCol(-60,-60,"",CredMark,true);
+  RlCol(-40,-40,"Cur.",CurncyCode,true);
+  SearchField("Search");
+  EndWindow;
+end;
+
+
+window CredMan2LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Loan Agreements",CredMan2LClass,CGmlist,-);
+  ShowCredManLClassWindow;
+  EndWindow;
+end;
+
+window CredMan3LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Leasing Agreements",CredMan3LClass,CGmlist,-);
+  ShowCredManLClassWindow;
+  EndWindow;
+end;
+
+window CredMan4LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Martgage Agreements",CredMan4LClass,CGmlist,-);
+  ShowCredManLClassWindow;
+  EndWindow;
+end;
+
+window CredMan5LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Factoring Agreements",CredMan5LClass,CGmlist,-);
+  ShowCredManLClassWindow;
+  EndWindow;
+end;
+
+window CredMan6LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Payment Guarantee Agreements",CredMan6LClass,CGmlist,-);
+  ShowCredManLClassWindow;
+  EndWindow;
+end;
+
+window CredManLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Credit Agreements",CredManLClass,CGmlist,-);
+  ShowCredManLClassWindow;
+  EndWindow;
+end;
+
+
+window RecalcInterestWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v; 
+
+  WindowBegin("Recalculate Interest",RecalcInterestWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,300,220);
+  AutoSizeWindow(false);  
+  StaticText(50,26,"Interest not recalculated",false);
+  HalPushButton(-260,-30,-160,-10,"RecalcInterestWClassProceed","Recalculate");
+  HalPushButton(-120,-30,-20,-10,"RecalcInterestWClassSave","OK");
+  EndWindow;
+
+  return;
+end;
+
+
+window InvLegalInvSerieSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Paste Serie",InvLegalInvSerieSClass,CGother,HBlRecType);
+  SetWRect(240,80,600,348);
+  StringList(9,9,-19,-19);
+  EndWindow;
+end;
