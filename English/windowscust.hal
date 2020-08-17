@@ -1761,9 +1761,9 @@ window CredManSchedDClass:1
 begin
   real h,v,vs,v2,vs2,hm,h2;
   WindowBegin("Agreement Schedule",CredManSchedDClass,CGview,-);
-  SetWRect(20,80,600,339);
-  Sizeable(-1,-1,0,0);
+  SetWRect(20,80,830,639);
   UseView(CredManSchedVc);
+  AutoSizeWindow(false);
   vs=20; h=120; vs2=16; hm=-100; h2 = 350;
   EditField(h,v=6,120,"Agreement",ViewOnly,CredManNr,false,0);
   EditField(h,v+=vs,90,"Customer",ViewOnly,CustCode,false,CUSClass);
@@ -1780,7 +1780,8 @@ begin
   MatCol(1,390,"Interest",0,Interest,false,0);
   MatCol(1,460,"Fees",0,Fees,false,0);
   MatCol(1,534,"Total",0,Total,false,0);
-  MatCol(1,-60,"Invoiced",0,Invoiced,false,SetSClass);
+  MatCol(1,-120,"Invoiced",0,Invoiced,false,SetSClass);
+  MatCol(1,-60,"Balance",0,Balance,false,0);
   InsertRowTest;
   DeleteRowTest;
   EndMatrix;

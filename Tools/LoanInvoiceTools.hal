@@ -1875,6 +1875,7 @@ begin
   Integer i,rwcnt,rw;
   Boolean updf;
   record CredFeesMatrixVc FMr;
+  val bal;
   
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin
@@ -1899,7 +1900,7 @@ begin
   BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
 
   BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CMb,SMr);
-
+  bal = CredManr.InvSum4;
   rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(SMr,i,SMrw);
@@ -1913,6 +1914,8 @@ begin
       CSrw.FromDate = SMrw.Objects;
       CSrw.ToDate = SMrw.Comment;
       CSrw.Principle = SMrw.DebVal;
+      bal = bal - CSrw.Principle;
+      CSrw.Balance = bal;
       CSrw.Interest = SMrw.CredVal;
       CSrw.Fees = SMrw.DebVal2;
       UnpackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
