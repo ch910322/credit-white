@@ -1401,12 +1401,14 @@ begin
   Date sd;
   transaction Boolean gSilenceIVOpenPrepExists;
   array string 255 lateformula;
+  Boolean schedf;
 
   gSilenceIVOpenPrepExists = true;
   BlockLoad(CMb);
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin
     CreateBuyOutInvoiceFromSchedule(CredManr,CMb,CSr,RepSpec.d1,IVr);
+    schedf = true;
   end else begin
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,RepSpec.d1,IVr);
@@ -1416,11 +1418,16 @@ begin
   GetCredManOverdueInvoices(CredManr,CMb,RepSpec.d1,sd,latedays,lateamount,lateformula,false);
   RepSpec.vals1 = IVr.Sum4;
   RepSpec.vals0 = dueamount;//should this be openamount?
-  RepSpec.vals2 = dueamount + IVr.Sum4;
-  RepSpec.vals3 = GetActualBalance(CredManr,CredManPayPlanr,false);
+  RepSpec.vals2 = openamount + IVr.Sum4;
   RepSpec.vals4 = dueamount;
   RepSpec.f12 = lateamount;//(RepSpec.vals2-RepSpec.vals3-RepSpec.vals4);
-  RepSpec.f13 = GetActualBalance(CredManr,CredManPayPlanr,true);
+  RepSpec.vals3 = GetActualBalance(CredManr,CredManPayPlanr,false);
+  if (schedf) then begin
+    //just get all unpaid invoices 
+    RepSpec.f13 = openamount;
+  end else begin
+    RepSpec.f13 = GetActualBalance(CredManr,CredManPayPlanr,true);
+  end;
   gSilenceIVOpenPrepExists = false;
 
 
@@ -1949,6 +1956,7 @@ begin
 
   CredManr.SerNr = credmannr;
   if (ReadFirstMain(CredManr,1,true)) then begin
+    RepSpec.d1 = CurrentDate;
     CheckBuyOutAgreement(CredManr,RepSpec);
     if (RepSpec.vals2==0) then begin
       BlockLoad(OCb);
