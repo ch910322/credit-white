@@ -1389,6 +1389,26 @@ begin
 	return;
 end;
 
+function val GetPrepaymentValue(record CredManVc CredManr)
+begin
+  record ARPayVc ARPayr;
+  Boolean TrHs;
+  val res;
+
+  ARPayr.CustCode = CredManr.CustCode;
+  TrHs = true;
+  while (LoopKey("CustCode",ARPayr,1,TrHs)) begin
+    if (ARPayr.CustCode!=CredManr.CustCode) then begin
+      TrHs = false;
+    end else begin
+      res = res + ARPayr.RVal;
+    end;
+  end;
+
+  GetPrepaymentValue = res;
+  return;
+end;
+
 global
 procedure CheckBuyOutAgreement(record CredManVc CredManr,var record RcVc RepSpec)
 begin
@@ -1396,7 +1416,7 @@ begin
   record CredManPayPlanVc CredManPayPlanr;
   record CredManSchedVc CSr;
   record IVVc IVr;
-  val dueamount,openamount,lateamount;
+  val dueamount,openamount,lateamount,prepayval;
   Integer latedays;
   Date sd;
   transaction Boolean gSilenceIVOpenPrepExists;
@@ -1416,9 +1436,12 @@ begin
   CheckUnpaidInvoices(CredManr,dueamount,openamount);
   sd = GetLastInvoiceDate(CredManr,RepSpec.d1);
   GetCredManOverdueInvoices(CredManr,CMb,RepSpec.d1,sd,latedays,lateamount,lateformula,false);
+
+  prepayval = GetPrepaymentValue(CredManr);
+
   RepSpec.vals1 = IVr.Sum4;
   RepSpec.vals0 = dueamount;//should this be openamount?
-  RepSpec.vals2 = openamount + IVr.Sum4;
+  RepSpec.vals2 = openamount + IVr.Sum4 - prepayval;
   RepSpec.vals4 = dueamount;
   RepSpec.f12 = lateamount;//(RepSpec.vals2-RepSpec.vals3-RepSpec.vals4);
   RepSpec.vals3 = GetActualBalance(CredManr,CredManPayPlanr,false);
