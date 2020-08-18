@@ -1409,6 +1409,27 @@ begin
   return;
 end;
 
+function val GetActualBalanceSched(record CredManVc CredManr,record CredManSchedVc CSr)
+begin
+  val bal;
+  Integer i,rwcnt;
+  row CredManSchedVc CSrw;
+  
+  bal = CredManr.InvSum4;
+  rwcnt = MatRowCnt(CSr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(CSr,i,CSrw);
+    if (CSrw.Invoiced==1) then begin
+      bal = bal - CSrw.Principle;
+    end else begin
+      i = rwcnt;
+    end;
+  end;
+
+  GetActualBalanceSched = bal;
+  return;
+end;
+
 global
 procedure CheckBuyOutAgreement(record CredManVc CredManr,var record RcVc RepSpec)
 begin
@@ -1447,7 +1468,7 @@ begin
   RepSpec.vals3 = GetActualBalance(CredManr,CredManPayPlanr,false);
   if (schedf) then begin
     //just get all unpaid invoices 
-    RepSpec.f13 = openamount;
+    RepSpec.f13 = GetActualBalanceSched(CredManr,CSr) + openamount;
   end else begin
     RepSpec.f13 = GetActualBalance(CredManr,CredManPayPlanr,true);
   end;
