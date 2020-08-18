@@ -214,6 +214,7 @@ begin
   vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(IVr.CustCredManNr);
 
   del = ":";
+  BlockLoad(CIb);
   if (nonblank(CIb.PeriodDelimiter)) then begin
     del = CIb.PeriodDelimiter;
   end;
