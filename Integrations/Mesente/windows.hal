@@ -3,7 +3,7 @@ begin
   
   SetLangMode(LangEnglish,"ENG",0);
 
-  Setting("Mesente SMS",MesenteSMSTClass,modSY);
+  Setting("Mesente SMS",MesenteSMSTClass,modInteg);
 
 end;
 

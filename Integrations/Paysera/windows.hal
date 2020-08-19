@@ -3,7 +3,7 @@ begin
   
   SetLangMode(LangEnglish,"ENG",0);
 
-  Setting("Paysera",PayseraTClass,modSY);
+  Setting("Paysera",PayseraTClass,modInteg);
 
 end;
 
