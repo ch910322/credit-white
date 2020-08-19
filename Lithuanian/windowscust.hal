@@ -605,7 +605,7 @@ begin
 end;
 
 window B2BLoanApp_ContactSClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real v;
 
@@ -619,7 +619,7 @@ begin
 end;
 
 window B2BLoanApplicationDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real v,vs,h,h2,h3,t,tilenr,vm,pos;
   string 255 label1,label2,label3,label4,label5;
@@ -961,7 +961,7 @@ begin
 end;
 
 window BankAccountSClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real v;
 
@@ -974,7 +974,7 @@ begin
 end;
 
 window CreditAgreementsRClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v;
   WindowBegin("Specify Credit Agreements report",CreditAgreementsRClass,CGRcW,RcType);
@@ -995,7 +995,7 @@ begin
 end;
 
 window LoanApplicationListRClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v;
   WindowBegin("Specify Application Overview Report",LoanApplicationListRClass,CGRcW,RcType);
@@ -1010,7 +1010,7 @@ begin
 end;
 
 window MailingListRClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v;
   WindowBegin("Specify Mailing List Report",MailingListRClass,CGRcW,RcType);
@@ -1021,7 +1021,7 @@ begin
 end;
 
 window CredManFactLClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Factoring Limits",CredManFactLClass,CGmlist,-);
   SetWRect(20,80,660,298);
@@ -1035,7 +1035,7 @@ begin
 end;
 
 window CredManFactDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
 
@@ -1064,7 +1064,7 @@ begin
 end;
 
 window CredManPmtGrntLClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Sellers",CredManPmtGrntLClass,CGmlist,-);
   SetWRect(20,80,660,298);
@@ -1078,7 +1078,7 @@ begin
 end;
 
 window CredManPmtGrntDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
 
@@ -1111,7 +1111,7 @@ begin
 end;
 
 window CredManFactInvoiceLClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Factoring Invoices",CredManFactInvoiceLClass,CGmlist,-);
   SetWRect(20,80,660,298);
@@ -1128,7 +1128,7 @@ begin
 end;
 
 window CustCredManFactInvoiceWClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
   WindowBegin("Factoring Invoices",CustCredManFactInvoiceWClass,CGOther,RcType);
@@ -1164,7 +1164,7 @@ begin
 end;
 
 window CredManFactInvoiceDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
   WindowBegin("Factoring Invoice",CredManFactInvoiceDClass,CGview,-);
@@ -1187,7 +1187,7 @@ begin
 end;
 
 window NewCredManFactInvoiceWClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm,h2;
   WindowBegin("Factoring Invoice",NewCredManFactInvoiceWClass,CGOther,RcType);
@@ -1206,7 +1206,7 @@ end;
 
 /*pmt grnt report*/
 window CredManGrntReportLClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Payment Guarantee Reports",CredManGrntReportLClass,CGmlist,-);
   SetWRect(20,80,660,298);
@@ -1222,7 +1222,7 @@ begin
 end;
 
 window CredManGrntReportWClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
   WindowBegin("Payment Guarantee Reports",CredManGrntReportWClass,CGOther,RcType);
@@ -1253,7 +1253,7 @@ begin
 end;
 
 window CredManGrntReportDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
   WindowBegin("Payment Guarantee Report",CredManGrntReportDClass,CGview,-);
@@ -1275,7 +1275,7 @@ begin
 end;
 
 window NewCredManGrntReportWClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm,h2;
   WindowBegin("Amount Report",NewCredManGrntReportWClass,CGOther,RcType);
@@ -1292,7 +1292,7 @@ begin
 end;
 
 window FactoringBuyersSClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v;
   WindowBegin("Paste Factoring Customer",FactoringBuyersSClass,CGother,RcType);
@@ -1308,7 +1308,7 @@ begin
 end;
 
 window PmtGrntSellerSClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v;
   WindowBegin("Paste Seller",PmtGrntSellerSClass,CGother,RcType);
@@ -1324,7 +1324,7 @@ begin
 end;
 
 window CredManCloseTaskTClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
   WindowBegin("Automatically Closed Tasks",CredManCloseTaskTClass,CGSbl,-);
@@ -1337,7 +1337,7 @@ begin
 end;
 
 window AgreementDocLClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Agreement Documents",AgreementDocLClass,CGmlist,-);
   SetWRect(20,80,660,298);
@@ -1354,7 +1354,7 @@ begin
 end;
 
 window AgreementDocDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h2,v,vs,v2,vs2,hm;
   WindowBegin("Agreement Document",AgreementDocDClass,CGview,-);
@@ -1392,7 +1392,7 @@ begin
 end;
 
 window DocSigningWClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm,h2;
   WindowBegin("Sign Document",DocSigningWClass,CGOther,RcType);
@@ -1405,7 +1405,7 @@ end;
 
 /*
 window CreditalInvoiceTClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm,h2,tilenr;
   WindowBegin("Invoice Settings",CreditalInvoiceTClass,CGSbl,-);
@@ -1459,7 +1459,7 @@ end;
 */
 
 window CredManAutoTaskTClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
   WindowBegin("Automatic Tasks",CredManAutoTaskTClass,CGHbl,HBlRecType);
@@ -1484,7 +1484,7 @@ begin
 end;
 
 window InvitationRequestLClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Invitation Requests",InvitationRequestLClass,CGmlist,-);
   SetWRect(20,80,660,298);
@@ -1502,7 +1502,7 @@ begin
 end;
 
 window InvitationRequestDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
   WindowBegin("Invitation Request",InvitationRequestDClass,CGview,-);
@@ -1519,7 +1519,7 @@ begin
 end;
 
 window InviteSuretyWClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm,h2;
   WindowBegin("Invite Additional Surety Provider",InviteSuretyWClass,CGOther,RcType);
@@ -1532,7 +1532,7 @@ begin
 end;
 
 window DocumentReminderLClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Document Signing Reminders",DocumentReminderLClass,CGmlist,-);
   SetWRect(20,80,560,298);
@@ -1549,7 +1549,7 @@ begin
 end;
 
 window DocumentReminderDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
   WindowBegin("Document Signing Reminder",DocumentReminderDClass,CGview,-);
@@ -1564,7 +1564,7 @@ begin
 end;
 
 window CredManExtTClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
   WindowBegin("Agreement/Application Extensions",CredManExtTClass,CGHbl,HBlRecType);
@@ -1583,7 +1583,7 @@ begin
 end;
 
 window CMOrderClassTClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm,h2,tilenr;
   WindowBegin("Automatic Order Classes",CMOrderClassTClass,CGSbl,-);
@@ -1620,7 +1620,7 @@ end;
 
 
 window EBSIncomeAnalysisRClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vm,vs;
   WindowBegin("Specify Income Analysis",EBSIncomeAnalysisRClass,CGRcW,RcType);
@@ -1647,7 +1647,7 @@ begin
 end;
 
 window CMIncomeForecastRClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vm,vs;
   WindowBegin("Specify Income Forecast",CMIncomeForecastRClass,CGRcW,RcType);
@@ -1665,7 +1665,7 @@ end;
 
 
 window ReceiptEntryWClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,h2,h3,h4,h5;
 
@@ -1691,7 +1691,7 @@ begin
 end;
 
 window CredManClassLClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Agreement Classifications",CredManClassLClass,CGmlist,-);
   SetWRect(20,80,660,298);
@@ -1706,7 +1706,7 @@ begin
 end;
 
 window CredManClassSClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Paste Agreement Classification",CredManClassSClass,CGslist,-);
   SetWRect(20,80,660,298);
@@ -1721,7 +1721,7 @@ begin
 end;
 
 window CredManClassDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
   WindowBegin("Agreement Classification",CredManClassDClass,CGview,-);
@@ -1734,7 +1734,7 @@ begin
 end;
 
 window AgreementTypeSetSClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Paste Agreement Type",AgreementTypeSetSClass,CGother,HBlRecType);
   SetWRect(240,80,600,348);
@@ -1744,7 +1744,7 @@ end;
 
 
 window CredManSchedLClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Agreement Schedules",CredManSchedLClass,CGmlist,-);
   SetWRect(20,80,560,298);
@@ -1761,7 +1761,7 @@ begin
 end;
 
 window CredManSchedDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm,h2;
   WindowBegin("Agreement Schedule",CredManSchedDClass,CGview,-);
@@ -1804,7 +1804,7 @@ begin
 end;
 
 window CMInvoicingTClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,vs2,hm,h2,vm;
   Integer tilenr;
@@ -1919,7 +1919,7 @@ begin
 end;
 
 window CredLegalInvNrTClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h1,h2,v,vs,hm;
   Integer f,flipnr;
@@ -1957,7 +1957,7 @@ end;
 
 
 window CredFeesMatrixVClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h1,v;
   WindowBegin("Tax Matrix",CredFeesMatrixVClass,CGother,-);
@@ -1977,7 +1977,7 @@ end;
 
 
 window ProlongSessionLClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Prolong Sessions",ProlongSessionLClass,CGmlist,-);
   SetWRect(20,80,660,298);
@@ -1997,7 +1997,7 @@ end;
 
 
 window ProlongSessionDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
   WindowBegin("Prolong Session",ProlongSessionDClass,CGview,-);
@@ -2021,7 +2021,7 @@ begin
 end;
 
 window CredLegalNrSerNrSClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real v;
 
@@ -2033,7 +2033,7 @@ begin
 end;
 
 window SchedYesNoWClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real v; 
 
@@ -2050,7 +2050,7 @@ begin
 end;
 
 window CMPropertyLClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Propertys",CMPropertyLClass,CGmlist,-);
   SetWRect(20,80,660,298);
@@ -2066,7 +2066,7 @@ begin
 end;
 
 window CMPropertySClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Propertys",CMPropertySClass,CGslist,-);
   SetWRect(20,80,660,298);
@@ -2082,7 +2082,7 @@ begin
 end;
 
 window CMPropertyDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm,h2;
   WindowBegin("Property",CMPropertyDClass,CGview,-);
@@ -2119,7 +2119,7 @@ end;
 
 
 window CMPropertyTypeLClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Agreement Classifications",CMPropertyTypeLClass,CGmlist,-);
   SetWRect(20,80,660,298);
@@ -2134,7 +2134,7 @@ begin
 end;
 
 window CMPropertyTypeSClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Paste Agreement Classification",CMPropertyTypeSClass,CGslist,-);
   SetWRect(20,80,660,298);
@@ -2149,7 +2149,7 @@ begin
 end;
 
 window CMPropertyTypeDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
   WindowBegin("Agreement Classification",CMPropertyTypeDClass,CGview,-);
@@ -2162,7 +2162,7 @@ begin
 end;
 
 window CMInsuranceTypeLClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Agreement Classifications",CMInsuranceTypeLClass,CGmlist,-);
   SetWRect(20,80,660,298);
@@ -2177,7 +2177,7 @@ begin
 end;
 
 window CMInsuranceTypeSClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Paste Agreement Classification",CMInsuranceTypeSClass,CGslist,-);
   SetWRect(20,80,660,298);
@@ -2192,7 +2192,7 @@ begin
 end;
 
 window CMInsuranceTypeDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
   WindowBegin("Agreement Classification",CMInsuranceTypeDClass,CGview,-);
@@ -2206,7 +2206,7 @@ end;
 
 
 window CredManPropertiesDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
   WindowBegin("Properties",CredManPropertiesDClass,CGview,-);
@@ -2228,7 +2228,7 @@ end;
 
 
 window IVSClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real pos;
   Boolean acptf;
@@ -2257,7 +2257,7 @@ end;
 
 
 window CredMan2LClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Loan Agreements",CredMan2LClass,CGmlist,-);
   ShowCredManLClassWindow;
@@ -2265,7 +2265,7 @@ begin
 end;
 
 window CredMan3LClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Leasing Agreements",CredMan3LClass,CGmlist,-);
   ShowCredManLClassWindow;
@@ -2273,7 +2273,7 @@ begin
 end;
 
 window CredMan4LClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Martgage Agreements",CredMan4LClass,CGmlist,-);
   ShowCredManLClassWindow;
@@ -2281,7 +2281,7 @@ begin
 end;
 
 window CredMan5LClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Factoring Agreements",CredMan5LClass,CGmlist,-);
   ShowCredManLClassWindow;
@@ -2289,7 +2289,7 @@ begin
 end;
 
 window CredMan6LClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Payment Guarantee Agreements",CredMan6LClass,CGmlist,-);
   ShowCredManLClassWindow;
@@ -2297,7 +2297,7 @@ begin
 end;
 
 window CredManLClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Credit Agreements",CredManLClass,CGmlist,-);
   ShowCredManLClassWindow;
@@ -2306,7 +2306,7 @@ end;
 
 
 window RecalcInterestWClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real v; 
 
@@ -2324,7 +2324,7 @@ end;
 
 
 window InvLegalInvSerieSClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Paste Serie",InvLegalInvSerieSClass,CGother,HBlRecType);
   SetWRect(240,80,600,348);
