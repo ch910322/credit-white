@@ -442,7 +442,7 @@ function Boolean ReceiptConnectionDistributeWClassDeleteRowTest(Integer wn,Integ
 begin
   Boolean res;
 
-  res = false;
+  res = true;
   ReceiptConnectionDistributeWClassDeleteRowTest = res;
   return;
 end;

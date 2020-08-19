@@ -10,7 +10,7 @@ external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
 external inner procedure IPVc_PasteBankCurncy(var record IPVc,Integer);
 external updating procedure CreateCredHist(Longint,Integer,string,val,Integer,string,Date,Longint,Date,var Longint,Date,Date,Integer,Longint,val,Longint,val);
 external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string,Boolean);
-external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var record IVVc,Date,Date,Date,Boolean,Boolean,string);
+external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var record IVVc,Date,Date,Date,Boolean,Boolean,string,Integer);
 external inner procedure IPPastePayMode(var record IPVc);
 external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val,array string);
 external procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
@@ -532,7 +532,7 @@ begin
           GetCredManOverdueInvoices(CredManr,CMb,invdate,sd,latedays,lateamount,lateformula,true);
           if (latedays>0 or lateamount>0) then begin
             //Setup always new invoice
-            SetupLoanInvoice(CredManr,CMb,IVr,invdate,sd,invdate,true,false,"");
+            SetupLoanInvoice(CredManr,CMb,IVr,invdate,sd,invdate,true,false,"",2);
             AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
             SetupOverdueLangCode(IVr,CredManr.Type);
             IVr.OKFlag = 1;

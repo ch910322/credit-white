@@ -260,6 +260,7 @@ begin
       CredManr.PayDeal = CMTr.PayDeal;
       CredManr.Classifications = CMTr.Classifications;
       CredManr.OverdueRateType = CMTr.OverdueRateType;
+      Credmanr.LoanType = CMTr.LoanType;
     end else begin  
       CredManr.PayDeal = CUr.PayDeal;
     end;

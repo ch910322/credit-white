@@ -31,6 +31,8 @@ remote updating procedure RecreateAgreementDocument(var record AgreementDocVc,Bo
 remote updating procedure GetCredManPropertyRecord(record CredManVc,var record CredManPropertyVc);
 remote procedure CredManCalcLastMonthPrinciple(var record CredManVc);
 remote procedure CredManCalcMaxMonthlyPayment(var record CredManVc);
+remote procedure InvLegalInvSerieSClassRemote(Date,Date,var array string);
+external inner procedure PasteFromSysList(Integer ,Integer);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -179,6 +181,13 @@ begin
   return;
 end;
 
+global
+procedure RerunWindowDefHAL(string wn)
+begin
+  RerunWindowDef(StringToInt(wn));
+  return;
+end;
+
 function Boolean CredManDClassTypeEFAfter(Integer wn,Boolean changedf)
 begin
   record CredManVc CredManr;
@@ -192,8 +201,11 @@ begin
       if (CredManr.PrincipleDelayInterest==0) then begin
         CredManr.PrincipleDelayInterest = CredManr.IntRate;
       end;
+      Credmanr.LoanType = CMTr.LoanType;
     end;
-    PutWindowRecord(wn,CredManr);   
+    PutWindowRecord(wn,CredManr); 
+    NewTimedTask("rerun window def","rerunwindowdef","RerunWindowDefHAL",wn,CurrentDate,AddSeconds(CurrentTime,1),"","");  
+    //
   end; 
   CredManDClassTypeEFAfter = true;
   return;
@@ -1387,7 +1399,7 @@ begin
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
 
-  if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
+//  if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
     CSr.CredManNr = CredManr.SerNr;
     if (ReadFirstMain(CSr,1,true)) then begin
       RepSpec.long1 = CredManr.SerNr;
@@ -1395,7 +1407,7 @@ begin
     end else begin
       GenerateAgreementSchedule(CredManr,false);
     end;
-  end;
+//  end;
 
   return;
 end;
@@ -1559,5 +1571,230 @@ begin
     GetCredManPropertyRecord(CredManr,CMPr);
     OpenWindow("CredManPropertiesDClass",0,0,"","",CMPr);
   end;
+  return;
+end;
+
+global
+function Boolean CredMan2LClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  subsetname = 1;
+
+  CredMan2LClassUpdateWindowSubset = true;
+  return;
+end;
+
+
+global
+function Boolean CredMan2LClassOnOpenWindow(Integer wn)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  SetWindowSubset(wn,1);
+
+  CredMan2LClassOnOpenWindow = true;
+  return;
+end;
+
+global
+function Boolean CredMan3LClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  subsetname = 2;
+
+  CredMan3LClassUpdateWindowSubset = true;
+  return;
+end;
+
+global
+function Boolean CredMan3LClassOnOpenWindow(Integer wn)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  SetWindowSubset(wn,2);
+
+  CredMan3LClassOnOpenWindow = true;
+  return;
+end;
+
+
+global
+function Boolean CredMan4LClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  subsetname = 3;
+
+  CredMan4LClassUpdateWindowSubset = true;
+  return;
+end;
+
+global
+function Boolean CredMan4LClassOnOpenWindow(Integer wn)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  SetWindowSubset(wn,3);
+
+  CredMan4LClassOnOpenWindow = true;
+  return;
+end;
+
+
+
+global
+function Boolean CredMan5LClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  subsetname = 4;
+
+  CredMan5LClassUpdateWindowSubset = true;
+  return;
+end;
+
+global
+function Boolean CredMan5LClassOnOpenWindow(Integer wn)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  SetWindowSubset(wn,4);
+
+  CredMan5LClassOnOpenWindow = true;
+  return;
+end;
+
+
+global
+function Boolean CredMan6LClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  subsetname = 5;
+
+  CredMan6LClassUpdateWindowSubset = true;
+  return;
+end;
+
+global
+function Boolean CredMan6LClassOnOpenWindow(Integer wn)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  SetWindowSubset(wn,5);
+
+  CredMan6LClassOnOpenWindow = true;
+  return;
+end;
+
+global
+procedure CredManLClassBtn()
+begin
+  record CredManVc CredManr;
+  
+  CloseWindow(CurWindow);
+  OpenWindow("CredManLClass",0,0,"","",CredManr);
+
+  return;
+end;
+
+global
+procedure CredManLClass1Btn()
+begin
+  record CredManVc CredManr;
+  
+  CloseWindow(CurWindow);
+  OpenWindow("CredMan2LClass",0,0,"1","",CredManr);
+
+  return;
+end;
+
+global
+procedure CredManLClass2Btn()
+begin
+  record CredManVc CredManr;
+  
+  CloseWindow(CurWindow);
+  OpenWindow("CredMan3LClass",0,0,"2","",CredManr);
+
+  return;
+end;
+
+
+global
+procedure CredManLClass3Btn()
+begin
+  record CredManVc CredManr;
+  
+  CloseWindow(CurWindow);
+  OpenWindow("CredMan4LClass",0,0,"3","",CredManr);
+
+  return;
+end;
+
+global
+procedure CredManLClass4Btn()
+begin
+  record CredManVc CredManr;
+  
+  CloseWindow(CurWindow);
+  OpenWindow("CredMan5LClass",0,0,"4","",CredManr);
+
+  return;
+end;
+
+global
+procedure CredManLClass5Btn()
+begin
+  record CredManVc CredManr;
+  
+  CloseWindow(CurWindow);
+  OpenWindow("CredMan6LClass",0,0,"5","",CredManr);
+
+  return;
+end;
+
+
+global
+function Boolean InvLegalInvSerieSClassOnOpenWindow(Integer wn)
+begin
+  Array string 255 astr;
+  Integer i,acnt,mwn,rw;
+  record CredLegalInvNrBlock LegalInvNrRec;
+  row CredLegalInvNrBlock LegalInvNrrw;
+
+  mwn = MotherWindow(wn);
+  GetWindowRecord(mwn,LegalInvNrRec);
+  rw = WindowActiveRow(mwn);
+  if (rw>=0) then begin
+    MatRowGet(LegalInvNrRec,rw,LegalInvNrrw);
+
+    InvLegalInvSerieSClassRemote(LegalInvNrrw.StartDate,LegalInvNrrw.EndDate,astr);
+    for (i=0;i<astr.length;i=i+1) begin
+      SetListString(wn,len(astr[i]),astr[i],false);    
+    end;
+  end;
+
+  InvLegalInvSerieSClassOnOpenWindow = true;
+  return;
+end;
+
+global
+function Boolean InvLegalInvSerieSClassOnOKWindow(Integer wn)
+begin
+  PasteFromSysList(wn,-2);
+  InvLegalInvSerieSClassOnOKWindow = false;
   return;
 end;

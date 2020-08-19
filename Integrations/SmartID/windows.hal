@@ -3,7 +3,7 @@ begin
   
   SetLangMode(LangEnglish,"ENG",0);
 
-  Setting("Document Signing Integrations",SmartIDTClass,modSY);
+  Setting("Document Signing Integrations",SmartIDTClass,modInteg);
 
 end;
 

@@ -7,6 +7,7 @@ external inner procedure HTCustCat(string,var string);
 external inner procedure HTCustClass(string,var string);
 external inner procedure HTItem(string,var string);
 external inner procedure HT2Per(Date, Date , var string);
+external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
 
 procedure GetOpenPrepayments(record RcVc RepSpec,Date sd,Date ed,var array val amonth,Integer basemonth)
 begin
@@ -64,13 +65,17 @@ begin
   Longint num,basemonth,pos;
   Integer i,j,cs,step,rw;
   Date sd,td;
-  vector val vtot;
+  vector val vtot,vsum3,vsum2;
   vector Boolean vitems;
   array string 255 atot,aitems;
   Boolean testf,TrHs;
-  array val amonth,atotmonth;
+  array val amonth,atotmonth,amonthvat,atotmonthvat,amonthbase,atotmonthbase;
   val itemtot;
   record CredManVc CredManr;
+  val vatprc,vatval,vatexclprc,vatinclprc,rowtax,basesum;
+  record IVVc IVr;
+  row IVVc IVrw;
+  Integer rwcnt;
   
   StartReportJob("Income Analysis");
   rw = 1;
@@ -209,8 +214,31 @@ begin
         end;
       end;
       if (testf) then begin
-        id = tCredHistr.ArtCode & ":" & (GetYear(CredHistr.TransDate)*12) + GetMonth(CredHistr.TransDate);
+        id = tCredHistr.ArtCode & ":" & (GetYear(CredHistr.TransDate)*12) + GetMonth(CredHistr.TransDate);        
         vtot[id] = vtot[id] + CredHistr.Sum;
+        if (RepSpec.ArtMode==1) then begin
+          IVr.SerNr = tCredHistr.RecordNr;
+          if (ReadFirstMain(IVr,1,true)) then begin
+            rwcnt = MatRowCnt(IVr);
+            for (i=0;i<rwcnt;i=i+1) begin
+              MatRowGet(IVr,i,IVrw);
+              if (IVrw.ArtCode==tCredHistr.ArtCode) then begin
+                InvVat(1,1/*IVr.InclVAT*/,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,CredHistr.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+                /*
+                if (IVr.InclVAT!=0) then begin
+                  basesum = IVrw.Sum - vatval; 
+                end else begin
+                  basesum = IVrw.Sum;
+                end;
+                */
+                basesum = CredHistr.Sum - vatval;
+
+                vsum3[id] = vsum3[id] + vatval;
+                vsum2[id] = vsum2[id] + basesum;
+              end;
+            end;
+          end;
+        end;
         vitems[tCredHistr.ArtCode] = true;
       end;
     end;
@@ -224,6 +252,8 @@ begin
     ReadFirstMain(INr,1,true);
     for (j=0;j<RepSpec.flags[0];j=j+1) begin
       amonth[j] = 0;
+      amonthvat[j] = 0;
+      amonthbase[j] = 0;
     end;
     for (j=0;j<atot.length;j=j+1) begin
       pos = -1;
@@ -232,6 +262,10 @@ begin
         GetNextSubstring(atot[j],pos,":",tmp);
         num = StringToLongint(tmp)-basemonth;
         amonth[num] = vtot[atot[j]];
+        if (RepSpec.ArtMode==1) then begin
+          amonthvat[num] = vsum3[atot[j]];
+          amonthbase[num] = vsum2[atot[j]];
+        end;
       end;
     end;  
 
@@ -246,6 +280,35 @@ begin
     end;
     OutString(cs+(RepSpec.flags[0]*step),0,itemtot,true);
     EndFormat;
+    if (RepSpec.ArtMode==1) then begin
+      StartFormat(15);
+      OutString(0,0,"VAT",false);
+      OutString(80,0,"",false);
+      itemtot = 0;
+      for (j=0;j<RepSpec.flags[0];j=j+1) begin
+        OutString(cs+(j*step),0,amonthvat[j],true);
+        itemtot = itemtot + amonthvat[j];
+        atotmonthvat[j] = atotmonthvat[j] + amonthvat[j];
+      end;
+      OutString(cs+(RepSpec.flags[0]*step),0,itemtot,true);
+      EndFormat;
+
+      StartFormat(15);
+      OutString(0,0,"Base",false);
+      OutString(80,0,"",false);
+      itemtot = 0;
+      for (j=0;j<RepSpec.flags[0];j=j+1) begin
+        OutString(cs+(j*step),0,amonthbase[j],true);
+        itemtot = itemtot + amonthbase[j];
+        atotmonthbase[j] = atotmonthbase[j] + amonthbase[j];
+      end;
+      OutString(cs+(RepSpec.flags[0]*step),0,itemtot,true);
+      EndFormat;
+
+      StartFormat(1);
+      Gray_divider(0,1);
+      EndFormat;
+    end;
   end;
 
   ClearArray(amonth);
@@ -259,6 +322,8 @@ begin
     OutString(cs+(j*step),0,amonth[j],true);
     itemtot = itemtot + amonth[j];
     atotmonth[j] = atotmonth[j] + amonth[j];
+    atotmonthbase[j] = atotmonthbase[j] + amonth[j];
+    
   end;
   OutString(cs+(RepSpec.flags[0]*step),0,itemtot,true);
   EndFormat;
@@ -266,16 +331,41 @@ begin
   StartFormat(1);
   Gray_divider(0,1);
   EndFormat;
-  StartFormat(15);
-  
+  StartFormat(15);  
   itemtot = 0;
-  OutString(0,0,"",false);
+  OutString(0,0,"Total",false);
   OutString(80,0,"",false);
   for (j=0;j<RepSpec.flags[0];j=j+1) begin
     OutString(cs+(j*step),0,atotmonth[j],true);
     itemtot = itemtot + atotmonth[j];
   end;
   OutString(cs+(RepSpec.flags[0]*step),0,itemtot,true);
+  EndFormat;
+
+  if (RepSpec.ArtMode==1) then begin
+    StartFormat(15);  
+    itemtot = 0;
+    OutString(0,0,"VAT",false);
+    OutString(80,0,"",false);
+    for (j=0;j<RepSpec.flags[0];j=j+1) begin
+      OutString(cs+(j*step),0,atotmonthvat[j],true);
+      itemtot = itemtot + atotmonthvat[j];
+    end;
+    OutString(cs+(RepSpec.flags[0]*step),0,itemtot,true);
+    EndFormat;
+
+    StartFormat(15);  
+    itemtot = 0;
+    OutString(0,0,"Base",false);
+    OutString(80,0,"",false);
+    for (j=0;j<RepSpec.flags[0];j=j+1) begin
+      OutString(cs+(j*step),0,atotmonthbase[j],true);
+      itemtot = itemtot + atotmonthbase[j];
+    end;
+    OutString(cs+(RepSpec.flags[0]*step),0,itemtot,true);
+    EndFormat;
+    
+  end;
   EndJob;
 
   return;

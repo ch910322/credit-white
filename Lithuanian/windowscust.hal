@@ -8,6 +8,8 @@ external function Boolean HasLimitedAccess();
 external function Boolean HasCustomerStatusReport();
 external outer function Boolean HasB2BCreateOffer();
 
+SetLangMode(LangLithuanian,"LIT",2);
+
 procedure ShowCredManLClassWindow()
 begin
   real v,h;
@@ -44,7 +46,7 @@ begin
   real v,vs,h,h2,h3,t,tilenr,vm,pos;
   vs = 20;
  
-  SetLangMode(LangEnglish,"ENG",0);
+  SetLangMode(LangLithuanian,"LIT",2);
 
   WindowBegin("B2B Loan Applications",B2BLoanApplicationLClass,CGmList,-);
   Sizeable(-1,-1,0,0);
@@ -53,16 +55,16 @@ begin
   UseView(B2BLoanApplicationVc);
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
-  RlColKey(101,101,"Date",TransDate,false,TransDate);
-  RlColKey(181,181,"Start Date",StartDate,false,StartDate);
-  RlColKey(260,260,"Customer",CustName,false,CustName);
-  RlColKey(-240,-240,"Class",OrderClass,false,OrderClass);
-  RlCol   (-200,-200,"Type",Type,false);
+  RlColKey(101,101,"Data",TransDate,false,TransDate);
+  RlColKey(181,181,"Pradžios Data",StartDate,false,StartDate);
+  RlColKey(260,260,"Klientas",CustName,false,CustName);
+  RlColKey(-240,-240,"Klasė",OrderClass,false,OrderClass);
+  RlCol   (-200,-200,"Tipas",Type,false);
   RlCol   (-120,-120,"Rate %",InterestRate,true);
-  RlCol   (-70,-70,"Total Sum",Sum,true);
-  SpecialMenu("Customer status",'e',1,"CUStatusB2BLoanAppLsm");
-  SpecialMenu("Evaluation report",' ',2,"DoEvalReportLsm");
-  SearchField("Search");
+  RlCol   (-70,-70,"Bendra Suma",Sum,true);
+  SpecialMenu("Kliento Statusas",'e',1,"CUStatusB2BLoanAppLsm");
+  SpecialMenu("Vertinimo ataskaita",' ',2,"DoEvalReportLsm");
+  SearchField("Paieška");
   EndWindow;
 
   WindowBegin("Paste B2B Loan Application",B2BLoanApplicationSClass,CGsList,-);
@@ -72,15 +74,15 @@ begin
   UseView(B2BLoanApplicationVc);
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
-  RlColKey(101,101,"Date",TransDate,false,TransDate);
-  RlColKey(181,181,"Start Date",StartDate,false,StartDate);
-  RlColKey(260,260,"Customer",CustName,false,CustName);
-  RlColKey(-240,-240,"Class",OrderClass,false,OrderClass);
-  RlCol   (-200,-200,"Type",Type,false);
+  RlColKey(101,101,"Data",TransDate,false,TransDate);
+  RlColKey(181,181,"Pradžios Data",StartDate,false,StartDate);
+  RlColKey(260,260,"Klientas",CustName,false,CustName);
+  RlColKey(-240,-240,"Klasė",OrderClass,false,OrderClass);
+  RlCol   (-200,-200,"Tipas",Type,false);
   RlCol   (-120,-120,"Rate %",InterestRate,true);
-  RlCol   (-70,-70,"Total Sum",Sum,true);
-  SpecialMenu("Customer status",'e',1,"CUStatusB2BLoanAppLsm");
-  SpecialMenu("Evaluation report",' ',2,"");
+  RlCol   (-70,-70,"Bendra Suma",Sum,true);
+  SpecialMenu("Kliento statusas",'e',1,"CUStatusB2BLoanAppLsm");
+  SpecialMenu("Vertinimo ataskaita",' ',2,"");
   EndWindow;
 
   WindowBegin("Number Series - B2B Loan Applications",B2BLoanAppSerTClass,CGHbl,HBlRecType);
@@ -92,7 +94,7 @@ begin
   MatCol(1,104,"To No.",0,TSerEnd,false,0);
   MatCol(1,184,"From Date",0,StartDate,false,PasteCurDate);
   MatCol(1,264,"To Date",0,EndDate,false,PasteCurDate);
-  MatCol(1,344,"Comment",0,TSerCom,false,0);
+  MatCol(1,344,"Komentaras",0,TSerCom,false,0);
   EndMatrix;
   EndWindow;
   
@@ -100,15 +102,15 @@ begin
   SetBlid(CMApplicationSetBlock);
   SetWRect(20,80,670,298);
   Sizeable(-1,-1,0,0);
-  EditField(h=180,v=6,100,"Owner Title",Normal,OwnerTitle,false,JobTitleSClass);
-  EditField(h,v+=vs,100,"Ownership Years",Normal,OwnershipYears,false,0);
+  EditField(h=180,v=6,100,"Savininko Vardas",Normal,OwnerTitle,false,JobTitleSClass);
+  EditField(h,v+=vs,100,"Nuosavybės Metai",Normal,OwnershipYears,false,0);
 
   EditField(h,v+=vs,100,"CEO Title",Normal,CEOTitle,false,JobTitleSClass);
   EditField(h,v+=vs,100,"CFO Title",Normal,CFOTitle,false,JobTitleSClass);
   EditField(h,v+=vs,100,"Years to access private data",Normal,PrivateDataYears,false,0);
 
-  EditField(h,v+=vs,100,"Request Signature Class",Normal,SignOrderClass,false,OrderClassSClass);
-  EditField(h,v+=vs,100,"Active Agreement Order Class",Normal,ActiveCredOrderClass,false,OrderClassSClass);
+  EditField(h,v+=vs,100,"Prašyti Parašo klasė",Normal,SignOrderClass,false,OrderClassSClass);
+  EditField(h,v+=vs,100,"Aktyvios Sutarties Užsakymo klasė",Normal,ActiveCredOrderClass,false,OrderClassSClass);
 
   EditField(h,v+=vs,100,"Surety Email",Normal,SuretyLetter,false,0);
   EditField(h,v+=vs,100,"Surety Email without Password",Normal,NoPassSuretyLetter,false,0);
@@ -147,75 +149,75 @@ begin
 
   EndWindow;
 
-  WindowBegin("Scoring",ScoringSupLClass,CGmlist,-);
+  WindowBegin("Įvertinimas",ScoringSupLClass,CGmlist,-);
   SetWRect(20,80,660,298);
   //Sizeable(-1,-1,0,0);
   SpawnClass(ScoringSupDClass);
   UseView(ScoringSupVc);
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"SerNr",SerNr,false,SerNr);
-  SearchField("Search");
+  SearchField("Paieška");
   EndWindow;
 
-  WindowBegin("Scoring",ScoringSupDClass,CGView,-);
+  WindowBegin("Įvertinimas",ScoringSupDClass,CGView,-);
   SetWRect(20,80,730,539);
   UseView(ScoringSupVc);
   AutoSizeWindow(false);  
   vs = 20; h=135; h2=375; h3=575;
-  EditField(h,v=6,100,"Risk Class",Normal,RiskClass,false,0);
-  EditField(h2,v,100,"Debts",Normal,Debts,false,0);
+  EditField(h,v=6,100,"Rizikos Klasė",Normal,RiskClass,false,0);
+  EditField(h2,v,100,"Skolos",Normal,Debts,false,0);
   CheckBox(h3,v,0,"Credit History",CreditHistory);
-  EditField(h,v+=vs,100,"Debt-free Months",Normal,DebtFreeMonths,false,0);
-  EditField(h2,v,100,"6 Months Salary",Normal,Salary6Months,false,0);
-  EditField(h3,v,100,"Date Employed",Normal,DateEmployed,false,PasteCurDate);
-  EditField(h,v+=vs,100,"Company",Normal,Company,false,0);
-  EditField(h2,v,100,"Position",Normal,Position,false,0);
+  EditField(h,v+=vs,100,"Mėnesiai be Skolų",Normal,DebtFreeMonths,false,0);
+  EditField(h2,v,100,"6 Mėnesių Atlyginimas",Normal,Salary6Months,false,0);
+  EditField(h3,v,100,"Įsidarbinimo Data",Normal,DateEmployed,false,PasteCurDate);
+  EditField(h,v+=vs,100,"Įmonė",Normal,Company,false,0);
+  EditField(h2,v,100,"Pareigos",Normal,Position,false,0);
  
-  EditField(h,v+=vs,100,"Late Credits",Normal,LateCredits,false,0);
-  EditField(h2,v,100,"Late Days",Normal,LateDays,false,0);
+  EditField(h,v+=vs,100,"Vėlavimo Kreditai",Normal,LateCredits,false,0);
+  EditField(h2,v,100,"Vėlavimo Dienos",Normal,LateDays,false,0);
   
-  EditField(h2,v+=vs,100,"Overall monthly Obligation Payment",Normal,MonthlyOblPayment,false,0);
-  EditField(h2,v+=vs,100,"Total monthly Income from other Companies",Normal,TotIncomeFromCompanies,false,0);
+  EditField(h2,v+=vs,100,"Bendras Mėnesinis Įsipareigojimo Mokėjimas",Normal,MonthlyOblPayment,false,0);
+  EditField(h2,v+=vs,100,"Bendros Mėnesinės Pajamos Iš Kitų Įmonių",Normal,TotIncomeFromCompanies,false,0);
 
   vm = v+40;
-  ButtonFrame(h,v=vm,190,4,"Assets");
+  ButtonFrame(h,v=vm,190,4,"Turtas");
   RadioButton(h,v,0,0,"No",AssetsType);
-  RadioButton(h,v+=16,1,0,"Mortgage",AssetsType);  
-  RadioButton(h,v+=16,2,0,"Ownership <20k",AssetsType);  
-  RadioButton(h,v+=16,3,0,"Ownership of 20+k or 3+ Assets",AssetsType);
+  RadioButton(h,v+=16,1,0,"Hipoteka",AssetsType);  
+  RadioButton(h,v+=16,2,0,"Nuosavybė <20k",AssetsType);  
+  RadioButton(h,v+=16,3,0,"Nuosavybė 20+k arba 3+ Turtas",AssetsType);
     
-  ButtonFrame(h2,v=vm,150,2,"Sex");
-  RadioButton(h2,v,0,0,"Male",SexType);
-  RadioButton(h2,v+=16,1,0,"Female",SexType);  
+  ButtonFrame(h2,v=vm,150,2,"Lytis");
+  RadioButton(h2,v,0,0,"Vyras",SexType);
+  RadioButton(h2,v+=16,1,0,"Moteris",SexType);  
   
-  ButtonFrame(h3,v=vm,150,2,"Residency");
-  RadioButton(h3,v,0,0,"Resident",ResidencyType);
-  RadioButton(h3,v+=16,1,0,"Not Resident",ResidencyType);  
+  ButtonFrame(h3,v=vm,150,2,"Rezidencija");
+  RadioButton(h3,v,0,0,"Gyventojas",ResidencyType);
+  RadioButton(h3,v+=16,1,0,"Ne Gyventojas",ResidencyType);  
 
   MatrixBegin(10,v+=vs+60,-55,-1,-,50);
   Flip(0);
-  MatCol(1,20,"Period",0,Period,false,0);
+  MatCol(1,20,"Laikotarpis",0,Period,false,0);
   Flip(1);
-  MatCol(1,80,"Industry",0,Industry,false,0);
-  MatCol(1,-300,"Check. Month",0,MonthChecks,false,0);
-  MatCol(1,-200,"Check. Quarter",0,QuarterChecks,false,0);
-  MatCol(1,-100,"Check. Half Year",0,HalfYearChecks,false,0);
+  MatCol(1,80,"Industrija",0,Industry,false,0);
+  MatCol(1,-300,"Patikrinti Mėnesį",0,MonthChecks,false,0);
+  MatCol(1,-200,"Patikrinti Kervirtį",0,QuarterChecks,false,0);
+  MatCol(1,-100,"Patikrinti Puse Metų",0,HalfYearChecks,false,0);
   Flip(2);
-  MatCol(1,80,"Salary",0,Salary,false,0);
-  MatCol(1,180,"Additional Salary",0,ExtraSalary,false,0);
+  MatCol(1,80,"Atlyginimas",0,Salary,false,0);
+  MatCol(1,180,"Papildomas Atlyginimas",0,ExtraSalary,false,0);
   Flip(3);
-  MatCol(1,80,"Asset",0,Asset,false,0);
-  MatCol(1,200,"Asset Type",0,AssetType,false,0);
-  MatCol(1,270,"Location",0,Location,false,0);
+  MatCol(1,80,"Turtas",0,Asset,false,0);
+  MatCol(1,200,"Turto Tipas",0,AssetType,false,0);
+  MatCol(1,270,"Vietovė",0,Location,false,0);
   MatCol(1,400,"Legal Status",0,LegalStatus,false,0);
-  MatCol(1,-50,"Value",0,AssetValue,false,0);
+  MatCol(1,-50,"Vertė",0,AssetValue,false,0);
   Flip(4);
-  MatCol(1,80,"Obligations",0,Obligations,false,0);
-  MatCol(1,150,"Value",0,ObligationsValue,false,0);
-  MatCol(1,220,"Loans",0,Loans,false,0);
-  MatCol(1,290,"Credit Cards",0,CreditCards,false,0);
-  MatCol(1,360,"Credit Limits",0,CreditLimits,false,0);
-  MatCol(1,430,"Leasing",0,Leasing,false,0);
+  MatCol(1,80,"Įsipareigojimai",0,Obligations,false,0);
+  MatCol(1,150,"Vertė",0,ObligationsValue,false,0);
+  MatCol(1,220,"Paskolos",0,Loans,false,0);
+  MatCol(1,290,"Kredito Kortelės",0,CreditCards,false,0);
+  MatCol(1,360,"Kredito limitai",0,CreditLimits,false,0);
+  MatCol(1,430,"Lizingas",0,Leasing,false,0);
   EndMatrix;
 
   VTab(-40,v,-6,v+=vs,ToolFlip,1,"A");
@@ -225,16 +227,16 @@ begin
 
   EndWindow;
  
-  WindowBegin("Paste Customer",B2BLoanApp_CUSClass,CGslist,-);
+  WindowBegin("Įklijuokiti klientą",B2BLoanApp_CUSClass,CGslist,-);
   SetWRect(20,80,700,298);
   Sizeable(-1,-1,0,0);
   UseView(CUVc);
   SpawnClass(CUDClass);
   
-  HalPushButton(-300,v=7,-200,v+=20,"CustSwitchToContacts","Contact Persons");
+  HalPushButton(-300,v=7,-200,v+=20,"CustSwitchToContacts","Kontaktiniai asmenys");
  
   RecordList(4,20,-21,-39);
-  RlColKey(4,4,"No.",Code,false,Code);
+  RlColKey(4,4,"Nr.",Code,false,Code);
   pos = 96;
   if (HasCustomerSearchKey) then begin
     RlColKey(pos,pos,"Short",SearchKey,false,SearchKey);
@@ -251,9 +253,9 @@ begin
       pos = pos + 120;
     end;
   end;
-  RlColKey(pos,pos,"Name",Name,false,Name);  
+  RlColKey(pos,pos,"Vardas",Name,false,Name);  
   if (HasDepartments) then begin
-    RlColKey(-230,-230,"Department",Department,false,Department);
+    RlColKey(-230,-230,"Departamentas",Department,false,Department);
   end;
   if (HasStandardCommunicator) then begin
     if (CUVATNrColumn) then begin
@@ -268,10 +270,10 @@ begin
   SearchField("Search");
   if (GuiType!=kGuiiPhone and GuiType!=kGuiAndroid) then begin
     if (HasCustomerStatusReport) then begin
-      SpecialMenu("Customer Status",'e',0,"CUStatusCUSsm");
+      SpecialMenu("Kliento Statusas",'e',0,"CUStatusCUSsm");
     end;
   end;
-  SpecialMenu("Search",'F',1,"CUSearchLsm");
+  SpecialMenu("Paieška",'F',1,"CUSearchLsm");
   EndWindow;
 
   WindowBegin("Order Class Colors",OrderClassColorTClass,CGHBl,-);
@@ -279,54 +281,54 @@ begin
   SetBlid(OrderClassColorBlock);
   MatrixBegin(10,20,-30,-10,-,50);
   MatCol(1,25,"Order Class",0,OrderClass,false,OrderClassSClass);
-  MatCol(1,100,"Color",0,Color,false,SetSClass);
+  MatCol(1,100,"Spalva",0,Color,false,SetSClass);
   EndMatrix;
   EndWindow;
 
-  WindowBegin("Credit History",CredHistLClass,CGmList,-);
+  WindowBegin("Kredito Istorija",CredHistLClass,CGmList,-);
   Sizeable(-1,-1,0,0);
   SetWRect(64,80,800,298);
   SpawnClass(CredHistDClass);
   UseView(CredHistVc);
   RecordList(4,17,-21,-39);
-  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
-  RlColKey(101,101,"Date",TransDate,false,TransDate);
-  RlColKey(181,181,"Record No.",RecordNr,false,RecordNr);
-  RlCol   (260,260,"Type",RecordType,false);
-  RlCol   (340,340,"Agreement",CredManNr,false);
-  SearchField("Search");
+  RlColKey(4,4,"Serijos Nr.",SerNr,false,SerNr);
+  RlColKey(101,101,"Data",TransDate,false,TransDate);
+  RlColKey(181,181,"Įrašo Nr.",RecordNr,false,RecordNr);
+  RlCol   (260,260,"Tipas",RecordType,false);
+  RlCol   (340,340,"Sutartis",CredManNr,false);
+  SearchField("Paieška");
   EndWindow;
 
-  WindowBegin("Credit History",CredHistDClass,CGview,-);
+  WindowBegin("Kredito Sutartis",CredHistDClass,CGview,-);
   SetWRect(20,80,640,380);
   h = 150; h2 = 300; h3 = 440; v = 6; vs=20;
   UseView(CredHistVc);
-  EditField(h,v,80,"Ser. No.",ViewOnly,SerNr,false,0);
-  EditField(h2,v,120,"Customer",Normal,CustCode,false,CUSClass);
-  EditField(h,v+=vs,120,"Record No.",Normal,RecordNr,false,0);
-  EditField(h,v+=vs,120,"Previous Rec.",Normal,PreviousNr,false,0);
-  EditField(h,v+=vs,120,"Date",Normal,TransDate,false,0);
-  EditField(h,v+=vs,120,"Charge Type",Normal,ChargeType,false,0);
-  EditField(h,v+=vs,120,"Record Type",Normal,RecordType,false,0);
-  EditField(h,v+=vs,120,"Sum",Normal,Sum,false,0);
-  EditField(h,v+=vs,120,"Due Date",Normal,PayDate,false,0);
-  EditField(h,v+=vs,120,"Item",Normal,ArtCode,false,0);
+  EditField(h,v,80,"Serijos Nr.",ViewOnly,SerNr,false,0);
+  EditField(h2,v,120,"Klientas",Normal,CustCode,false,CUSClass);
+  EditField(h,v+=vs,120,"Įrašo Nr.",Normal,RecordNr,false,0);
+  EditField(h,v+=vs,120,"Ankstesnis Įr.",Normal,PreviousNr,false,0);
+  EditField(h,v+=vs,120,"Data",Normal,TransDate,false,0);
+  EditField(h,v+=vs,120,"Mokesčio Tipas",Normal,ChargeType,false,0);
+  EditField(h,v+=vs,120,"Įrašo Tipas",Normal,RecordType,false,0);
+  EditField(h,v+=vs,120,"Suma",Normal,Sum,false,0);
+  EditField(h,v+=vs,120,"Mokėjimos Terminas",Normal,PayDate,false,0);
+  EditField(h,v+=vs,120,"Prekė",Normal,ArtCode,false,0);
   EditField(h,v+=vs,120,"CredManNr",Normal,CredManNr,false,0);
-  EditField(h,v+=vs,120,"Start Date",Normal,CredFromDate,false,0);
-  EditField(h,v+=vs,120,"End Date",Normal,CredToDate,false,0);
-  EditField(h,v+=vs,120,"Invoices Sum",Normal,InvSum,false,0);
-  EditField(h,v+=vs,120,"Paid Sum",Normal,PaidSum,false,0);
-  EditField(h,v+=vs,120,"Balance",Normal,Balance,false,0);
-  EditField(h,v+=vs,120,"Factoring Inv.",Normal,FactoringInvoice,false,0);
-  CheckBox(h,v+=vs,0,"Main Record",MainRecord);
+  EditField(h,v+=vs,120,"Pradžios Data",Normal,CredFromDate,false,0);
+  EditField(h,v+=vs,120,"Pabaigos Data",Normal,CredToDate,false,0);
+  EditField(h,v+=vs,120,"Sąskaitos Suma",Normal,InvSum,false,0);
+  EditField(h,v+=vs,120,"Sumokėta Suma",Normal,PaidSum,false,0);
+  EditField(h,v+=vs,120,"Likutis",Normal,Balance,false,0);
+  EditField(h,v+=vs,120,"Faktoringo Sąsk.",Normal,FactoringInvoice,false,0);
+  CheckBox(h,v+=vs,0,"Pagrindinis Įrašas",MainRecord);
   EndWindow;
 
-  WindowBegin("Specify Credit Agreement Invoices",GenLoanInvoicesVClass,CGMnt,RcType);
+  WindowBegin("Nurodykite Kredito Sutarties Sąskaitas Faktūras",GenLoanInvoicesVClass,CGMnt,RcType);
   SetWRect(64,80,445,95);
   h = 150; v = 6; vs = 20;
-  EditFieldTL(h,v,120,"Date Until",M4Date,Normal,0,d1,false,PasteCurDate);
-  EditFieldTL(h,v+=vs,153,"Credit Agreement",M4Long,Normal,0,long2,false,CredManSClass);
-  EditFieldTL(h,v+=vs,153,"Customer",M4Code,Normal,20,f1,false,CUSClass);
+  EditFieldTL(h,v,120,"Data iki",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,153,"Kredito Sutartis",M4Long,Normal,0,long2,false,CredManSClass);
+  EditFieldTL(h,v+=vs,153,"Klientas",M4Code,Normal,20,f1,false,CUSClass);
   EditFieldTL(h,v+=vs,153,"Manager",M4Code,Normal,10,f2,false,UserSClass);
   EndWindow;
 
@@ -348,22 +350,22 @@ begin
   EndWindow;
 
 
-  WindowBegin("Specify Payment Guarantee Invoices",PmtGrntInvoiceVClass,CGMnt,RcType);
+  WindowBegin("Nurodykite Mokėjimo Garantijų Sąskaitas Faktūras",PmtGrntInvoiceVClass,CGMnt,RcType);
   SetWRect(64,80,445,95);
   h = 150; v = 6; vs = 20;
-  EditFieldTL(h,v,120,"Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v,120,"Data",M4Date,Normal,0,d1,false,PasteCurDate);
   EndWindow;
 
-  WindowBegin("Specify Overdue Invoices",GenOverdueInvVClass,CGMnt,RcType);
+  WindowBegin("Nurodykite Pradelstas Sąskaitas Faktūras",GenOverdueInvVClass,CGMnt,RcType);
   SetWRect(64,80,445,95);
   h = 150; v = 6; vs = 20;
-  EditFieldTL(h,v,120,"Until Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v,120,"Data iki",M4Date,Normal,0,d1,false,PasteCurDate);
   EndWindow;
 
-  WindowBegin("Specify Fix Credit History",CredManRedoCredHistVClass,CGMnt,RcType);
+  WindowBegin("Nurodykite Fiksuotą Kredito Istoriją",CredManRedoCredHistVClass,CGMnt,RcType);
   SetWRect(64,80,445,95);
   h = 150; v = 6; vs = 20;
-  EditFieldTL(h,v,120,"Agreement",M4Long,Normal,0,long1,false,CredManSClass);
+  EditFieldTL(h,v,120,"Sutartis",M4Long,Normal,0,long1,false,CredManSClass);
   EndWindow;
 
   WindowBegin("Specify Agreement Schedules",CreateCredManScheduleVClass,CGMnt,RcType);
@@ -372,29 +374,28 @@ begin
   EndWindow;
 
 
-
-  WindowBegin("Additional Bank Accounts",CUBankAccDClass,CGView,-);
+  WindowBegin("Papildoma Banko Sąskaita",CUBankAccDClass,CGView,-);
   SetWRect(20,80,400,250);
   AutoSizeWindow(false);  
   UseView(CUBankAccVc);
   MatrixBegin(0,16,-1,-1,-,10);
-  MatCol(1,25,"Bank Code",0,BankCode,false,BankSClass);
-  MatCol(1,140,"Bank Account",0,BankAccount,false,0);
+  MatCol(1,25,"Banko Kodas",0,BankCode,false,BankSClass);
+  MatCol(1,140,"Banko Sąskaitos Numeris",0,BankAccount,false,0);
   EndMatrix;
   EndWindow;
 
-  WindowBegin("Check Buy-out Value",CheckBuyoutValueWClass,CGother,RcType);
+  WindowBegin("Patikrinti Išpirkimo Vertę",CheckBuyoutValueWClass,CGother,RcType);
   UseView(RcVc);
   SetWRect(20,80,400,220);
   AutoSizeWindow(false);  
   h = 150; h2 = 250; v=450;
-  EditFieldTL(h,v=6,120,"Buy-out Date",M4Date,Normal,0,d1,false,PasteCurDate);
-  EditFieldTL(h,v+=vs,120,"Total Dept",M4Val,ViewOnly,0,vals0,true,0);
-  EditFieldTL(h,v+=vs,120,"Accumulated Penalty",M4Str,ViewOnly,255,f12,true,0);
-  EditFieldTL(h,v+=vs,120,"Last Invoice Value",M4Val,ViewOnly,0,vals1,true,0);
-  EditFieldTL(h,v+=vs,120,"Expected Payment",M4Val,ViewOnly,0,vals2,true,0);
+  EditFieldTL(h,v=6,120,"Išpirkimo Data",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,120,"Bendra Skola",M4Val,ViewOnly,0,vals0,true,0);
+  EditFieldTL(h,v+=vs,120,"Sukaupta Bauda",M4Str,ViewOnly,255,f12,true,0);
+  EditFieldTL(h,v+=vs,120,"Paskutinės Sąskaitos Faktūros Vertė",M4Val,ViewOnly,0,vals1,true,0);
+  EditFieldTL(h,v+=vs,120,"Laukiamas Mokėjimas",M4Val,ViewOnly,0,vals2,true,0);
 
-  HalPushButton(h,v+=vs,h+120,v+20,"CalculateBuyOutValue","Calculate");
+  HalPushButton(h,v+=vs,h+120,v+20,"CalculateBuyOutValue","Suskaičiuoti");
   EndWindow;
 
   WindowBegin("Create Invoice",CredManInvNoWClass,CGother,RcType);
@@ -406,36 +407,36 @@ begin
   HalPushButton(h,v+=vs,h+120,v+20,"CredManInvNoWClassProceed","Create");
   EndWindow;
 
-  WindowBegin("Specify Credit Agreement Schedule",CredManScheduleRClass,CGRcW,RcType);
+  WindowBegin("Nurodykite Kredito Sutarties Grafiką",CredManScheduleRClass,CGRcW,RcType);
   SetWRect(20,80,400,220);
   vs=20;
-  EditFieldTL(h=160,v=6,120,"Credit Agreement",M4Long,Normal,0,long1,false,CredManSClass);
+  EditFieldTL(h=160,v=6,120,"Kredito Sutartis",M4Long,Normal,0,long1,false,CredManSClass);
   EndWindow;
 
-  WindowBegin("Specify B2B Loan Application Form",LoanAppRClass,CGRcW,RcType);
+  WindowBegin("Nurodykite B2B Paskolos Paraiškos Formą",LoanAppRClass,CGRcW,RcType);
   SetWRect(20,80,400,220);
   vs=20;
-  EditFieldTL(h=160,v=6,120,"Loan Application",M4Long,Normal,0,long1,false,B2BLoanApplicationSClass);
+  EditFieldTL(h=160,v=6,120,"Paskolos Paraiška",M4Long,Normal,0,long1,false,B2BLoanApplicationSClass);
   EndWindow;
 
-  WindowBegin("Specify Surety Agreement Form",SuretyAgreementRClass,CGRcW,RcType);
+  WindowBegin("Nurodykite Laidavimo Sutarties Formą",SuretyAgreementRClass,CGRcW,RcType);
   SetWRect(20,80,400,220);
   vs=20;
-  EditFieldTL(h=160,v=6,120,"Agreement",M4Long,Normal,0,long1,false,CredManSClass);
+  EditFieldTL(h=160,v=6,120,"Sutartis",M4Long,Normal,0,long1,false,CredManSClass);
   EndWindow;
 
-  WindowBegin("Specify Vekselis Form",VekselisRClass,CGRcW,RcType);
+  WindowBegin("Nurodykite Vekselio Formą",VekselisRClass,CGRcW,RcType);
   SetWRect(20,80,400,220);
   vs=20;
-  EditFieldTL(h=160,v=6,120,"Agreement",M4Long,Normal,0,long1,false,CredManSClass);
+  EditFieldTL(h=160,v=6,120,"Sutartis",M4Long,Normal,0,long1,false,CredManSClass);
   EndWindow;
 
 
-  WindowBegin("Specify Surety Application Form",SuretyApplicationRClass,CGRcW,RcType);
+  WindowBegin("Nurodykite Laidavimo Paraiškos Formą",SuretyApplicationRClass,CGRcW,RcType);
   SetWRect(20,80,400,220);
   vs=20;
-  EditFieldTL(h=160,v=6,120,"Loan Application",M4Long,Normal,0,long1,false,B2BLoanApplicationSClass);
-  EditFieldTL(h,v+=vs,120,"Surety (1,2,3)",M4Int,Normal,0,flags[0],false,0);
+  EditFieldTL(h=160,v=6,120,"Paskolos Paraiška",M4Long,Normal,0,long1,false,B2BLoanApplicationSClass);
+  EditFieldTL(h,v+=vs,120,"Laidavimas (1,2,3)",M4Int,Normal,0,flags[0],false,0);
   EndWindow;
 
   WindowBegin("Pause/prolong Credit Agreement",PauseCredManWClass,CGother,RcType);
@@ -463,32 +464,32 @@ begin
   HalPushButton(h,v+=vs,h+120,v+20,"ManualExtraFeeWClassCreate","Create");
   EndWindow;
 
-  WindowBegin("Refinance Agreement",RefinCredManWClass,CGother,RcType);
+  WindowBegin("Refinansavimo Sutartis",RefinCredManWClass,CGother,RcType);
   UseView(RcVc);
   SetWRect(20,80,240,235);
   AutoSizeWindow(false);  
   h = 20;
-  HalPushButton(h,v=36,h+180,v+20,"RefinCredManWClassRefinance","Refinance");
-//  HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassProlong","Prolong");
-  HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassTransfer","Transfer to Surety Provider");
-  HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassPartial","Partial Buy-out");
+  HalPushButton(h,v=36,h+180,v+20,"RefinCredManWClassRefinance","Refinansuoti");
+//  HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassProlong","Pratęsti");
+  HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassTransfer","Pervesti Laidavimo Tiekėjui");
+  HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassPartial","Dalinis Išpirkimas");
   EndWindow;
 
-  WindowBegin("Refinance Agreement",RefinCredMan2WClass,CGother,RcType);
+  WindowBegin("Refinansuoti Sutartį",RefinCredMan2WClass,CGother,RcType);
   UseView(RcVc);
   SetWRect(20,80,400,440);
   AutoSizeWindow(true);  
   h = 150; h2 = 250; v=350;
-  EditFieldTL(h,v=6,120,"Total Dept",M4Val,ViewOnly,0,vals0,false,0);
-  EditFieldTL(h,v+=vs,120,"Remaining Balance",M4Val,Normal,0,vals1,false,0);
-  EditFieldTL(h,v+=vs,120,"Extra Value",M4Val,Normal,0,vals2,false,0);
-  EditFieldTL(h,v+=vs,120,"Refinance value",M4Val,Normal,0,vals3,false,0);
-  EditFieldTL(h,v+=vs,120,"Refinance Date",M4Date,Normal,0,d1,false,PasteCurDate);
-  EditFieldTL(h,v+=vs,120,"New Agreement Type",M4Code,Normal,20,f1,false,CredManTypeSClass);
-  EditFieldTL(h,v+=vs,120,"Months",M4Int,Normal,0,flags[0],false,0);
-  EditFieldTL(h,v+=vs,120,"New Customer",M4Code,Normal,20,f2,false,CUSClass);
-  EditFieldTL(h,v+=vs,120,"New Payment Day",M4Int,Normal,0,flags[1],false,0);
-  EditFieldTL(h,v+=vs,120,"New Monthly Rate %",M4Val,Normal,0,vals4,false,0);
+  EditFieldTL(h,v=6,120,"Bendra Skola",M4Val,ViewOnly,0,vals0,false,0);
+  EditFieldTL(h,v+=vs,120,"Esamas likutis",M4Val,Normal,0,vals1,false,0);
+  EditFieldTL(h,v+=vs,120,"Papildoma Vertė",M4Val,Normal,0,vals2,false,0);
+  EditFieldTL(h,v+=vs,120,"Refinansavimo Vertė",M4Val,Normal,0,vals3,false,0);
+  EditFieldTL(h,v+=vs,120,"Refinansavimo Data",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,120,"Naujas Sutarties Tipas",M4Code,Normal,20,f1,false,CredManTypeSClass);
+  EditFieldTL(h,v+=vs,120,"Mėnesi ai",M4Int,Normal,0,flags[0],false,0);
+  EditFieldTL(h,v+=vs,120,"Naujas Klientas",M4Code,Normal,20,f2,false,CUSClass);
+  EditFieldTL(h,v+=vs,120,"Nauja Mokėjimo Diena",M4Int,Normal,0,flags[1],false,0);
+  EditFieldTL(h,v+=vs,120,"Nauja Mėnesinė Norma %",M4Val,Normal,0,vals4,false,0);
   ButtonFrame(h,v=v+40,200,3,"Refinance Type");
   RadioButton(h,v,0,0,"Refinance",ArtMode);
   RadioButton(h,v+=16,1,0,"Prolong",ArtMode);
@@ -496,108 +497,108 @@ begin
   HalPushButton(h,v+=40,h+120,v+20,"RefinCredMan2WClassSubmit","Refinance");
   EndWindow;
 
-  WindowBegin("Refinance Agreement - Partial Buy-out",RefinCredManPartialWClass,CGother,RcType);
+  WindowBegin("Refinansavimo Sutartis - Dalinis Išpirkimas",RefinCredManPartialWClass,CGother,RcType);
   UseView(RcVc);
   SetWRect(20,80,400,440);
   AutoSizeWindow(true);  
   h = 150; h2 = 250; v=350;
-  EditFieldTL(h,v=6,120,"Date",M4Date,Normal,0,d1,false,PasteCurDate);
-  EditFieldTL(h,v+=vs,120,"Amount",M4Val,Normal,0,vals0,false,0);
-  HalPushButton(h,v+=40,h+120,v+20,"RefinCredManPartialWClassSubmit","Confirm");
+  EditFieldTL(h,v=6,120,"Data",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,120,"Suma",M4Val,Normal,0,vals0,false,0);
+  HalPushButton(h,v+=40,h+120,v+20,"RefinCredManPartialWClassSubmit","Patvirtinti");
   EndWindow;
 
-  WindowBegin("Item Priority",ItemPriorityTClass,CGHBl,-);
+  WindowBegin("Prekės Prioritetas",ItemPriorityTClass,CGHBl,-);
   SetWRect(80,80,400,280);
   SetBlid(ItemPriorityBlock);
   MatrixBegin(10,20,-30,-10,-,99);
-  MatCol(1,25,"Item",0,ArtCode,false,INSClass);
-  MatCol(1,100,"Name",0,Name,false,0);
-  MatCol(1,-50,"Priority",0,Priority,false,0);
+  MatCol(1,25,"Prekė",0,ArtCode,false,INSClass);
+  MatCol(1,100,"Pavadinimas",0,Name,false,0);
+  MatCol(1,-50,"Prioritetas",0,Priority,false,0);
   EndMatrix;
   EndWindow;
 
-  WindowBegin("Reminders",SMSReminderLClass,CGmList,-);
+  WindowBegin("Priminimai",SMSReminderLClass,CGmList,-);
   Sizeable(-1,-1,0,0);
   SetWRect(64,80,600,298);
   SpawnClass(SMSReminderDClass);
   UseView(SMSReminderVc);
   RecordList(4,17,-21,-39);
-  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
-  RlCol   (101,101,"Type",Type,false);
-  RlCol   (201,201,"Name",Comment,false);
+  RlColKey(4,4,"Serijos Nr.",SerNr,false,SerNr);
+  RlCol   (101,101,"Tipas",Type,false);
+  RlCol   (201,201,"Pavadinimas",Comment,false);
   RlColKeyTL(-30,-30,"Act.",M4Mark,ActiveFlag,false,ActiveFlag);
   EndWindow;
 
-  WindowBegin("Reminder",SMSReminderDClass,CGview,-);
+  WindowBegin("Priminimai",SMSReminderDClass,CGview,-);
   SetWRect(20,80,760,380);
   h = 120; h2 = 300; h3 = 440; v = 6; vs=20;
   UseView(SMSReminderVc);
-  EditField(h,v,80,"Ser. No.",Normal,SerNr,false,0);
-  CheckBox(h2-50,v,0,"Active",ActiveFlag);
-  EditField(h,v+=vs,250,"Comment",Normal,Comment,false,0);
-  EditField(h,v+=vs,100,"Reminder Type",Normal,ReminderType,false,SetSClass);
-  EditField(h2,v,70,"Type",Normal,Type,false,SetSClass);
-  EditField(h,v+=vs,100,"Days",Normal,Days,false,0);
-  EditField(h2,v,70,"Customer",Normal,CustCode,false,CUSClass);
-  EditField(h,v+=vs,100,"Last Sent",Normal,LastSentDate,false,0);
-  EditField(h2,v,70,"Up to EUR",Normal,MinAmount,false,0);//Very confusing label
-  CheckBox(h,v+=vs,0,"Mondays",Day1);
-  EditField(h2,v,70,"Time",Normal,Time1,false,PasteCurTime);
-  CheckBox(h,v+=vs,0,"Tuesday",Day2);
-  EditField(h2,v,70,"Time",Normal,Time2,false,PasteCurTime);
-  CheckBox(h,v+=vs,0,"Wednesday",Day3);
-  EditField(h2,v,70,"Time",Normal,Time3,false,PasteCurTime);
-  CheckBox(h,v+=vs,0,"Thursday",Day4);
-  EditField(h2,v,70,"Time",Normal,Time4,false,PasteCurTime);
-  CheckBox(h,v+=vs,0,"Friday",Day5);
-  EditField(h2,v,70,"Time",Normal,Time5,false,PasteCurTime);
-  CheckBox(h,v+=vs,0,"Saturday",Day6);
-  EditField(h2,v,70,"Time",Normal,Time6,false,PasteCurTime);
-  CheckBox(h,v+=vs,0,"Sunday",Day7);
-  EditField(h2,v,70,"Time",Normal,Time7,false,PasteCurTime);
+  EditField(h,v,80,"Serijos Nr.",Normal,SerNr,false,0);
+  CheckBox(h2-50,v,0,"Aktyvus",ActiveFlag);
+  EditField(h,v+=vs,250,"Komentaras",Normal,Comment,false,0);
+  EditField(h,v+=vs,100,"Priminimų Tipas",Normal,ReminderType,false,SetSClass);
+  EditField(h2,v,70,"Tipas",Normal,Type,false,SetSClass);
+  EditField(h,v+=vs,100,"Dienos",Normal,Days,false,0);
+  EditField(h2,v,70,"Klientas",Normal,CustCode,false,CUSClass);
+  EditField(h,v+=vs,100,"Paskutinį Kartą Išsiųstas",Normal,LastSentDate,false,0);
+  EditField(h2,v,70,"Iki EUR",Normal,MinAmount,false,0);//Very confusing label
+  CheckBox(h,v+=vs,0,"Pirmadienis",Day1);
+  EditField(h2,v,70,"Laikas",Normal,Time1,false,PasteCurTime);
+  CheckBox(h,v+=vs,0,"Antradienis",Day2);
+  EditField(h2,v,70,"Laikas",Normal,Time2,false,PasteCurTime);
+  CheckBox(h,v+=vs,0,"Trečiadienis",Day3);
+  EditField(h2,v,70,"Laikas",Normal,Time3,false,PasteCurTime);
+  CheckBox(h,v+=vs,0,"Ketvirtadienis",Day4);
+  EditField(h2,v,70,"Laikas",Normal,Time4,false,PasteCurTime);
+  CheckBox(h,v+=vs,0,"Penktadienis",Day5);
+  EditField(h2,v,70,"Laikas",Normal,Time5,false,PasteCurTime);
+  CheckBox(h,v+=vs,0,"Šeštadienis",Day6);
+  EditField(h2,v,70,"Laikas",Normal,Time6,false,PasteCurTime);
+  CheckBox(h,v+=vs,0,"Sekmadienis",Day7);
+  EditField(h2,v,70,"Laikas",Normal,Time7,false,PasteCurTime);
 
-  CheckBox(h,v+=vs,0,"Bank Holidays",BankHolidays);
+  CheckBox(h,v+=vs,0,"Švenčių Dienomis",BankHolidays);
 
-  ButtonFrame(h,v=v+40,320,4,"Failed Reminders");
-  CheckBox(h,v,0,"Create Activity if Reminder can not be sent",CreateActivity);
-  EditField(h+50,v+=vs,70,"Person",Normal,ActPerson,false,UserSClass);
-  EditField(h2,v,70,"Type",Normal,ActType,false,ActTypeSClass);
-  EditField(h+50,v+=vs,250,"Text",Normal,ActText,false,0);
+  ButtonFrame(h,v=v+40,320,4,"Nepavyko Priminti");
+  CheckBox(h,v,0,"Sukurkite Veiklą, Jei Priminimo Negalima Išsiųsti",CreateActivity);
+  EditField(h+50,v+=vs,70,"Asmuo",Normal,ActPerson,false,UserSClass);
+  EditField(h2,v,70,"Tipas",Normal,ActType,false,ActTypeSClass);
+  EditField(h+50,v+=vs,250,"Tekstas",Normal,ActText,false,0);
 
   
 
-  EditField(h2=420,v=10,-20,"Email Subject",Normal,Subject,false,0);
-  StaticText(h2,v+=30,"Text",false);
+  EditField(h2=420,v=10,-20,"El.Laiško Tema",Normal,Subject,false,0);
+  StaticText(h2,v+=30,"Tekstas",false);
   TextField(h2,v+=10,-20,190,Message,0);
 
   EndWindow;
 
-  WindowBegin("Reminder Queues",SMSReminderQueueLClass,CGmList,-);
+  WindowBegin("Priminimo Eilės",SMSReminderQueueLClass,CGmList,-);
   Sizeable(-1,-1,0,0);
   SetWRect(64,80,600,298);
   UseView(SMSReminderQueueVc);
   SpawnClass(SMSReminderQueueDClass);
   RecordList(4,17,-21,-39);
-  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
-  RlCol   (101,101,"Inv. Date",InvDate,false);
-  RlCol   (201,201,"Invoice Nr.",InvoiceNr,false);
-  RlCol   (271,271,"Reminder",ReminderNr,false);
-  RlColKeyTL(-30,-30,"Sent",M4Mark,SentFlag,false,SentFlag);
+  RlColKey(4,4,"Serijos Nr.",SerNr,false,SerNr);
+  RlCol   (101,101,"Sąskaitos Data",InvDate,false);
+  RlCol   (201,201,"Sąskaitos Nr.",InvoiceNr,false);
+  RlCol   (271,271,"Priminimai",ReminderNr,false);
+  RlColKeyTL(-30,-30,"Išsiųstas",M4Mark,SentFlag,false,SentFlag);
   EndWindow;
 
-  WindowBegin("Reminder Queue",SMSReminderQueueDClass,CGview,-);
+  WindowBegin("Priminimo Eilės",SMSReminderQueueDClass,CGview,-);
   SetWRect(20,80,460,380);
   h = 120; h2 = 300; h3 = 440; v = 6; vs=20;
   UseView(SMSReminderQueueVc);
-  EditField(h,v,120,"Ser. No.",Normal,SerNr,false,0);
-  EditField(h,v+=vs,120,"Inv. Date",Normal,InvDate,false,0);
-  EditField(h,v+=vs,120,"Invoice Nr.",Normal,InvoiceNr,false,0);
-  EditField(h,v+=vs,120,"Reminder Nr.",Normal,ReminderNr,false,0);
-  ButtonFrame(h,v=v+40,150,4,"Status");
-  RadioButton(h,v,0,0,"Created",SentFlag);
-  RadioButton(h,v+=16,1,0,"Sent",SentFlag);
-  RadioButton(h,v+=16,2,0,"Paid before sending",SentFlag);  
-  RadioButton(h,v+=16,3,0,"Error",SentFlag);  
+  EditField(h,v,120,"Serijos Nr.",Normal,SerNr,false,0);
+  EditField(h,v+=vs,120,"Sąskaitos Data",Normal,InvDate,false,0);
+  EditField(h,v+=vs,120,"Sąskaitos Nr.",Normal,InvoiceNr,false,0);
+  EditField(h,v+=vs,120,"Priminimo Nr.",Normal,ReminderNr,false,0);
+  ButtonFrame(h,v=v+40,150,4,"Statusas");
+  RadioButton(h,v,0,0,"Sukurtas",SentFlag);
+  RadioButton(h,v+=16,1,0,"Išsiųstas",SentFlag);
+  RadioButton(h,v+=16,2,0,"Sumokėjo Prieš Išsiuntimą",SentFlag);  
+  RadioButton(h,v+=16,3,0,"Klaida",SentFlag);  
   EndWindow;
   
   return;
@@ -608,11 +609,11 @@ window B2BLoanApp_ContactSClass:1
 begin
   real v;
 
-  WindowBegin("Paste Contact",B2BLoanApp_ContactSClass,CGother,RcType);
+  WindowBegin("Įklijuoti Kontaktą",B2BLoanApp_ContactSClass,CGother,RcType);
   SetWRect(64,80,500,298);
-  HalPushButton(-120,v=8,-6,v+=20,"ContactsSwitchToCust","Contacts");
+  HalPushButton(-120,v=8,-6,v+=20,"ContactsSwitchToCust","Kontaktai");
   DataList(9,v+10,-22,-6,"DLPasteContact");
-  DataListColumn(1,6,250,AdjLeft,"DLContactName","Name",M4Str);
+  DataListColumn(1,6,250,AdjLeft,"DLContactName","Pavadinimas",M4Str);
   DataListColumn(1,256,-32,AdjLeft,"DLContactTitle","Courtesy Title",M4Str);  
   EndWindow;
 end;
@@ -624,64 +625,64 @@ begin
   string 255 label1,label2,label3,label4,label5;
   record B2BLoanApplicationVc LAr;
 
-  WindowBegin("B2B Loan Application",B2BLoanApplicationDClass,CGview,-);
+  WindowBegin("B2B Paskolos Paraiškos",B2BLoanApplicationDClass,CGview,-);
   SetWRect(64,80,859,300);
   UseView(B2BLoanApplicationVc);
   DynamicWindow;
   FormName(LoanAppForm);
   vs = 20; h=135; h2=375; h3=595;
   Tile(0,95,false,"",SerNr);
-  EditField(h,v=6,100,"Ser. No.",Normal,SerNr,false,TSerSClass);
-  EditField(h2,v,80,"Date",Normal,TransDate,false,PasteCurDate);
-  EditField(h3+30,v,-40,"Interface",Normal,InterfaceLanguage,false,0);
-  EditField(h,v+=vs,100,"Customer",Normal,CustCode,false,CUSClass);
-  EditField(h2,v,130,"Name",Normal,CustName,false,0);
+  EditField(h,v=6,100,"Serijos Nr.",Normal,SerNr,false,TSerSClass);
+  EditField(h2,v,80,"Data",Normal,TransDate,false,PasteCurDate);
+  EditField(h3+30,v,-40,"Sąsaja",Normal,InterfaceLanguage,false,0);
+  EditField(h,v+=vs,100,"Klientas",Normal,CustCode,false,CUSClass);
+  EditField(h2,v,130,"Pavadinimas",Normal,CustName,false,0);
   EditField(h3+30,v,-40,"OS",Normal,BrowserOS,false,0);
-  EditField(h,v+=vs,100,"Contact",Normal,ContactName,false,B2BLoanApp_ContactSClass);
-  EditField(h2,v,130,"Email",Normal,eMail,false,0);
-  EditField(h3+30,v,-40,"Telephone",Normal,PhoneNo,false,0);
-  EditField(h,v+=vs,100,"Contact Email",Normal,ContacteMail,false,0);
-  EditField(h2,v,130,"Contact Telephone",Normal,ContactPhoneNo,false,0);
-  EditField(h3+30,v,-40,"Contact Mobile",Normal,ContactMobile,false,0);
-  EditField(h,v+=vs,100,"Manager",Normal,Manager,false,UserSClass);
-  //EditField(h2,v,-40,"Name",Normal,ManagerName,false,0);
-  EditField(h2,v,130,"Order Class",Normal,OrderClass,false,OrderClassSClass);
-  EditField(h3+30,v,-40,"Monthly Payment Day",Normal,MonthlyPaymentDay,true,0);
-  EditField(h,v+=vs,100,"Type",Normal,Type,false,CredManTypeSClass);
+  EditField(h,v+=vs,100,"Kontaktas",Normal,ContactName,false,B2BLoanApp_ContactSClass);
+  EditField(h2,v,130,"El. paštas",Normal,eMail,false,0);
+  EditField(h3+30,v,-40,"Telefonas",Normal,PhoneNo,false,0);
+  EditField(h,v+=vs,100,"Kontakto El. paštas",Normal,ContacteMail,false,0);
+  EditField(h2,v,130,"Kontakto Telefonas",Normal,ContactPhoneNo,false,0);
+  EditField(h3+30,v,-40,"Kontakto Mobilus",Normal,ContactMobile,false,0);
+  EditField(h,v+=vs,100,"Vadovas",Normal,Manager,false,UserSClass);
+  //EditField(h2,v,-40,"Pavadinimas",Normal,ManagerName,false,0);
+  EditField(h2,v,130,"Eilės Klasė",Normal,OrderClass,false,OrderClassSClass);
+  EditField(h3+30,v,-40,"Mėnesio Mokėjimo Diena",Normal,MonthlyPaymentDay,true,0);
+  EditField(h,v+=vs,100,"Tipas",Normal,Type,false,CredManTypeSClass);
   vm = v;
-  EditField(h,v+=vs,100,"Total Sum",Normal,Sum,true,0);
-  EditField(h,v+=vs,100,"Months",Normal,Months,true,0);
+  EditField(h,v+=vs,100,"Bendra Suma",Normal,Sum,true,0);
+  EditField(h,v+=vs,100,"Mėnesiai",Normal,Months,true,0);
   EditField(h,v+=vs,100,"Princ. Delay Int. %",ViewOnly,PrincipleDelayInterest,true,0);
   EditField(h,v+=vs,100,"Princ. Delay Months",ViewOnly,PrincipleDelayMonths,true,0);
-  EditField(h,v+=vs,230,"Source link",ViewOnly,Source,false,0);
+  EditField(h,v+=vs,230,"Šaltinio Nuoroda",ViewOnly,Source,false,0);
   //EditField(h,v+=vs,100,"Monthly Rate %",Normal,InterestRate,true,0);
-  //EditField(h,v+=vs,100,"Start Date",Normal,StartDate,false,PasteCurDate);
-  //EditField(h,v+=vs,100,"End Date",ViewOnly,EndDate,false,0);
+  //EditField(h,v+=vs,100,"Pradžios Data",Normal,StartDate,false,PasteCurDate);
+  //EditField(h,v+=vs,100,"Pabaigos Data",ViewOnly,EndDate,false,0);
   v = vm;
   
-  EditField(h3=h3+30,v,-40,"Max. Monthly Payment",ViewOnly,MaxMonthlyPayment,true,0);
+  EditField(h3=h3+30,v,-40,"Maks. Mėnesinis Mokestis",ViewOnly,MaxMonthlyPayment,true,0);
   EditField(h3,v+=vs,-40,"Max Rec. Sum",ViewOnly,MaxRecSum,true,0);
   EditField(h3,v+=vs,-40,"Value based on Surety",Normal,MaxValSurety,true,0);
   EditField(h3,v+=vs,-40,"Value based on Comp.",Normal,MaxValCompany,true,0);
-  EditField(h3,v+=vs,-40,"Creditinfo Limit",Normal,CreditinfoLimit,true,0);
+  EditField(h3,v+=vs,-40,"Creditinfo Riba",Normal,CreditinfoLimit,true,0);
   v = vm;
-  ButtonFrame(h2,v=v+20,100,5,"Creditable");
-  RadioButton(h2,v,0,0,"Not Calculated",Creditable);
-  RadioButton(h2,v+=16,1,0,"Yes A",Creditable);
-  RadioButton(h2,v+=16,2,0,"Yes B",Creditable);  
-  RadioButton(h2,v+=16,3,0,"4-eyes",Creditable);  
-  RadioButton(h2,v+=16,4,0,"No",Creditable);
+  ButtonFrame(h2,v=v+20,100,5,"Kredituojamas");
+  RadioButton(h2,v,0,0,"Neapskaičiuota",Creditable);
+  RadioButton(h2,v+=16,1,0,"Taip A",Creditable);
+  RadioButton(h2,v+=16,2,0,"Taip B",Creditable);  
+  RadioButton(h2,v+=16,3,0,"4-akys",Creditable);  
+  RadioButton(h2,v+=16,4,0,"Ne",Creditable);
   v=v+vs;
-  HalPushButton(h3-90,v,h3+10,v+25,"B2BLoanAppCalculate","Calculate");
-  HalPushButton(h3+30,v,h3+130,v+25,"B2BLoanAppEvaluate","Evaluate");
+  HalPushButton(h3-90,v,h3+10,v+25,"B2BLoanAppCalculate","Skaičiuoti");
+  HalPushButton(h3+30,v,h3+130,v+25,"B2BLoanAppEvaluate","Vertinti");
 
   h3=h3-30;
   tilenr = 1;
-  TileButton(tilenr,"Contact"); tilenr = tilenr + 1;
-  TileButton(tilenr,"Surety"); tilenr = tilenr + 1;  
-  TileButton(tilenr,"Evaluation"); tilenr = tilenr + 1;  
-  TileButton(tilenr,"Factoring"); tilenr = tilenr + 1;  
-  TileButton(tilenr,"Comments"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Kontaktas"); tilenr = tilenr + 1;
+  TileButton(tilenr,"Laiduotojas"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Vertinimas"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Faktoringas"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Komentaras"); tilenr = tilenr + 1;  
   tilenr = 1;
   Tile(tilenr,290,true,tilenr,Addr0); tilenr = tilenr + 1;
   v = 6;
@@ -697,37 +698,37 @@ begin
   EditField(h,v+=vs,150,label5,Normal,Addr4,false,0);
   vm = v;
   v = 6;
-  EditField(h2=400,v,120,"Bank Code",Normal,BankCode,false,BankSClass);
-  EditField(h2,v+=vs,120,"Bank Name",Normal,BankName,false,0);
-  EditField(h2,v+=vs,120,"Bank Account",Normal,BankAccount,false,BankAccountSClass);
-  EditField(h2,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  EditField(h2=400,v,120,"Banko kodas",Normal,BankCode,false,BankSClass);
+  EditField(h2,v+=vs,120,"Banko Pavadinimas",Normal,BankName,false,0);
+  EditField(h2,v+=vs,120,"Bank Sąskaita",Normal,BankAccount,false,BankAccountSClass);
+  EditField(h2,v+=vs,-40,"Komentaras",Normal,Comment,false,0);
   EditField(h2,v+=vs,-40,"Legal No.",Normal,OfficialSerNr,false,CredLegalNrSerNrSClass);
   
-  CheckBox(h3,v=6,0,"Request Direct Debit",RequestDirectDebit);
+  CheckBox(h3,v=6,0,"Prašyti Tiesioginio Debeto",RequestDirectDebit);
   
   v = vm + v;
   ButtonFrame(h,v=v+40,700,1,"Owner");
-  EditField(h+100,v,100,"Contact Code",Normal,OwnerCustCode,false,B2BLoanApp_CUSClass);
-  EditField(h2+50,v,100,"Owner Name",Normal,OwnerName,false,0);
-  EditField(h2+280,v,100,"Owner Represent.",Normal,OwnerRep,false,0);
+  EditField(h+100,v,100,"Kontakto kodas",Normal,OwnerCustCode,false,B2BLoanApp_CUSClass);
+  EditField(h2+50,v,100,"Savininko Vardas",Normal,OwnerName,false,0);
+  EditField(h2+280,v,100,"Savininko Atstovas",Normal,OwnerRep,false,0);
   ButtonFrame(h,v=v+40,700,1,"CEO");
-  EditField(h+100,v,100,"Contact Code",Normal,CEOCustCode,false,B2BLoanApp_CUSClass);
-  EditField(h2+50,v,100,"CEO Name",Normal,CEOName,false,0);
-  EditField(h2+280,v,100,"CEO Represent.",Normal,CEORep,false,0);
+  EditField(h+100,v,100,"Kontakto kodas",Normal,CEOCustCode,false,B2BLoanApp_CUSClass);
+  EditField(h2+50,v,100,"Generalinio Direktoriaus Vardas",Normal,CEOName,false,0);
+  EditField(h2+280,v,100,"Generalinio direktoriaus Atstovas",Normal,CEORep,false,0);
  
   Tile(tilenr,290,true,tilenr,MajorityOwner1); tilenr = tilenr + 1;  
   
-  StaticText(h,v=26,"Surety Provider 1",false);
-  CheckBox(h,v=v+vs,0,"Majority Owner",MajorityOwner1);
-  EditField(h,v+=vs,100,"Contact Code 1",Normal,SuretyProvider1,false,B2BLoanApp_CUSClass);
-  EditField(h,v+=vs,100,"Access to Data till",ViewOnly,Surety1AccessToDataUntil,false,PasteCurDate);
+  StaticText(h,v=26,"Laidavimo Paslaugų Teikėjas 1",false);
+  CheckBox(h,v=v+vs,0,"Daugumos Savininkas",MajorityOwner1);
+  EditField(h,v+=vs,100,"Kontakto kodas 1",Normal,SuretyProvider1,false,B2BLoanApp_CUSClass);
+  EditField(h,v+=vs,100,"Prieiga Prie Duomenų iki",ViewOnly,Surety1AccessToDataUntil,false,PasteCurDate);
   vm = v;
-  CheckBox(h,v=v+vs,0,"Asset Arrests",Surety1AssetArrests);
-  CheckBox(h,v=v+vs,0,"Bankruptcy",Surety1Bankruptcy);
-  CheckBox(h,v=v+vs,0,"Not Creditable",Surety1NotCreditable);
-  CheckBox(h,v=v+vs,0,"Court Cases last Year",Surety1Courts);
+  CheckBox(h,v=v+vs,0,"Turto Areštai",Surety1AssetArrests);
+  CheckBox(h,v=v+vs,0,"Bankrotas",Surety1Bankruptcy);
+  CheckBox(h,v=v+vs,0,"Nekredituojamas",Surety1NotCreditable);
+  CheckBox(h,v=v+vs,0,"Praėjusių metų teismo bylos",Surety1Courts);
   v = vm;
-  ButtonFrame(h-100,v+=40,90,2,"Type");
+  ButtonFrame(h-100,v+=40,90,2,"Tipas");
   RadioButton(h-100,v,0,0,"Entrepreneur",Surety1Type);
   RadioButton(h-100,v+=16,1,0,"Specialist",Surety1Type);  
   HalPushButton(h-90,v+=25,h-10,v+25,"PrintSurety1Dm","Print");

@@ -33,6 +33,8 @@ begin
   Setting("Legal Record Numbers",CredLegalInvNrTClass,modCredMan);
   Setting("Property Types",CMPropertyTypeLClass,modCredMan);
   Setting("Insurance Types",CMInsuranceTypeLClass,modCredMan);
+  Setting("Loan Agreements",CredMan2LClass,modCredMan);
+  Setting("Leasing Agreements",CredMan3LClass,modCredMan);
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
 	Report("Application Overview",LoanApplicationListRClass,LoanApplicationListRn,0,modCredMan);
@@ -68,6 +70,12 @@ begin
 /*CRM */
 
 	Report("News Letter List",MailingListRClass,MailingListRn,0,modCRM);
+
+/* Integration modInteg */
+  Setting("PayLink",PayLinkTClass,modInteg);
+  Setting("Payment Gateways",CCAccountIDLClass,modInteg);
+  Setting("Merchant ID",CCMerchantIDLClass,modInteg);
+  
 
   SString(200000,"Evaluation report");
   SString(200001,"Company");
