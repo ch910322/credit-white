@@ -222,15 +222,20 @@ begin
             rwcnt = MatRowCnt(IVr);
             for (i=0;i<rwcnt;i=i+1) begin
               MatRowGet(IVr,i,IVrw);
-              InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
-              if (IVr.InclVAT!=0) then begin
-                basesum = IVrw.Sum - vatval; 
-              end else begin
-                basesum = IVrw.Sum;
-              end;
+              if (IVrw.ArtCode==tCredHistr.ArtCode) then begin
+                InvVat(1,1/*IVr.InclVAT*/,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,CredHistr.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+                /*
+                if (IVr.InclVAT!=0) then begin
+                  basesum = IVrw.Sum - vatval; 
+                end else begin
+                  basesum = IVrw.Sum;
+                end;
+                */
+                basesum = CredHistr.Sum - vatval;
 
-              vsum3[id] = vsum3[id] + vatval;
-              vsum2[id] = vsum2[id] + basesum;
+                vsum3[id] = vsum3[id] + vatval;
+                vsum2[id] = vsum2[id] + basesum;
+              end;
             end;
           end;
         end;
