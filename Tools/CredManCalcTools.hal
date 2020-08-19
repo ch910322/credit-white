@@ -48,6 +48,7 @@ begin
     if (nonblankdate(CredManr.FirstInvDate)) then begin
       sdp = AddMonth(CredManr.FirstInvDate,paymentnr); //  - 1
     end;
+    sdp.Day = CredManr.MonthlyPaymentDay;
     edp = AddMonth(sdp,1);
     invd = AddMonth(sdp,1);
     sdp = AddDay(sdp,1);
