@@ -25,19 +25,19 @@ begin
 	row CredManPayPlanVc CredManPayrw;
 	Integer rwcnt,i;
   val open;
-
+  
 	res = blankval;
 	BuildCredManPayPlanCust(CredManr,CredManPayr,CredManSetb,true,false);
 	rwcnt = MatRowCnt(CredManPayr);
 	for (i=rwcnt-1;i>=0;i=i-1) begin
 		MatRowGet(CredManPayr,i,CredManPayrw);
     open = open + CredManPayrw.OpenAmount;
-		if (CredManPayrw.TransDate<=baldate and res==blankval and CredManSetb.InstalmentItem==CredManPayrw.ArtCode) then begin
+		if (CredManPayrw.TransDate<=baldate and blank(res) and CredManSetb.InstalmentItem==CredManPayrw.ArtCode) then begin
   		res = CredManPayrw.Bal;
 //			i = 0;
 		end;
 	end;
-	if (res==blankval) then begin
+	if (blank(res)) then begin
     if (rwcnt==1) then begin
       res = CredManr.InvSum4;
     end else begin

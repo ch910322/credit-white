@@ -16,7 +16,7 @@ remote procedure GetFactoringRecord(record CredManVc,var record CredManFactVc);
 remote procedure GetPayGrntRecord(record CredManVc,var record CredManPmtGrntVc);
 remote procedure PrepareAgreementDocSigningSession(record AgreementDocVc,var string,var Integer);
 remote function Boolean GetAgreementDoc(record CredManVc,Integer,var record AgreementDocVc);
-remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc,string);
+remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc,string,var val);
 remote function Boolean GetAgreementDoc2(Longint,string,Integer,var record AgreementDocVc);
 remote updating procedure CredManPartialBuyoutDo(Date,val,Longint);
 remote function Date GetPauseCredManNextDate(record CredManVc);
@@ -33,6 +33,7 @@ remote procedure CredManCalcLastMonthPrinciple(var record CredManVc);
 remote procedure CredManCalcMaxMonthlyPayment(var record CredManVc);
 remote procedure InvLegalInvSerieSClassRemote(Date,Date,var array string);
 external inner procedure PasteFromSysList(Integer ,Integer);
+remote updating procedure CM_CreatePaymentOrder(record CredManVc,record VIVc,val);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -1337,6 +1338,7 @@ begin
   record VIVc VIr;
   record CMInvoicingBlock CIb;
   record RcVc RepSpec;
+  val sum;
     
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
@@ -1347,9 +1349,10 @@ begin
       RepSpec.ArtMode = 1;
       nwn = OpenWindow("CredManInvNoWClass",0,wn,"","",RepSpec);
     end else begin
-      CredManMakePaymentRemote(CredManr,VIr,"");
+      CredManMakePaymentRemote(CredManr,VIr,"",sum);
       PutWindowRecord(wn,CredManr);
       WindowDoOK(wn,0);
+      CM_CreatePaymentOrder(CredManr,VIr,sum);
       if (VIr.SerNr>0) then begin
         OpenWindow("VIDClass",0,0,"","",VIr);
       end;
@@ -1366,6 +1369,7 @@ begin
   record RcVc RepSpec;
   Integer wn,mwn,twn;
   record VIVc VIr;
+  val sum;
   
   wn = CurWindow;
   DeselectWindow(wn,true);
@@ -1376,9 +1380,10 @@ begin
   if (RepSpec.ArtMode==0) then begin
     CreateCredManInvoiceDo(CredManr,RepSpec.f1,mwn);
   end else begin
-    CredManMakePaymentRemote(CredManr,VIr,RepSpec.f1);
+    CredManMakePaymentRemote(CredManr,VIr,RepSpec.f1,sum);
     PutWindowRecord(mwn,CredManr);
     WindowDoOK(mwn,0);
+    CM_CreatePaymentOrder(CredManr,VIr,sum);
     if (VIr.SerNr>0) then begin
       twn = OpenWindow("VIDClass",0,0,"","",VIr);
     end;
