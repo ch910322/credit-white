@@ -1147,7 +1147,8 @@ begin
   return;
 end;
 
-updating procedure CreatePaymentOrder(record CredManVc CredManr,record VIVc VIr,val amount)
+global
+updating procedure CM_CreatePaymentOrder(record CredManVc CredManr,record VIVc VIr,val amount)
 begin
   record OPVc OPr,oldOPr;
   row OPVc OPrw;
@@ -1185,7 +1186,7 @@ begin
 end;
 
 global
-updating procedure CredManMakePaymentRemote(var record CredManVc CredManr,var record VIVc VIr,string invno)
+updating procedure CredManMakePaymentRemote(var record CredManVc CredManr,var record VIVc VIr,string invno,var val sum)
 begin
   record IVVc IVr;
   record CMOrderClassBlock OCb;
@@ -1197,11 +1198,12 @@ begin
     //CredManCreditAllInvoices(CredManr);
     CreatePaymentFakeReceipt(CredManr,IVr);
     CreateCredmanPurchaseInvoice(CredManr,IVr.Sum4,VIr);
-    CreatePaymentOrder(CredManr,VIr,IVr.Sum4);
+    sum = IVr.Sum4;
     if (VIr.SerNr>0) then begin
       BlockLoad(OCb);
       CredManr.VINr = VIr.SerNr;
       CredManr.OrderClass = OCb.ActiveCredOrderClass;
+      CredManr.MoneyTransferDate = VIr.InvDate;
     end;
   end;
 
