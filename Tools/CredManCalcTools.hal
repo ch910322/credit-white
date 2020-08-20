@@ -132,7 +132,7 @@ begin
 end;
 
 global
-function val GetRateAmount(record CredManVc CredManr,val trate,Integer monthtypef,Date frdate,Date todate,val calcbal,Boolean ignoref)
+function val GetRateAmount(record CredManVc CredManr,val trate,Integer monthtypef,Date frdate,Date todate,val calcbal,Boolean ignoref,Boolean fixeddaysf)
 begin
   record CMApplicationSetBlock CMb;
   val days,res;
@@ -151,7 +151,7 @@ begin
       if (frdate.Day!=todate.Day) then begin
         months = months - 1;//MonthDiff returns +1 if there are extra days
       end;
-      if (months>0 and GetDaysInMonth(CMb,CredManr)==0) then begin
+      if (months>0 and (fixeddaysf or GetDaysInMonth(CMb,CredManr)==0)) then begin
         days = DateDiff(todate,AddMonth(frdate,months));
         res = GetAmount(CredManr)*(rate/100)*months;
         res = res + (GetAmount(CredManr)*(rate/100)*12/GetDaysInYear(CMb,CredManr)*days);
@@ -159,13 +159,13 @@ begin
         res = GetAmount(CredManr)*(rate/100)*12/GetDaysInYear(CMb,CredManr)*days;
       end;
     case kMonthTypeRegular:
-      if (GetDaysInMonth(CMb,CredManr)==0) then begin
+      if (fixeddaysf or GetDaysInMonth(CMb,CredManr)==0) then begin
         res = GetAmount(CredManr)*(rate/100);
       end else begin
         res = GetAmount(CredManr)*(rate/100)*12/GetDaysInYear(CMb,CredManr)*days;
       end;   
     case kMonthTypeLast:
-      if (GetDaysInMonth(CMb,CredManr)==0) then begin
+      if (fixeddaysf or GetDaysInMonth(CMb,CredManr)==0) then begin
         res = calcbal*(rate/100);    
       end else begin
         res = calcbal*(rate/100)*12/GetDaysInYear(CMb,CredManr)*days;
@@ -275,7 +275,7 @@ begin
     if (CredManr.ChargeMethod==1 and overridef==false) then begin
       sendmonthtypef = kMonthTypeLast;
     end;
-    AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.IntRate,sendmonthtypef,frdate,todate,calcbal,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
+    AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.IntRate,sendmonthtypef,frdate,todate,calcbal,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
   end;
 
   return;
@@ -290,7 +290,7 @@ begin
   if (CredManr.ChargeMethod==1 and monthtypef!=kMonthTypeFirst) then begin
     sendmonthtypef = kMonthTypeLast;
   end;
-  AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.PrincipleDelayInterest,sendmonthtypef,frdate,todate,calcbal,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
+  AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.PrincipleDelayInterest,sendmonthtypef,frdate,todate,calcbal,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
 
   return;
 end;
@@ -324,7 +324,7 @@ begin
     if ((type==kPlannedFeesMonthly and MonthlyChargeType(CredManrw.ChargeType)) or 
         (type==kPlannedFeesOneTime and MonthlyChargeType(CredManrw.ChargeType)==false)) then begin
       if (CalculatedChargeType(CredManrw.ChargeType)) then begin
-        sum = AdjustFees(GetRateAmount(CredManr,CredManrw.vRebate,monthtypef,frdate,todate,calcbal,true),CredManrw.MinSum,CredManrw.MaxSum);
+        sum = AdjustFees(GetRateAmount(CredManr,CredManrw.vRebate,monthtypef,frdate,todate,calcbal,true,true),CredManrw.MinSum,CredManrw.MaxSum);
         AddCredPayPlanLine(CredManPayPlanr,invdate,CredManrw.ArtCode,"",kEventTypeCalcFees,sum,0,acumint,calcbal,frdate,todate,-1,factinv,0);
       end else begin
         sum = AdjustFees(CredManrw.Price,CredManrw.MinSum,CredManrw.MaxSum);

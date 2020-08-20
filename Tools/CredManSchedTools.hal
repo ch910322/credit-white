@@ -1,5 +1,5 @@
 //<halrule>server-only</halrule>
-external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
+external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean,Boolean);
 external procedure TestInvoiceBasedOnScheduleRow(record CredManSchedVc,row CredManSchedVc,var record IVVc);
 
 global
@@ -27,7 +27,7 @@ begin
       if (CredManr.ChargeMethod==1) then begin
         monthtype = 2;
       end;
-      CSrw.Interest = GetRateAmount(CredManr,CredManr.IntRate,monthtype,CSrw.FromDate,CSrw.ToDate,calcbal,false);;    
+      CSrw.Interest = GetRateAmount(CredManr,CredManr.IntRate,monthtype,CSrw.FromDate,CSrw.ToDate,calcbal,false,true);    
       calcbal = calcbal - CSrw.Principle;
       RecordClear(IVr);
       TestInvoiceBasedOnScheduleRow(CSr,CSrw,IVr);

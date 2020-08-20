@@ -39,7 +39,7 @@ external function Boolean GetCredLegalNrLine(string,string,Date,string,string,va
 external procedure FindListCredLegalSerNr(string,string,string,string,string,Integer,var array string);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 external updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
-external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
+external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean,Boolean);
 external function Boolean FindCEOContact(string,var record CUVc);
 
 global
@@ -1365,7 +1365,7 @@ begin
       MatRowGet(SMr,i,SMrw);
       if (SMrw.DebVal>0) then begin
         tot = tot + SMrw.DebVal;
-        int = int + GetRateAmount(CredManr,CredManr.IntRate,monthtype,"","",calcbal,false);
+        int = int + GetRateAmount(CredManr,CredManr.IntRate,monthtype,"","",calcbal,false,false);
         calcbal = calcbal - SMrw.DebVal;
         months = months + 1;
       end;

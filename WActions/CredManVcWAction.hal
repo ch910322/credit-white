@@ -24,7 +24,7 @@ remote updating procedure RecreateAgreementSchedule(record CredManVc);
 remote function Boolean ContractHasInvoiceCreated(record CredManVc);
 remote updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
 remote updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
-remote function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
+remote function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean,Boolean);
 remote updating procedure CreateManualExtraInvoice(record RcVc,var record IVVc);
 remote procedure CredLegalNrSerNrSClassOnOpenWindowRemote(string,string,Date,string,string,var array string);
 remote updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
@@ -73,7 +73,7 @@ begin
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManr,i,CredManrw);
     if (CredManrw.ChargeType>=2) then begin
-      tmp = GetRateAmount(CredManr,CredManrw.vRebate,1,frdate,todate,calcbal,true);
+      tmp = GetRateAmount(CredManr,CredManrw.vRebate,1,frdate,todate,calcbal,true,true);
       if (CredManrw.MinSum>0 and tmp<CredManrw.MinSum) then begin
         tmp = CredManrw.MinSum;
       end;
