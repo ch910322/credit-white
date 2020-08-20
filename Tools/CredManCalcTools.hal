@@ -62,6 +62,12 @@ begin
 
   int_sdp = sdp;
   int_edp = edp;
+  if (CredManr.FirstIntDate>int_sdp) then begin
+    int_sdp = CredManr.FirstIntDate;
+  end;
+  if (CredManr.MoneyTransferDate>int_sdp) then begin
+    int_sdp = CredManr.MoneyTransferDate;
+  end;
   int_invdat = invd;
   if (CIb.InterestIVType>=2) then begin
     int_invdat.Day = CIb.InterestIVDay;
