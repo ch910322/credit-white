@@ -108,6 +108,7 @@ begin
   record CredManTypeVc CMTr;
   Integer res;
 
+  res = -1;
   CMTr.Code = CredManr.Type;
   if (ReadFirstMain(CMTr,1,true)) then begin
     if (CMTr.DaysInMonth>0) then begin
@@ -115,7 +116,7 @@ begin
     end;
   end;
 
-  if (res==0) then begin
+  if (res==-1) then begin
     res = CMb.DaysInMonth;
   end;
 
