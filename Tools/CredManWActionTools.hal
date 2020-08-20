@@ -39,6 +39,7 @@ external function Boolean GetCredLegalNrLine(string,string,Date,string,string,va
 external procedure FindListCredLegalSerNr(string,string,string,string,string,Integer,var array string);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 external updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
+external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -1325,22 +1326,66 @@ begin
   record SMVc SMr;
   row SMVc SMrw;  
   record CredManSetBlock CredManSetb;
-  val origsum;
+  val origsum,tot,calcbal,int,totdeb,tmp;
   Integer origmonths;
+  Integer months,monthtype;
 
   if (CredManr.LastMonthPrinc>0) then begin
     BlockLoad(CredManSetb);
     origsum = CredManr.InvSum4;
     origmonths = CredManr.InstalmentMonths;
+    monthtype = 1;
+    if (CredManr.ChargeMethod==1) then begin
+      monthtype = 2;
+    end;
+
+    CredManr.MaxMonthlyPayment = 0;
     CredManr.InvSum4 = CredManr.InvSum4 - CredManr.LastMonthPrinc;
     CredManr.InstalmentMonths = CredManr.InstalmentMonths - 1;
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
     BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
     rwcnt = MatRowCnt(SMr);
+    calcbal = origsum;
     MatRowGet(SMr,rwcnt-1,SMrw);
-    CredManr.MaxMonthlyPayment = SMrw.DebVal;
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(SMr,i,SMrw);
+      if (SMrw.DebVal>0) then begin
+        tot = tot + SMrw.DebVal;
+        int = int + GetRateAmount(CredManr,CredManr.IntRate,monthtype,"","",calcbal,false);
+        calcbal = calcbal - SMrw.DebVal;
+        months = months + 1;
+      end;
+    end;
+
+    tot = tot + int;
+
+  //  CredManr.MaxMonthlyPayment = SMrw.DebVal + SMrw.CredVal;
+
+//stupid workaround, but I can't figure out a better way
+
+    tmp = tot/months;
     CredManr.InstalmentMonths = origmonths;
     CredManr.InvSum4 = origsum;
+    CredManr.MaxMonthlyPayment = tmp;
+    RecordClear(CredManPayPlanr);
+    RecordClear(SMr);
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+    BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+    rwcnt = MatRowCnt(SMr);
+    MatRowGet(SMr,rwcnt-1,SMrw);
+    if (SMrw.DebVal>CredManr.LastMonthPrinc) then begin
+      tmp = tmp+((SMrw.DebVal-CredManr.LastMonthPrinc)/months);
+    end;
+    CredManr.MaxMonthlyPayment = tmp;
+
+    RecordClear(CredManPayPlanr);
+    RecordClear(SMr);
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+    BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+    rwcnt = MatRowCnt(SMr);
+    MatRowGet(SMr,rwcnt-1,SMrw);
+    CredManr.LastMonthPrinc = SMrw.DebVal;
+
   end else begin
     CredManr.MaxMonthlyPayment = blankval;
   end;
