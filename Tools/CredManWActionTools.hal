@@ -40,6 +40,7 @@ external procedure FindListCredLegalSerNr(string,string,string,string,string,Int
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 external updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
 external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
+external function Boolean FindCEOContact(string,var record CUVc);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -719,6 +720,7 @@ begin
   record B2BLoanApplicationVc LAr;
   record RLinkVc RLr;
   Boolean testf,foundf;
+  record CUVc CUr;
 
   if (ReadRecordLink(CredManr,1,LAr,RLr)) then begin
     foundf = true;
@@ -738,6 +740,16 @@ begin
       end;
       if (!suretyf and !testf) then begin
         AddCustToDocument(ADr,LAr.CEOCustCode,LAr.CEOName);
+      end;
+    end;
+  end else begin
+    if (FindCEOContact(CredManr.CustCode,CUr)) then begin
+      testf = CustIsSurety(CUr.Code,CredManr);
+      if (suretyf and testf) then begin
+        AddCustToDocument(ADr,CUr.Code,CUr.Name);
+      end;
+      if (!suretyf and !testf) then begin
+        AddCustToDocument(ADr,CUr.Code,CUr.Name);
       end;
     end;
   end;

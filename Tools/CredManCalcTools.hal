@@ -88,6 +88,7 @@ begin
   record CredManTypeVc CMTr;
   Integer res;
 
+  res = -1;
   CMTr.Code = CredManr.Type;
   if (ReadFirstMain(CMTr,1,true)) then begin
     if (CMTr.DaysInYear>0) then begin
@@ -95,7 +96,7 @@ begin
     end;
   end;
 
-  if (res==0) then begin
+  if (res==-1) then begin
     res = CMb.DaysInYear;
   end;
 
@@ -352,7 +353,6 @@ function val FIN_PPMT(val monthly_rate, integer payments, val total_sum, integer
 begin
   val res, t, c;
 
-
   c = Round(-FIN_PMT(monthly_rate, payments, total_sum),SetRoundModeD(2));//monthly payment. 
   res = c + (c * (power(1 + monthly_rate, payment_nr-1) - 1) / monthly_rate + total_sum * power(1 + monthly_rate, payment_nr-1)) * monthly_rate;
 
@@ -405,10 +405,24 @@ begin
   return;
 end;
 
+function val GetActualDaysRate(record CMApplicationSetBlock CMAb,record CredManVc CredManr,val rate,Date frdate,Date todate)
+begin
+  val res,tmp;
+  Integer days;
+
+  days = DateDiff(todate,frdate);
+  res = rate*12/GetDaysInYear(CMAb,CredManr)*days;
+//  logtext(0,"GetActualDaysRate " & res & ":" & frdate & ":" & todate & ":" & days);
+  
+  GetActualDaysRate = res;
+  return;
+end;
+
 procedure AddInstalment(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Integer type,Integer monthtypef,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,Integer month,val usesum,Integer usemonths)
 begin
   val sum,curpayment,rate;
   Integer months;
+  record CMApplicationSetBlock CMAb;
   
   switch (type) begin
     case 0:
@@ -438,7 +452,14 @@ begin
         if (CredManr.AnnualRate==1) then begin
           rate = rate/12;
         end;
-        sum = FIN_PPMT(rate/100, usemonths, usesum, month+1);
+        rate = rate/100;
+        /*
+        BlockLoad(CMAb);
+        if (GetDaysInMonth(CMAb,CredManr)==1) then begin
+          rate = GetActualDaysRate(CMAb,CredManr,rate,frdate,todate);
+        end;
+        */
+        sum = FIN_PPMT(rate, usemonths, usesum, month+1);
         if (CredManr.MaxMonthlyPayment>0) then begin
           curpayment = GetCurrentMonthPayment(CredManPayPlanr,invdate,sum);
           if (CredManr.MaxMonthlyPayment<curpayment) then begin
