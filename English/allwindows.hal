@@ -648,14 +648,22 @@ begin
   if (type!=4 and type!=5) then begin
     EditField(h,v+=vs,30,"Months",Normal,InstalmentMonths,false,0);
   end;
-  EditField(h,v+=vs,30,"Pay. Terms",Normal,PayDeal,false,PDSClass);
+//CUST-BEGIN
+//  EditField(h,v+=vs,30,"Pay. Terms",Normal,PayDeal,false,PDSClass);
+//CUST-END
   if (type!=1 and type!=4 and type!=5) then begin
     EditField(h,v+=vs,30,"Deposit % ",Normal,DepositPrc,false,0);
     EditField(h,v+=vs,82,"Deposit Sum",Normal,DepositSum,true,0);
   end;
   EditField(h2,v=vm,82,"Start Date",Normal,startDate,false,PasteCurDate);
 //CUST-BEGIN switched fields and renamed FirstIntDate
-  EditField(h2,v+=vs,82,"Interest From Date",Normal,FirstIntDate,false,PasteCurDate);
+//CUST-BEGIN
+  //if (HasMoneyTransferDate) then begin
+    EditField(h2,v+=vs,82,"Money Transf. Date",Normal,MoneyTransferDate,false,PasteCurDate);
+  //end else begin
+  //  v = vm-vs;
+  //end;
+//CUST-END
   if (type!=4 and type!=5) then begin
     EditField(h2,v+=vs,82,"First Invoice Date",Normal,FirstInvDate,false,PasteCurDate);
   end;
@@ -669,25 +677,22 @@ begin
   end;
   EditField(h2,v+=vs,82,"Monthly Paym. Day",Normal,MonthlyPaymentDay,false,0);
 //CUST-END
+/*
   if (type!=4 and type!=5) then begin
     EditField(h3,v=vm,72,"Monthly #Instalment#",ViewOnly,MonthlySum,false,0);
   end else begin
     v = vm-vs;
   end;
+*/
+  v = vm-vs;
 //CUST-BEGIN
   EditField(h3,v+=vs,72,"Order Class",Normal,OrderClass,false,OrderClassSClass);
   EditField(h3,v+=vs,72,"Overdue percentage",Normal,OverduePercentage,false,0);
-  EditField(h3,v+=vs,72,"Surety Interest Rate",Normal,SuretyInterestRate,false,0);
+//  EditField(h3,v+=vs,72,"Surety Interest Rate",Normal,SuretyInterestRate,false,0);
   EditField(h3,v+=vs,72,"Std Prolongation Fee",Normal,StdProlongFee,false,0);
   EditField(h3,v+=vs,72,"Std Prolongation Fee %",Normal,StdProlongPrc,false,0);
   
-//CUST-BEGIN
-  //if (HasMoneyTransferDate) then begin
-    EditField(h4,v=vm,-40,"Money Transfer Date",Normal,MoneyTransferDate,false,PasteCurDate);
-  //end else begin
-  //  v = vm-vs;
-  //end;
-//CUST-END
+  v = vm-vs;
   if (type!=4 and type!=5) then begin
     EditField(h4,v+=vs,-40,"Max Monthly Payment",Normal,MaxMonthlyPayment,false,0);
 //CUST-BEGIN
@@ -871,6 +876,10 @@ begin
   EditField(h2,v,-40,"Debt. Tags/Objects",Normal,ARAccObject,false,ObjSClass);
   EditField(h,v+=vs,100,"Invoice",ViewOnly,IVNr,false,0);
   EditField(h,vm=(v+=vs),100,"Quotation",ViewOnly,QTNr,false,0);
+//CUST-BEGIN
+  EditField(h,v+=vs,30,"Pay. Terms",Normal,PayDeal,false,PDSClass);
+  EditField(h,v+=vs,82,"Interest From Date",Normal,FirstIntDate,false,PasteCurDate);
+//CUST-END
   EditField(h,v+=vs,40,"Price List",Normal,PriceList,false,PLDefSClass);
   EditField(h,v+=vs,40,"Language",Normal,LangCode,false,LangSClass);
 //CUST-BEGIN
