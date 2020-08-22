@@ -203,6 +203,21 @@ LCreateReceipt:;
   return;
 end;
 
+//CUST-BEGIN
+function Boolean ValidateFileType(string tstr)
+begin
+  Boolean res;
+
+  res = true;
+  if (right(tstr,4)!=".xml") then begin
+    res = false;
+  end;
+
+  ValidateFileType = res;
+  return;
+end;
+//CUST-END
+
 updating procedure ImpSwedBankLTU(record RcVc RepSpec)
 begin
   record BankTRVc oBTRr;
@@ -219,7 +234,11 @@ begin
   BlockLoad(PMb);
   BlockLoad(CYb);
   BlockLoad(SRb);
-
+//CUST-BEGIN
+  if (ValidateFileType(GetImportFileName)==false) then begin
+    goto LImpSwedBankLTU;
+  end;
+//CUST-END
   xdata = ParseXmlFile(GetImportFileName);
 
   acctkey = "Document/Stmt/Acct/";
@@ -334,6 +353,7 @@ begin
     n = n + 1;
   end;
   
+LImpSwedBankLTU:;
   while (TestEOF==false) begin
     inputLine = ImportField;
     if (NextImportLine(true)) then begin
@@ -358,6 +378,11 @@ begin
   BlockLoad(PMb);
   BlockLoad(CYb);
   BlockLoad(SRb);
+//CUST-BEGIN
+  if (ValidateFileType(GetImportFileName)==false) then begin
+    goto LImpSEBLTU;
+  end;
+//CUST-END
 
   xdata = ParseXmlFile(GetImportFileName);
 
@@ -473,7 +498,7 @@ begin
 
     n = n + 1;
   end;
-  
+LImpSEBLTU:;  
   while (TestEOF==false) begin
     inputLine = ImportField;
     if (NextImportLine(true)) then begin
