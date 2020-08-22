@@ -1746,15 +1746,16 @@ window CredManSchedLClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Agreement Schedules",CredManSchedLClass,CGmlist,-);
-  SetWRect(20,80,560,298);
+  SetWRect(20,80,660,298);
   Sizeable(-1,-1,0,0);
   SpawnClass(CredManSchedDClass);
   UseView(CredManSchedVc);
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Agreement",CredManNr,false,CredManNr);
   RlCol(106,106,"Customer",CustCode,false);
-  RlCol(356,356,"Date",TransDate,false);
-  RlCol(426,426,"Time",TransTime,false);
+  RlCol(176,176,"Name",CustName,false);
+  RlCol(-200,-200,"Date",TransDate,false);
+  RlCol(-80,-80,"Time",TransTime,false);
   SearchField("Search");
   EndWindow;
 end;
