@@ -1568,13 +1568,17 @@ updating procedure CredManDClassOpenProperties()
 begin
   record CredManVc CredManr;
   record CredManPropertiesVc CMPr;
-  Integer wn;
+  Integer wn,nwn;
 
   wn = CurWindow;
   if (WindowState(wn)==Rs_Normal) then begin
     GetWindowRecord(wn,CredManr);
     GetCredManPropertyRecord(CredManr,CMPr);
-    OpenWindow("CredManPropertiesDClass",0,0,"","",CMPr);
+    nwn = OpenWindow("CredManPropertiesDClass",0,0,"","",CMPr);
+    if (CredManr.LoanType==3) then begin
+      PutWindowString(nwn,"pledge","true");
+      RerunWindowDef(nwn);
+    end;
   end;
   return;
 end;

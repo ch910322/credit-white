@@ -705,6 +705,12 @@ begin
       EditField(h4,v+=vs,-40,"#VAT# Invoice Months",Normal,VATInvoiceMonths,false,0);
     end;
   end;
+  if (type==2) then begin
+    HalPushButton(h4,v+=vs,h4+120,v+20,"CredManDClassOpenProperties","Assets");
+  end;
+  if (type==3) then begin
+    HalPushButton(h4,v+=vs,h4+120,v+20,"CredManDClassOpenProperties","Pledges");
+  end;
   if (type==4) then begin
     v = vm + 80;
     EditField(h,v+=vs,100,"Loan to Value %",Normal,LoanToValue,false,0);
@@ -876,7 +882,9 @@ begin
   EditField(h,v+=vs,100,"Classifications",Normal,Classifications,false,CredManClassSClass);
 
 //CUST-BEGIN
-  HalPushButton(h,v+=vs,h+120,v+20,"CredManDClassOpenProperties","Properties");
+  if (type!=2 and type!=3) then begin
+    HalPushButton(h,v+=vs,h+120,v+20,"CredManDClassOpenProperties","Properties");
+  end;
 
   EditField(h2,v=vm-20,-40,"Bank Code",Normal,BankCode,false,BankSClass);
   EditField(h2,v+=vs,-40,"Bank Name",Normal,BankName,false,0);
