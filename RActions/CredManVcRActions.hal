@@ -104,6 +104,7 @@ BEGIN
   val crlimit,totworth;
   record CUVc CUr;
   record CredManFactVc CMFr;
+  row CredLegalInvNrBlock LegalInvNrrw;
 
   res = 0;
 
@@ -191,6 +192,14 @@ BEGIN
   if (CredManr.SalesMan!=CredMan2r.SalesMan and CredMan2r.SalesMan!=CurrentUser) then begin
     if (UserCanAction("CredManChangeManager",false)==true) then begin
       RecordCheckError(28615,"",-1,"SalesMan");
+      res = -1;
+      goto LCredManVcRecordCheck;
+    end;
+  end;
+
+  if (GetCredLegalNrLine("CredManVc",CredManr.SerNr,CredManr.startDate,CredManr.Type,CredManr.Classifications,LegalInvNrrw,-1)) then begin
+    if (LegalInvNrrw.Serie!=left(CredManr.OfficialSerNr,len(LegalInvNrrw.Serie))) then begin
+      RecordCheckError(200262,"",-1,"OfficialSerNr");
       res = -1;
       goto LCredManVcRecordCheck;
     end;
