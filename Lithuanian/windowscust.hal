@@ -1853,7 +1853,7 @@ begin
   Checkbox(h,v+=16,0,"Company Contact Email",SendToCompany);
   Checkbox(h+20,v+=16,0,"Only if no Contact Person",SendToCompNoContact);
   Checkbox(h,v+=16,0,"Additional Recipients",SendToAddRecip);
-  EditField(h+100,v+=20,100,"Job Title",Normal,SendToJobDescr,false,0);
+  EditField(h+100,v+=20,100,"Job Title",Normal,SendToJobDescr,false,JobTitleSClass);
 
   ButtonFrame(h2=400,v=vm,230,2,"Invoice Date");
   RadioButton(h2,v,0,0,"Payment Day",InvoiceDay);
