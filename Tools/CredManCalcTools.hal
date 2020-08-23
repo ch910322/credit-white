@@ -51,6 +51,9 @@ begin
     sdp.Day = CredManr.MonthlyPaymentDay;
     edp = AddMonth(sdp,1);
     invd = AddMonth(sdp,1);
+    if (DaysInMonth(sdp.Year,sdp.Month)<sdp.Day) then begin 
+      sdp.Day = DaysInMonth(sdp.Year,sdp.Month);
+    end;
     sdp = AddDay(sdp,1);
   end;
   if (CIb.InvoiceDay==1) then begin
@@ -62,7 +65,7 @@ begin
 
   int_sdp = sdp;
   int_edp = edp;
-  if (paymentnr==0) then begin
+  if (paymentnr==-1) then begin
     if (nonblank(CredManr.FirstIntDate)) then begin
       int_sdp = CredManr.FirstIntDate;
     end;
