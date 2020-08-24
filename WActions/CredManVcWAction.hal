@@ -1575,10 +1575,8 @@ begin
     GetWindowRecord(wn,CredManr);
     GetCredManPropertyRecord(CredManr,CMPr);
     nwn = OpenWindow("CredManPropertiesDClass",0,0,"","",CMPr);
-    if (CredManr.LoanType==3) then begin
-      PutWindowString(nwn,"pledge","true");
-      RerunWindowDef(nwn);
-    end;
+    PutWindowString(nwn,"type",CredManr.LoanType);
+    RerunWindowDef(nwn);
   end;
   return;
 end;

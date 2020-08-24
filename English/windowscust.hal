@@ -2213,7 +2213,20 @@ window CredManPropertiesDClass:1
 begin
   real h,v,vs,v2,vs2,hm;
   Boolean pledge;
-  WindowBegin("Properties",CredManPropertiesDClass,CGview,-);
+  Integer type;
+  string 255 title;
+
+  if (CurWindow>0) then begin
+    type = StringToInt(GetWindowString(CurWindow,"type"));
+  end;
+      
+  switch (type) begin
+    case 2: title = "Assets";
+    case 3: title = "Pledges";
+    otherwise
+      title = "Properties";
+  end;
+  WindowBegin(title,CredManPropertiesDClass,CGview,-);
   SetWRect(20,80,900,339);
   DynamicWindow;
   UseView(CredManPropertiesVc);
@@ -2221,18 +2234,14 @@ begin
   MatrixBegin(10,20,-40,-20,-,99);
   MatCol(1,24,"Property",0,Property,false,CMPropertySClass);
   MatCol(1,104,"Name",0,Addr0,false,0);
-  if (CurWindow>0) then begin
-    if (GetWindowString(CurWindow,"pledge")=="true") then begin
-      MatCol(1,-530,"ID",0,OfficialSerNr,false,0);
-      MatCol(1,-440,"Reported Value",0,RepVal,true,0);
-      MatCol(1,-350,"Evaluated Value",0,EvalVal,true,0);
-      MatCol(1,-260,"Pledge Type",0,PledgeType,false,SetSClass);
-      MatCol(1,-170,"Pledge Val",0,PledgeVal,true,0);
-      MatCol(1,-80,"Pledge Date",0,PledgeDate,false,PasteCurDate);
-      pledge = true;
-    end;
-  end;
-  if (!pledge) then begin
+  if (type==3) then begin
+    MatCol(1,-530,"ID",0,OfficialSerNr,false,0);
+    MatCol(1,-440,"Reported Value",0,RepVal,true,0);
+    MatCol(1,-350,"Evaluated Value",0,EvalVal,true,0);
+    MatCol(1,-260,"Pledge Type",0,PledgeType,false,SetSClass);
+    MatCol(1,-170,"Pledge Val",0,PledgeVal,true,0);
+    MatCol(1,-80,"Pledge Date",0,PledgeDate,false,PasteCurDate);
+  end else begin
     MatCol(1,-260,"ID",0,OfficialSerNr,false,0);
     MatCol(1,-170,"Reported Value",0,RepVal,true,0);
     MatCol(1,-80,"Evaluated Value",0,EvalVal,true,0);
