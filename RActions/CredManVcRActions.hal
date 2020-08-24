@@ -197,11 +197,13 @@ BEGIN
     end;
   end;
 
-  if (GetCredLegalNrLine("CredManVc",CredManr.SerNr,CredManr.startDate,CredManr.Type,CredManr.Classifications,LegalInvNrrw,-1)) then begin
-    if (LegalInvNrrw.Serie!=left(CredManr.OfficialSerNr,len(LegalInvNrrw.Serie))) then begin
-      RecordCheckError(200262,"",-1,"OfficialSerNr");
-      res = -1;
-      goto LCredManVcRecordCheck;
+  if (nonblank(CredManr.OfficialSerNr)) then begin
+    if (GetCredLegalNrLine("CredManVc",CredManr.SerNr,CredManr.startDate,CredManr.Type,CredManr.Classifications,LegalInvNrrw,-1)) then begin
+      if (LegalInvNrrw.Serie!=left(CredManr.OfficialSerNr,len(LegalInvNrrw.Serie))) then begin
+        RecordCheckError(200262,"",-1,"OfficialSerNr");
+        res = -1;
+        goto LCredManVcRecordCheck;
+      end;
     end;
   end;
 
