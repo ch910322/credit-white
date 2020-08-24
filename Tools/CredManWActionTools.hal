@@ -1190,6 +1190,8 @@ updating procedure CredManMakePaymentRemote(var record CredManVc CredManr,var re
 begin
   record IVVc IVr;
   record CMOrderClassBlock OCb;
+  record CMInvoicingBlock CIb;
+
 
   if (CredManr.InstalmentType!=4 and CredManr.InstalmentType!=5) then begin
     CreateSingleAgreementInvoice(CredManr,CredManr.startDate,IVr,invno);
@@ -1203,7 +1205,10 @@ begin
       BlockLoad(OCb);
       CredManr.VINr = VIr.SerNr;
       CredManr.OrderClass = OCb.ActiveCredOrderClass;
-      CredManr.MoneyTransferDate = VIr.InvDate;
+      BlockLoad(CIb);
+      if (CIb.MoneyTransferDateVI==1) then begin
+        CredManr.MoneyTransferDate = VIr.InvDate;
+      end;
     end;
   end;
 

@@ -1913,6 +1913,9 @@ begin
   EditField(h,v+=vs,100,"Object",Normal,PaymentObject,false,ObjSClass);
   EditField(h,v+=vs,100,"Payment Mode",Normal,PaymentMode,false,PMSClass);
 
+  Checkbox(h,v+=20,0,"Update Money Transfer Date when creating payment",MoneyTransferDateVI);
+  Checkbox(h,v+=16,0,"Update Money Transfer Date when Invoices is paid",MoneyTransferDateOP);
+
 
   EndWindow;
   return;

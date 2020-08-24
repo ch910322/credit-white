@@ -1198,6 +1198,8 @@ begin
   RecordField(ProlongItem,M4Code,20,INVc);
   RecordField(OverdueRateType,M4Int,0,0);
   RecordField(PeriodDelimiter,M4Str,20,0);
+  RecordField(MoneyTransferDateVI,M4Int,0,0);
+  RecordField(MoneyTransferDateOP,M4Int,0,0);
 
   EndBlock;
 
