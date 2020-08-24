@@ -98,6 +98,48 @@ begin
   return;
 end;
 
+function string 255 PastePeriod(string pcode)
+begin
+  string 255 res;
+  record PeriodBlock Pb;
+  row PeriodBlock Pbrw;
+  Integer i,rwcnt;
+  record SysFormatBlock SFb;
+  
+  res = pcode;
+  BlockLoad(Pb);
+  rwcnt = MatRowCnt(Pb);
+  for (i=0; i<rwcnt;i=i+1) begin
+    MatRowGet(Pb,i,Pbrw);
+    if (pcode==Pbrw.CodeStr) then begin
+      res = Pbrw.FromDate & ":" & Pbrw.ToDate;
+      i = rwcnt;
+    end;    
+  end; 
+  PastePeriod = res; 
+  return;
+end;
+
+global
+function Boolean ReceiptConnectionWClassPeriodEFAfter(Integer wn,Integer changed)
+begin
+  Date d1,d2;
+  string 30 tstr;
+  record IPConVc PCr;
+  
+  if (changed!=0) then begin
+    DeselectWindow(wn,true);
+    GetWindowRecord(wn,PCr);
+    tstr = PastePeriod(PCr.Period);
+    PCr.Period = tstr;
+    threadremote.FillBankTransactionsAndReceipts(PCr);
+    PutWindowRecord(wn,PCr);
+  end;
+
+  ReceiptConnectionWClassPeriodEFAfter = false;
+  return;
+end;
+
 global
 function Boolean ReceiptConnectionWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
 begin
@@ -106,7 +148,7 @@ begin
   if (changed) then begin
     switch (fieldname) begin
       case "Period": 
-        res = ReceiptConnectionWClassUpdateTransactions(wn,changed);
+        res = ReceiptConnectionWClassPeriodEFAfter(wn,changed);
       case "CustCode": 
         res = ReceiptConnectionWClassUpdateTransactions(wn,changed);
       case "Comment":
