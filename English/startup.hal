@@ -219,6 +219,7 @@ begin
   SString(200260,"Sum doesn't match with Bank Transaction");
   SString(200261,"Total Principle repayment not the same as in agreement");
   SString(200262,"Legal No. doesn't match Legal Record Numbers");
+  SString(200263,"Periods not correct");
 
 
   StrSetAdd(584);
