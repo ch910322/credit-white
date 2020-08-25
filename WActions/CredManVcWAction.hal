@@ -1079,10 +1079,16 @@ BEGIN
   Array string 60 acontact;
   Integer i,acnt;
   LongInt pos;
-  string 255 namestr,titlestr,custcode;
+  string 255 namestr,titlestr,custcode,fn;
 
   GetWindowRecord(mwn,CredManr);
-  ContactSClassOnOpen(wn,CredManr.CustCode,acontact,acnt);
+  fn = WindowActiveField(mwn);
+  switch (fn) begin
+    case "LeaseSellerContact":
+      ContactSClassOnOpen(wn,CredManr.LeaseSellerCode,acontact,acnt);
+    otherwise
+      ContactSClassOnOpen(wn,CredManr.CustCode,acontact,acnt);
+  end;
   for (i=0;i<acnt;i=i+1) begin
 //     SetListString(wn,80,acontact[i],false);
     pos = 0;    
@@ -1095,7 +1101,6 @@ BEGIN
   end;
   RETURN;
 END;
-
 
 global
 function Boolean ContactSClassOnOpenWindow(Integer wn)

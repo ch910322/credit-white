@@ -493,7 +493,7 @@ begin
   RecordField(ExtraDepositMonths,M4Str,50,0);
   RecordField(FinSum,M4Val,0,0);
   RecordField(LeaseSellerCode,M4Code,20,CUVc);
-  RecordField(LeaseSellerContact,M4Code,20,CUVc);
+  RecordField(LeaseSellerContact,M4Str,255,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);

@@ -623,7 +623,7 @@ begin
   DynamicWindow;
   UseView(CredManVc);
   FormName(CredManForm);
-  h = 120; h2 = 320; h3 = 550; h4 = 760; vs = 20;
+  h = 120; h2 = 320; h3 = 550; h4 = 780; vs = 20;
   Tile(0,230,false,"",SerNr);
   EditField(h,vm=(v=6), 82,"No.",St_i,SerNr,false,TSerSClass);
 //CUST-BEGIn
@@ -709,12 +709,12 @@ begin
 
   v = vm-vs;
   if (type!=4 and type!=5) then begin
-    EditField(h4,v+=vs,-40,"Max Monthly Payment",Normal,MaxMonthlyPayment,false,0);
+    EditField(h4,v+=vs,-40,"Max Monthly Payment",Normal,MaxMonthlyPayment,true,0);
 //CUST-BEGIN
     if (type==2 or type==3) then begin
-      EditField(h4,v+=vs,-40,"Remaining Value",Normal,LastMonthPrinc,false,0);    
+      EditField(h4,v+=vs,-40,"Remaining Value",Normal,LastMonthPrinc,true,0);    
     end else begin
-      EditField(h4,v+=vs,-40,"Last Month's Principle",Normal,LastMonthPrinc,false,0);
+      EditField(h4,v+=vs,-40,"Last Month's Principle",Normal,LastMonthPrinc,true,0);
     end;
   end;
 //CUST-END
@@ -727,8 +727,8 @@ begin
     HalPushButton(h4,v+=vs,h4+120,v+20,"CredManDClassOpenProperties","Pledges");
   end else begin
     if (type==2) then begin
-      EditField(h4,v+=vs,72,"Downpayment Months",Normal,ExtraDepositMonths,false,0);
-      EditField(h4,v+=vs,72,"Downpayment Sum",Normal,ExtraDepositSum,false,0);
+      EditField(h4,v+=vs,-40,"Additional Downp. Months",Normal,ExtraDepositMonths,false,0);
+      EditField(h4,v+=vs,-40,"Additional Downp. Sum",Normal,ExtraDepositSum,true,0);
       HalPushButton(h4,v+=vs,h4+120,v+20,"CredManDClassOpenProperties","Assets");
     end;
   end;
