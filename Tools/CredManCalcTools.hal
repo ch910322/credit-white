@@ -88,7 +88,7 @@ function val GetAmount(record CredManVc CredManr)
 begin
   val res;
 
-  res = CredManr.InvSum4 - CredManr.DepositSum;
+  res = CredManr.InvSum4 - CredManr.DepositSum - CredManr.ExtraDepositSum;
   
   GetAmount = res;
   return;
@@ -346,6 +346,35 @@ begin
   
   AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.DepositItem,"",kEventTypeCalcInstalment,CredManr.DepositSum,0,acumint,calcbal,frdate,todate,-1,-1,0);//kEventTypeCalcDeposit>>kEventTypeCalcInstalment
 
+  return;
+end;
+
+function Integer GetMonthCount(string tstr)
+begin
+  Integer res;
+  Longint pos;
+  string 255 tmp;
+  
+  while (GetNextSubstring(tstr,pos,",",tmp)) begin
+    res = res + 1;
+  end;
+
+  GetMonthCount = res;
+  return;
+end;
+
+procedure AddExtraDeposit(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,Integer month)
+begin
+  val extradep;
+  Integer totmonths;
+  
+  if (CredManr.ExtraDepositSum>0) then begin
+    if (nonblank(CredManr.ExtraDepositMonths) and SetInSet(month,CredManr.ExtraDepositMonths)) then begin
+      totmonths = GetMonthCount(CredManr.ExtraDepositMonths);
+      extradep = CredManr.ExtraDepositSum/totmonths;
+      AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.DepositItem,"",kEventTypeCalcInstalment,extradep,0,acumint,calcbal,frdate,todate,-1,-1,0);//kEventTypeCalcDeposit>>kEventTypeCalcInstalment
+    end;
+  end;
   return;
 end;
 
@@ -947,6 +976,7 @@ begin
         case 5://Payment guarantee
 
       end;
+      AddExtraDeposit(inCredManr,CredManPayPlanr,CredManSetb,invdat,acumint,calcbal,frdat,todat,i+1);
       //if (i==0) then begin
       //  AddDeposit(inCredManr,CredManPayPlanr,CredManSetb,invdat,acumint,calcbal,frdat,todat);
       //end;
