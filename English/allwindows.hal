@@ -652,6 +652,9 @@ begin
   if (type!=4 and type!=5) then begin
     EditField(h,v+=vs,30,"Months",Normal,InstalmentMonths,false,0);
   end;
+  if (type==1 or type==4 or type==5) then begin
+    EditField(h,v+=vs,30,"Monthly Paym. Day",Normal,MonthlyPaymentDay,false,0);
+  end;
 //CUST-BEGIN
 //  EditField(h,v+=vs,30,"Pay. Terms",Normal,PayDeal,false,PDSClass);
 //CUST-END
@@ -686,7 +689,9 @@ begin
   end else begin
     EditField(h2,v+=vs,82,"Create Date",ViewOnly,TransDate,false,PasteCurDate);
   end;
-  EditField(h2,v+=vs,82,"Monthly Paym. Day",Normal,MonthlyPaymentDay,false,0);
+  if (type!=1 and type!=4 and type!=5) then begin
+    EditField(h2,v+=vs,82,"Monthly Paym. Day",Normal,MonthlyPaymentDay,false,0);
+  end;
 //CUST-END
 /*
   if (type!=4 and type!=5) then begin
