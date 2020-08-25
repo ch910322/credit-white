@@ -44,8 +44,38 @@ begin
   end;
 end;
 
-global//cust
-updating procedure CreateMailsFromInvoiceArea(array string custcodes,vector LongInt custindexes,vector LongInt custinvcnt,area invoices,Boolean sendf)
+//CUST-BEGIN
+global
+updating procedure CreateSingleCustomerInvoiceMails(array LongInt IVSerNrs,Boolean sendf)
+begin
+  record IVVc IVr;
+  record IVVc oldIVr;
+  record MailVc Mailr,OldMailr;
+  LongInt i,i2;
+  string 255 tstr;
+
+  RecordNew(Mailr);
+  if (CreateMailFromIVArray(IVSerNrs,Mailr,tstr,false,"")==0) then begin
+    for (i2 = 0; i2<IVSerNrs.length; i2 = i2 + 1) begin
+      IVr.SerNr = IVSerNrs[i2];
+      if (ReadFirstMain(IVr,1,true)) then begin
+        RecordCopy(oldIVr,IVr);
+        IVr.Prntdf = 1;
+        RecordUpdate(oldIVr,IVr,false);
+      end;
+    end;
+    if (sendf) then begin
+      RecordCopy(OldMailr,Mailr);
+      Mailr.SendFlag = 1;
+      RecordUpdate(OldMailr,Mailr,true);
+    end;
+  end;
+
+  return;
+end;
+//CUST-END
+
+procedure CreateMailsFromInvoiceArea(array string custcodes,vector LongInt custindexes,vector LongInt custinvcnt,area invoices,Boolean sendf)//cust
 begin
   record IVVc IVr;
   record IVVc oldIVr;
@@ -60,22 +90,7 @@ begin
       IVSerNrs[IVSerNrs.length] = GetLongFromArea(invoices,custindexes[custcodes[i]] + i2 * 4);
     end;
     
-    RecordNew(Mailr);
-    if (CreateMailFromIVArray(IVSerNrs,Mailr,tstr,false,"")==0) then begin
-      for (i2 = 0; i2<IVSerNrs.length; i2 = i2 + 1) begin
-        IVr.SerNr = IVSerNrs[i2];
-        if (ReadFirstMain(IVr,1,true)) then begin
-          RecordCopy(oldIVr,IVr);
-          IVr.Prntdf = 1;
-          RecordUpdate(oldIVr,IVr,false);
-        end;
-      end;
-      if (sendf) then begin
-        RecordCopy(OldMailr,Mailr);
-        Mailr.SendFlag = 1;
-        RecordUpdate(OldMailr,Mailr,true);
-      end;
-    end;
+    qupdating.CreateSingleCustomerInvoiceMails(IVSerNrs,sendf);//CUST
   end;
 end;
 
@@ -213,7 +228,7 @@ begin
     end;
   end;
   if (RepSpec.flags[7]!=0) then begin
-    qupdating.CreateMailsFromInvoiceArea(custcodes,custindexes,custinvcnt,invoices,RepSpec.flags[1]!=0);//CUST qupdating
+    CreateMailsFromInvoiceArea(custcodes,custindexes,custinvcnt,invoices,RepSpec.flags[1]!=0);
   end;
   return;
 end;
