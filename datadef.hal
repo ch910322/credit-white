@@ -1142,6 +1142,7 @@ begin
   ArrayField(PayDate,M4Date,0,0);
   ArrayField(FeesMatrix,M4PackedMatrix,0,CredFeesMatrixVc);
   ArrayField(Balance,M4Val,0,0);
+  ArrayField(Deposit,M4Val,0,0);
   EndArray;
   MainKeyBegin(CredManNr,0);
   KeySegment(CredManNr);

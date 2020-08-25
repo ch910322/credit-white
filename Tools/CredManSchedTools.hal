@@ -28,7 +28,7 @@ begin
         monthtype = 2;
       end;
       CSrw.Interest = GetRateAmount(CredManr,CredManr.IntRate,monthtype,CSrw.FromDate,CSrw.ToDate,calcbal,false,true);    
-      calcbal = calcbal - CSrw.Principle;
+      calcbal = calcbal - CSrw.Principle - CSrw.Deposit;
       RecordClear(IVr);
       TestInvoiceBasedOnScheduleRow(CSr,CSrw,IVr);
 

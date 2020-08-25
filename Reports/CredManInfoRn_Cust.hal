@@ -234,16 +234,16 @@ begin
   return;
 end;
 
-procedure AddInvoiceToList(record IVVc IVr,var record SMVc SMr,var val calcbal,Date fromdate,Date todate)
+procedure AddInvoiceToList(record IVVc IVr,var record SMVc SMr,var val calcbal,Date fromdate,Date todate,record CredManSetBlock CMb)
 begin
   Integer i,rwcnt;
   row IVVc IVrw;
-  val inst,intrate,fees,pen;
+  val inst,intrate,fees,pen,deposit;
   row SMVc SMrw;
   record CredFeesMatrixVc FMr;
   row CredFeesMatrixVc FMrw;
   Boolean extrafeef;
-  
+
   RecordNew(FMr);
   rwcnt = MatRowCnt(IVr);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -252,6 +252,9 @@ begin
       case 1: 
         inst = inst + IVrw.Sum; 
         calcbal = calcbal - IVrw.Sum;
+        if (IVrw.ArtCode==CMb.DepositItem) then begin
+          deposit = deposit + IVrw.Sum;
+        end;
       case 2: 
         intrate = IVrw.Sum;
       case 3: 
@@ -284,6 +287,7 @@ begin
     SMrw.Objects = fromdate;
     SMrw.Comment = todate;
     SMrw.FrRate = IVr.Sum3;
+    SMrw.ToRateB1 = deposit;
     if (MatRowCnt(FMr)>0) then begin
       PackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
     end;
@@ -326,6 +330,7 @@ begin
   row SMVc SMrw;
   record IVVc IVr;
   row IVVc IVrw;
+  record CredManSetBlock CMb;
   
 /*
   calcbal = calcbal - CSrw.Principle;
@@ -361,7 +366,8 @@ begin
 */
   IVr.SerNr = CSrw.InvoiceNr;
   if (ReadFirstMain(IVr,1,true)) then begin
-    AddInvoiceToList(IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate);
+    BlockLoad(CMb);
+    AddInvoiceToList(IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate,CMb);
   end;
 
   return;
@@ -392,7 +398,7 @@ begin
             case 0:
               IVr.SerNr = CredHistr.RecordNr;
               if (ReadFirstMain(IVr,1,true)) then begin
-                AddInvoiceToList(IVr,SMr,calcbal,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate);
+                AddInvoiceToList(IVr,SMr,calcbal,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,CMb);
               end;
             case 4:
               AddBuyOutToList(CredHistr.Sum,CredHistr.TransDate,SMr,calcbal);
@@ -409,7 +415,7 @@ begin
   TestCredManInvoicesFromPlan(CredManr,CMb,CredManPayPlanr,CredManr.endDate,aIVr);
   for (i=0;i<aIVr.length;i=i+1) begin
     IVr = aIVr[i];
-    AddInvoiceToList(IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate);
+    AddInvoiceToList(IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate,CMb);
   end;
 
   return;
@@ -446,7 +452,7 @@ begin
     for (i=0;i<aIVr.length;i=i+1) begin
       IVr = aIVr[i];
       IVr.SerNr = -1;
-      AddInvoiceToList(IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate);
+      AddInvoiceToList(IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate,CredManSetb);
     end;
   end;
 

@@ -1765,7 +1765,7 @@ window CredManSchedDClass:1
 begin
   real h,v,vs,v2,vs2,hm,h2;
   WindowBegin("Agreement Schedule",CredManSchedDClass,CGview,-);
-  SetWRect(20,80,830,639);
+  SetWRect(20,80,930,639);
   UseView(CredManSchedVc);
   AutoSizeWindow(false);
   vs=20; h=120; vs2=16; hm=-100; h2 = 350;
@@ -1780,21 +1780,22 @@ begin
   MatCol(1,85,"Inv. Date",0,InvDate,false,0);
   MatCol(1,150,"Period From",0,FromDate,false,0);
   MatCol(1,215,"Period To",0,ToDate,false,0);
-  MatCol(1,320,"Principle",0,Principle,true,0);
-  MatCol(1,390,"Interest",0,Interest,true,0);
-  MatCol(1,460,"Fees",0,Fees,true,0);
-  MatCol(1,534,"Total",0,Total,true,0);
+  MatCol(1,320,"Deposit",0,Deposit,true,0);
+  MatCol(1,390,"Principle",0,Principle,true,0);
+  MatCol(1,460,"Interest",0,Interest,true,0);
+  MatCol(1,530,"Fees",0,Fees,true,0);
+  MatCol(1,604,"Total",0,Total,true,0);
   MatCol(1,-120,"Invoiced",0,Invoiced,false,SetSClass);
   MatCol(1,-60,"Balance",0,Balance,true,0);
   InsertRowTest;
   DeleteRowTest;
   EndMatrix;
   SoftEditField(90,-30,150,"Period",ViewOnly,"period",false,0,M4Str,255);
-  SoftEditField(280,-30,60,"Diff.",ViewOnly,"diff",false,0,M4Str,255);
-  SoftEditField(350,-30,60,"",ViewOnly,"totprinc",false,0,M4Val,0);
-  SoftEditField(420,-30,60,"",ViewOnly,"totint",false,0,M4Val,0);
-  SoftEditField(495,-30,60,"",ViewOnly,"totfees",false,0,M4Val,0);
-  SoftEditField(570,-30,60,"",ViewOnly,"tot",false,0,M4Val,0);
+  SoftEditField(350,-30,60,"Diff.",ViewOnly,"diff",true,0,M4Str,255);
+  SoftEditField(425,-30,60,"",ViewOnly,"totprinc",true,0,M4Val,0);
+  SoftEditField(500,-30,60,"",ViewOnly,"totint",true,0,M4Val,0);
+  SoftEditField(580,-30,60,"",ViewOnly,"totfees",true,0,M4Val,0);
+  SoftEditField(700,-30,60,"",ViewOnly,"tot",true,0,M4Val,0);
 
   SpecialMenu("Open Fees Matrix",' ',1,"OpenCredFeesMatrixSchedDsm");
   SpecialMenu("Recalculate Interest",' ',1,"CredManSchedRecalcInterestDsm");
