@@ -121,7 +121,7 @@ begin
                   invdinst,invdint,invdfee,invddep,paidinst,paidint,paidfee,paiddep,addinst,addint,addfee,adddep,
                   lastpaid,lastpaiddate,curbal,cursuginst,contractage);
 
-  totsum = CredManr.InvSum4 - CredManr.DepositSum;
+  totsum = CredManr.InvSum4 - CredManr.DepositSum - CredManr.ExtraDepositSum;
   if (contractage>CredManr.SettleLimit) then begin
     settlesum = curbal;
   end else begin
@@ -250,7 +250,7 @@ begin
     MatRowGet(IVr,i,IVrw);
     switch (IVrw.ChargeType) begin
       case 1: 
-        inst = IVrw.Sum; 
+        inst = inst + IVrw.Sum; 
         calcbal = calcbal - IVrw.Sum;
       case 2: 
         intrate = IVrw.Sum;

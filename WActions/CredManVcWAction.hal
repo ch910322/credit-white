@@ -176,9 +176,44 @@ begin
   if (changedf) then begin  
     GetWindowRecord(wn,CredManr);
     RecalcCredManFees(CredManr);
+    if (CredManr.DepositSum>0) then begin
+      CredManr.FinSum = CredManr.InvSum4 - CredManr.DepositSum;
+    end else begin
+      CredManr.FinSum = blankval;
+    end;
     PutWindowRecord(wn,CredManr);   
   end; 
   CredManDClassInvSumEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassDepositSumEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManVc CredManr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    if (CredManr.DepositSum>0) then begin
+      CredManr.FinSum = CredManr.InvSum4 - CredManr.DepositSum;
+    end else begin
+      CredManr.FinSum = blankval;
+    end;
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassDepositSumEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassvRebateEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManVc CredManr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    RecalcCredManFees(CredManr);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassvRebateEFAfter = true;
   return;
 end;
 
@@ -204,6 +239,7 @@ begin
       end;
       Credmanr.LoanType = CMTr.LoanType;
     end;
+    RecalcCredManFees(CredManr);
     PutWindowRecord(wn,CredManr); 
     NewTimedTask("rerun window def","rerunwindowdef","RerunWindowDefHAL",wn,CurrentDate,AddSeconds(CurrentTime,1),"","");  
     //
@@ -324,28 +360,21 @@ begin
     case "PayGrntPayDate2":   res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
     case "PayGrntReportDate1":res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
     case "PayGrntReportDate2":res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
-    case "MinSum":            res = CredManDClassInvSumEFAfter(wn,changed!=0);
-    case "MaxSum":            res = CredManDClassInvSumEFAfter(wn,changed!=0);
+    case "MinSum":            res = CredManDClassvRebateEFAfter(wn,changed!=0);
+    case "MaxSum":            res = CredManDClassvRebateEFAfter(wn,changed!=0);
     otherwise 
       res = inner.CredManDClassAfterEditField(wn,fieldname,fn,rownr,changed);
   end;
-  if (fieldname=="CustCode") then begin//call standard function as well
-    res = CredManDClassCustCodeEFAfter(wn,rownr,changed!=0);
-  end;
-  if (fieldname=="InstalmentMonths") then begin//to update the dates correctly
-    res = CredManDClassstartDateEFAfter(wn,changed!=0,false);
-  end;
-  if (fieldname=="MaxMonthlyPayment") then begin
-    res = CredManDClassMaxMonthlyPaymentEFAfter(wn,changed!=0);
-  end;
-  if (fieldname=="LastMonthPrinc") then begin
-    res = CredManDClassLastMonthPrincEFAfter(wn,changed!=0);
-  end;
-  if (fieldname=="InvSum4" or fieldname=="vRebate" or fieldname=="Type") then begin//to update the fees
-    res = CredManDClassInvSumEFAfter(wn,changed!=0);
-  end;
-  if (fieldname=="Type") then begin//to update the fees
-    res = CredManDClassTypeEFAfter(wn,changed!=0);
+  switch (fieldname) begin
+    case "DepositSum": res = CredManDClassDepositSumEFAfter(wn,changed!=0);
+    case "DepositPrc": res = CredManDClassDepositSumEFAfter(wn,changed!=0);
+    case "CustCode": res = CredManDClassCustCodeEFAfter(wn,rownr,changed!=0);
+    case "InstalmentMonths": res = CredManDClassstartDateEFAfter(wn,changed!=0,false);
+    case "MaxMonthlyPayment": res = CredManDClassMaxMonthlyPaymentEFAfter(wn,changed!=0);
+    case "LastMonthPrinc": res = CredManDClassLastMonthPrincEFAfter(wn,changed!=0);
+    case "InvSum4": res = CredManDClassInvSumEFAfter(wn,changed!=0);
+    case "vRebate": res = CredManDClassvRebateEFAfter(wn,changed!=0);
+    case "Type": res = CredManDClassTypeEFAfter(wn,changed!=0);
   end;
 /*
   if (changed!=0) then begin
