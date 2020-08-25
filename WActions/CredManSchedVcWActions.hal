@@ -16,7 +16,7 @@ begin
   rwcnt = MatRowCnt(CSr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CSr,i,CSrw);
-    princ = princ + CSrw.Principle;
+    princ = princ + CSrw.Principle + CSrw.Deposit;
     interest = interest + CSrw.Interest;
     fees = fees + CSrw.Fees;
     total = total + CSrw.Total;
@@ -96,7 +96,7 @@ begin
     rwcnt = MatRowCnt(CSr);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CSr,i,CSrw);
-      bal = bal - CSrw.Principle;
+      bal = bal - CSrw.Principle - CSrw.Deposit;
       CSrw.Balance = bal;
       MatRowPut(CSr,i,CSrw);
     end;
