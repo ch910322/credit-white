@@ -1239,6 +1239,7 @@ begin
   val tval;
   Longint histnr;
   record BaseCurBlock BCb;
+  record AgreementDocVc ADr;
 
   CredManr.SerNr = sernr;
   if (ReadFirstMain(CredManr,1,true)) then begin
@@ -1247,7 +1248,14 @@ begin
       CredManr.VersionNo = 0;
     end;
     CredManr.VersionNo = CredManr.VersionNo + 1;
-    RecordUpdate(oldCredManr,CredManr,true);
+    if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
+      ADr.RecordType = 0;
+      ADr.RecordNr = CredManr.SerNr;
+      ADr.Type = 2;
+      if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
+        RecreateAgreementDocument(ADr,true);
+      end;
+    end;
 
     BlockLoad(BCb);
     SMr.RegDate = td;
