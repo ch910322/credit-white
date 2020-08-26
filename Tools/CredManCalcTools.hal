@@ -460,8 +460,8 @@ end;
 
 procedure AddInstalment(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Integer type,Integer monthtypef,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,Integer month,val usesum,Integer usemonths)
 begin
-  val sum,curpayment,rate;
-  Integer months;
+  val sum,curpayment,rate,tusesum;
+  Integer months,tusemonths;
   record CMApplicationSetBlock CMAb;
   
   switch (type) begin
@@ -479,6 +479,10 @@ begin
           if (CredManr.MaxMonthlyPayment<curpayment) then begin
             sum = CredManr.MaxMonthlyPayment-(curpayment-sum);
           end;
+        end;
+        if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
+          sum = usesum-CredManr.LastMonthPrinc;
+          sum = sum/(usemonths-1);
         end;
         FixupInstalmentAmount(sum,calcbal);
         AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,sum,0,acumint,calcbal,frdate,todate,-1,-1,0);
@@ -499,11 +503,22 @@ begin
           rate = GetActualDaysRate(CMAb,CredManr,rate,frdate,todate);
         end;
         */
-        sum = FIN_PPMT(rate, usemonths, usesum, month+1);
+        tusemonths = usemonths;
+        tusesum = usesum;
+        if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
+          tusemonths = tusemonths - 1;
+          tusesum = usesum - CredManr.LastMonthPrinc;
+        end;
+        sum = FIN_PPMT(rate, tusemonths, tusesum, month+1);
         if (CredManr.MaxMonthlyPayment>0) then begin
           curpayment = GetCurrentMonthPayment(CredManPayPlanr,invdate,sum);
           if (CredManr.MaxMonthlyPayment<curpayment) then begin
             sum = CredManr.MaxMonthlyPayment-(curpayment-sum);
+          end;
+        end;
+        if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
+          if (calcbal-sum<CredManr.LastMonthPrinc) then begin
+            sum = calcbal - CredManr.LastMonthPrinc;
           end;
         end;
         FixupInstalmentAmount(sum,calcbal);
