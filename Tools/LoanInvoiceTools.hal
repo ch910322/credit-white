@@ -964,6 +964,7 @@ begin
   if (updf) then begin
     AddPrepayments(IVr,ASb);
   end;
+  CheckAndAddHiddenPrinciple(IVr,CIb);
 
   return;
 end;
