@@ -1358,6 +1358,7 @@ begin
   Integer months,monthtype;
 
   if (CredManr.LastMonthPrinc>0) then begin
+/*
     BlockLoad(CredManSetb);
     origsum = CredManr.InvSum4;
     origmonths = CredManr.InstalmentMonths;
@@ -1412,7 +1413,8 @@ begin
     rwcnt = MatRowCnt(SMr);
     MatRowGet(SMr,rwcnt-1,SMrw);
     CredManr.LastMonthPrinc = SMrw.DebVal;
-
+*/
+    CredManr.MaxMonthlyPayment = blankval;
   end else begin
     CredManr.MaxMonthlyPayment = blankval;
   end;
