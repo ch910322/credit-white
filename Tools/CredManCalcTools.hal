@@ -483,6 +483,9 @@ begin
         if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
           sum = usesum-CredManr.LastMonthPrinc;
           sum = sum/(usemonths-1);
+          if (calcbal-sum<CredManr.LastMonthPrinc) then begin
+            sum = calcbal - CredManr.LastMonthPrinc;
+          end;
         end;
         FixupInstalmentAmount(sum,calcbal);
         AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,sum,0,acumint,calcbal,frdate,todate,-1,-1,0);
