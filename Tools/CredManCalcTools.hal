@@ -148,7 +148,7 @@ begin
   if (CredManr.AnnualRate==1 and ignoref==false) then begin
     rate = rate/12;
   end;
-  days = DateDiff(todate,frdate);
+  days = DateDiff(todate,frdate)+1;
   BlockLoad(CMb);
   switch (monthtypef) begin
     case kMonthTypeFirst:
