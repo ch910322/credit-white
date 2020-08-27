@@ -650,6 +650,9 @@ begin
         if (WindowDoOK(mwn,0)) then begin
           if (setf and RepSpec.flags[1]==1) then begin
             RecreateAgreementSchedule2(CredManr,true);
+            CloseWindow(mwn);
+            ReadFirstMain(CredManr,1,true);
+            OpenWindow("CredManDClass",1,0,"","",CredManr);
           end;
         end;
         if (IVr.SerNr>0) then begin
