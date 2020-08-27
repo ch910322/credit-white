@@ -401,7 +401,7 @@ END;
 
 
 global
-updating procedure CustFillIPRecord(record BankTRVc BTr,var record IPVc IPr)
+updating procedure CustFillIPRecord(record BankTRVc BTr,var record IPVc IPr,string paymode)
 begin
   val remsum;
   record CUVc CUr;
@@ -418,7 +418,7 @@ begin
     IPr.RegDate = CurrentDate;
     IPr.OKFlag = 0;
     IPr.Comment = BTr.Reference;
-
+    IPr.PayMode = paymode;
     FindCustomerForBankImport(BTr.PayCustCode,BTr.PayRegNr1,BTr.PayVATNr,BTr.PayBankAcc,BTr.PayName,CUr);
     instr = BPI_ParseInvStr(BTr.PayReference);
     remsum = BTr.Sum;
