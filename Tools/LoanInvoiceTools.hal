@@ -1377,7 +1377,9 @@ begin
 	for (i=0;i<rwcnt;i=i+1) begin
 		MatRowGet(CredManPayPlanr,i,CredManPayrw);
     if (CredManPayrw.PlanType>=5) then begin
-      res = CredManPayrw.Bal;
+      if (res>CredManPayrw.Bal) then begin
+        res = CredManPayrw.Bal;
+      end;
       openamount = openamount + CredManPayrw.OpenAmount;
     end;
     if (CredManPayrw.PlanType<5) then begin
@@ -1975,6 +1977,7 @@ begin
     if (CSrw.Type==4) then begin
       CSrw.Total = SMrw.CurDebVal;
       CSrw.Invoiced = 1;
+      bal = bal - CSrw.Total;
 //      CSrw.Principle = SMrw.CurDebVal;
     end else begin
       CSrw.FromDate = SMrw.Objects;
