@@ -1240,6 +1240,7 @@ begin
   Longint histnr;
   record BaseCurBlock BCb;
   record AgreementDocVc ADr;
+  Boolean updf;
 
   CredManr.SerNr = sernr;
   if (ReadFirstMain(CredManr,1,true)) then begin
@@ -1249,12 +1250,7 @@ begin
     end;
     CredManr.VersionNo = CredManr.VersionNo + 1;
     if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
-      ADr.RecordType = 0;
-      ADr.RecordNr = CredManr.SerNr;
-      ADr.Type = 2;
-      if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
-        RecreateAgreementDocument(ADr,true);
-      end;
+      updf = true;
     end;
 
     BlockLoad(BCb);
@@ -1270,6 +1266,15 @@ begin
     if (tval>0) then begin
       CreateCredHist(-1,11,CredManr.CustCode,tval,4,"",td,CredManr.SerNr,td,histnr,"","",1,CredManr.SerNr,tval,-1,tval);
       UpdateCredHistBalancePartialBuyout(CredManr.SerNr,histnr);
+    end;
+    if (updf) then begin
+      ADr.RecordType = 0;
+      ADr.RecordNr = CredManr.SerNr;
+      ADr.Type = 2;
+      if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
+        GenerateAgreementSchedule(CredManr,true);
+        RecreateAgreementDocument(ADr,true);
+      end;
     end;
   end;
   
