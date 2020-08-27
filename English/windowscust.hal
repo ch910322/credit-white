@@ -126,14 +126,14 @@ begin
 
   EditField(h,v+=vs,100,"Mailing List",Normal,MailingList,false,PersColSClass);
 
-  ButtonFrame(h,v+=40,200,2,"Surety Provider by default");
+  vm = v;
+  ButtonFrame(h,v+=40,150,2,"Surety Provider by default");
   RadioButton(h,v,0,0,"Contact",ContactPasteSpecial);
   RadioButton(h,v+=16,1,0,"Contact Person",ContactPasteSpecial);  
 
-  ButtonFrame(h,v+=40,200,2,"Credit Agreement Info Report Date");
+  ButtonFrame(h,v+=40,150,2,"Credit Agreement Info Report Date");
   RadioButton(h,v,1,0,"Due date",CMInfoReportDate);
   RadioButton(h,v+=16,0,0,"Invoice date",CMInfoReportDate);  
-
 
   EditField(h,v+=40,100,"Days in Year",Normal,DaysInYear,false,0);
   ButtonFrame(h,v+=40,150,2,"Days in Month");
@@ -143,6 +143,15 @@ begin
   EditField(h,v+=30,100,"Document Signer",Normal,DocumentSigner,false,UserSClass);
   EditField(h,v+=vs,100,"Signer's Job Description",Normal,DocumentSignerPosition,false,0);
   EditField(h,v+=30,100,"Invoice Signer",Normal,InvoiceSigner,false,UserSClass);
+
+  ButtonFrame(h2=360,v=vm+40,150,6,"Days in Month");
+  RadioButton(h2,v,0,0,"Not set",DefCredManLoanType);
+  RadioButton(h2,v+=16,1,0,"Loan",DefCredManLoanType); 
+  RadioButton(h2,v+=16,2,0,"Leasing",DefCredManLoanType); 
+  RadioButton(h2,v+=16,3,0,"Mortgage",DefCredManLoanType); 
+  RadioButton(h2,v+=16,4,0,"Factoring",DefCredManLoanType); 
+  RadioButton(h2,v+=16,5,0,"Payment Grnt.",DefCredManLoanType); 
+
   
 
   EndWindow;
