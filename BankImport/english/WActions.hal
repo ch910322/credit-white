@@ -7,6 +7,7 @@ remote function Integer FindBankAccImportBank(string);
 external procedure RecalculateIPDOverpaid(var record IPConDistributeVc);
 remote procedure PayModeBankAccCustSClassArrayOnOpen(var Array string,var Array string);
 external inner procedure PasteFromSysList(Integer ,Integer);
+external inner procedure In2Period(var string,var Date,var Date);
 
 
 global
@@ -98,28 +99,6 @@ begin
   return;
 end;
 
-function string 255 PastePeriod(string pcode)
-begin
-  string 255 res;
-  record PeriodBlock Pb;
-  row PeriodBlock Pbrw;
-  Integer i,rwcnt;
-  record SysFormatBlock SFb;
-  
-  res = pcode;
-  BlockLoad(Pb);
-  rwcnt = MatRowCnt(Pb);
-  for (i=0; i<rwcnt;i=i+1) begin
-    MatRowGet(Pb,i,Pbrw);
-    if (pcode==Pbrw.CodeStr) then begin
-      res = Pbrw.FromDate & ":" & Pbrw.ToDate;
-      i = rwcnt;
-    end;    
-  end; 
-  PastePeriod = res; 
-  return;
-end;
-
 global
 function Boolean ReceiptConnectionWClassPeriodEFAfter(Integer wn,Integer changed)
 begin
@@ -130,8 +109,8 @@ begin
   if (changed!=0) then begin
     DeselectWindow(wn,true);
     GetWindowRecord(wn,PCr);
-    tstr = PastePeriod(PCr.Period);
-    PCr.Period = tstr;
+    In2Period(PCr.Period,d1,d2)
+    //PCr.Period = tstr;
     threadremote.FillBankTransactionsAndReceipts(PCr);
     PutWindowRecord(wn,PCr);
   end;
