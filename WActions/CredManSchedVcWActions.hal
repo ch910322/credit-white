@@ -20,6 +20,9 @@ begin
     interest = interest + CSrw.Interest;
     fees = fees + CSrw.Fees;
     total = total + CSrw.Total;
+    if (CSrw.Type==4) then begin
+      princ = princ + CSrw.Total;
+    end;
     if (i==0) then begin
       sd = CSrw.InvDate;
     end;
