@@ -220,6 +220,7 @@ begin
   SString(200261,"Total Principle repayment not the same as in agreement");
   SString(200262,"Legal No. doesn't match Legal Record Numbers");
   SString(200263,"Periods not correct");
+  SString(200264,"Invoice Required");
 
 
   StrSetAdd(584);

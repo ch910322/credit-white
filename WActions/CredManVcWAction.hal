@@ -639,6 +639,10 @@ begin
   //if (RepSpec.long1>0) then begin
     mwn = MotherWindow(wn);
     if (WindowState(mwn)==Rs_Normal) then begin
+      if (RepSpec.flags[2]==0 and RepSpec.flags[3]==1) then begin
+        MessageBox(200264,"");
+        goto LPauseCredManWClassPause;
+      end;
       GetWindowRecord(mwn,CredManr);
       DoPauseCredMan(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr);
       if (res) then begin
@@ -663,6 +667,7 @@ begin
       SelectWindow(iwn);
     end;
   //end;
+LPauseCredManWClassPause:;
   return;
 end;
 
