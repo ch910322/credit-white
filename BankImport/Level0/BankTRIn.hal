@@ -849,6 +849,25 @@ end;
 
 updating procedure XMLBankTRIn(record RcVc RepSpec)
 begin
+//CUST-BEGIN
+  string 255 bic;
+  xml xdata;
+
+  if (ValidateFileType(GetImportFileName)==false) then begin
+    RepSpec.flags[20] = -1;
+  end else begin
+    xdata = ParseXmlFile(GetImportFileName);
+
+    bic = XmlGet(xdata,"Document/BkToCstmrStmt/Stmt/Acct/Svcr/FinInstnId/BIC");
+    switch (left(bic,4)) begin
+      case "HABA": RepSpec.flags[20] = kReceiptBankSwedBankLithuania;
+      case "CBVI": RepSpec.flags[20] = kReceiptBankSEBLithuania;
+      case "UNLA": RepSpec.flags[20] = kReceiptBankSEBLithuania;
+      case "EEUH": RepSpec.flags[20] = kReceiptBankSEBLithuania;
+    end;
+  end;
+//CUST-END
+
   switch (RepSpec.flags[20]) begin
     case kReceiptBankSwedBankLithuania: ImpSwedBankLTU(RepSpec);
     case kReceiptBankSEBLithuania: ImpSEBLTU(RepSpec);
