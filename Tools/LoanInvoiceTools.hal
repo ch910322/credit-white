@@ -1966,6 +1966,7 @@ begin
     CSrw.Type = SMrw.RowSimStat;
     if (CSrw.Type==4) then begin
       CSrw.Total = SMrw.CurDebVal;
+      CSrw.Principle = SMrw.CurDebVal;
     end else begin
       CSrw.FromDate = SMrw.Objects;
       CSrw.ToDate = SMrw.Comment;
