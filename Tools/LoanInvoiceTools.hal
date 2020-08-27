@@ -1146,11 +1146,11 @@ begin
     end else begin
       CredHistr.SerNr = CredManPayPlanrw.IssuedNr;
       if (ReadFirstMain(CredHistr,1,true)) then begin
-        if (CredManPayPlanrw.ArtCode!=CMb.LateFeeItem and CredManPayPlanrw.ArtCode!=CMb.LateRateItem and CredHistr.RecordType==0) then begin
+        if (CredManPayPlanrw.ArtCode!=CMb.LateFeeItem and CredManPayPlanrw.ArtCode!=CMb.LateRateItem and (CredHistr.RecordType==0 or CredHistr.RecordType==4)) then begin
           if (CredManPayPlanrw.Bal<balance or balance==0) then begin
             balance = CredManPayPlanrw.Bal;
           end;
-          if (CredManPayPlanrw.TransDate>lastinv) then begin
+          if (CredHistr.RecordType==0 and CredManPayPlanrw.TransDate>lastinv) then begin
             lastinv = AddDay(CredManPayPlanrw.TransDate,1);
           end;
         end;
@@ -1203,8 +1203,12 @@ begin
     if (CSrw.Invoiced==0) then begin
       i = rwcnt;
     end else begin
-      balance = balance - CSrw.Principle - CSrw.Deposit;
-      lastinv = AddDay(CSrw.InvDate,1);
+      if (CSrw.Type==4) then begin
+        balance = balance - CSrw.Total;
+      end else begin
+        balance = balance - CSrw.Principle - CSrw.Deposit;
+        lastinv = AddDay(CSrw.InvDate,1);
+      end;
     end;
   end;
   
@@ -1425,7 +1429,11 @@ begin
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CSr,i,CSrw);
     if (CSrw.Invoiced==1) then begin
-      bal = bal - CSrw.Principle - CSrw.Deposit;
+      if (CSrw.Type==4) then begin
+        bal = bal - CSrw.Total;
+      end else begin
+        bal = bal - CSrw.Principle - CSrw.Deposit;
+      end;
     end else begin
       i = rwcnt;
     end;
