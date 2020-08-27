@@ -284,6 +284,24 @@ begin
   return;
 end;
 
+global
+updating procedure RecreateAgreementSchedule2(record CredManVc CredManr,Boolean fullf)
+begin
+  record AgreementDocVc ADr;
+
+  GenerateAgreementSchedule(CredManr,true);
+  if (fullf) then begin
+    ADr.RecordType = 0;
+    ADr.RecordNr = CredManr.SerNr;
+    ADr.Type = 2;
+    if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
+      RecreateAgreementDocument(ADr,true);
+    end;
+  end;
+
+  return;
+end;
+
 updating procedure CreateProlongSession(record CredManVc CredManr,Date td,val months,val prolongmonths,Integer prolongf,Integer recalcshedf)
 begin
   record ProlongSessionVc PSr;
@@ -326,6 +344,7 @@ begin
           CredManr.ProlongMonths = prolongmonths;
         end;
         CredManSetDatesCust(CredManr,false);
+        /*
         GenerateAgreementSchedule(CredManr,true);
         if (RepSpec.flags[1]==1) then begin
           ADr.RecordType = 0;
@@ -335,6 +354,7 @@ begin
             RecreateAgreementDocument(ADr,true);
           end;
         end;
+        */
         setf = true;
       end;
       res = true;      
