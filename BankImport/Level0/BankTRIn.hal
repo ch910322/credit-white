@@ -1075,3 +1075,12 @@ begin
   end;
   return;
 end;
+
+global
+updating procedure Cust_BankTRIn()
+begin
+  record RcVc RepSpec;
+
+  XMLBankTRIn(RepSpec);
+  return;
+end;

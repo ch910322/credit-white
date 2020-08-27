@@ -3,7 +3,7 @@ event startup
 begin
   SetLangMode(LangEnglish,"ENG",2);
 	
-	Import("Bank Import - Lithuania",0,BankTRIn,modSL);//LitBankImportIClass
+	Import("Bank Import - Lithuania",0,Cust_BankTRIn,modSL);//LitBankImportIClass
 
 	Setting("Banking Statement Import settings",BankImportSetTClass,modSL);
 	Setting("Receipt Connection",ReceiptConnectionWClass,modSL);
