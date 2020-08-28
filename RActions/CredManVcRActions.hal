@@ -53,6 +53,7 @@ BEGIN
   CredManr.StateNotified = 0;
   CredManr.VersionNo = -1;
   CredManr.OfficialSerNr = "";
+  CredManr.MoneyTransferDate = "";
 /*
   CredManr.FactInvAmount = t;
   CredManr.LoanToValue = t;
@@ -63,7 +64,7 @@ BEGIN
   CredManr.FactInsured = 0;
 */
 
-  res = inner.CredManVcRecordDefaults(CredManr,CredMan2r,stat,long4);
+  res = inner.CredManVcRecordDuplicate(CredManr,CredMan2r,stat,long4);
   
   CredManVcRecordDuplicate = res;
   return;
