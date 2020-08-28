@@ -1,5 +1,5 @@
 //<halrule>server-only</halrule>
-external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
+external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean,Boolean);
 external procedure TestInvoiceBasedOnScheduleRow(record CredManSchedVc,row CredManSchedVc,var record IVVc);
 
 global
@@ -9,32 +9,56 @@ begin
   record CredManVc CredManr;
   row CredManSchedVc CSrw;
   record IVVc IVr;
+  record PDVc PDr;
+  record CMInvoicingBlock CIb;
+  Date invdate;
   
   CredManr.SerNr = CSr.CredManNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
+    BlockLoad(CIb);
     rwcnt = MatRowCnt(CSr);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CSr,i,CSrw);
-      if (CSrw.InvDate==CredManr.FirstInvDate) then begin
-        monthtype = 0;
-      end else begin
-        if (rwcnt-1) then begin
-          monthtype = 2;
+      if (CSrw.Invoiced==0) then begin
+        invdate = CSrw.InvDate;
+        if (CIb.InvoiceDay==1) then begin
+          PDr.Code = CredManr.PayDeal;
+          if (ReadFirstMain(PDr,1,true)) then begin
+            invdate = AddDay(invdate,PDr.pdays);
+          end;
+        end;
+        if (invdate>=CredManr.FirstInvDate) then begin
+          if (nonblank(CSrw.FromDate)) then begin
+            monthtype = 0;
+          end else begin
+            if (i==rwcnt-1) then begin
+              monthtype = 2;
+            end else begin
+              monthtype = 1;
+            end;
+          end;
+          if (CredManr.ChargeMethod==1) then begin
+            monthtype = 2;
+          end;
+          CSrw.Interest = GetRateAmount(CredManr,CredManr.IntRate,monthtype,CSrw.FromDate,CSrw.ToDate,calcbal,false,false);    
+          calcbal = calcbal - CSrw.Principle - CSrw.Deposit;
+          RecordClear(IVr);
+          TestInvoiceBasedOnScheduleRow(CSr,CSrw,IVr);
+
+          CSrw.Total = IVr.Sum4;
+
+          MatRowPut(CSr,i,CSrw);
         end else begin
-          monthtype = 1;
+          CSrw.Interest = blankval; 
+          calcbal = calcbal - CSrw.Principle - CSrw.Deposit;
+          RecordClear(IVr);
+          TestInvoiceBasedOnScheduleRow(CSr,CSrw,IVr);
+
+          CSrw.Total = IVr.Sum4;
+
+          MatRowPut(CSr,i,CSrw);
         end;
       end;
-      if (CredManr.ChargeMethod==1) then begin
-        monthtype = 2;
-      end;
-      CSrw.Interest = GetRateAmount(CredManr,CredManr.IntRate,monthtype,CSrw.FromDate,CSrw.ToDate,calcbal,false);;    
-      calcbal = calcbal - CSrw.Principle;
-      RecordClear(IVr);
-      TestInvoiceBasedOnScheduleRow(CSr,CSrw,IVr);
-
-      CSrw.Total = IVr.Sum4;
-
-      MatRowPut(CSr,i,CSrw);
     end;
   end;
 

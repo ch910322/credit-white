@@ -121,7 +121,7 @@ begin
                   invdinst,invdint,invdfee,invddep,paidinst,paidint,paidfee,paiddep,addinst,addint,addfee,adddep,
                   lastpaid,lastpaiddate,curbal,cursuginst,contractage);
 
-  totsum = CredManr.InvSum4 - CredManr.DepositSum;
+  totsum = CredManr.InvSum4 - CredManr.DepositSum - CredManr.ExtraDepositSum;
   if (contractage>CredManr.SettleLimit) then begin
     settlesum = curbal;
   end else begin
@@ -234,24 +234,27 @@ begin
   return;
 end;
 
-procedure AddInvoiceToList(record IVVc IVr,var record SMVc SMr,var val calcbal,Date fromdate,Date todate)
+procedure AddInvoiceToList(record IVVc IVr,var record SMVc SMr,var val calcbal,Date fromdate,Date todate,record CredManSetBlock CMb)
 begin
   Integer i,rwcnt;
   row IVVc IVrw;
-  val inst,intrate,fees,pen;
+  val inst,intrate,fees,pen,deposit;
   row SMVc SMrw;
   record CredFeesMatrixVc FMr;
   row CredFeesMatrixVc FMrw;
   Boolean extrafeef;
-  
+
   RecordNew(FMr);
   rwcnt = MatRowCnt(IVr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(IVr,i,IVrw);
     switch (IVrw.ChargeType) begin
       case 1: 
-        inst = IVrw.Sum; 
+        inst = inst + IVrw.Sum; 
         calcbal = calcbal - IVrw.Sum;
+        if (IVrw.ArtCode==CMb.DepositItem) then begin
+          deposit = deposit + IVrw.Sum;
+        end;
       case 2: 
         intrate = IVrw.Sum;
       case 3: 
@@ -284,6 +287,7 @@ begin
     SMrw.Objects = fromdate;
     SMrw.Comment = todate;
     SMrw.FrRate = IVr.Sum3;
+    SMrw.ToRateB1 = deposit;
     if (MatRowCnt(FMr)>0) then begin
       PackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
     end;
@@ -326,6 +330,7 @@ begin
   row SMVc SMrw;
   record IVVc IVr;
   row IVVc IVrw;
+  record CredManSetBlock CMb;
   
 /*
   calcbal = calcbal - CSrw.Principle;
@@ -361,7 +366,8 @@ begin
 */
   IVr.SerNr = CSrw.InvoiceNr;
   if (ReadFirstMain(IVr,1,true)) then begin
-    AddInvoiceToList(IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate);
+    BlockLoad(CMb);
+    AddInvoiceToList(IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate,CMb);
   end;
 
   return;
@@ -392,7 +398,7 @@ begin
             case 0:
               IVr.SerNr = CredHistr.RecordNr;
               if (ReadFirstMain(IVr,1,true)) then begin
-                AddInvoiceToList(IVr,SMr,calcbal,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate);
+                AddInvoiceToList(IVr,SMr,calcbal,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,CMb);
               end;
             case 4:
               AddBuyOutToList(CredHistr.Sum,CredHistr.TransDate,SMr,calcbal);
@@ -409,7 +415,7 @@ begin
   TestCredManInvoicesFromPlan(CredManr,CMb,CredManPayPlanr,CredManr.endDate,aIVr);
   for (i=0;i<aIVr.length;i=i+1) begin
     IVr = aIVr[i];
-    AddInvoiceToList(IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate);
+    AddInvoiceToList(IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate,CMb);
   end;
 
   return;
@@ -446,7 +452,7 @@ begin
     for (i=0;i<aIVr.length;i=i+1) begin
       IVr = aIVr[i];
       IVr.SerNr = -1;
-      AddInvoiceToList(IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate);
+      AddInvoiceToList(IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate,CredManSetb);
     end;
   end;
 
@@ -464,17 +470,19 @@ begin
   Integer prevtype;
   record SMVc SMr;
   row SMVc SMrw;
-  Integer c10;
+  val princ;
+  Integer c10,c11;
 
   BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,withactuals,suggestedonsameday);
   PrintCredManTop(CredManr,CredManPayPlanr,CredManSetb);
 
-  SetRepCol(2,80);
+  SetRepCol(2,50);
   SetRepCol(3,180);
   SetRepCol(4,280);
-  SetRepCol(5,160);
-  SetRepCol(6,220);
-  SetRepCol(7,280);
+  c11 = 130;
+  SetRepCol(5,180);
+  SetRepCol(6,240);
+  SetRepCol(7,290);
   SetRepCol(8,340);
   c10 = 380;
   SetRepCol(9,430);
@@ -485,6 +493,7 @@ begin
   StartFormat(15);
   OutString(0,0,USetStr(200090),false);
   OutString(2,0,USetStr(200091),false);
+  OutString(c11,0,USetStr(200099),true);
   OutString(5,0,USetStr(200092),true);
   OutString(6,0,USetStr(200093),true);
   OutString(7,0,USetStr(200094),true);
@@ -518,7 +527,12 @@ begin
     end else begin
       OutString(2,0,StringFromSet(2011,SMrw.RowSimStat),false);  
     end;
-    OutString(5,0,SMrw.DebVal,true);
+    princ = SMrw.DebVal-SMrw.ToRateB1;
+    if (princ==0) then begin
+      princ = blankval;
+    end;
+    OutString(c11,0,SMrw.ToRateB1,true);
+    OutString(5,0,princ,true);
     OutString(6,0,SMrw.CredVal,true);
     OutString(7,0,SMrw.DebVal2,true);
     OutString(8,0,SMrw.CredVal2,true);

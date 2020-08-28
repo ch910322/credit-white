@@ -16,15 +16,17 @@ remote procedure GetFactoringRecord(record CredManVc,var record CredManFactVc);
 remote procedure GetPayGrntRecord(record CredManVc,var record CredManPmtGrntVc);
 remote procedure PrepareAgreementDocSigningSession(record AgreementDocVc,var string,var Integer);
 remote function Boolean GetAgreementDoc(record CredManVc,Integer,var record AgreementDocVc);
-remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc,string);
+remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc,string,var val);
 remote function Boolean GetAgreementDoc2(Longint,string,Integer,var record AgreementDocVc);
 remote updating procedure CredManPartialBuyoutDo(Date,val,Longint);
 remote function Date GetPauseCredManNextDate(record CredManVc);
 remote updating procedure RecreateAgreementSchedule(record CredManVc);
+remote updating procedure RecreateAgreementSchedule2(record CredManVc,Boolean);
+
 remote function Boolean ContractHasInvoiceCreated(record CredManVc);
 remote updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
 remote updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
-remote function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean);
+remote function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean,Boolean);
 remote updating procedure CreateManualExtraInvoice(record RcVc,var record IVVc);
 remote procedure CredLegalNrSerNrSClassOnOpenWindowRemote(string,string,Date,string,string,var array string);
 remote updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
@@ -33,6 +35,7 @@ remote procedure CredManCalcLastMonthPrinciple(var record CredManVc);
 remote procedure CredManCalcMaxMonthlyPayment(var record CredManVc);
 remote procedure InvLegalInvSerieSClassRemote(Date,Date,var array string);
 external inner procedure PasteFromSysList(Integer ,Integer);
+remote updating procedure CM_CreatePaymentOrder(record CredManVc,record VIVc,val);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -72,7 +75,7 @@ begin
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManr,i,CredManrw);
     if (CredManrw.ChargeType>=2) then begin
-      tmp = GetRateAmount(CredManr,CredManrw.vRebate,1,frdate,todate,calcbal,true);
+      tmp = GetRateAmount(CredManr,CredManrw.vRebate,1,frdate,todate,calcbal,true,true);
       if (CredManrw.MinSum>0 and tmp<CredManrw.MinSum) then begin
         tmp = CredManrw.MinSum;
       end;
@@ -175,9 +178,44 @@ begin
   if (changedf) then begin  
     GetWindowRecord(wn,CredManr);
     RecalcCredManFees(CredManr);
+    if (CredManr.DepositSum>0) then begin
+      CredManr.FinSum = CredManr.InvSum4 - CredManr.DepositSum;
+    end else begin
+      CredManr.FinSum = blankval;
+    end;
     PutWindowRecord(wn,CredManr);   
   end; 
   CredManDClassInvSumEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassDepositSumEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManVc CredManr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    if (CredManr.DepositSum>0) then begin
+      CredManr.FinSum = CredManr.InvSum4 - CredManr.DepositSum;
+    end else begin
+      CredManr.FinSum = blankval;
+    end;
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassDepositSumEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassvRebateEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManVc CredManr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    RecalcCredManFees(CredManr);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassvRebateEFAfter = true;
   return;
 end;
 
@@ -203,6 +241,7 @@ begin
       end;
       Credmanr.LoanType = CMTr.LoanType;
     end;
+    RecalcCredManFees(CredManr);
     PutWindowRecord(wn,CredManr); 
     NewTimedTask("rerun window def","rerunwindowdef","RerunWindowDefHAL",wn,CurrentDate,AddSeconds(CurrentTime,1),"","");  
     //
@@ -323,28 +362,21 @@ begin
     case "PayGrntPayDate2":   res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
     case "PayGrntReportDate1":res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
     case "PayGrntReportDate2":res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
-    case "MinSum":            res = CredManDClassInvSumEFAfter(wn,changed!=0);
-    case "MaxSum":            res = CredManDClassInvSumEFAfter(wn,changed!=0);
+    case "MinSum":            res = CredManDClassvRebateEFAfter(wn,changed!=0);
+    case "MaxSum":            res = CredManDClassvRebateEFAfter(wn,changed!=0);
     otherwise 
       res = inner.CredManDClassAfterEditField(wn,fieldname,fn,rownr,changed);
   end;
-  if (fieldname=="CustCode") then begin//call standard function as well
-    res = CredManDClassCustCodeEFAfter(wn,rownr,changed!=0);
-  end;
-  if (fieldname=="InstalmentMonths") then begin//to update the dates correctly
-    res = CredManDClassstartDateEFAfter(wn,changed!=0,false);
-  end;
-  if (fieldname=="MaxMonthlyPayment") then begin
-    res = CredManDClassMaxMonthlyPaymentEFAfter(wn,changed!=0);
-  end;
-  if (fieldname=="LastMonthPrinc") then begin
-    res = CredManDClassLastMonthPrincEFAfter(wn,changed!=0);
-  end;
-  if (fieldname=="InvSum4" or fieldname=="vRebate" or fieldname=="Type") then begin//to update the fees
-    res = CredManDClassInvSumEFAfter(wn,changed!=0);
-  end;
-  if (fieldname=="Type") then begin//to update the fees
-    res = CredManDClassTypeEFAfter(wn,changed!=0);
+  switch (fieldname) begin
+    case "DepositSum": res = CredManDClassDepositSumEFAfter(wn,changed!=0);
+    case "DepositPrc": res = CredManDClassDepositSumEFAfter(wn,changed!=0);
+    case "CustCode": res = CredManDClassCustCodeEFAfter(wn,rownr,changed!=0);
+    case "InstalmentMonths": res = CredManDClassstartDateEFAfter(wn,changed!=0,false);
+    case "MaxMonthlyPayment": res = CredManDClassMaxMonthlyPaymentEFAfter(wn,changed!=0);
+    case "LastMonthPrinc": res = CredManDClassLastMonthPrincEFAfter(wn,changed!=0);
+    case "InvSum4": res = CredManDClassInvSumEFAfter(wn,changed!=0);
+    case "vRebate": res = CredManDClassvRebateEFAfter(wn,changed!=0);
+    case "Type": res = CredManDClassTypeEFAfter(wn,changed!=0);
   end;
 /*
   if (changed!=0) then begin
@@ -607,13 +639,22 @@ begin
   //if (RepSpec.long1>0) then begin
     mwn = MotherWindow(wn);
     if (WindowState(mwn)==Rs_Normal) then begin
+      if (RepSpec.flags[2]==0 and RepSpec.flags[3]==1) then begin
+        MessageBox(200264,"");
+        goto LPauseCredManWClassPause;
+      end;
       GetWindowRecord(mwn,CredManr);
       DoPauseCredMan(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr);
       if (res) then begin
         PutWindowRecord(mwn,CredManr);
         if (WindowDoOK(mwn,0)) then begin
           if (setf and RepSpec.flags[1]==1) then begin
-            RecreateAgreementSchedule(CredManr);
+            RecreateAgreementSchedule2(CredManr,true);
+            CloseWindow(mwn);
+            ReadFirstMain(CredManr,1,true);
+            OpenWindow("CredManDClass",1,0,"","",CredManr);
+          end else begin
+            RecreateAgreementSchedule2(CredManr,false);
           end;
         end;
         if (IVr.SerNr>0) then begin
@@ -631,6 +672,7 @@ begin
       SelectWindow(iwn);
     end;
   //end;
+LPauseCredManWClassPause:;
   return;
 end;
 
@@ -1049,10 +1091,16 @@ BEGIN
   Array string 60 acontact;
   Integer i,acnt;
   LongInt pos;
-  string 255 namestr,titlestr,custcode;
+  string 255 namestr,titlestr,custcode,fn;
 
   GetWindowRecord(mwn,CredManr);
-  ContactSClassOnOpen(wn,CredManr.CustCode,acontact,acnt);
+  fn = WindowActiveField(mwn);
+  switch (fn) begin
+    case "LeaseSellerContact":
+      ContactSClassOnOpen(wn,CredManr.LeaseSellerCode,acontact,acnt);
+    otherwise
+      ContactSClassOnOpen(wn,CredManr.CustCode,acontact,acnt);
+  end;
   for (i=0;i<acnt;i=i+1) begin
 //     SetListString(wn,80,acontact[i],false);
     pos = 0;    
@@ -1065,7 +1113,6 @@ BEGIN
   end;
   RETURN;
 END;
-
 
 global
 function Boolean ContactSClassOnOpenWindow(Integer wn)
@@ -1337,6 +1384,7 @@ begin
   record VIVc VIr;
   record CMInvoicingBlock CIb;
   record RcVc RepSpec;
+  val sum;
     
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
@@ -1347,9 +1395,10 @@ begin
       RepSpec.ArtMode = 1;
       nwn = OpenWindow("CredManInvNoWClass",0,wn,"","",RepSpec);
     end else begin
-      CredManMakePaymentRemote(CredManr,VIr,"");
+      CredManMakePaymentRemote(CredManr,VIr,"",sum);
       PutWindowRecord(wn,CredManr);
       WindowDoOK(wn,0);
+      CM_CreatePaymentOrder(CredManr,VIr,sum);
       if (VIr.SerNr>0) then begin
         OpenWindow("VIDClass",0,0,"","",VIr);
       end;
@@ -1366,6 +1415,7 @@ begin
   record RcVc RepSpec;
   Integer wn,mwn,twn;
   record VIVc VIr;
+  val sum;
   
   wn = CurWindow;
   DeselectWindow(wn,true);
@@ -1376,9 +1426,10 @@ begin
   if (RepSpec.ArtMode==0) then begin
     CreateCredManInvoiceDo(CredManr,RepSpec.f1,mwn);
   end else begin
-    CredManMakePaymentRemote(CredManr,VIr,RepSpec.f1);
+    CredManMakePaymentRemote(CredManr,VIr,RepSpec.f1,sum);
     PutWindowRecord(mwn,CredManr);
     WindowDoOK(mwn,0);
+    CM_CreatePaymentOrder(CredManr,VIr,sum);
     if (VIr.SerNr>0) then begin
       twn = OpenWindow("VIDClass",0,0,"","",VIr);
     end;
@@ -1563,13 +1614,15 @@ updating procedure CredManDClassOpenProperties()
 begin
   record CredManVc CredManr;
   record CredManPropertiesVc CMPr;
-  Integer wn;
+  Integer wn,nwn;
 
   wn = CurWindow;
   if (WindowState(wn)==Rs_Normal) then begin
     GetWindowRecord(wn,CredManr);
     GetCredManPropertyRecord(CredManr,CMPr);
-    OpenWindow("CredManPropertiesDClass",0,0,"","",CMPr);
+    nwn = OpenWindow("CredManPropertiesDClass",0,0,"","",CMPr);
+    PutWindowString(nwn,"type",CredManr.LoanType);
+    RerunWindowDef(nwn);
   end;
   return;
 end;

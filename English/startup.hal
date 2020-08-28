@@ -158,6 +158,7 @@ begin
   SString(200096,"Total");
   SString(200097,"Balance");
   SString(200098,"VAT");
+  SString(200099,"Downpayment");
 
   SString(200100,"Invoice Number already used");
   SString(200101,"Amount is more than specified in Credit Agreement");
@@ -218,6 +219,9 @@ begin
 
   SString(200260,"Sum doesn't match with Bank Transaction");
   SString(200261,"Total Principle repayment not the same as in agreement");
+  SString(200262,"Legal No. doesn't match Legal Record Numbers");
+  SString(200263,"Periods not correct");
+  SString(200264,"Invoice Required");
 
 
   StrSetAdd(584);

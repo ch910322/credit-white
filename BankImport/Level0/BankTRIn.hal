@@ -8,7 +8,7 @@ external function Boolean IsDigit(string);
 external function val ValFromString(string,string,string);
 external function Date DateFromString(string,string);
 //CUST-BEGIN
-external outer updating procedure CustFillIPRecord(record BankTRVc,var record IPVc);
+external outer updating procedure CustFillIPRecord(record BankTRVc,var record IPVc,string);
 external outer updating procedure CustFillOPRecord(record BankTRVc,var record OPVc);
 external outer procedure FindCustomerForBankImport(string,string,string,string,string,record CUVc);
 
@@ -203,6 +203,21 @@ LCreateReceipt:;
   return;
 end;
 
+//CUST-BEGIN
+function Boolean ValidateFileType(string tstr)
+begin
+  Boolean res;
+
+  res = true;
+  if (right(tstr,4)!=".xml") then begin
+    res = false;
+  end;
+
+  ValidateFileType = res;
+  return;
+end;
+//CUST-END
+
 updating procedure ImpSwedBankLTU(record RcVc RepSpec)
 begin
   record BankTRVc oBTRr;
@@ -219,7 +234,11 @@ begin
   BlockLoad(PMb);
   BlockLoad(CYb);
   BlockLoad(SRb);
-
+//CUST-BEGIN
+  if (ValidateFileType(GetImportFileName)==false) then begin
+    goto LImpSwedBankLTU;
+  end;
+//CUST-END
   xdata = ParseXmlFile(GetImportFileName);
 
   acctkey = "Document/Stmt/Acct/";
@@ -314,7 +333,7 @@ begin
                 RecordUpdate(oldBTRr,BTRr,true);
               end;
             case "C":
-              CustFillIPRecord(BTRr,IPr);
+              CustFillIPRecord(BTRr,IPr,PMbrw.Code);
               if (IPr.SerNr>0) then begin
                 RecordCopy(oldBTRr,BTRr);
                 BTRr.FileName = "IPVc";
@@ -334,6 +353,7 @@ begin
     n = n + 1;
   end;
   
+LImpSwedBankLTU:;
   while (TestEOF==false) begin
     inputLine = ImportField;
     if (NextImportLine(true)) then begin
@@ -358,6 +378,11 @@ begin
   BlockLoad(PMb);
   BlockLoad(CYb);
   BlockLoad(SRb);
+//CUST-BEGIN
+  if (ValidateFileType(GetImportFileName)==false) then begin
+    goto LImpSEBLTU;
+  end;
+//CUST-END
 
   xdata = ParseXmlFile(GetImportFileName);
 
@@ -454,7 +479,7 @@ begin
                 RecordUpdate(oldBTRr,BTRr,true);
               end;
             case "C":
-              CustFillIPRecord(BTRr,IPr);
+              CustFillIPRecord(BTRr,IPr,PMbrw.Code);
               if (IPr.SerNr>0) then begin
                 RecordCopy(oldBTRr,BTRr);
                 BTRr.FileName = "IPVc";
@@ -473,7 +498,7 @@ begin
 
     n = n + 1;
   end;
-  
+LImpSEBLTU:;  
   while (TestEOF==false) begin
     inputLine = ImportField;
     if (NextImportLine(true)) then begin
@@ -824,6 +849,25 @@ end;
 
 updating procedure XMLBankTRIn(record RcVc RepSpec)
 begin
+//CUST-BEGIN
+  string 255 bic;
+  xml xdata;
+
+  if (ValidateFileType(GetImportFileName)==false) then begin
+    RepSpec.flags[20] = -1;
+  end else begin
+    xdata = ParseXmlFile(GetImportFileName);
+
+    bic = XmlGet(xdata,"Document/BkToCstmrStmt/Stmt/Acct/Svcr/FinInstnId/BIC");
+    switch (left(bic,4)) begin
+      case "HABA": RepSpec.flags[20] = kReceiptBankSwedBankLithuania;
+      case "CBVI": RepSpec.flags[20] = kReceiptBankSEBLithuania;
+      case "UNLA": RepSpec.flags[20] = kReceiptBankSEBLithuania;
+      case "EEUH": RepSpec.flags[20] = kReceiptBankSEBLithuania;
+    end;
+  end;
+//CUST-END
+
   switch (RepSpec.flags[20]) begin
     case kReceiptBankSwedBankLithuania: ImpSwedBankLTU(RepSpec);
     case kReceiptBankSEBLithuania: ImpSEBLTU(RepSpec);
@@ -1029,5 +1073,14 @@ begin
     case 1: CSVBankTRIn(RepSpec);
     case 2: XMLBankTRIn(RepSpec);
   end;
+  return;
+end;
+
+global
+updating procedure Cust_BankTRIn()
+begin
+  record RcVc RepSpec;
+
+  XMLBankTRIn(RepSpec);
   return;
 end;

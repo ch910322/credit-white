@@ -16,10 +16,13 @@ begin
   rwcnt = MatRowCnt(CSr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CSr,i,CSrw);
-    princ = princ + CSrw.Principle;
+    princ = princ + CSrw.Principle + CSrw.Deposit;
     interest = interest + CSrw.Interest;
     fees = fees + CSrw.Fees;
     total = total + CSrw.Total;
+    if (CSrw.Type==4) then begin
+      princ = princ + CSrw.Total;
+    end;
     if (i==0) then begin
       sd = CSrw.InvDate;
     end;
@@ -96,7 +99,11 @@ begin
     rwcnt = MatRowCnt(CSr);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CSr,i,CSrw);
-      bal = bal - CSrw.Principle;
+      if (CSrw.Type==4) then begin
+        bal = bal - CSrw.Total;
+      end else begin
+        bal = bal - CSrw.Principle - CSrw.Deposit;
+      end;
       CSrw.Balance = bal;
       MatRowPut(CSr,i,CSrw);
     end;
@@ -141,6 +148,7 @@ begin
   row CredManSchedVc SCrw;
   longint mwn,rowno;
   Integer i,rwcnt;
+  val fees;
   
   //wn = CurWindow;
   mwn = MotherWindow(wn);
@@ -153,6 +161,8 @@ begin
       MessageBox(1058,"");
       WindowFieldGoto(wn,FMr,i,"ArtCode",true);
       goto LCredFeesMatrixVClassOnOKWindow;
+    end else begin
+      fees = fees + FMrw.Sum;
     end;
   end;
   GetWindowRecord(mwn,SCr);
@@ -161,6 +171,7 @@ begin
   if (rowno>=0) then begin
     MatRowGet(SCr,rowno,SCrw);
     PackRowFieldMatrix(SCrw,"FeesMatrix",FMr);
+    SCrw.Fees = fees;
     MatRowPut(SCr,rowno,SCrw);
     SumupCredManSched(SCr,rowno);
   end;
@@ -191,6 +202,8 @@ begin
     case "Total": 
       res = false;
     case "Balance": 
+      res = false;
+    case "Fees": 
       res = false;
   end;
 

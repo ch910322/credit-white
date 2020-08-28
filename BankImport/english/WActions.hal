@@ -7,6 +7,7 @@ remote function Integer FindBankAccImportBank(string);
 external procedure RecalculateIPDOverpaid(var record IPConDistributeVc);
 remote procedure PayModeBankAccCustSClassArrayOnOpen(var Array string,var Array string);
 external inner procedure PasteFromSysList(Integer ,Integer);
+external inner procedure In2Period(var string,var Date,var Date);
 
 
 global
@@ -99,6 +100,26 @@ begin
 end;
 
 global
+function Boolean ReceiptConnectionWClassPeriodEFAfter(Integer wn,Integer changed)
+begin
+  Date d1,d2;
+  string 30 tstr;
+  record IPConVc PCr;
+  
+  if (changed!=0) then begin
+    DeselectWindow(wn,true);
+    GetWindowRecord(wn,PCr);
+    In2Period(PCr.Period,d1,d2)
+    //PCr.Period = tstr;
+    threadremote.FillBankTransactionsAndReceipts(PCr);
+    PutWindowRecord(wn,PCr);
+  end;
+
+  ReceiptConnectionWClassPeriodEFAfter = false;
+  return;
+end;
+
+global
 function Boolean ReceiptConnectionWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
 begin
   Boolean res;
@@ -106,7 +127,7 @@ begin
   if (changed) then begin
     switch (fieldname) begin
       case "Period": 
-        res = ReceiptConnectionWClassUpdateTransactions(wn,changed);
+        res = ReceiptConnectionWClassPeriodEFAfter(wn,changed);
       case "CustCode": 
         res = ReceiptConnectionWClassUpdateTransactions(wn,changed);
       case "Comment":

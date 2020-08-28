@@ -930,6 +930,10 @@ begin
     GetItemName(CMb.RateItem,spec);
     SetupInvoiceRowAndAdd(IVr,CMb.InstalmentItem,spec,1,CSrw.Principle,blankval,kEventTypeCalcInstalment,-1);
   end;
+  if (CSrw.Deposit>0) then begin
+    GetItemName(CMb.DepositItem,spec);
+    SetupInvoiceRowAndAdd(IVr,CMb.DepositItem,spec,1,CSrw.Deposit,blankval,kEventTypeCalcInstalment,-1);
+  end;
   if (CSrw.Interest>0) then begin
     GetItemName(CMb.RateItem,spec);
     SetupInvoiceRowAndAdd(IVr,CMb.RateItem,spec,1,CSrw.Interest,blankval,kEventTypeCalcInterest,-1);
@@ -960,6 +964,7 @@ begin
   if (updf) then begin
     AddPrepayments(IVr,ASb);
   end;
+  CheckAndAddHiddenPrinciple(IVr,CIb);
 
   return;
 end;
@@ -1141,11 +1146,11 @@ begin
     end else begin
       CredHistr.SerNr = CredManPayPlanrw.IssuedNr;
       if (ReadFirstMain(CredHistr,1,true)) then begin
-        if (CredManPayPlanrw.ArtCode!=CMb.LateFeeItem and CredManPayPlanrw.ArtCode!=CMb.LateRateItem and CredHistr.RecordType==0) then begin
+        if (CredManPayPlanrw.ArtCode!=CMb.LateFeeItem and CredManPayPlanrw.ArtCode!=CMb.LateRateItem and (CredHistr.RecordType==0 or CredHistr.RecordType==4)) then begin
           if (CredManPayPlanrw.Bal<balance or balance==0) then begin
             balance = CredManPayPlanrw.Bal;
           end;
-          if (CredManPayPlanrw.TransDate>lastinv) then begin
+          if (CredHistr.RecordType==0 and CredManPayPlanrw.TransDate>lastinv) then begin
             lastinv = AddDay(CredManPayPlanrw.TransDate,1);
           end;
         end;
@@ -1198,8 +1203,12 @@ begin
     if (CSrw.Invoiced==0) then begin
       i = rwcnt;
     end else begin
-      balance = balance - CSrw.Principle;
-      lastinv = AddDay(CSrw.InvDate,1);
+      if (CSrw.Type==4) then begin
+        balance = balance - CSrw.Total;
+      end else begin
+        balance = balance - CSrw.Principle - CSrw.Deposit;
+        lastinv = AddDay(CSrw.InvDate,1);
+      end;
     end;
   end;
   
@@ -1368,7 +1377,9 @@ begin
 	for (i=0;i<rwcnt;i=i+1) begin
 		MatRowGet(CredManPayPlanr,i,CredManPayrw);
     if (CredManPayrw.PlanType>=5) then begin
-      res = CredManPayrw.Bal;
+      if (res>CredManPayrw.Bal) then begin
+        res = CredManPayrw.Bal;
+      end;
       openamount = openamount + CredManPayrw.OpenAmount;
     end;
     if (CredManPayrw.PlanType<5) then begin
@@ -1420,7 +1431,11 @@ begin
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CSr,i,CSrw);
     if (CSrw.Invoiced==1) then begin
-      bal = bal - CSrw.Principle;
+      if (CSrw.Type==4) then begin
+        bal = bal - CSrw.Total;
+      end else begin
+        bal = bal - CSrw.Principle - CSrw.Deposit;
+      end;
     end else begin
       i = rwcnt;
     end;
@@ -1961,11 +1976,15 @@ begin
     CSrw.Type = SMrw.RowSimStat;
     if (CSrw.Type==4) then begin
       CSrw.Total = SMrw.CurDebVal;
+      CSrw.Invoiced = 1;
+      bal = bal - CSrw.Total;
+//      CSrw.Principle = SMrw.CurDebVal;
     end else begin
       CSrw.FromDate = SMrw.Objects;
       CSrw.ToDate = SMrw.Comment;
-      CSrw.Principle = SMrw.DebVal;
-      bal = bal - CSrw.Principle;
+      CSrw.Principle = SMrw.DebVal - SMrw.ToRateB1;
+      CSrw.Deposit = SMrw.ToRateB1;
+      bal = bal - CSrw.Principle - CSrw.Deposit;
       CSrw.Balance = bal;
       CSrw.Interest = SMrw.CredVal;
       CSrw.Fees = SMrw.DebVal2;

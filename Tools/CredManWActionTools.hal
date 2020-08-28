@@ -39,6 +39,8 @@ external function Boolean GetCredLegalNrLine(string,string,Date,string,string,va
 external procedure FindListCredLegalSerNr(string,string,string,string,string,Integer,var array string);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 external updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
+external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean,Boolean);
+external function Boolean FindCEOContact(string,var record CUVc);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -139,7 +141,7 @@ begin
     CredManr.FirstInvDate = finv;
   end;
   CredManr.FirstIntDate = CredManr.startDate;
-  CredManr.MoneyTransferDate = CredManr.startDate;
+  //CredManr.MoneyTransferDate = CredManr.startDate;
   CredManUpdate(CredManr,-1,"");
   CredManSumup(CredManr);
   CredManr.endDate = AddMonth(CredManr.FirstInvDate,CredManr.InstalmentMonths - 1);
@@ -282,6 +284,24 @@ begin
   return;
 end;
 
+global
+updating procedure RecreateAgreementSchedule2(record CredManVc CredManr,Boolean fullf)
+begin
+  record AgreementDocVc ADr;
+
+  GenerateAgreementSchedule(CredManr,true);
+  if (fullf) then begin
+    ADr.RecordType = 0;
+    ADr.RecordNr = CredManr.SerNr;
+    ADr.Type = 2;
+    if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
+      RecreateAgreementDocument(ADr,true);
+    end;
+  end;
+
+  return;
+end;
+
 updating procedure CreateProlongSession(record CredManVc CredManr,Date td,val months,val prolongmonths,Integer prolongf,Integer recalcshedf)
 begin
   record ProlongSessionVc PSr;
@@ -324,6 +344,7 @@ begin
           CredManr.ProlongMonths = prolongmonths;
         end;
         CredManSetDatesCust(CredManr,false);
+        /*
         GenerateAgreementSchedule(CredManr,true);
         if (RepSpec.flags[1]==1) then begin
           ADr.RecordType = 0;
@@ -333,6 +354,7 @@ begin
             RecreateAgreementDocument(ADr,true);
           end;
         end;
+        */
         setf = true;
       end;
       res = true;      
@@ -718,6 +740,7 @@ begin
   record B2BLoanApplicationVc LAr;
   record RLinkVc RLr;
   Boolean testf,foundf;
+  record CUVc CUr;
 
   if (ReadRecordLink(CredManr,1,LAr,RLr)) then begin
     foundf = true;
@@ -737,6 +760,16 @@ begin
       end;
       if (!suretyf and !testf) then begin
         AddCustToDocument(ADr,LAr.CEOCustCode,LAr.CEOName);
+      end;
+    end;
+  end else begin
+    if (FindCEOContact(CredManr.CustCode,CUr)) then begin
+      testf = CustIsSurety(CUr.Code,CredManr);
+      if (suretyf and testf) then begin
+        AddCustToDocument(ADr,CUr.Code,CUr.Name);
+      end;
+      if (!suretyf and !testf) then begin
+        AddCustToDocument(ADr,CUr.Code,CUr.Name);
       end;
     end;
   end;
@@ -1134,7 +1167,8 @@ begin
   return;
 end;
 
-updating procedure CreatePaymentOrder(record CredManVc CredManr,record VIVc VIr,val amount)
+global
+updating procedure CM_CreatePaymentOrder(record CredManVc CredManr,record VIVc VIr,val amount)
 begin
   record OPVc OPr,oldOPr;
   row OPVc OPrw;
@@ -1172,10 +1206,12 @@ begin
 end;
 
 global
-updating procedure CredManMakePaymentRemote(var record CredManVc CredManr,var record VIVc VIr,string invno)
+updating procedure CredManMakePaymentRemote(var record CredManVc CredManr,var record VIVc VIr,string invno,var val sum)
 begin
   record IVVc IVr;
   record CMOrderClassBlock OCb;
+  record CMInvoicingBlock CIb;
+
 
   if (CredManr.InstalmentType!=4 and CredManr.InstalmentType!=5) then begin
     CreateSingleAgreementInvoice(CredManr,CredManr.startDate,IVr,invno);
@@ -1184,11 +1220,15 @@ begin
     //CredManCreditAllInvoices(CredManr);
     CreatePaymentFakeReceipt(CredManr,IVr);
     CreateCredmanPurchaseInvoice(CredManr,IVr.Sum4,VIr);
-    CreatePaymentOrder(CredManr,VIr,IVr.Sum4);
+    sum = IVr.Sum4;
     if (VIr.SerNr>0) then begin
       BlockLoad(OCb);
       CredManr.VINr = VIr.SerNr;
       CredManr.OrderClass = OCb.ActiveCredOrderClass;
+      BlockLoad(CIb);
+      if (CIb.MoneyTransferDateVI==1) then begin
+        CredManr.MoneyTransferDate = VIr.InvDate;
+      end;
     end;
   end;
 
@@ -1219,6 +1259,8 @@ begin
   val tval;
   Longint histnr;
   record BaseCurBlock BCb;
+  record AgreementDocVc ADr;
+  Boolean updf;
 
   CredManr.SerNr = sernr;
   if (ReadFirstMain(CredManr,1,true)) then begin
@@ -1227,7 +1269,9 @@ begin
       CredManr.VersionNo = 0;
     end;
     CredManr.VersionNo = CredManr.VersionNo + 1;
-    RecordUpdate(oldCredManr,CredManr,true);
+    if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
+      updf = true;
+    end;
 
     BlockLoad(BCb);
     SMr.RegDate = td;
@@ -1242,6 +1286,15 @@ begin
     if (tval>0) then begin
       CreateCredHist(-1,11,CredManr.CustCode,tval,4,"",td,CredManr.SerNr,td,histnr,"","",1,CredManr.SerNr,tval,-1,tval);
       UpdateCredHistBalancePartialBuyout(CredManr.SerNr,histnr);
+    end;
+    if (updf) then begin
+      ADr.RecordType = 0;
+      ADr.RecordNr = CredManr.SerNr;
+      ADr.Type = 2;
+      if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
+        GenerateAgreementSchedule(CredManr,true);
+        RecreateAgreementDocument(ADr,false);
+      end;
     end;
   end;
   
@@ -1325,22 +1378,68 @@ begin
   record SMVc SMr;
   row SMVc SMrw;  
   record CredManSetBlock CredManSetb;
-  val origsum;
+  val origsum,tot,calcbal,int,totdeb,tmp;
   Integer origmonths;
+  Integer months,monthtype;
 
   if (CredManr.LastMonthPrinc>0) then begin
+/*
     BlockLoad(CredManSetb);
     origsum = CredManr.InvSum4;
     origmonths = CredManr.InstalmentMonths;
+    monthtype = 1;
+    if (CredManr.ChargeMethod==1) then begin
+      monthtype = 2;
+    end;
+
+    CredManr.MaxMonthlyPayment = 0;
     CredManr.InvSum4 = CredManr.InvSum4 - CredManr.LastMonthPrinc;
     CredManr.InstalmentMonths = CredManr.InstalmentMonths - 1;
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
     BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
     rwcnt = MatRowCnt(SMr);
+    calcbal = origsum;
     MatRowGet(SMr,rwcnt-1,SMrw);
-    CredManr.MaxMonthlyPayment = SMrw.DebVal;
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(SMr,i,SMrw);
+      if (SMrw.DebVal>0) then begin
+        tot = tot + SMrw.DebVal;
+        int = int + GetRateAmount(CredManr,CredManr.IntRate,monthtype,"","",calcbal,false,false);
+        calcbal = calcbal - SMrw.DebVal;
+        months = months + 1;
+      end;
+    end;
+
+    tot = tot + int;
+
+  //  CredManr.MaxMonthlyPayment = SMrw.DebVal + SMrw.CredVal;
+
+//stupid workaround, but I can't figure out a better way
+
+    tmp = tot/months;
     CredManr.InstalmentMonths = origmonths;
     CredManr.InvSum4 = origsum;
+    CredManr.MaxMonthlyPayment = tmp;
+    RecordClear(CredManPayPlanr);
+    RecordClear(SMr);
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+    BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+    rwcnt = MatRowCnt(SMr);
+    MatRowGet(SMr,rwcnt-1,SMrw);
+    if (SMrw.DebVal>CredManr.LastMonthPrinc) then begin
+      tmp = tmp+((SMrw.DebVal-CredManr.LastMonthPrinc)/months);
+    end;
+    CredManr.MaxMonthlyPayment = tmp;
+
+    RecordClear(CredManPayPlanr);
+    RecordClear(SMr);
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+    BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+    rwcnt = MatRowCnt(SMr);
+    MatRowGet(SMr,rwcnt-1,SMrw);
+    CredManr.LastMonthPrinc = SMrw.DebVal;
+*/
+    CredManr.MaxMonthlyPayment = blankval;
   end else begin
     CredManr.MaxMonthlyPayment = blankval;
   end;

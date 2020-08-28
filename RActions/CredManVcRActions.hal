@@ -53,6 +53,7 @@ BEGIN
   CredManr.StateNotified = 0;
   CredManr.VersionNo = -1;
   CredManr.OfficialSerNr = "";
+  CredManr.MoneyTransferDate = "";
 /*
   CredManr.FactInvAmount = t;
   CredManr.LoanToValue = t;
@@ -63,7 +64,7 @@ BEGIN
   CredManr.FactInsured = 0;
 */
 
-  res = inner.CredManVcRecordDefaults(CredManr,CredMan2r,stat,long4);
+  res = inner.CredManVcRecordDuplicate(CredManr,CredMan2r,stat,long4);
   
   CredManVcRecordDuplicate = res;
   return;
@@ -104,6 +105,7 @@ BEGIN
   val crlimit,totworth;
   record CUVc CUr;
   record CredManFactVc CMFr;
+  row CredLegalInvNrBlock LegalInvNrrw;
 
   res = 0;
 
@@ -193,6 +195,16 @@ BEGIN
       RecordCheckError(28615,"",-1,"SalesMan");
       res = -1;
       goto LCredManVcRecordCheck;
+    end;
+  end;
+
+  if (nonblank(CredManr.OfficialSerNr)) then begin
+    if (GetCredLegalNrLine("CredManVc",CredManr.SerNr,CredManr.startDate,CredManr.Type,CredManr.Classifications,LegalInvNrrw,-1)) then begin
+      if (LegalInvNrrw.Serie!=left(CredManr.OfficialSerNr,len(LegalInvNrrw.Serie))) then begin
+        RecordCheckError(200262,"",-1,"OfficialSerNr");
+        res = -1;
+        goto LCredManVcRecordCheck;
+      end;
     end;
   end;
 

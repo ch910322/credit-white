@@ -633,55 +633,37 @@ begin
   Tile(0,95,false,"",SerNr);
   EditField(h,v=6,100,"Ser. No.",Normal,SerNr,false,TSerSClass);
   EditField(h2,v,80,"Date",Normal,TransDate,false,PasteCurDate);
-  EditField(h3+30,v,-40,"Interface",Normal,InterfaceLanguage,false,0);
   EditField(h,v+=vs,100,"Customer",Normal,CustCode,false,CUSClass);
   EditField(h2,v,130,"Name",Normal,CustName,false,0);
-  EditField(h3+30,v,-40,"OS",Normal,BrowserOS,false,0);
   EditField(h,v+=vs,100,"Contact",Normal,ContactName,false,B2BLoanApp_ContactSClass);
   EditField(h2,v,130,"Email",Normal,eMail,false,0);
   EditField(h3+30,v,-40,"Telephone",Normal,PhoneNo,false,0);
   EditField(h,v+=vs,100,"Contact Email",Normal,ContacteMail,false,0);
   EditField(h2,v,130,"Contact Telephone",Normal,ContactPhoneNo,false,0);
   EditField(h3+30,v,-40,"Contact Mobile",Normal,ContactMobile,false,0);
-  EditField(h,v+=vs,100,"Manager",Normal,Manager,false,UserSClass);
   //EditField(h2,v,-40,"Name",Normal,ManagerName,false,0);
+  EditField(h,v+=vs,100,"Type",Normal,Type,false,CredManTypeSClass);
   EditField(h2,v,130,"Order Class",Normal,OrderClass,false,OrderClassSClass);
   EditField(h3+30,v,-40,"Monthly Payment Day",Normal,MonthlyPaymentDay,true,0);
-  EditField(h,v+=vs,100,"Type",Normal,Type,false,CredManTypeSClass);
   vm = v;
   EditField(h,v+=vs,100,"Total Sum",Normal,Sum,true,0);
+  EditField(h2,v,130,"Manager",Normal,Manager,false,UserSClass);
   EditField(h,v+=vs,100,"Months",Normal,Months,true,0);
-  EditField(h,v+=vs,100,"Princ. Delay Int. %",ViewOnly,PrincipleDelayInterest,true,0);
-  EditField(h,v+=vs,100,"Princ. Delay Months",ViewOnly,PrincipleDelayMonths,true,0);
-  EditField(h,v+=vs,230,"Source link",ViewOnly,Source,false,0);
-  //EditField(h,v+=vs,100,"Monthly Rate %",Normal,InterestRate,true,0);
+  EditField(h,v+=vs,100,"Monthly Rate %",Normal,InterestRate,true,0);
   //EditField(h,v+=vs,100,"Start Date",Normal,StartDate,false,PasteCurDate);
   //EditField(h,v+=vs,100,"End Date",ViewOnly,EndDate,false,0);
-  v = vm;
   
-  EditField(h3=h3+30,v,-40,"Max. Monthly Payment",ViewOnly,MaxMonthlyPayment,true,0);
-  EditField(h3,v+=vs,-40,"Max Rec. Sum",ViewOnly,MaxRecSum,true,0);
-  EditField(h3,v+=vs,-40,"Value based on Surety",Normal,MaxValSurety,true,0);
-  EditField(h3,v+=vs,-40,"Value based on Comp.",Normal,MaxValCompany,true,0);
-  EditField(h3,v+=vs,-40,"Creditinfo Limit",Normal,CreditinfoLimit,true,0);
-  v = vm;
-  ButtonFrame(h2,v=v+20,100,5,"Creditable");
-  RadioButton(h2,v,0,0,"Not Calculated",Creditable);
-  RadioButton(h2,v+=16,1,0,"Yes A",Creditable);
-  RadioButton(h2,v+=16,2,0,"Yes B",Creditable);  
-  RadioButton(h2,v+=16,3,0,"4-eyes",Creditable);  
-  RadioButton(h2,v+=16,4,0,"No",Creditable);
-  v=v+vs;
-  HalPushButton(h3-90,v,h3+10,v+25,"B2BLoanAppCalculate","Calculate");
-  HalPushButton(h3+30,v,h3+130,v+25,"B2BLoanAppEvaluate","Evaluate");
+  v=v-(vs);
+  HalPushButton(h3-70,v,h3+30,v+25,"B2BLoanAppCalculate","Calculate");
+  HalPushButton(h3+60,v,h3+160,v+25,"B2BLoanAppEvaluate","Evaluate");
 
   h3=h3-30;
   tilenr = 1;
   TileButton(tilenr,"Contact"); tilenr = tilenr + 1;
   TileButton(tilenr,"Surety"); tilenr = tilenr + 1;  
   TileButton(tilenr,"Evaluation"); tilenr = tilenr + 1;  
-  TileButton(tilenr,"Factoring"); tilenr = tilenr + 1;  
   TileButton(tilenr,"Comments"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Shareholders"); tilenr = tilenr + 1;  
   tilenr = 1;
   Tile(tilenr,290,true,tilenr,Addr0); tilenr = tilenr + 1;
   v = 6;
@@ -706,14 +688,17 @@ begin
   CheckBox(h3,v=6,0,"Request Direct Debit",RequestDirectDebit);
   
   v = vm + v;
-  ButtonFrame(h,v=v+40,700,1,"Owner");
-  EditField(h+100,v,100,"Contact Code",Normal,OwnerCustCode,false,B2BLoanApp_CUSClass);
+  ButtonFrame(h,v=v+40,500,3,"Owner");
+  EditField(h+100,v+=5,100,"Contact Code",Normal,OwnerCustCode,false,B2BLoanApp_CUSClass);
   EditField(h2+50,v,100,"Owner Name",Normal,OwnerName,false,0);
-  EditField(h2+280,v,100,"Owner Represent.",Normal,OwnerRep,false,0);
-  ButtonFrame(h,v=v+40,700,1,"CEO");
-  EditField(h+100,v,100,"Contact Code",Normal,CEOCustCode,false,B2BLoanApp_CUSClass);
+  EditField(h+100,v+=25,100,"Owner Represent.",Normal,OwnerRep,false,0);
+  CheckBox(h2+50,v,0,"Approved by CEO",CEOApprovedFlag);
+
+  ButtonFrame(h,v=v+60,500,3,"CEO");
+  EditField(h+100,v+=5,100,"Contact Code",Normal,CEOCustCode,false,B2BLoanApp_CUSClass);
   EditField(h2+50,v,100,"CEO Name",Normal,CEOName,false,0);
-  EditField(h2+280,v,100,"CEO Represent.",Normal,CEORep,false,0);
+  EditField(h+100,v+=25,100,"CEO Represent.",Normal,CEORep,false,0);
+  CheckBox(h2+50,v,0,"Approved by CFO",CFOApprovedFlag);
  
   Tile(tilenr,290,true,tilenr,MajorityOwner1); tilenr = tilenr + 1;  
   
@@ -832,10 +817,11 @@ begin
   Tile(tilenr,600,true,tilenr,LateRating); tilenr = tilenr + 1;
   EditField(h,v=6,100,"Late Rating",Normal,LateRating,true,0);
   EditField(h2=365,v,100,"Bankruptcy Rating",Normal,BankruptcyRating,true,0);
-  EditField(h3,v,100,"Established",Normal,Established,false,PasteCurDate);
+  EditField(h3=595,v,100,"Established",Normal,Established,false,PasteCurDate);
   EditField(h,v+=vs,100,"Monthly Loan Payment",Normal,MonthlyLoadPayment,true,0);
   EditField(h2,v,100,"Current Debts",Normal,CurrentDebts,true,0);
   EditField(h3,v,100,"Last Debt Repayment",Normal,LastRepaymentDate,false,PasteCurDate); 
+  h3 = 565;
   CheckBox(h,v+=vs,0,"Ongoing Court Cases",OngoingCourtCases);
   CheckBox(h2,v,0,"Historical Court Cases",HistoricalCourtCases);
   CheckBox(h3,v,0,"Ongoing Asset Arrests",OngoingAssetArrests);
@@ -852,10 +838,11 @@ begin
 //  EditField(h,v+=vs,100,"Long Term Asset Value",Normal,AssetValue,false,0);
   EditField(h,v+=vs,100,"50% Rev. Customers",Normal,HalfRevenueCustomers,true,0);
   EditField(h2,v,100,"Equity",Normal,Equity,true,0);
-  EditField(h3,v,100,"50% Cost Suppliers",Normal,HalfCostSuppliers,true,0);
+  EditField(h3=595,v,100,"50% Cost Suppliers",Normal,HalfCostSuppliers,true,0);
   EditField(h,v+=vs,100,"Months",Normal,RevMonths,true,0);
   EditField(h2,v,100,"Revenue",Normal,Revenue,true,0);
   EditField(h3,v,100,"Annual Revenue",Normal,AnnualRevenue,true,0);
+  h3 = 565;
 
   ButtonFrame(h-50,v=v+40,640,1,"Current");
   EditField(h,v,80,"Profit",Normal,CurProfit,true,0);
@@ -869,76 +856,22 @@ begin
   EditField(h3-100,v,80,"Payables",Normal,PrevPayables,true,0);
   EditField(h3+40,v,80,"Total",Normal,PrevTotal,true,0);
 
-  vm = v + 50;
-  MatrixBegin(10,v+=50,-55,-1,-,99);
-  Flip(1);
-  MatCol(1,20,"Period",0,Period,false,0);
-  MatCol(1,80,"Late Rating",0,LateRating,true,0);
-  MatCol(1,180,"Bankruptcy Rating",0,BankruptcyRating,true,0);
-  MatCol(1,280,"Turnover",0,Turnover,true,0);
-  MatCol(1,380,"Gross Profit",0,GrossProfit,true,0);
-  Flip(2);
-  MatCol(1,80,"Year",0,Year,false,0);
-  MatCol(1,180,"Turnover",0,Turnover,true,0);
-  MatCol(1,280,"Employees",0,EmployeeCnt,true,0);
-  MatCol(1,380,"Av. Salary",0,AvSalary,true,0);
-  Flip(3);
-  MatCol(1,80,"Months",0,Month,false,0);    
-  MatCol(1,180,"Comp. owned Cars",0,OwnedCompanyCars,true,0);
-  MatCol(1,280,"Value",0,OwnedCarsValue,true,0);
-  MatCol(1,380,"Comp. used Cars",0,UsedCompanyCars,true,0);
-  MatCol(1,480,"Value",0,UsedCarsValue,true,0);
-  Flip(4);
-  MatCol(1,80,"Industry",0,Industry,false,0);
-  MatCol(1,200,"Check. Month",0,MonthChecks,false,0);
-  MatCol(1,300,"Check. Quarter",0,QuarterChecks,false,0);
-  MatCol(1,400,"Check. Half Year",0,HalfYearChecks,false,0);
-  Flip(5);
-  MatCol(1,80,"Months",0,Month,false,0);
-  MatCol(1,150,"Receivables",0,Receivables,true,0);
-  MatCol(1,220,"Payables",0,Payables,true,0);
-  MatCol(1,290,"Total",0,DiffRecPay,true,0);
-  Flip(6);
-  MatCol(1,80,"Months",0,Month,false,0);    
-  MatCol(1,150,"Estates",0,EstateCnt,true,0);
-  MatCol(1,220,"Value",0,EstateValue,true,0);
-  MatCol(1,290,"Employees",0,EmployeeCnt,true,0);  
-  MatCol(1,380,"Av. Salary",0,AvSalary,true,0);
-  Flip(7);
-  MatCol(1,80,"Months",0,Month,false,0);    
-  MatCol(1,150,"Claim Date",0,ClaimDate,false,0);
-  MatCol(1,220,"Payment Date",0,PaymentDate,false,0);
-  MatCol(1,290,"Creditor",0,CreditorName,false,0);  
-  MatCol(1,380,"Amount",0,CreditAmount,true,0);
-  EndMatrix;
-
-    ArrayField(ClaimDate,M4Date,0,0);
-  ArrayField(PaymentDate,M4Date,0,0);
-  ArrayField(CreditorName,M4Str,250,0);
-  ArrayField(CreditAmount,M4Val,0,0);
-
-
-  VTab(-40,v=vm,-6,v+=vs,ToolFlip,1,"A");
-  VTab(-40,v,-6,v+=vs,ToolFlip,2,"B");
-  VTab(-40,v,-6,v+=vs,ToolFlip,3,"C");
-  VTab(-40,v,-6,v+=vs,ToolFlip,4,"D");
-  VTab(-40,v,-6,v+=vs,ToolFlip,5,"E");
-  VTab(-40,v,-6,v+=vs,ToolFlip,6,"F");
-  VTab(-40,v,-6,v+=vs,ToolFlip,7,"G");
-
-  Tile(tilenr,600,true,tilenr,BuyBankruptcyRating); tilenr = tilenr + 1;
-  EditField(h,v=6,100,"Buyer's Bankrup. Rating",Normal,BuyBankruptcyRating,true,0);
-  EditField(h2=365,v,100,"Buyer Established ",Normal,BuyerEstablished,false,PasteCurDate);
-  EditField(h,v+=vs,100,"Buyer's Turnover",Normal,BuyerTurnover,true,0);
- 
-  ButtonFrame(h,v=v+40,200,3,"Factoring Type");
-  RadioButton(h,v,0,0,"Open",FactoringType);
-  RadioButton(h,v+=16,1,0,"Closed to our Account",FactoringType);  
-  RadioButton(h,v+=16,2,0,"Closed to Customer Account",FactoringType);  
-
   Tile(tilenr,600,true,tilenr,Math2); tilenr = tilenr + 1;
   StaticText(50,v=30,"Comments",true);
   TextField(60,v-5,-20,370,Math2,0);
+
+  Tile(tilenr,600,true,tilenr,Math2); tilenr = tilenr + 1;
+
+  MatrixBegin(10,v=20,-30,220,-,10);
+  MatCol(1,25,"Contact",0,ShareHolderCode,false,CUSClass);
+  MatCol(1,120,"Name",0,ShareHolderName,false,0);
+  MatCol(1,-580,"ID",0,ShareHolderID,false,0);
+  MatCol(1,-500,"Address",0,ShareHolderAddr0,false,0);
+  MatCol(1,-380,"Phone",0,ShareHolderPhone,false,0);
+  MatCol(1,-300,"Mobile",0,ShareHolderMobile,false,0);
+  MatCol(1,-220,"Email",0,ShareHoldereMail,false,0);
+  MatCol(1,-90,"Share Size",0,ShareHoldereVal,false,0);
+  EndMatrix;
 
   SpecialMenu("Fill Data from rekvizitai.lt",' ',1,"");
   SpecialMenu("Fill Data from SoDra",' ',2,"");
@@ -948,6 +881,7 @@ begin
   SpecialMenu("Customer Status",'e',6,"CUStatusB2BLoanAppDsm");
   SpecialMenu("Creditinfo.lt",'',6,"GetCreditinfoStatDsm");
   SpecialMenu("Invite additional Surety Provider",'',6,"InviteSuretyDsm");
+  SpecialMenu("Get Property Data",'',6,"B2BAppGetPropertyDataDsm");
   
   SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0); 
   SpecialMenu("E-mail",' ',1,""); 
@@ -1746,15 +1680,16 @@ window CredManSchedLClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Agreement Schedules",CredManSchedLClass,CGmlist,-);
-  SetWRect(20,80,560,298);
+  SetWRect(20,80,660,298);
   Sizeable(-1,-1,0,0);
   SpawnClass(CredManSchedDClass);
   UseView(CredManSchedVc);
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Agreement",CredManNr,false,CredManNr);
   RlCol(106,106,"Customer",CustCode,false);
-  RlCol(356,356,"Date",TransDate,false);
-  RlCol(426,426,"Time",TransTime,false);
+  RlCol(176,176,"Name",CustName,false);
+  RlCol(-200,-200,"Date",TransDate,false);
+  RlCol(-80,-80,"Time",TransTime,false);
   SearchField("Search");
   EndWindow;
 end;
@@ -1764,7 +1699,7 @@ window CredManSchedDClass:1
 begin
   real h,v,vs,v2,vs2,hm,h2;
   WindowBegin("Agreement Schedule",CredManSchedDClass,CGview,-);
-  SetWRect(20,80,830,639);
+  SetWRect(20,80,930,639);
   UseView(CredManSchedVc);
   AutoSizeWindow(false);
   vs=20; h=120; vs2=16; hm=-100; h2 = 350;
@@ -1779,21 +1714,22 @@ begin
   MatCol(1,85,"Inv. Date",0,InvDate,false,0);
   MatCol(1,150,"Period From",0,FromDate,false,0);
   MatCol(1,215,"Period To",0,ToDate,false,0);
-  MatCol(1,320,"Principle",0,Principle,true,0);
-  MatCol(1,390,"Interest",0,Interest,true,0);
-  MatCol(1,460,"Fees",0,Fees,true,0);
-  MatCol(1,534,"Total",0,Total,true,0);
+  MatCol(1,320,"Downpmnt",0,Deposit,true,0);
+  MatCol(1,390,"Principle",0,Principle,true,0);
+  MatCol(1,460,"Interest",0,Interest,true,0);
+  MatCol(1,530,"Fees",0,Fees,true,0);
+  MatCol(1,604,"Total",0,Total,true,0);
   MatCol(1,-120,"Invoiced",0,Invoiced,false,SetSClass);
   MatCol(1,-60,"Balance",0,Balance,true,0);
   InsertRowTest;
   DeleteRowTest;
   EndMatrix;
   SoftEditField(90,-30,150,"Period",ViewOnly,"period",false,0,M4Str,255);
-  SoftEditField(280,-30,60,"Diff.",ViewOnly,"diff",false,0,M4Str,255);
-  SoftEditField(350,-30,60,"",ViewOnly,"totprinc",false,0,M4Val,0);
-  SoftEditField(420,-30,60,"",ViewOnly,"totint",false,0,M4Val,0);
-  SoftEditField(495,-30,60,"",ViewOnly,"totfees",false,0,M4Val,0);
-  SoftEditField(570,-30,60,"",ViewOnly,"tot",false,0,M4Val,0);
+  SoftEditField(350,-30,60,"Diff.",ViewOnly,"diff",true,0,M4Str,255);
+  SoftEditField(425,-30,60,"",ViewOnly,"totprinc",true,0,M4Val,0);
+  SoftEditField(500,-30,60,"",ViewOnly,"totint",true,0,M4Val,0);
+  SoftEditField(580,-30,60,"",ViewOnly,"totfees",true,0,M4Val,0);
+  SoftEditField(700,-30,60,"",ViewOnly,"tot",true,0,M4Val,0);
 
   SpecialMenu("Open Fees Matrix",' ',1,"OpenCredFeesMatrixSchedDsm");
   SpecialMenu("Recalculate Interest",' ',1,"CredManSchedRecalcInterestDsm");
@@ -1852,7 +1788,7 @@ begin
   Checkbox(h,v+=16,0,"Company Contact Email",SendToCompany);
   Checkbox(h+20,v+=16,0,"Only if no Contact Person",SendToCompNoContact);
   Checkbox(h,v+=16,0,"Additional Recipients",SendToAddRecip);
-  EditField(h+100,v+=20,100,"Job Title",Normal,SendToJobDescr,false,0);
+  EditField(h+100,v+=20,100,"Job Title",Normal,SendToJobDescr,false,JobTitleSClass);
 
   ButtonFrame(h2=400,v=vm,230,2,"Invoice Date");
   RadioButton(h2,v,0,0,"Payment Day",InvoiceDay);
@@ -1911,6 +1847,9 @@ begin
   EditField(h,v+=vs,100,"VAT Code",Normal,PaymentVATCode,false,VATCodeSClass);
   EditField(h,v+=vs,100,"Object",Normal,PaymentObject,false,ObjSClass);
   EditField(h,v+=vs,100,"Payment Mode",Normal,PaymentMode,false,PMSClass);
+
+  Checkbox(h,v+=20,0,"Update Money Transfer Date when creating payment",MoneyTransferDateVI);
+  Checkbox(h,v+=16,0,"Update Money Transfer Date when Invoices is paid",MoneyTransferDateOP);
 
 
   EndWindow;
@@ -2208,19 +2147,40 @@ window CredManPropertiesDClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
-  WindowBegin("Properties",CredManPropertiesDClass,CGview,-);
+  Boolean pledge;
+  Integer type;
+  string 255 title;
+
+  if (CurWindow>0) then begin
+    type = StringToInt(GetWindowString(CurWindow,"type"));
+  end;
+      
+  switch (type) begin
+    case 2: title = "Assets";
+    case 3: title = "Pledges";
+    otherwise
+      title = "Properties";
+  end;
+  WindowBegin(title,CredManPropertiesDClass,CGview,-);
   SetWRect(20,80,900,339);
+  DynamicWindow;
   UseView(CredManPropertiesVc);
   vs=20; h=120; vs2=16; hm=-100;
   MatrixBegin(10,20,-40,-20,-,99);
   MatCol(1,24,"Property",0,Property,false,CMPropertySClass);
   MatCol(1,104,"Name",0,Addr0,false,0);
-  MatCol(1,-530,"ID",0,OfficialSerNr,false,0);
-  MatCol(1,-440,"Reported Value",0,RepVal,true,0);
-  MatCol(1,-350,"Evaluated Value",0,EvalVal,true,0);
-  MatCol(1,-260,"Pledge Type",0,PledgeType,false,SetSClass);
-  MatCol(1,-170,"Pledge Val",0,PledgeVal,true,0);
-  MatCol(1,-80,"Pledge Date",0,PledgeDate,false,PasteCurDate);
+  if (type==3) then begin
+    MatCol(1,-530,"ID",0,OfficialSerNr,false,0);
+    MatCol(1,-440,"Reported Value",0,RepVal,true,0);
+    MatCol(1,-350,"Evaluated Value",0,EvalVal,true,0);
+    MatCol(1,-260,"Pledge Type",0,PledgeType,false,SetSClass);
+    MatCol(1,-170,"Pledge Val",0,PledgeVal,true,0);
+    MatCol(1,-80,"Pledge Date",0,PledgeDate,false,PasteCurDate);
+  end else begin
+    MatCol(1,-260,"ID",0,OfficialSerNr,false,0);
+    MatCol(1,-170,"Reported Value",0,RepVal,true,0);
+    MatCol(1,-80,"Evaluated Value",0,EvalVal,true,0);
+  end;
   EndMatrix;
   EndWindow;
 end;
