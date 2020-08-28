@@ -141,7 +141,7 @@ begin
     CredManr.FirstInvDate = finv;
   end;
   CredManr.FirstIntDate = CredManr.startDate;
-  CredManr.MoneyTransferDate = CredManr.startDate;
+  //CredManr.MoneyTransferDate = CredManr.startDate;
   CredManUpdate(CredManr,-1,"");
   CredManSumup(CredManr);
   CredManr.endDate = AddMonth(CredManr.FirstInvDate,CredManr.InstalmentMonths - 1);
