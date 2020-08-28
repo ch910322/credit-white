@@ -470,17 +470,19 @@ begin
   Integer prevtype;
   record SMVc SMr;
   row SMVc SMrw;
-  Integer c10;
+  val princ;
+  Integer c10,c11;
 
   BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,withactuals,suggestedonsameday);
   PrintCredManTop(CredManr,CredManPayPlanr,CredManSetb);
 
-  SetRepCol(2,80);
+  SetRepCol(2,50);
   SetRepCol(3,180);
   SetRepCol(4,280);
-  SetRepCol(5,160);
-  SetRepCol(6,220);
-  SetRepCol(7,280);
+  c11 = 130;
+  SetRepCol(5,180);
+  SetRepCol(6,240);
+  SetRepCol(7,290);
   SetRepCol(8,340);
   c10 = 380;
   SetRepCol(9,430);
@@ -491,6 +493,7 @@ begin
   StartFormat(15);
   OutString(0,0,USetStr(200090),false);
   OutString(2,0,USetStr(200091),false);
+  OutString(c11,0,USetStr(200099),true);
   OutString(5,0,USetStr(200092),true);
   OutString(6,0,USetStr(200093),true);
   OutString(7,0,USetStr(200094),true);
@@ -524,7 +527,12 @@ begin
     end else begin
       OutString(2,0,StringFromSet(2011,SMrw.RowSimStat),false);  
     end;
-    OutString(5,0,SMrw.DebVal,true);
+    princ = SMrw.DebVal-SMrw.ToRateB1;
+    if (princ==0) then begin
+      princ = blankval;
+    end;
+    OutString(c11,0,SMrw.ToRateB1,true);
+    OutString(5,0,princ,true);
     OutString(6,0,SMrw.CredVal,true);
     OutString(7,0,SMrw.DebVal2,true);
     OutString(8,0,SMrw.CredVal2,true);

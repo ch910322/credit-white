@@ -1723,7 +1723,7 @@ begin
   MatCol(1,85,"Inv. Date",0,InvDate,false,0);
   MatCol(1,150,"Period From",0,FromDate,false,0);
   MatCol(1,215,"Period To",0,ToDate,false,0);
-  MatCol(1,320,"Deposit",0,Deposit,true,0);
+  MatCol(1,320,"Downpmnt",0,Deposit,true,0);
   MatCol(1,390,"Principle",0,Principle,true,0);
   MatCol(1,460,"Interest",0,Interest,true,0);
   MatCol(1,530,"Fees",0,Fees,true,0);
