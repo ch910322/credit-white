@@ -1293,7 +1293,7 @@ begin
       ADr.Type = 2;
       if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
         GenerateAgreementSchedule(CredManr,true);
-        RecreateAgreementDocument(ADr,true);
+        RecreateAgreementDocument(ADr,false);
       end;
     end;
   end;
