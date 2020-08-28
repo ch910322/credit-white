@@ -483,7 +483,7 @@ begin
         if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
           sum = usesum-CredManr.LastMonthPrinc;
           sum = sum/(usemonths-1);
-          if (calcbal-sum<CredManr.LastMonthPrinc) then begin
+          if (calcbal-sum<(CredManr.LastMonthPrinc+(usemonths*0.01))) then begin//0.01 is the possible diff that can be
             sum = calcbal - CredManr.LastMonthPrinc;
           end;
         end;
@@ -520,7 +520,7 @@ begin
           end;
         end;
         if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
-          if (calcbal-sum<CredManr.LastMonthPrinc) then begin
+          if (calcbal-sum<(CredManr.LastMonthPrinc+(usemonths*0.01))) then begin
             sum = calcbal - CredManr.LastMonthPrinc;
           end;
         end;
