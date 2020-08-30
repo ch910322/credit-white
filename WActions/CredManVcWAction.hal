@@ -1851,3 +1851,20 @@ begin
   InvLegalInvSerieSClassOnOKWindow = false;
   return;
 end;
+
+global
+function LongInt CredManVcRecordDefaultsClient(LongInt wn,var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  record CMApplicationSetBlock CMAb;
+  
+  BlockLoad(CMAb);
+  if (CredManr.LoanType==0) then begin
+    CredManr.LoanType = CMAb.DefCredManLoanType;
+    RerunWindowDef(wn);
+  end;
+  
+
+  CredManVcRecordDefaultsClient = res; 
+  return;
+end;
