@@ -29,9 +29,15 @@ external function Boolean HasModRent();
 external function Boolean HasModSVO();
 external function Boolean HasMultiCurrency();
 external function Boolean HasObjects();
+external function Boolean HasHotelInterface();
+external function Boolean HasBase2();
+external function Boolean AcceptanceStatusColumnTest(string);
+external function Boolean HasLimitedAccess();
+
 //CUST-BEGIN TAG TOOLS
 external outer function Boolean HasMoneyTransferDate();
 external outer function Boolean CanEditCredManCreateDate();
+remote function Boolean ExternalDocumentEnabled(string);
 //CUST-END
 
 window CUDClass:14
@@ -1510,5 +1516,71 @@ begin
   end;
   v = v + vs+10;
   ColumnGrid(0,v,-1,-1);
+  EndWindow;
+end;
+
+window IVLClass:8
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real pos;
+  Boolean acptf;
+  
+  WindowBegin("Invoices",IVLClass,CGmlist,-);
+  pos = 820;
+  if (HasHotelInterface) then begin
+    pos = pos + 80;
+  end;
+  acptf = AcceptanceStatusColumnTest("IVVc");
+  if (acptf) then begin
+    pos = pos + 40;
+  end;
+  SetWRect(20,80,pos,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(IVDClass);
+  UseView(IVVc);
+  FormName(PrintIVL);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"No.",SerNr,false,SerNr);
+  RlColKey(79,79,"OK",OKFlag,false,OKFlag);
+  RlColKey(111,111,"Invoice Date",InvDate,false,InvDate);
+  if (StandardHansa==false) then begin
+    RlColKey(191,191,"Official No.",OfficialSerNr,false,OfficialSerNr);
+  end;
+  RlColKey(301,301,"Order No.",OrderNr,false,OrderNr);
+  pos = 381;
+  if (HasHotelInterface) then begin
+    RlColKey(pos,pos,"Rsrv. No.",JobNr,false,JobNr); pos = pos + 80;
+  end;
+  RlColKey(pos,pos,"Customer",CustCode,false,CustCode); pos = pos + 60;
+  RlColKey(pos,pos,"Name",Addr0,false,Name);
+  if (acptf) then begin
+    CalculatedColumn(-170,-170,"Appr.","IVLClassAcceptanceStatus",false);
+  end;
+  RlColKey(-130,-130,"Total",Sum4,true,Sum4);
+  RlCol(-60,-60,"",CredMark,true);
+  if (HasMultiCurrency or HasBase2) then begin
+    RlCol(-40,-40,"Cur.",CurncyCode,true);
+  end;
+  RlCol(-1,-1,"",Invalid,true);
+  SearchField("Search");
+  if (HasLimitedAccess) then begin
+    BrowseSubsetButton(-40,-15);
+  end;
+  SpecialMenu("OK",'G',0,"OKIVLsm");
+  if (HasLocalization("PRT")==false) then begin
+    SpecialMenu("Print Proforma Invoices",' ',1,"PrintIVLsm");
+  end;
+  SpecialMenu("Invoice Status",'r',2,"IVInfoIVLsm");
+  if (HasLocalization("ARG")) then begin
+    SpecialMenu("Send Argentinian E-Invoices",'n',3,"SendArgEInvIVLsm");
+  end;
+  if (HasLocalization("MEX")) then begin
+    SpecialMenu("Send Mexican E-Invoices",'n',3,"SendMexEInvIVLsm");
+  end;
+//CUST-BEGIN
+  if (ExternalDocumentEnabled("InvForm")) then begin
+    SpecialMenu("Download PDF",'n',3,"Finance_DownloadPDFInvoiceLsm");
+  end;
+//CUST-END
   EndWindow;
 end;

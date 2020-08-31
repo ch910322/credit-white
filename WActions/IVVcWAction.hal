@@ -1,0 +1,22 @@
+remote inner procedure PrintEBSDocument(string,string,record RcVc,string,string,var area);
+
+global
+procedure Finance_DownloadPDFInvoiceLsm()
+begin
+  Integer wn;
+  record IVVc IVr;
+  string 255 fname;
+  record RcVc RepSpec;
+  area farea;
+
+  wn = CurWindow;
+  if (GetRecordFromBrowse(IVr,wn,1)) then begin
+    fname = SaveFileDialog("","","pdf");
+    if (nonblank(fname)) then begin
+      threadremote.PrintEBSDocument("InvForm","",RepSpec,IVr.SerNr,IVr.LangCode,farea);
+      WriteAreaToFile(farea,fname,0);
+    end;
+  end;
+
+  return;
+end;
