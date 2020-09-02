@@ -59,11 +59,13 @@ begin
 
   CRr.CustCode = CUr.Code;
   while (LoopMain(CRr,1,true)) begin
-    ContactCUr.Code = CRr.ContactCode;
-    if (ReadFirstMain(ContactCUr,1,true)) then begin
-      if (nonblank(ContactCUr.eMail)) then begin
-        res = ContactCUr.eMail;
-        goto LFindFirstContactPersonWithEmail;
+    if (CRr.Invalid==0) then begin
+      ContactCUr.Code = CRr.ContactCode;
+      if (ReadFirstMain(ContactCUr,1,true)) then begin
+        if (nonblank(ContactCUr.eMail)) then begin
+          res = ContactCUr.eMail;
+          goto LFindFirstContactPersonWithEmail;
+        end;
       end;
     end;
   end;
