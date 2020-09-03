@@ -713,6 +713,7 @@ begin
   return;
 end;
 
+global
 function Boolean CustIsSurety(string custcode,record CredManVc CredManr)
 begin
   Boolean res;
