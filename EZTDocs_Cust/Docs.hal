@@ -205,7 +205,7 @@ begin
   vVals["F_RATE"] = tstr;
   GetFullCurncyRateText(false,tstr,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2);  
   vVals["F_BASERATE"] = tstr;
-  vVals["F_PERIODLENGTH"] = CredManr.InstalmentMonths;
+  vVals["F_PERIODLENGTH"] = CredManr.InstalmentMonths + CredManr.ProlongMonths;
   vVals["F_RANTASATS"] = CredManr.IntRate;
   if (blank(IVr.ShipAddr0)) then begin
     tstr = IVr.Addr0;
