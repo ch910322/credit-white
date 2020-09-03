@@ -1478,6 +1478,9 @@ begin
   RepSpec.vals1 = IVr.Sum4;
   RepSpec.vals0 = dueamount;//should this be openamount?
   RepSpec.vals2 = openamount + IVr.Sum4 - prepayval;
+  if (prepayval>0 and RepSpec.vals2<0) then begin
+    RepSpec.vals2 = 0;
+  end;
   RepSpec.vals4 = dueamount;
   RepSpec.f12 = lateamount;//(RepSpec.vals2-RepSpec.vals3-RepSpec.vals4);
   RepSpec.vals3 = GetActualBalance(CredManr,CredManPayPlanr,false);
