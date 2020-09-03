@@ -436,7 +436,7 @@ begin
   OUTFORMFIELD("F_RATE",tstr);
   GetFullCurncyRateText(false,tstr,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2);  
   OUTFORMFIELD("F_BASERATE",tstr);
-  OUTFORMFIELD("F_PERIODLENGTH",CredManr.InstalmentMonths + CredManr.ProlongMonths);
+  OUTFORMFIELD("F_PERIODLENGTH",ValToString(CredManr.InstalmentMonths + CredManr.ProlongMonths,M4Val,"",".",1));
   OUTFORMFIELD("F_RANTASATS",CredManr.IntRate);
   if (blank(IVr.ShipAddr0)) then begin
     tstr = IVr.Addr0;

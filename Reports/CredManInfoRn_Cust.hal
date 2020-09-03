@@ -242,7 +242,7 @@ begin
   row SMVc SMrw;
   record CredFeesMatrixVc FMr;
   row CredFeesMatrixVc FMrw;
-  Boolean extrafeef;
+  Boolean extrafeef,addf;
 
   RecordNew(FMr);
   rwcnt = MatRowCnt(IVr);
@@ -255,16 +255,20 @@ begin
         if (IVrw.ArtCode==CMb.DepositItem) then begin
           deposit = deposit + IVrw.Sum;
         end;
+        addf = true;
       case 2: 
         intrate = IVrw.Sum;
+        addf = true;
       case 3: 
         calcbal = calcbal - IVrw.Sum;
+        addf = true;
       case 4: 
         fees = fees + IVrw.Sum;
         ClearRow(FMr,FMrw,1);
         FMrw.ArtCode = IVrw.ArtCode;
         FMrw.Sum = IVrw.Sum;
         MatRowPut(FMr,MatRowCnt(FMr),FMrw);
+        addf = true;
       case 9: 
         pen = pen + IVrw.Sum;
       case 15: 
@@ -273,7 +277,7 @@ begin
     end;
   end;
 
-  if (extrafeef==false) then begin
+  if (addf) then begin
     ClearRow(SMr,SMrw,1);
     SMrw.TransDate = IVr.InvDate;
     SMrw.DueDate = IVr.PayDate;
@@ -392,7 +396,7 @@ begin
     if (CredManPayPlanrw.PlanType>=5) then begin
       CredHistr.SerNr = CredManPayPlanrw.IssuedNr;
       if (ReadFirstMain(CredHistr,1,true)) then begin
-        if (vRec[CredHistr.RecordType & ":" & CredHistr.RecordNr]==false or CredHistr.RecordType==4 and CredHistr.PlanType!=kEventTypeIssueLateFees) then begin
+        if (vRec[CredHistr.RecordType & ":" & CredHistr.RecordNr]==false or CredHistr.RecordType==4 and CredManPayPlanrw.PlanType!=9) then begin
           vRec[CredHistr.RecordType & ":" & CredHistr.RecordNr] = true;
           switch (CredHistr.RecordType) begin//invoice
             case 0:
