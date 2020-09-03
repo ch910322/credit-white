@@ -595,6 +595,17 @@ begin
   KeySegment(InvSum4);
   KeySegment(SerNr);
 
+  KeyBegin(SuretyProvider1);
+  KeySegment(SuretyProvider1);
+  KeySegment(SerNr);
+
+  KeyBegin(SuretyProvider2);
+  KeySegment(SuretyProvider2);
+  KeySegment(SerNr);
+
+  KeyBegin(SuretyProvider3);
+  KeySegment(SuretyProvider3);
+  KeySegment(SerNr);
 
   EndRecordAdd;
 
