@@ -1981,6 +1981,7 @@ begin
       CSrw.Total = SMrw.CurDebVal;
       CSrw.Invoiced = 1;
       bal = bal - CSrw.Total;
+      CSrw.Balance = bal;
 //      CSrw.Principle = SMrw.CurDebVal;
     end else begin
       CSrw.FromDate = SMrw.Objects;
