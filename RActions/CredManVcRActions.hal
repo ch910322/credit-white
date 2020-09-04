@@ -55,6 +55,7 @@ BEGIN
   CredManr.VersionNo = -1;
   CredManr.OfficialSerNr = "";
   CredManr.MoneyTransferDate = "";
+  CredManr.Status = 0;
 /*
   CredManr.FactInvAmount = t;
   CredManr.LoanToValue = t;

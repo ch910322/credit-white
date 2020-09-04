@@ -15,7 +15,7 @@ begin
   rwcnt = MatRowCnt(OPr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(OPr,i,OPrw);
-    if (OPrw.VISerNr>0 and CIb.MoneyTransferDateOP==1) then begin
+    if (OPrw.VISerNr>0) then begin
       updf = true;
       APr.InvoiceNr = OPrw.VISerNr;
       if (ReadFirstMain(APr,1,true)) then begin
@@ -28,7 +28,10 @@ begin
         CredManr.VINr = OPrw.VISerNr;
         if (ReadFirstKey("VINr",CredManr,1,true)) then begin
           RecordCopy(oldCredManr,CredManr);
-          CredManr.MoneyTransferDate = OPr.PayDate;
+          if (CIb.MoneyTransferDateOP==1) then begin
+            CredManr.MoneyTransferDate = OPr.PayDate;
+          end;
+          CredManr.Status = 4;
           RecordUpdate(oldCredManr,CredManr,true);
         end;
       end;

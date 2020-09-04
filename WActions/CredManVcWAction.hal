@@ -1394,8 +1394,6 @@ begin
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
 
-  
-  //
   if (CanCredManMakePayment(CredManr)) then begin
     BlockLoad(CIb);
     if (CIb.ManualInvoiceNumber==1) then begin
@@ -1430,8 +1428,7 @@ begin
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
 
-  
-  //
+
   if (CanCredManMakePayment(CredManr)) then begin
     BlockLoad(CIb);
     if (CIb.ManualInvoiceNumber==1) then begin
@@ -1928,6 +1925,12 @@ begin
       res = false;
     end;
   end;
+  if (value==4) then begin
+    if (UserCanAction("AllowDisburseCredMan",false)==false) then begin
+      res = false;
+    end;
+  end;
+
 
   CredManDClassStatusButtonAction = res;
   return;

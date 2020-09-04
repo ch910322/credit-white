@@ -826,10 +826,10 @@ begin
   end;
 //CUST-END
   Tile(1,500,true,"",Approved);//CUST CurncyCode>>Approved
-  //if (!statusf) then begin
+  if (!statusf) then begin
     CheckBox(20,-41,0,"Approved",Approved);
     CheckBox(20,-21,0,"OK",OKFlag);
-  //end;
+  end;
 //CUST-BEGIN
 /*
   EditField(200,-21,50,"Currency",Normal,CurncyCode,false,CurncyCodeSClass);
@@ -1083,6 +1083,8 @@ begin
 //  SpecialMenu("Invoice",'F',1,"InvoiceCredManDsm");
   SpecialMenu("Invoice",'F',1,"CreateCredManInvoiceDsm");
   SpecialMenu("Payment",' ',1,"CredManMakePaymentDsm");
+  SpecialMenu("Payment Without Reconciliation",' ',1,"CredManMakePaymentReconsDsm");
+
   SpecialMenu("Extra Fee Invoice",' ',1,"ManualExtraFeeDsm");
   
 //CUST-END
