@@ -125,6 +125,7 @@ begin
 
 
   EditField(h,v+=vs,100,"Mailing List",Normal,MailingList,false,PersColSClass);
+  EditField(h,v+=vs,100,"Mailing List 2",Normal,MailingList2,false,PersColSClass);
 
   vm = v;
   ButtonFrame(h,v+=40,150,2,"Surety Provider by default");
