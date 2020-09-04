@@ -94,11 +94,20 @@ global
 procedure FindFirstContactPerson(record CUVc CUr,var record CUVc ContactCUr)
 begin
   record ContactRelVc CRr;
+  Boolean TrHs;
 
+  TrHs = true;
   CRr.CustCode = CUr.Code;
-  if (ReadFirstMain(CRr,1,true)) then begin
-    ContactCUr.Code = CRr.ContactCode;
-    if (ReadFirstMain(ContactCUr,1,true)) then begin
+  while (LoopMain(CRr,1,TrHs)) begin
+    if (CRr.CustCode!=CUr.Code) then begin
+      TrHs = false;
+    end else begin
+      if (CRr.Invalid==0) then begin
+        TrHs = false;
+        ContactCUr.Code = CRr.ContactCode;
+        if (ReadFirstMain(ContactCUr,1,true)) then begin
+        end;
+      end;
     end;
   end;
 

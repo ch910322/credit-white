@@ -160,13 +160,18 @@ begin
 		if(nonblank(RepSpec.f2) and CredManr.Type!=RepSpec.f2)then begin testf = false; end;
 		if(nonblank(RepSpec.f3) and CredManr.OrderClass!=RepSpec.f3)then begin testf = false; end;
 		if(nonblank(RepSpec.f5) and CredManr.SalesMan!=RepSpec.f5)then begin testf = false; end;
-		if(RepSpec.flags[3]==0 and CredManr.Approved==0)then begin testf = false; end;
-		if(RepSpec.flags[4]==0 and CredManr.OKFlag==0)then begin testf = false; end;
+		if(RepSpec.flags[7]==1) then begin
+      if (CredManr.OKFlag==1)then begin testf = false; end;
+    end else begin
+      if(RepSpec.flags[3]==0 and CredManr.Approved==0)then begin testf = false; end;
+      if(RepSpec.flags[4]==0 and CredManr.OKFlag==0)then begin testf = false; end;
+    end;
 		if(CredManr.startDate<RepSpec.sStartDate)then begin testf = false; end;
     if (nonblank(RepSpec.f4) and SetInSet2(RepSpec.f4,CredManr.Classifications)==false) then begin 
       testf = false; 
     end;
 		if(CredManr.startDate>RepSpec.sEndDate)then begin testf = false; TrHs = false; end;
+		if(nonblank(RepSpec.Period2Str2) and DateInRange(CredManr.FirstInvDate,RepSpec.sStartDate2,RepSpec.sEndDate2)==false)then begin testf = false; end;
 		
 		if (testf) then begin
   		curbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.d1);

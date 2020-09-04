@@ -23,6 +23,7 @@ external updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
 external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,record CredManSetBlock,var record SMVc);
 external function Boolean GetCredLegalNrLine(string,string,Date,string,string,var row CredLegalInvNrBlock,Integer);
 external inner function string 50 NextLegalSerNr(string,LongInt,Date,string,string,string);
+external function Boolean CanCreateSingleAgreementInvoice(record CredManVc,var Date);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -1106,7 +1107,8 @@ begin
   record CredManPayPlanVc CredManPayPlanr;
   string 255 oldlang;
 
-  if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
+  //if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
+  if (CanCreateSingleAgreementInvoice(CredManr,ed)) then begin
     oldlang = SetCompanyLanguage;
     if (CreateInvoiceBasedOnSchedule(CredManr,ed,IVr)==false) then begin
       BlockLoad(CMb);
@@ -1478,6 +1480,9 @@ begin
   RepSpec.vals1 = IVr.Sum4;
   RepSpec.vals0 = dueamount;//should this be openamount?
   RepSpec.vals2 = openamount + IVr.Sum4 - prepayval;
+  if (prepayval>0 and RepSpec.vals2<0) then begin
+    RepSpec.vals2 = 0;
+  end;
   RepSpec.vals4 = dueamount;
   RepSpec.f12 = lateamount;//(RepSpec.vals2-RepSpec.vals3-RepSpec.vals4);
   RepSpec.vals3 = GetActualBalance(CredManr,CredManPayPlanr,false);
@@ -1978,6 +1983,7 @@ begin
       CSrw.Total = SMrw.CurDebVal;
       CSrw.Invoiced = 1;
       bal = bal - CSrw.Total;
+      CSrw.Balance = bal;
 //      CSrw.Principle = SMrw.CurDebVal;
     end else begin
       CSrw.FromDate = SMrw.Objects;

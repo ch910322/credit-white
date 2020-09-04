@@ -59,11 +59,13 @@ begin
 
   CRr.CustCode = CUr.Code;
   while (LoopMain(CRr,1,true)) begin
-    ContactCUr.Code = CRr.ContactCode;
-    if (ReadFirstMain(ContactCUr,1,true)) then begin
-      if (nonblank(ContactCUr.eMail)) then begin
-        res = ContactCUr.eMail;
-        goto LFindFirstContactPersonWithEmail;
+    if (CRr.Invalid==0) then begin
+      ContactCUr.Code = CRr.ContactCode;
+      if (ReadFirstMain(ContactCUr,1,true)) then begin
+        if (nonblank(ContactCUr.eMail)) then begin
+          res = ContactCUr.eMail;
+          goto LFindFirstContactPersonWithEmail;
+        end;
       end;
     end;
   end;
@@ -434,7 +436,7 @@ begin
   OUTFORMFIELD("F_RATE",tstr);
   GetFullCurncyRateText(false,tstr,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2);  
   OUTFORMFIELD("F_BASERATE",tstr);
-  OUTFORMFIELD("F_PERIODLENGTH",CredManr.InstalmentMonths);
+  OUTFORMFIELD("F_PERIODLENGTH",ValToString(CredManr.InstalmentMonths + CredManr.ProlongMonths,M4Val,"",".",1));
   OUTFORMFIELD("F_RANTASATS",CredManr.IntRate);
   if (blank(IVr.ShipAddr0)) then begin
     tstr = IVr.Addr0;

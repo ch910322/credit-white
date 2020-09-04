@@ -7,6 +7,7 @@ external function Boolean CUVATNrColumn;
 external function Boolean HasLimitedAccess();
 external function Boolean HasCustomerStatusReport();
 external outer function Boolean HasB2BCreateOffer();
+external outer function Boolean UseCredManStatus();
 
 procedure ShowCredManLClassWindow()
 begin
@@ -121,29 +122,38 @@ begin
 
   end;
   EditField(h,v+=vs,100,"Schudule Text",Normal,ScheduleText,false,LTxtSClass);
-
-
-
   EditField(h,v+=vs,100,"Mailing List",Normal,MailingList,false,PersColSClass);
-
-  ButtonFrame(h,v+=40,200,2,"Surety Provider by default");
-  RadioButton(h,v,0,0,"Contact",ContactPasteSpecial);
-  RadioButton(h,v+=16,1,0,"Contact Person",ContactPasteSpecial);  
-
-  ButtonFrame(h,v+=40,200,2,"Credit Agreement Info Report Date");
-  RadioButton(h,v,1,0,"Due date",CMInfoReportDate);
-  RadioButton(h,v+=16,0,0,"Invoice date",CMInfoReportDate);  
-
-
-  EditField(h,v+=40,100,"Days in Year",Normal,DaysInYear,false,0);
-  ButtonFrame(h,v+=40,150,2,"Days in Month");
-  RadioButton(h,v,0,0,"30",DaysInMonth);
-  RadioButton(h,v+=16,1,0,"Actual",DaysInMonth); 
-  
+  EditField(h,v+=vs,100,"Mailing List 2",Normal,MailingList2,false,PersColSClass);
   EditField(h,v+=30,100,"Document Signer",Normal,DocumentSigner,false,UserSClass);
   EditField(h,v+=vs,100,"Signer's Job Description",Normal,DocumentSignerPosition,false,0);
   EditField(h,v+=30,100,"Invoice Signer",Normal,InvoiceSigner,false,UserSClass);
+
+  if (UseCredManStatus) then begin
+    CheckBox(h,v+=30,0,"Automatically pause Agreements",AutoPauseCredMan);
+    EditField(h,v+=20,100,"Time",Normal,AutoPauseCredManTime,false,PasteCurTime);
+  end;
+
+  ButtonFrame(h2=360,v=20,150,6,"Default Loan Type");
+  RadioButton(h2,v,0,0,"Not set",DefCredManLoanType);
+  RadioButton(h2,v+=16,1,0,"Loan",DefCredManLoanType); 
+  RadioButton(h2,v+=16,2,0,"Leasing",DefCredManLoanType); 
+  RadioButton(h2,v+=16,3,0,"Mortgage",DefCredManLoanType); 
+  RadioButton(h2,v+=16,4,0,"Factoring",DefCredManLoanType); 
+  RadioButton(h2,v+=16,5,0,"Payment Grnt.",DefCredManLoanType); 
+
+  ButtonFrame(h2,v+=40,150,2,"Surety Provider by default");
+  RadioButton(h2,v,0,0,"Contact",ContactPasteSpecial);
+  RadioButton(h2,v+=16,1,0,"Contact Person",ContactPasteSpecial);  
   
+  ButtonFrame(h2,v+=40,150,2,"Credit Agreement Info Report Date");
+  RadioButton(h2,v,1,0,"Due date",CMInfoReportDate);
+  RadioButton(h2,v+=16,0,0,"Invoice date",CMInfoReportDate);  
+
+
+  EditField(h2,v+=40,100,"Days in Year",Normal,DaysInYear,false,0);
+  ButtonFrame(h2,v+=40,150,2,"Days in Month");
+  RadioButton(h2,v,0,0,"30",DaysInMonth);
+  RadioButton(h2,v+=16,1,0,"Actual",DaysInMonth); 
 
   EndWindow;
 
@@ -879,7 +889,7 @@ begin
   SpecialMenu("Get Surety Provider Data",' ',4,"");
   SpecialMenu("Evaluation Report",' ',5,"DoEvalReportDsm");
   SpecialMenu("Customer Status",'e',6,"CUStatusB2BLoanAppDsm");
-  SpecialMenu("Creditinfo.lt",'',6,"GetCreditinfoStatDsm");
+  SpecialMenu("Fill Data from Creditinfo.lt",'',6,"GetCreditinfoStatDsm");
   SpecialMenu("Invite additional Surety Provider",'',6,"InviteSuretyDsm");
   SpecialMenu("Get Property Data",'',6,"B2BAppGetPropertyDataDsm");
   
@@ -919,8 +929,10 @@ begin
   EditFieldTL(h,v+=20,150,"Balance Date",M4Date,Normal,0,d1,false,PasteCurDate);
   EditFieldTL(h,v+=20,150,"Classifications",M4UStr,Normal,255,f4,false,CredManClassSClass);
   EditFieldTL(h,v+=20,150,"Manager",M4UStr,Normal,255,f5,false,UserSClass);
+  EditField(h,v+=20,150,"First Invoice Period",Normal,Period2Str2,false,PerSClass);
   CheckBox(h,v+=30,0,"Include unapproved",flags[3]);
   CheckBox(h,v+=30,0,"Not OK'ed",flags[4]);
+  CheckBox(h,v+=30,0,"Only Not OK'ed",flags[7]);
   CheckBox(h,v+=30,0,"Include Completed",flags[5]);
   CheckBox(h,v+=30,0,"Show Email address",flags[6]);
   
@@ -1714,13 +1726,13 @@ begin
   MatCol(1,85,"Inv. Date",0,InvDate,false,0);
   MatCol(1,150,"Period From",0,FromDate,false,0);
   MatCol(1,215,"Period To",0,ToDate,false,0);
-  MatCol(1,320,"Downpmnt",0,Deposit,true,0);
-  MatCol(1,390,"Principle",0,Principle,true,0);
-  MatCol(1,460,"Interest",0,Interest,true,0);
-  MatCol(1,530,"Fees",0,Fees,true,0);
-  MatCol(1,604,"Total",0,Total,true,0);
-  MatCol(1,-120,"Invoiced",0,Invoiced,false,SetSClass);
-  MatCol(1,-60,"Balance",0,Balance,true,0);
+  MatCol(1,290,"Downpmnt",0,Deposit,true,0);
+  MatCol(1,360,"Principle",0,Principle,true,0);
+  MatCol(1,430,"Interest",0,Interest,true,0);
+  MatCol(1,500,"Fees",0,Fees,true,0);
+  MatCol(1,574,"Total",0,Total,true,0);
+  MatCol(1,-180,"Invoiced",0,Invoiced,false,SetSClass);
+  MatCol(1,-120,"Balance",0,Balance,true,0);
   InsertRowTest;
   DeleteRowTest;
   EndMatrix;

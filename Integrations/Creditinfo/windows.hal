@@ -3,7 +3,7 @@ begin
   
   SetLangMode(LangEnglish,"ENG",0);
 
-  Setting("Creditinfo.lt",CreditinfoTClass,modSY);
+  Setting("Creditinfo.lt",CreditinfoTClass,modInteg);
   Setting("Company Info Settings",CompanyInfoTClass,modSY);
 
   SetBegin(30900);

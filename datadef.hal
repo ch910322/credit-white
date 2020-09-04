@@ -286,6 +286,10 @@ begin
   RecordField(InvoiceSigner,M4Code,20,UserVc);
   RecordField(ScheduleText,M4Code,10,LTxtVc);
   RecordField(CMInfoReportDate,M4Int,0,0);
+  RecordField(DefCredManLoanType,M4Int,0,0);
+  RecordField(MailingList2,M4Code,30,0);
+  RecordField(AutoPauseCredMan,M4Int,0,0);
+  RecordField(AutoPauseCredManTime,M4Time,0,0);
   EndBlock;
   
   RecordAddBegin(CUVc,"CredCUVc");
@@ -505,6 +509,7 @@ begin
   RecordField(FinSum,M4Val,0,0);
   RecordField(LeaseSellerCode,M4Code,20,CUVc);
   RecordField(LeaseSellerContact,M4Str,255,0);
+  RecordField(Status,M4Int,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -594,6 +599,17 @@ begin
   KeySegment(InvSum4);
   KeySegment(SerNr);
 
+  KeyBegin(SuretyProvider1);
+  KeySegment(SuretyProvider1);
+  KeySegment(SerNr);
+
+  KeyBegin(SuretyProvider2);
+  KeySegment(SuretyProvider2);
+  KeySegment(SerNr);
+
+  KeyBegin(SuretyProvider3);
+  KeySegment(SuretyProvider3);
+  KeySegment(SerNr);
 
   EndRecordAdd;
 
@@ -649,6 +665,7 @@ begin
   RecordField(DaysInYear,M4Int,0,0);
   RecordField(DaysInMonth,M4Int,0,0);
   RecordField(LoanType,M4Int,0,0);
+  RecordField(PauseOffsetDays,M4Qty,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -1296,6 +1313,7 @@ begin
   RecordField(Math,M4Matrix,0,0);
   RecordField(Evaluator,M4Code,20,CUVc);
   RecordField(EvalDate,M4Date,0,0);
+  RecordField(TypeFlag,M4Int,0,0);
   ArrayBegin(Math,-,1);
   ArrayField(OwnerCode,M4Code,20,CUVc);
   ArrayField(OwnerName,M4Str,255,0);
@@ -1312,6 +1330,7 @@ begin
   RecordBegin(CMPropertyTypeVc,-,"");
   RecordField(Code,M4Code,20,0);
   RecordField(Comment,M4Str,250,0);
+  RecordField(TypeFlag,M4Int,0,0);
   MainKeyBegin(Code,0);
   KeySegment(Code);
   EndRecord;

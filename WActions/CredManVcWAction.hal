@@ -16,7 +16,7 @@ remote procedure GetFactoringRecord(record CredManVc,var record CredManFactVc);
 remote procedure GetPayGrntRecord(record CredManVc,var record CredManPmtGrntVc);
 remote procedure PrepareAgreementDocSigningSession(record AgreementDocVc,var string,var Integer);
 remote function Boolean GetAgreementDoc(record CredManVc,Integer,var record AgreementDocVc);
-remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc,string,var val);
+remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc,string,var val,Boolean);
 remote function Boolean GetAgreementDoc2(Longint,string,Integer,var record AgreementDocVc);
 remote updating procedure CredManPartialBuyoutDo(Date,val,Longint);
 remote function Date GetPauseCredManNextDate(record CredManVc);
@@ -36,6 +36,8 @@ remote procedure CredManCalcMaxMonthlyPayment(var record CredManVc);
 remote procedure InvLegalInvSerieSClassRemote(Date,Date,var array string);
 external inner procedure PasteFromSysList(Integer ,Integer);
 remote updating procedure CM_CreatePaymentOrder(record CredManVc,record VIVc,val);
+external function Boolean CheckForActiveAgreement(record CredManVc);
+external function Boolean CanCredManMakePayment(record CredManVc);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -448,12 +450,15 @@ begin
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
   BlockLoad(CIb);
-  if (CIb.ManualInvoiceNumber==1) then begin
-    nwn = OpenWindow("CredManInvNoWClass",0,wn,"","",RepSpec);
+  if (CheckForActiveAgreement(CredManr)) then begin
+    if (CIb.ManualInvoiceNumber==1) then begin
+      nwn = OpenWindow("CredManInvNoWClass",0,wn,"","",RepSpec);
+    end else begin
+      CreateCredManInvoiceDo(CredManr,"",wn);
+    end;
   end else begin
-    CreateCredManInvoiceDo(CredManr,"",wn);
+    MessageBox(200265,"");
   end;
-
   return;
 end;
 
@@ -1389,13 +1394,15 @@ begin
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
 
-  if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
+  
+  //
+  if (CanCredManMakePayment(CredManr)) then begin
     BlockLoad(CIb);
     if (CIb.ManualInvoiceNumber==1) then begin
       RepSpec.ArtMode = 1;
       nwn = OpenWindow("CredManInvNoWClass",0,wn,"","",RepSpec);
     end else begin
-      CredManMakePaymentRemote(CredManr,VIr,"",sum);
+      CredManMakePaymentRemote(CredManr,VIr,"",sum,true);
       PutWindowRecord(wn,CredManr);
       WindowDoOK(wn,0);
       CM_CreatePaymentOrder(CredManr,VIr,sum);
@@ -1403,6 +1410,44 @@ begin
         OpenWindow("VIDClass",0,0,"","",VIr);
       end;
     end;
+  end else begin
+    //MessageBox(200265,"");
+  end;
+
+  return;
+end;
+
+global
+updating procedure CredManMakePaymentReconsDsm()
+begin
+  Integer wn,nwn;
+  record CredManVc CredManr;
+  record VIVc VIr;
+  record CMInvoicingBlock CIb;
+  record RcVc RepSpec;
+  val sum;
+    
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+
+  
+  //
+  if (CanCredManMakePayment(CredManr)) then begin
+    BlockLoad(CIb);
+    if (CIb.ManualInvoiceNumber==1) then begin
+      RepSpec.ArtMode = 1;
+      RepSpec.flags[10] = 1;
+      nwn = OpenWindow("CredManInvNoWClass",0,wn,"","",RepSpec);
+    end else begin
+      CredManMakePaymentRemote(CredManr,VIr,"",sum,false);
+      PutWindowRecord(wn,CredManr);
+      WindowDoOK(wn,0);
+      if (VIr.SerNr>0) then begin
+        OpenWindow("VIDClass",0,0,"","",VIr);
+      end;
+    end;
+  end else begin
+    //MessageBox(200265,"");
   end;
 
   return;
@@ -1426,7 +1471,7 @@ begin
   if (RepSpec.ArtMode==0) then begin
     CreateCredManInvoiceDo(CredManr,RepSpec.f1,mwn);
   end else begin
-    CredManMakePaymentRemote(CredManr,VIr,RepSpec.f1,sum);
+    CredManMakePaymentRemote(CredManr,VIr,RepSpec.f1,sum,RepSpec.flags[10]==0);
     PutWindowRecord(mwn,CredManr);
     WindowDoOK(mwn,0);
     CM_CreatePaymentOrder(CredManr,VIr,sum);
@@ -1849,5 +1894,41 @@ function Boolean InvLegalInvSerieSClassOnOKWindow(Integer wn)
 begin
   PasteFromSysList(wn,-2);
   InvLegalInvSerieSClassOnOKWindow = false;
+  return;
+end;
+
+global
+function LongInt CredManVcRecordDefaultsClient(LongInt wn,var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  record CMApplicationSetBlock CMAb;
+  
+  BlockLoad(CMAb);
+  if (CredManr.LoanType==0) then begin
+    CredManr.LoanType = CMAb.DefCredManLoanType;
+    RerunWindowDef(wn);
+  end;
+  
+
+  CredManVcRecordDefaultsClient = res; 
+  return;
+end;
+
+
+global
+function Boolean CredManDClassStatusButtonAction(Integer wn,Integer value)
+begin
+  record CredManVc CredManr;
+  Boolean res;
+
+  res = true;
+  GetWindowRecord(wn,CredManr);
+  if (value==3) then begin
+    if (UserCanAction("AllowActivateCredMan",false)==false) then begin
+      res = false;
+    end;
+  end;
+
+  CredManDClassStatusButtonAction = res;
   return;
 end;

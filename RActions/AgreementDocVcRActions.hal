@@ -103,16 +103,21 @@ begin
   return;
 end;
 
-procedure GetDocumentSignersUs(record CredManVc CredManr,var Boolean credmanf,var Boolean schedulef,var Boolean suretyf,var Boolean vekselisf)
+procedure GetDocumentSignersUs(record CredManVc CredManr,var Boolean credmanf,var Boolean schedulef,var Boolean suretyf,var Boolean vekselisf,var Integer totdocs)
 begin
   record CredManTypeVc CMTr;
   
+  totdocs = 0;
   CMTr.Code = CredManr.Type;
   if (ReadFirstMain(CMTr,1,true)) then begin
     credmanf = CMTr.CredManUs==1;
     suretyf = CMTr.SuretyUs==1;
     schedulef = CMTr.ScheduleUs==1;
     vekselisf = CMTr.VekselisUs==1;
+    if (credmanf) then begin totdocs = totdocs + 1; end;
+    if (suretyf) then begin totdocs = totdocs + 1; end;
+    if (schedulef) then begin totdocs = totdocs + 1; end;
+    if (vekselisf) then begin totdocs = totdocs + 1; end;
   end;  
 
   return;
@@ -133,6 +138,7 @@ begin
   return;
 end;
 
+global
 function Boolean AllDocumentsSignedByUsCM(record CredManVc CredManr,Longint sernr,record AgreementDocVc tADr)
 begin
   Boolean res;
@@ -140,17 +146,19 @@ begin
   row AgreementDocVc ADrw;
   Boolean TrHs;
   Boolean credmanf,schedulef,suretyf,vekselisf;
+  Integer totdocs;
 
   TrHs = true;
   res = true;
   ADr.RecordType = 0;
   ADr.RecordNr = sernr;
-  GetDocumentSignersUs(CredManr,credmanf,schedulef,suretyf,vekselisf);
+  GetDocumentSignersUs(CredManr,credmanf,schedulef,suretyf,vekselisf,totdocs);
   while (LoopKey("RecordNr",ADr,2,TrHs)) begin
     if (ADr.RecordNr!=sernr or ADr.RecordType!=0) then begin
       TrHs = false;
     end else begin
       if (RequiredSignature(credmanf,schedulef,suretyf,vekselisf,ADr.Type)) then begin
+        totdocs = totdocs - 1;
         if (tADr.SerNr==ADr.SerNr) then begin//we are in recordupdate raction for this document which is not stored in db yet :)
           if (tADr.SignedByUs!=1) then begin
             res = false;
@@ -164,6 +172,9 @@ begin
         end;
       end;
     end;
+  end;
+  if (res and totdocs>0) then begin
+    res = false;
   end;
 
   AllDocumentsSignedByUsCM = res;
@@ -182,6 +193,7 @@ begin
   record CUVc CUr,oldCUr;
   record CredManVc CMr,oldCMr;
   Boolean credmanf,schedulef,suretyf,vekselisf,signf;
+  Integer totdocs;
 
   res = 0;
   
@@ -213,7 +225,7 @@ begin
   if (ADr.RecordType==0) then begin
     CMr.SerNr = ADr.RecordNr;
     if (ReadFirstMain(CMr,1,true)) then begin
-      GetDocumentSignersUs(CMr,credmanf,schedulef,suretyf,vekselisf);
+      GetDocumentSignersUs(CMr,credmanf,schedulef,suretyf,vekselisf,totdocs);
       signf = RequiredSignature(credmanf,schedulef,suretyf,vekselisf,ADr.Type);
       if (MatrixIsSigned(ADr) and (signf==false or ADr.SignedByUs==1)) then begin
         RecordCopy(oldCMr,CMr);
