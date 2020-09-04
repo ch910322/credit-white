@@ -287,6 +287,7 @@ begin
   RecordField(ScheduleText,M4Code,10,LTxtVc);
   RecordField(CMInfoReportDate,M4Int,0,0);
   RecordField(DefCredManLoanType,M4Int,0,0);
+  RecordField(MailingList2,M4Code,30,0);
   RecordField(AutoPauseCredMan,M4Int,0,0);
   RecordField(AutoPauseCredManTime,M4Time,0,0);
   EndBlock;

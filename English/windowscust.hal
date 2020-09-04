@@ -123,6 +123,7 @@ begin
   end;
   EditField(h,v+=vs,100,"Schudule Text",Normal,ScheduleText,false,LTxtSClass);
   EditField(h,v+=vs,100,"Mailing List",Normal,MailingList,false,PersColSClass);
+  EditField(h,v+=vs,100,"Mailing List 2",Normal,MailingList2,false,PersColSClass);
   EditField(h,v+=30,100,"Document Signer",Normal,DocumentSigner,false,UserSClass);
   EditField(h,v+=vs,100,"Signer's Job Description",Normal,DocumentSignerPosition,false,0);
   EditField(h,v+=30,100,"Invoice Signer",Normal,InvoiceSigner,false,UserSClass);
