@@ -38,6 +38,7 @@ external function Boolean HasLimitedAccess();
 external outer function Boolean HasMoneyTransferDate();
 external outer function Boolean CanEditCredManCreateDate();
 external outer function Boolean UseCredManStatus();
+external outer function Boolean HasPaymentWithoutRecons();
 remote function Boolean ExternalDocumentEnabled(string);
 //CUST-END
 
@@ -1083,8 +1084,9 @@ begin
 //  SpecialMenu("Invoice",'F',1,"InvoiceCredManDsm");
   SpecialMenu("Invoice",'F',1,"CreateCredManInvoiceDsm");
   SpecialMenu("Payment",' ',1,"CredManMakePaymentDsm");
-  SpecialMenu("Payment Without Reconciliation",' ',1,"CredManMakePaymentReconsDsm");
-
+  if (HasPaymentWithoutRecons) then begin
+    SpecialMenu("Payment Without Reconciliation",' ',1,"CredManMakePaymentReconsDsm");
+  end;
   SpecialMenu("Extra Fee Invoice",' ',1,"ManualExtraFeeDsm");
   
 //CUST-END
