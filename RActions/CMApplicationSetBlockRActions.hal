@@ -7,9 +7,9 @@ BEGIN
 
   res = 0;
 
-  if (CMSb.AutoInvoiceFlag==1) then begin
-    if (blank(CMSb.AutoInvoiceTime)) then begin
-      RecordCheckError(1058,"",-1,"AutoInvoiceTime");   
+  if (CMSb.AutoPauseCredMan==1) then begin
+    if (blank(CMSb.AutoPauseCredManTime)) then begin
+      RecordCheckError(1058,"",-1,"AutoPauseCredManTime");   
       res = -1;
       goto LCMApplicationSetBlockCheck;
     end;
@@ -24,3 +24,4 @@ LCMApplicationSetBlockCheck:;
   CMApplicationSetBlockCheck = res;
   return;
 end;
+

@@ -222,6 +222,7 @@ begin
   SString(200262,"Legal No. doesn't match Legal Record Numbers");
   SString(200263,"Periods not correct");
   SString(200264,"Invoice Required");
+  SString(200265,"Agreement must be Active");
 
 
   StrSetAdd(584);

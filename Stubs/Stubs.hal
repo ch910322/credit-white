@@ -1,0 +1,37 @@
+//defining here fallback functions
+
+global
+function Boolean CheckForActiveAgreement(record CredManVc CredManr)
+begin
+  
+
+  CheckForActiveAgreement = true;
+  return;
+end;
+
+global
+function Boolean CanCredManMakePayment(record CredManVc CredManr)
+begin
+  Boolean res;
+
+  if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
+    res = true;
+  end;
+
+  CanCredManMakePayment = res;
+  return;
+end;
+
+global
+function Boolean CanCreateSingleAgreementInvoice(record CredManVc CredManr,var Date ed)
+begin
+  Boolean res;
+
+  if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
+    res = true;
+  end;
+
+  CanCreateSingleAgreementInvoice = res;
+  return;
+end;
+

@@ -1207,7 +1207,7 @@ begin
 end;
 
 global
-updating procedure CredManMakePaymentRemote(var record CredManVc CredManr,var record VIVc VIr,string invno,var val sum)
+updating procedure CredManMakePaymentRemote(var record CredManVc CredManr,var record VIVc VIr,string invno,var val sum,Boolean receiptf)
 begin
   record IVVc IVr;
   record CMOrderClassBlock OCb;
@@ -1219,7 +1219,9 @@ begin
     CheckAndCreateAutoMailFromInvoice(IVr);
     
     //CredManCreditAllInvoices(CredManr);
-    CreatePaymentFakeReceipt(CredManr,IVr);
+    if (receiptf) then begin
+      CreatePaymentFakeReceipt(CredManr,IVr);
+    end;
     CreateCredmanPurchaseInvoice(CredManr,IVr.Sum4,VIr);
     sum = IVr.Sum4;
     if (VIr.SerNr>0) then begin

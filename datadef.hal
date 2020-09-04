@@ -287,6 +287,8 @@ begin
   RecordField(ScheduleText,M4Code,10,LTxtVc);
   RecordField(CMInfoReportDate,M4Int,0,0);
   RecordField(DefCredManLoanType,M4Int,0,0);
+  RecordField(AutoPauseCredMan,M4Int,0,0);
+  RecordField(AutoPauseCredManTime,M4Time,0,0);
   EndBlock;
   
   RecordAddBegin(CUVc,"CredCUVc");
@@ -506,6 +508,7 @@ begin
   RecordField(FinSum,M4Val,0,0);
   RecordField(LeaseSellerCode,M4Code,20,CUVc);
   RecordField(LeaseSellerContact,M4Str,255,0);
+  RecordField(Status,M4Int,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -661,6 +664,7 @@ begin
   RecordField(DaysInYear,M4Int,0,0);
   RecordField(DaysInMonth,M4Int,0,0);
   RecordField(LoanType,M4Int,0,0);
+  RecordField(PauseOffsetDays,M4Qty,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);

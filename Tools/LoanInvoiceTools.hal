@@ -23,6 +23,7 @@ external updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
 external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,record CredManSetBlock,var record SMVc);
 external function Boolean GetCredLegalNrLine(string,string,Date,string,string,var row CredLegalInvNrBlock,Integer);
 external inner function string 50 NextLegalSerNr(string,LongInt,Date,string,string,string);
+external function Boolean CanCreateSingleAgreementInvoice(record CredManVc,var Date);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -1106,7 +1107,8 @@ begin
   record CredManPayPlanVc CredManPayPlanr;
   string 255 oldlang;
 
-  if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
+  //if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
+  if (CanCreateSingleAgreementInvoice(CredManr,ed)) then begin
     oldlang = SetCompanyLanguage;
     if (CreateInvoiceBasedOnSchedule(CredManr,ed,IVr)==false) then begin
       BlockLoad(CMb);

@@ -37,6 +37,7 @@ external function Boolean HasLimitedAccess();
 //CUST-BEGIN TAG TOOLS
 external outer function Boolean HasMoneyTransferDate();
 external outer function Boolean CanEditCredManCreateDate();
+external outer function Boolean UseCredManStatus();
 remote function Boolean ExternalDocumentEnabled(string);
 //CUST-END
 
@@ -616,11 +617,19 @@ begin
   real h,h2,h3,h4,t,v,vm,vs;
   string 255 label1,label2,label3,label4,label5;
   record CredManVc CredManr;
-  Integer type;
+  Integer type,n;
+  Boolean statusf;
 
   if (CurWindow>0) then begin
     GetWindowRecord(CurWindow,CredManr);
     type = CredManr.LoanType;
+  end;
+
+  if (UseCredManStatus) then begin
+    n = -160;
+    statusf = true;
+  end else begin
+    n = -40;
   end;
 
   WindowBegin("Credit Agreement",CredManDClass,CGview,-);
@@ -632,20 +641,35 @@ begin
   h = 120; h2 = 320; h3 = 550; h4 = 780; vs = 20;
   Tile(0,230,false,"",SerNr);
   EditField(h,vm=(v=6), 82,"No.",St_i,SerNr,false,TSerSClass);
-//CUST-BEGIn
+//CUST-BEGIN
   EditField(h+90,v,50,"",ViewOnly,VersionNo,false,0);
   EditField(h2,v,150,"Legal No.",Normal,OfficialSerNr,false,CredLegalNrSerNrSClass);
 //CUST-END
   EditField(h,v+=vs,82,"Type",Normal,Type,false,CredManTypeSClass);
-  EditField(h2,v,-40,"Interest",Normal,InstalmentType,false,SetSClass);
+  EditField(h2,v,n,"Interest",Normal,InstalmentType,false,SetSClass);
   EditField(h,v+=vs,82, "Customer",Normal,CustCode,false,CUSClass);
   EnterSkip(InvSum4);
-  EditField(h2,v,-40,"Name",Normal,Addr0,false,0);
+  EditField(h2,v,n,"Name",Normal,Addr0,false,0);
   EditField(h,v+=vs,82,"#Salesman#",Normal,SalesMan,false,UserSClass);
-  EditField(h2,v,-40,"Attn.",Normal,ClientContact,false,ContactSClass);
+  EditField(h2,v,n,"Attn.",Normal,ClientContact,false,ContactSClass);
 //CUST-BEGIN
-  EditField(h,v+=vs,-40,"Other Conditions",Normal,OtherConditions,false,0);
+  EditField(h,v+=vs,n,"Other Conditions",Normal,OtherConditions,false,0);
 //CUST-END
+  if (statusf) then begin
+    vm = v;
+    h4 = -140;
+    ButtonFrame(h4,v=9,100,7,"");
+    RadioButton(h4,v,0,0,"New",Status);
+    RadioButton(h4,v+=16,1,0,"Approved",Status);
+    RadioButton(h4,v+=16,2,0,"Signed",Status);
+    RadioButton(h4,v+=16,3,0,"Active",Status);
+    RadioButton(h4,v+=16,4,0,"Disbursed",Status);
+    RadioButton(h4,v+=16,5,0,"Cancelled",Status);
+    RadioButton(h4,v+=16,6,0,"Paused",Status);
+    h4 = 780;
+    v = vm;
+  end;
+
   if (type!=2) then begin
     EditField(h,vm=(v+=vs),82,"Total Sum",Normal,InvSum4,true,0);
   end else begin
@@ -674,6 +698,12 @@ begin
       EditField(h,v+=vs,30,"Deposit % ",Normal,DepositPrc,false,0);
       EditField(h,v+=vs,82,"Deposit Sum",Normal,DepositSum,true,0);
     end;
+  end;
+  if (type==1 or type==3) then begin
+    HalPushButton(h-50,v+=vs,h+70,v+20,"CredManDClassOpenProperties","Pledges");
+  end;
+  if (type==2) then begin
+    HalPushButton(h-50,v+=vs,h+70,v+20,"CredManDClassOpenProperties","Assets");
   end;
   EditField(h2,v=vm,82,"Start Date",Normal,startDate,false,PasteCurDate);
 //CUST-BEGIN switched fields and renamed FirstIntDate
@@ -719,6 +749,9 @@ begin
   end;
 
   v = vm-vs;
+  if (statusf) then begin
+    v = v + vs;
+  end;
   if (type!=4 and type!=5) then begin
     EditField(h4,v+=vs,-40,"Max Monthly Payment",Normal,MaxMonthlyPayment,true,0);
 //CUST-BEGIN
@@ -736,13 +769,9 @@ begin
   if (type==3) then begin
     EditField(h4,v+=vs,-40,"#VAT# Invoice Months",Normal,VATInvoiceMonths,false,0);
   end;
-  if (type==1 or type==3) then begin
-    HalPushButton(h4,v+=vs,h4+120,v+20,"CredManDClassOpenProperties","Pledges");
-  end;
   if (type==2) then begin
     EditField(h4,v+=vs,-40,"Additional Downp. Months",Normal,ExtraDepositMonths,false,0);
     EditField(h4,v+=vs,-40,"Additional Downp. Sum",Normal,ExtraDepositSum,true,0);
-    HalPushButton(h4,v+=vs,h4+120,v+20,"CredManDClassOpenProperties","Assets");
   end;
 
   if (type==4) then begin
@@ -797,8 +826,10 @@ begin
   end;
 //CUST-END
   Tile(1,500,true,"",Approved);//CUST CurncyCode>>Approved
-  CheckBox(20,-41,0,"Approved",Approved);
-  CheckBox(20,-21,0,"OK",OKFlag);
+  //if (!statusf) then begin
+    CheckBox(20,-41,0,"Approved",Approved);
+    CheckBox(20,-21,0,"OK",OKFlag);
+  //end;
 //CUST-BEGIN
 /*
   EditField(200,-21,50,"Currency",Normal,CurncyCode,false,CurncyCodeSClass);
@@ -1112,6 +1143,9 @@ begin
   EditField(h,v+=vs,150,"Classifications",Normal,Classifications,false,CredManClassSClass);
   CheckBox(h2,v,0,"Annual Rate",AnnualRate);
   EditField(h,vm2=(v+=vs),150,"Bank Account",Normal,OwnBankAccount,false,0);
+  if (UseCredManStatus) then begin
+    EditField(h,vm2=(v+=vs),150,"Pause Offset Days",Normal,PauseOffsetDays,false,0);
+  end;
   EditField(h2+150,v=vm-20,-40,"Minimum Overdue Fee",Normal,MinOverdueFee,false,0);
   vm = vm + 20;
   //CUST-END

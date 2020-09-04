@@ -73,9 +73,6 @@ begin
       CredHist2r.PaidSum = CredHist2r.InvSum - ARr.RVal;
       if (ARr.RVal==0) then begin
         CredHist2r.PaidFlag = 1;
-        if (CredHist2r.ChargeType==14) then begin//prolong session
-          FinishProlongSession(CredHist2r.CredManNr);
-        end;
       end else begin
         CredHist2r.PaidFlag = 0;
       end;
@@ -110,6 +107,7 @@ global
 updating function LongInt CredHistVcRecordSaveAfter(var record CredHistVc CredHistr,record CredHistVc CredHist2r,LongInt stat,LongInt long4)
 begin
   LongInt res;
+  record CredManVc CredManr,oldCredManr;
 
   res = 0;
 
@@ -117,8 +115,44 @@ begin
   if (CredHistr.RecordType==1 or CredHistr.RecordType==2 or CredHistr.RecordType==3) then begin
     UpdateInvoicedCredHist(CredHistr.PreviousNr);
   end;
+  if (CredHistr.PaidFlag==1) then begin
+    CredManr.SerNr = CredHistr.CredManNr;
+    if (ReadFirstMain(CredManr,1,true)) then begin
+      if (CredManr.startDate==CredHistr.TransDate) then begin
+        RecordCopy(oldCredManr,CredManr);
+        CredManr.Status = 3;
+        RecordUpdate(oldCredManr,CredManr,true);
+      end;
+    end;
+  end;
 
   CredHistVcRecordSaveAfter = res;
+  return;
+end;
+
+global
+updating function LongInt CredHistVcRecordUpdateAfter(var record CredHistVc CredHistr,record CredHistVc CredHist2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  record CredManVc CredManr,oldCredManr;
+
+  res = 0;
+  
+  if (CredHistr.PaidFlag==1 and CredHist2r.PaidFlag==0) then begin
+    if (CredHist2r.ChargeType==14) then begin//prolong session
+      FinishProlongSession(CredHist2r.CredManNr);
+    end;
+    CredManr.SerNr = CredHistr.CredManNr;
+    if (ReadFirstMain(CredManr,1,true)) then begin
+      if (CredManr.startDate==CredHistr.TransDate) then begin
+        RecordCopy(oldCredManr,CredManr);
+        CredManr.Status = 3;
+        RecordUpdate(oldCredManr,CredManr,true);
+      end;
+    end;
+  end;
+
+  CredHistVcRecordUpdateAfter = res;
   return;
 end;
 

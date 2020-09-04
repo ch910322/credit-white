@@ -1,0 +1,117 @@
+//<halrule>server-only</halrule>
+function Boolean ShouldPauseAgreement(record CredManVc CredManr)
+begin
+  Boolean res;
+  Date td;
+  record CredManTypeVc CMTr;
+  record PDVc PDr;
+   
+  td = CredManr.FirstInvDate;
+  CMTr.Code = CredManr.Type;
+  if (ReadFirstMain(CMTr,1,true)) then begin
+    td = AddDay(td,-CMTr.PauseOffsetDays);
+  end;
+  PDr.Code = CredManr.PayDeal;
+  if (ReadFirstMain(PDr,1,true)) then begin
+    td = AddDay(td,-PDr.pdays);
+  end;
+  if (td<CurrentDate) then begin
+    res = true;
+  end;
+
+  ShouldPauseAgreement = res;
+  return;
+end;
+
+global
+updating procedure SetCredManPauseStatus(array record CredManVc aCredManr)
+begin
+  record CredManVc CredManr,oldCredManr;
+  Integer i;
+
+  for (i=0;i<aCredManr.length;i=i+1) begin
+    CredManr = aCredManr[i];
+    RecordCopy(oldCredManr,CredManr);
+    CredManr.Status = 5;
+    RecordUpdate(oldCredManr,CredManr,true);
+  end;
+
+  return;
+end;
+
+global
+procedure AutoPauseCredManTask(string args)
+begin
+  record CredManVc CredManr,oldCredManr;
+  array record CredManVc aCredManr;
+  Integer i,oldcomp,ncomp;
+  Longint invfr,invto;
+  record IVVc nIVr,IVr;
+  record CMApplicationSetBlock CMb;
+  Date td,datefr,dateto;
+  Time tt;
+  
+  ncomp = StringToLongint(args);
+  oldcomp = CurrentCompany;
+  if (oldcomp!=ncomp) then begin
+    SetCompany(ncomp,false);
+  end;
+
+  while (LoopMain(CredManr,1,true)) begin
+    if (CredManr.OKFlag==1) then begin
+      if (Blank(CredManr.MoneyTransferDate)) then begin
+        if (ShouldPauseAgreement(CredManr)) then begin
+          aCredManr[aCredManr.length] = CredManr;
+        end;
+      end;
+    end;
+  end;
+
+  qupdating.SetCredManPauseStatus(aCredManr);
+
+  BlockLoad(CMb);
+  if (CMb.AutoPauseCredMan==1) then begin
+    td = CurrentDate;
+    tt = CMb.AutoPauseCredManTime;
+    if (tt<CurrentTime) then begin
+      td = AddDay(td,1);
+    end;
+    NewTimedTask2("AutoPauseTask_" & GetCurTick & "_" & CurrentCompany,"AutoPauseTask","AutoPauseCredManTask",CurrentCompany,td,tt,"","");
+  end;
+  if (CurrentCompany!=oldcomp) then begin
+    ResetCompany(oldcomp);
+  end;
+
+  return;
+end;
+
+global
+procedure InitAutoPauseTask()
+begin
+  record CMApplicationSetBlock CMb;
+  Date td;
+  Time tt;
+  Integer i,rwcnt,oldcomp,comp;
+  record CompaniesBlock Compb;
+
+  oldcomp = CurrentCompany;  
+  BlockLoad(Compb);
+  rwcnt = MatRowCnt(Compb);    
+  for (i=0;i<rwcnt;i=i+1) begin
+    comp = i + 1;
+    SetCompany(comp,false);
+    BlockLoad(CMb);
+    if (CMb.AutoPauseCredMan==1) then begin
+      RemoveTask("AutoPauseTask" & comp);
+      td = CurrentDate;
+      tt = CMb.AutoPauseCredManTime;
+      if (tt<CurrentTime) then begin
+        td = AddDay(td,1);
+      end;
+      NewTimedTask2("AutoPauseTask" & comp,"AutoPauseTask","AutoPauseCredManTask",comp,td,tt,"","");
+    end;
+  end;
+  ResetCompany(oldcomp);
+
+  return;
+end;
