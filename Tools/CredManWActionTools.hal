@@ -1212,6 +1212,8 @@ begin
   record IVVc IVr;
   record CMOrderClassBlock OCb;
   record CMInvoicingBlock CIb;
+  record CredManVc tCredManr,oldCredManr;
+  Boolean updf;
 
 
   if (CredManr.InstalmentType!=4 and CredManr.InstalmentType!=5) then begin
@@ -1223,6 +1225,14 @@ begin
       CreatePaymentFakeReceipt(CredManr,IVr);
     end;
     CreateCredmanPurchaseInvoice(CredManr,IVr.Sum4,VIr);
+    tCredManr.SerNr = CredManr.SerNr;
+    if (ReadFirstMain(tCredManr,1,true)) then begin
+      if (ComparePosts(tCredManr,CredManr)==false) then begin
+        updf = true;
+        RecordCopy(CredManr,tCredManr);
+        RecordCopy(oldCredManr,CredManr);
+      end;
+    end;
     sum = IVr.Sum4;
     if (VIr.SerNr>0) then begin
       BlockLoad(OCb);
@@ -1231,6 +1241,10 @@ begin
       BlockLoad(CIb);
       if (CIb.MoneyTransferDateVI==1) then begin
         CredManr.MoneyTransferDate = VIr.InvDate;
+      end;
+      if (updf) then begin
+        if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
+        end;
       end;
     end;
   end;

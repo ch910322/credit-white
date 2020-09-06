@@ -17,7 +17,7 @@ begin
     MatRowGet(OPr,i,OPrw);
     if (OPrw.VISerNr>0) then begin
       updf = true;
-      APr.InvoiceNr = OPrw.VISerNr;
+      APr.SerNr = OPrw.VISerNr;
       if (ReadFirstMain(APr,1,true)) then begin
         if (APr.RVal>0) then begin
           updf = false;
