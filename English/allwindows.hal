@@ -38,6 +38,7 @@ external function Boolean HasLimitedAccess();
 external outer function Boolean HasMoneyTransferDate();
 external outer function Boolean CanEditCredManCreateDate();
 external outer function Boolean UseCredManStatus();
+external outer function Boolean HasPaymentWithoutRecons();
 remote function Boolean ExternalDocumentEnabled(string);
 //CUST-END
 
@@ -826,10 +827,10 @@ begin
   end;
 //CUST-END
   Tile(1,500,true,"",Approved);//CUST CurncyCode>>Approved
-  //if (!statusf) then begin
+  if (!statusf) then begin
     CheckBox(20,-41,0,"Approved",Approved);
     CheckBox(20,-21,0,"OK",OKFlag);
-  //end;
+  end;
 //CUST-BEGIN
 /*
   EditField(200,-21,50,"Currency",Normal,CurncyCode,false,CurncyCodeSClass);
@@ -938,6 +939,7 @@ begin
   EditField(h,vm=(v+=vs),100,"Quotation",ViewOnly,QTNr,false,0);
 //CUST-BEGIN
   EditField(h,v+=vs,30,"Pay. Terms",Normal,PayDeal,false,PDSClass);
+  EditField(h,v+=vs,82,"Invoice",ViewOnly,VINr,false,0);
   EditField(h,v+=vs,82,"Interest From Date",Normal,FirstIntDate,false,PasteCurDate);
 //CUST-END
   EditField(h,v+=vs,40,"Price List",Normal,PriceList,false,PLDefSClass);
@@ -1083,6 +1085,9 @@ begin
 //  SpecialMenu("Invoice",'F',1,"InvoiceCredManDsm");
   SpecialMenu("Invoice",'F',1,"CreateCredManInvoiceDsm");
   SpecialMenu("Payment",' ',1,"CredManMakePaymentDsm");
+  if (HasPaymentWithoutRecons) then begin
+    SpecialMenu("Payment Without Reconciliation",' ',1,"CredManMakePaymentReconsDsm");
+  end;
   SpecialMenu("Extra Fee Invoice",' ',1,"ManualExtraFeeDsm");
   
 //CUST-END

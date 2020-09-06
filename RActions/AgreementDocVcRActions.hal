@@ -181,6 +181,35 @@ begin
   return;
 end;
 
+
+global
+function Boolean AllDocumentsSignedByUsCM2(record CredManVc CredManr)
+begin
+  Boolean res;
+  Boolean TrHs;
+  Boolean credmanf,schedulef,suretyf,vekselisf;
+  Integer totdocs;
+
+  TrHs = true;
+  res = true;
+  GetDocumentSignersUs(CredManr,credmanf,schedulef,suretyf,vekselisf,totdocs);
+  if (credmanf and CredManr.SignAgreement==0) then begin
+    res = false;
+  end;
+  if (schedulef and CredManr.SignSchedule==0) then begin
+    res = false;
+  end;
+  if (suretyf and CredManr.SignSurety==0) then begin
+    res = false;
+  end;
+  if (vekselisf and CredManr.SignVekselis==0) then begin
+    res = false;
+  end;
+
+  AllDocumentsSignedByUsCM2 = res;
+  return;
+end;
+
 global
 updating function LongInt AgreementDocVcRecordUpdate(var record AgreementDocVc ADr,record AgreementDocVc AD2r,LongInt stat,LongInt long4)
 begin
