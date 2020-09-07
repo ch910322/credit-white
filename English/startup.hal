@@ -64,6 +64,8 @@ begin
   Setting("Reminder Queue",SMSReminderQueueLClass,modDBMain);
   Setting("Legal Record Numbers",OffSerNrLClass,modDBMain);
 
+  Maintenance("Delete not used Attachments",ClearAttachmentsVClass,ClearAttachmentsMn,modDBMain);
+
 /* Sales ledger */
 	Report("Income Analysis",EBSIncomeAnalysisRClass,EBSIncomeAnalysisRn,0,modSL);
 
@@ -75,9 +77,6 @@ begin
   Setting("PayLink",PayLinkTClass,modInteg);
   Setting("Payment Gateways",CCAccountIDLClass,modInteg);
   Setting("Merchant ID",CCMerchantIDLClass,modInteg);
-
-/* System */
-  Maintenance("Clear Attachments",ClearAttachmentsVClass,ClearAttachmentsMn,modSY);
 
 
   SString(200000,"Evaluation report");
