@@ -1384,7 +1384,9 @@ begin
       if (res>CredManPayrw.Bal) then begin
         res = CredManPayrw.Bal;
       end;
-      openamount = openamount + CredManPayrw.OpenAmount;
+      if (CredManPayrw.PlanType==kEventTypeCalcInstalment) then begin
+        openamount = openamount + CredManPayrw.OpenAmount;
+      end;
     end;
     if (CredManPayrw.PlanType<5) then begin
       i = rwcnt;
@@ -1487,13 +1489,11 @@ begin
   end;
   RepSpec.vals4 = dueamount;
   RepSpec.f12 = lateamount;//(RepSpec.vals2-RepSpec.vals3-RepSpec.vals4);
+  
+  BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
+  
   RepSpec.vals3 = GetActualBalance(CredManr,CredManPayPlanr,false);
-  if (schedf) then begin
-    //just get all unpaid invoices 
-    RepSpec.f13 = GetActualBalanceSched(CredManr,CSr) + openamount;
-  end else begin
-    RepSpec.f13 = GetActualBalance(CredManr,CredManPayPlanr,true);
-  end;
+  RepSpec.f13 = GetActualBalance(CredManr,CredManPayPlanr,true);
   gSilenceIVOpenPrepExists = false;
 
 
