@@ -357,6 +357,10 @@ begin
   h = 150; v = 6; vs = 20;
   EndWindow;
 
+  WindowBegin("Specify Clear Attachements",ClearAttachmentsVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 150; v = 6; vs = 20;
+  EndWindow;
 
   WindowBegin("Specify Payment Guarantee Invoices",PmtGrntInvoiceVClass,CGMnt,RcType);
   SetWRect(64,80,445,95);

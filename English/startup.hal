@@ -75,7 +75,10 @@ begin
   Setting("PayLink",PayLinkTClass,modInteg);
   Setting("Payment Gateways",CCAccountIDLClass,modInteg);
   Setting("Merchant ID",CCMerchantIDLClass,modInteg);
-  
+
+/* System */
+  Maintenance("Clear Attachments",ClearAttachmentsVClass,ClearAttachmentsMn,modSY);
+
 
   SString(200000,"Evaluation report");
   SString(200001,"Company");
