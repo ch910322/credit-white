@@ -401,7 +401,7 @@ begin
       TrHs = false;
     end else begin
       if (CredPayr.TransDate>CredHistr.PayDate) then begin
-        if (CredPayr.TransDate>sd and CredPayr.TransDate<=ed) then begin
+        if (CredPayr.TransDate>tempsd and CredPayr.TransDate<=ed) then begin
           daydiff = DateDiff(CredPayr.TransDate,tempsd)+1;//or DateDiff2 to get daydiff+1 days
           daydiff2 = DateDiff(CredPayr.TransDate,CredHistr.PayDate);//or DateDiff2 to get daydiff+1 days
           if (CredManr.LateFeeDays<daydiff2) then begin
@@ -414,7 +414,9 @@ begin
         if (CredPayr.TransDate>ed) then begin//no need to continue for later payments
           TrHs = false;
         end else begin
-          tempsd = CredPayr.TransDate;
+          if (tempsd<CredPayr.TransDate) then begin
+            tempsd = CredPayr.TransDate;
+          end;
         end;
       end;
       if (CredPayr.TransDate<=ed) then begin
