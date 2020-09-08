@@ -2038,35 +2038,75 @@ end;
 window CMPropertyDClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  real h,v,vs,v2,vs2,hm,h2;
+  real h,v,vs,v2,vs2,hm,h2,h3,vm;
+  Integer type;
+  record CMPropertyVc Propr;
+
+  if (CurWindow>0) then begin
+    GetWindowRecord(CurWindow,Propr);
+    type = Propr.TypeFlag;
+  end;
   WindowBegin("Property",CMPropertyDClass,CGview,-);
-  SetWRect(20,80,600,339);
-  Sizeable(-1,-1,0,0);
+  if (type==2) then begin
+    SetWRect(20,80,650,739);
+  end else begin
+    SetWRect(20,80,650,619);
+  end;
+  AutoSizeWindow(false);
+  DynamicWindow;
   UseView(CMPropertyVc);
   vs=20; h=120; vs2=16; hm=-100;
   EditField(h,v=6,100,"Ser. No.",Normal,SerNr,false,);
   EditField(h2=350,v,150,"Official No.",Normal,OfficialSerNr,false,0);
-  EditField(h,v+=vs,150,"Name",Normal,Addr0,false,0);
-  EditField(h,v+=vs,150,"Country",Normal,Addr1,false,CountrySClass);
-  EditField(h,v+=vs,150,"City",Normal,Addr2,false,0);
-  EditField(h,v+=vs,150,"Address",Normal,Addr3,false,0);
-  EditField(h,v+=vs,150,"ZIP",Normal,Addr4,false,0);
   EditField(h,v+=vs,100,"Type",Normal,Type,false,CMPropertyTypeSClass);
-  EditField(h,v+=vs,100,"Reported Value",Normal,RepVal,false,0);
+  EditField(h2,v,150,"Type Name",Normal,TypeName,false,0);
+  EditField(h,v+=vs,-40,"Name",Normal,Addr0,false,0);
+  EditField(h,v+=vs,-40,"Serial No.",Normal,SerialNo,false,0);
+  if (type==2) then begin
+    EditField(h,v+=vs,100,"Land Area",Normal,EstateAreaSize,false,0);
+    EditField(h2,v,150,"Land Unit",Normal,EstateUnit,false,UnitSClass);
+  end;
+  if (type==2) then begin
+    EditField(h,v+=vs,150,"Country",Normal,Addr1,false,CountrySClass);
+    EditField(h,v+=vs,150,"City",Normal,Addr2,false,0);
+    EditField(h,v+=vs,150,"Address",Normal,Addr3,false,0);
+    EditField(h,v+=vs,150,"ZIP",Normal,Addr4,false,0);
+    EditField(h,v+=vs,100,"Reported Value",Normal,RepVal,false,0);
+  end else begin
+    if (type==0) then begin
+      EditField(h,v+=vs,100,"Manufacturer",Normal,ProducerName,false,0);
+      EditField(h,v+=vs,100,"Manufacture Date",Normal,ProductionDate,false,PasteCurDate);
+    end else begin
+      EditField(h,v+=vs,100,"First Reg. Date",Normal,CarFirstRegDate,false,0);
+    end;
+    EditField(h,v+=vs,100,"Reported Val. wo VAT",Normal,RepVal,false,0);
+    EditField(h2,v,100,"VAT",Normal,RepValVAT,false,0);
+    EditField(h3=h2+150,v,-40,"Total",Normal,RepValTot,false,0);
+  end;
   EditField(h,v+=vs,100,"Evaluator",Normal,Evaluator,false,CUSClass);
+  EditField(h2,v,-40,"Evaluator Name",Normal,EvaluatorName,false,0);
   EditField(h,v+=vs,100,"Evaluated Value",Normal,EvalVal,false,0);
   EditField(h2,v,100,"Evaluation Date",Normal,EvalDate,false,PasteCurDate);
   EditField(h,v+=vs,100,"Insurance Company",Normal,InsuranceCompany,false,CUSClass);
   EditField(h2,v,-40,"Name",Normal,InsuranceName,false,0);
   EditField(h,v+=vs,100,"Insurance Type",Normal,InsuranceType,false,CMInsuranceTypeSClass);
-  EditField(h,v+=vs,100,"Insured Value",Normal,InsuredVal,false,0);
+  vm = v;
+  if (type!=2) then begin
+    ButtonFrame(h2,v+=20,150,2,"Age");
+    RadioButton(h2,v,0,1,"New",AgeType);
+    RadioButton(h2,v+=16,0,0,"Used",AgeType); 
+  end;
+  EditField(h,v=vm+vs,100,"Insured Value",Normal,InsuredVal,false,0);
   EditField(h,v+=vs,100,"Insured Until",Normal,InsuredUntil,false,PasteCurDate);
-  TextField(h,v+=vs,-20,60,Math2,0);
-  MatrixBegin(10,v+=vs+70,-40,-20,-,99);
+  StaticText(10,v+=vs+vs,"Comments",false);
+  TextField(10,v+=10,-20,60,Math2,0);
+  v = v + vs+50;
+  StaticText(10,v+=vs,"Owners",false);
+  MatrixBegin(10,v+=vs,-40,490,-,99);
   MatCol(1,24,"Contact",0,OwnerCode,false,AllCUSClass);
   MatCol(1,104,"Name",0,OwnerName,false,0);
   MatCol(1,-154,"Shares %",0,SharesPrc,false,0);
-  MatCol(1,-84,"Shares Value",0,SharesVal,false,0);
+  MatCol(1,-84,"Shares Part",0,SharesVal,false,0);
   EndMatrix;
   EndWindow;
 end;
@@ -2112,6 +2152,14 @@ begin
   vs=20; h=120; vs2=16; hm=-100;
   EditField(h,v=6,100,"Code",Normal,Code,false,);
   EditField(h,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  ButtonFrame(h,v+=40,150,3,"Type");
+  RadioButton(h,v,1,0,"Vehicles",TypeFlag);
+  RadioButton(h,v+=16,2,0,"Real Estate",TypeFlag); 
+  RadioButton(h,v+=16,0,0,"Other",TypeFlag); 
+
+  ButtonFrame(h,v+=40,150,2,"Unique Serial No");
+  RadioButton(h,v,1,0,"Yes",UniqueSerNr);
+  RadioButton(h,v+=16,0,0,"No",UniqueSerNr); 
   EndWindow;
 end;
 

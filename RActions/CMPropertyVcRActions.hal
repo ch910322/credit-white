@@ -32,12 +32,36 @@ global
 updating function LongInt CMPropertyVcRecordCheck(var record CMPropertyVc Propr,record CMPropertyVc Prop2r,LongInt stat,LongInt long4)
 begin
   LongInt res;
+  record CMPropertyVc tPropr;
+  record CMPropertyTypeVc PTr;
+  Boolean TrHs;
 
   res = 0;
   if (Propr.SerNr<=0) then begin
     Propr.SerNr = NextSerNr("CMPropertyVc",CurrentDate,-1,false,"");
   end;
 
+  PTr.Code = Propr.Type;
+  if (ReadFirstMain(PTr,1,true)) then begin
+    if (PTr.UniqueSerNr==1 and nonblank(Propr.SerialNo)) then begin
+      TrHs = true;
+      tPropr.SerialNo = Propr.SerialNo;
+      while (LoopKey("SerialNo",tPropr,1,TrHs)) begin
+        if (tPropr.SerialNo!=Propr.SerialNo) then begin
+          TrHs = false;
+        end else begin
+          if (tPropr.SerNr!=Propr.SerNr) then begin
+            RecordCheckError(1243,"",-1,"SerialNo");
+            res = -1;
+            goto LCMPropertyVcRecordCheck;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+LCMPropertyVcRecordCheck:;
   CMPropertyVcRecordCheck = res;
   return;
 end;
+
