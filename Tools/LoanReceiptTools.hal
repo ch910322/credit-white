@@ -15,6 +15,7 @@ external inner procedure IPPastePayMode(var record IPVc);
 external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val,array string);
 external procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
 external procedure SetupOverdueLangCode(var record IVVc,string);
+external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
 
 
 /*Invoicing tools*/
@@ -545,8 +546,7 @@ begin
             SetupLoanInvoice(CredManr,CMb,IVr,invdate,sd,invdate,true,false,"",2);
             AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
             SetupOverdueLangCode(IVr,CredManr.Type);
-            IVr.OKFlag = 1;
-            RecordInsert(IVr,true);
+            StoreLoanInvoice(IVr,CredManr);
           end;
         end;
       end;
