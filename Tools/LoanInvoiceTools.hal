@@ -504,11 +504,29 @@ begin
   return;
 end;
 
+function Date GetInvoiceEndPeriod(Longint ivnr)
+begin
+  record IVVc IVr;
+  Date res;
+
+  IVr.SerNr = ivnr;
+  if (ReadFirstMain(IVr,1,true)) then begin
+    res = IVr.CredToDate;
+  end;
+
+  if (blank(res)) then begin
+    res = IVr.InvDate;
+  end;
+  
+  GetInvoiceEndPeriod = res;
+  return;
+end;
+
 function Date GetLastOverdueInvoiceDate(Longint sernr,string item)
 begin
   record CredHistVc CredHistr;
   Boolean TrHs;
-  Date res;
+  Date res,td;
 
   TrHs = true;
   CredHistr.ArtCode = item;
@@ -517,8 +535,9 @@ begin
     if (CredHistr.ArtCode!=item or CredHistr.CredManNr!=sernr) then begin
       TrHs = false;
     end else begin
-      if (CredHistr.TransDate>res) then begin
-        res = CredHistr.TransDate;
+      td = GetInvoiceEndPeriod(CredHistr.RecordNr);
+      if (td>res) then begin
+        res = td;
       end;
     end;
   end;
