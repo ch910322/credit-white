@@ -692,6 +692,22 @@ begin
   return;
 end;
 
+procedure AddSimplifiedSuretyToDocument(var record AgreementDocVc ADr,record CredManVc CredManr,Integer num)
+begin
+  Integer i;
+  string 255 custcode;
+  row AgreementDocVc ADrw;
+   
+  custcode = GetFieldValueByName(CredManr,"SuretyProvider" & num,-1);
+  if (nonblank(custcode)) then begin
+    if (CustIsCEO(custcode,CredManr)==false) then begin
+      AddCustToDocument(ADr,custcode,GetFieldValueByName(CredManr,"Surety" & num & "Name",-1))
+    end;
+  end;
+
+  return;
+end;
+
 procedure GetDocumentSigners(Integer type,record CredManVc CredManr,var Boolean flag1,var Boolean flag2,var Boolean flag3)
 begin
   record CredManTypeVc CMTr;
@@ -860,6 +876,20 @@ begin
         PrintCredManDocument("VekselisForm",fn,CredManr,scnt,(CredManr.MaxMonthlyPayment>0),langcode);
         //PrintMultiDocDocument("VekselisForm" & scnt,fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
       end;
+    otherwise//surety simplified 7-12
+      if (ADr.Type>8 and ADr.Type<15) then begin
+        fn = GetAgreementDocumentName(ADr,"Surety",regenf);
+        langcode = GetDocumentLangCode(CredManr,3);
+        if (ExternalDocumentEnabled("SuretyAgreementForm")) then begin
+          RepSpec.long1 = CredManr.InstalmentType;
+          if (CredManr.MaxMonthlyPayment>0) then begin
+            RepSpec.flags[10] = 1;
+          end;
+          PrintEBSDocument("SuretyAgreementForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
+        end else begin
+          PrintCredManDocument("SuretyAgreementForm",fn,CredManr,1,(CredManr.MaxMonthlyPayment>0),langcode);
+        end;
+      end;
   end;
   RecordLinkFile(fn,0,ADr,CurrentCompany);
   Delete_File(fn);
@@ -893,8 +923,12 @@ begin
   if (flags2) then begin
     AddCEOToDocument(ADr,CredManr,true);
   end;
-  if (flags3) then begin
-    AddSuretyToDocument(ADr,CredManr);    
+  if (type>8 and type<15) then begin
+      AddSimplifiedSuretyToDocument(ADr,CredManr,type-8);    
+  end else begin
+    if (flags3) then begin
+      AddSuretyToDocument(ADr,CredManr);    
+    end;
   end;
   if (RecordInsert(ADr,true)) then begin
     PrintSingleAgreementDoc(ADr,CredManr,false);
@@ -1019,6 +1053,10 @@ begin
       case 2: CredManr.SignSchedule = 0;
       case 3: CredManr.SignSurety = 0;
       case 6: CredManr.SignVekselis = 0;
+      otherwise
+        if (ADr.Type>8 and ADr.Type<15) then begin
+          SetFieldValueByName(CredManr,"Surety" & (ADr.Type-8) & "Signed",-1,0);
+        end;
     end;
 
     BlockLoad(CMb);

@@ -393,6 +393,12 @@ begin
   SetText(6,"Vekselis");
   SetText(7,"Loan Application");
   SetText(8,"Payment Certificate");
+  SetText(9,"Surety Provider Agreement 1");
+  SetText(10,"Surety Provider Agreement 2");
+  SetText(12,"Surety Provider Agreement 3");
+  SetText(12,"Surety Provider Agreement 4");
+  SetText(13,"Surety Provider Agreement 5");
+  SetText(14,"Surety Provider Agreement 6");
   EndSet;
 
   SetBegin(2018);

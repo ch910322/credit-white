@@ -511,6 +511,51 @@ begin
   RecordField(LeaseSellerContact,M4Str,255,0);
   RecordField(Status,M4Int,0,0);
 
+  RecordField(SuretyProvider4,M4Str,200,0);
+  RecordField(Surety4Name,M4Str,200,0);
+  RecordField(Surety4Position,M4Str,200,0);
+  RecordField(Surety4Phone,M4Str,200,0);
+  RecordField(Surety4eMail,M4Str,200,0);
+  RecordField(Surety4Date,M4Date,0,0);
+  RecordField(Surety4Amount,M4Val,0,0);
+  RecordField(Surety4Signer,M4Str,255,0);
+  RecordField(Surety4Signed,M4Int,0,0);
+
+  RecordField(SuretyProvider5,M4Str,200,0);
+  RecordField(Surety5Name,M4Str,200,0);
+  RecordField(Surety5Position,M4Str,200,0);
+  RecordField(Surety5Phone,M4Str,200,0);
+  RecordField(Surety5eMail,M4Str,200,0);
+  RecordField(Surety5Date,M4Date,0,0);
+  RecordField(Surety5Amount,M4Val,0,0);
+  RecordField(Surety5Signer,M4Str,255,0);
+  RecordField(Surety5Signed,M4Int,0,0);
+
+  RecordField(SuretyProvider6,M4Str,200,0);
+  RecordField(Surety6Name,M4Str,200,0);
+  RecordField(Surety6Position,M4Str,200,0);
+  RecordField(Surety6Phone,M4Str,200,0);
+  RecordField(Surety6eMail,M4Str,200,0);
+  RecordField(Surety6Date,M4Date,0,0);
+  RecordField(Surety6Amount,M4Val,0,0);
+  RecordField(Surety6Signer,M4Str,255,0);
+  RecordField(Surety6Signed,M4Int,0,0);
+
+  RecordField(Surety1Date,M4Date,0,0);
+  RecordField(Surety1Amount,M4Val,0,0);
+  RecordField(Surety1Signer,M4Str,255,0);
+  RecordField(Surety1Signed,M4Int,0,0);
+
+  RecordField(Surety2Date,M4Date,0,0);
+  RecordField(Surety2Amount,M4Val,0,0);
+  RecordField(Surety2Signer,M4Str,255,0);
+  RecordField(Surety2Signed,M4Int,0,0);
+
+  RecordField(Surety3Date,M4Date,0,0);
+  RecordField(Surety3Amount,M4Val,0,0);
+  RecordField(Surety3Signer,M4Str,255,0);
+  RecordField(Surety3Signed,M4Int,0,0);
+
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
   ChangeMatrixField(vRebate,M4Rate,0,0);

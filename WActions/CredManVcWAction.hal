@@ -1382,6 +1382,28 @@ begin
 end;
 
 global
+procedure CredManDClassSignSuretySimplified()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record AgreementDocVc ADr;
+  Integer num;
+
+  num = StringToInt(PushButtonTag);
+
+  if (num>0) then begin
+    wn = CurWindow;
+    GetWindowRecord(wn,CredManr);
+    if (GetAgreementDoc(CredManr,8+num,ADr)) then begin
+      OpenWindow("AgreementDocDClass",1,0,"","",ADr);
+    end;
+  end;
+
+
+  return;
+end;
+
+global
 updating procedure CredManMakePaymentDsm()
 begin
   Integer wn,nwn;
