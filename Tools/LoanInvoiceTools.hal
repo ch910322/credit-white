@@ -1256,15 +1256,9 @@ begin
   SetupInvoiceRowAndAdd(IVr,CIb.ProlongItem,spec,1,sum,blankval,14,-1);
   AddPrepayments(IVr,CIb);
 
-  IVr.SerNr = NextSerNr("IVVc",IVr.InvDate,-1,false,"");
-  if (IVr.SerNr>-1) then begin
-    if (RecordInsert(IVr,true)) then begin
-      RecordCopy(oldIVr,IVr);
-      IVr.OKFlag = 1;
-      RecordUpdate(oldIVr,IVr,true);
-      LinkCredManAndInvoice(IVr,CredManr);
-      RecordCopy(nIVr,IVr);
-    end;  
+  StoreLoanInvoice(IVr,CredManr);
+  if (IVr.SerNr>0) then begin
+    RecordCopy(nIVr,IVr);
   end;
 
   return;
@@ -1291,15 +1285,7 @@ begin
     SetupInvoiceRowAndAdd(IVr,RepSpec.f1,spec,1,RepSpec.vals0,blankval,15,-1);
     AddPrepayments(IVr,CIb);
 
-    IVr.SerNr = NextSerNr("IVVc",IVr.InvDate,-1,false,"");
-    if (IVr.SerNr>-1) then begin
-      if (RecordInsert(IVr,true)) then begin
-        RecordCopy(oldIVr,IVr);
-        IVr.OKFlag = 1;
-        RecordUpdate(oldIVr,IVr,true);
-        LinkCredManAndInvoice(IVr,CredManr);
-      end;  
-    end;
+    StoreLoanInvoice(IVr,CredManr);
   end;
 
   return;
@@ -1319,8 +1305,8 @@ begin
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,CurrentDate,IVr);
     AddPrepayments(IVr,CIb);
-    if (IVr.SerNr>0) then begin
-      if (IVr.SerNr>-1) then begin
+    if (IVr.SerNr>-1) then begin
+      if (IVr.Sum4>0) then begin
         if (RecordInsert(IVr,true)) then begin
           RecordCopy(oldIVr,IVr);
           IVr.OKFlag = 1;
@@ -1329,6 +1315,8 @@ begin
           GenerateAgreementSchedule(CredManr,true);
         end;
         RecordCopy(firstIVr,IVr);
+      end else begin
+        LogText(0,"Failed to store Invoice. Sum is 0");
       end;
     end else begin
       LogText(0,"Failed to store Invoice. No Serial Number. Check Number Series");
