@@ -986,6 +986,27 @@ BEGIN
 END;
 
 global
+procedure InvegaFundRClassReportDefaults(Integer wn)
+BEGIN
+  record RcVc RepSpec;
+  Date sd,ed;
+  
+  DeselectWindow(wn,false);
+  GetWindowRecord(wn,RepSpec);
+  ReportDefaults(RepSpec,"InvegaFundRClass");  
+  sd = AddMonth(CurrentDate,-1);
+  sd.Day = 1;
+  ed = AddDay(AddMonth(sd,1),-1);
+  RepSpec.Period2Str = sd & ":" & ed;
+  RepSpec.sStartDate = sd;
+  RepSpec.sEndDate = ed;
+  PutWindowRecord(wn,RepSpec);
+  SelectWindow(wn);
+  RETURN;
+END;
+
+
+global
 procedure CMIncomeForecastRClassReportDefaults(Integer wn)
 BEGIN
   record RcVc RepSpec;
