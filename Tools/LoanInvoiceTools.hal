@@ -1018,29 +1018,29 @@ begin
         end;
       end;
       lastd = AddDay(CSrw.InvDate,1);
-      if (CIb.OverdueIVType==2 and GetDay(CurrentDate)==CIb.OverdueIVDay) then begin
-        ted = CurrentDate;
-        ted.Day = 1;
-        sd = AddMonth(ed,-1);
-        ted = AddDay(ed,-1);
-        invdat2 = CurrentDate;
-        GetCredManOverdueInvoices(CredManr,CMb,ted,sd,latedays,lateamount,lateformula,false);
-        addf = true;
-        CMTr.Code = CredManr.Type;
-        if (ReadFirstMain(CMTr,1,true)) then begin
-          if (CMTr.MinOverdueFee>0 and lateamount<CMTr.MinOverdueFee) then begin
-            addf = false;
-          end;
+    end;
+    if (CIb.OverdueIVType==2 and GetDay(CurrentDate)==CIb.OverdueIVDay) then begin
+      ted = CurrentDate;
+      ted.Day = 1;
+      sd = AddMonth(ted,-1);
+      ted = AddDay(ted,-1);
+      invdat2 = CurrentDate;
+      GetCredManOverdueInvoices(CredManr,CMb,ted,sd,latedays,lateamount,lateformula,false);
+      addf = true;
+      CMTr.Code = CredManr.Type;
+      if (ReadFirstMain(CMTr,1,true)) then begin
+        if (CMTr.MinOverdueFee>0 and lateamount<CMTr.MinOverdueFee) then begin
+          addf = false;
         end;
-        if (addf) then begin
-          SetupLoanInvoice(CredManr,CMb,IVr,invdat2,sd,ted,true,false,"",2);
-          SetupOverdueLangCode(IVr,CredManr.Type);
-          AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
-          StoreLoanInvoice(IVr,CredManr);
-          if (firstf==false) then begin
-            RecordCopy(firstIVr,IVr);
-            firstf = true;
-          end;
+      end;
+      if (addf) then begin
+        SetupLoanInvoice(CredManr,CMb,IVr,invdat2,sd,ted,true,false,"",2);
+        SetupOverdueLangCode(IVr,CredManr.Type);
+        AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
+        StoreLoanInvoice(IVr,CredManr);
+        if (firstf==false) then begin
+          RecordCopy(firstIVr,IVr);
+          firstf = true;
         end;
       end;
     end;
