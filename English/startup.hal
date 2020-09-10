@@ -35,9 +35,13 @@ begin
   Setting("Insurance Types",CMInsuranceTypeLClass,modCredMan);
   Setting("Loan Agreements",CredMan2LClass,modCredMan);
   Setting("Leasing Agreements",CredMan3LClass,modCredMan);
+  Setting("Invega Fund Report Settings",InvegaReportTClass,modCredMan);
+
+  
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
 	Report("Application Overview",LoanApplicationListRClass,LoanApplicationListRn,0,modCredMan);
+	Report("Invega Fund Report",InvegaFundRClass,InvegaFundRn,0,modCredMan);
 
 	Report("Income Analysis",EBSIncomeAnalysisRClass,EBSIncomeAnalysisRn,0,modCredMan);
 	Report("Income Forecast",CMIncomeForecastRClass,CMIncomeForecastRn,0,modCredMan);
@@ -225,6 +229,8 @@ begin
   SString(200263,"Periods not correct");
   SString(200264,"Invoice Required");
   SString(200265,"Agreement must be Active");
+
+  SString(200266,"Invega Fund Report");
 
 
   StrSetAdd(584);

@@ -1375,6 +1375,12 @@ begin
   KeySegment(CredManNr);
   EndRecord;
 
+  
+  BlockBegin(InvegaReportBlock,-,"");
+  RecordField(CompTypeClass,M4Code,20,CClassVc);
+  RecordField(EVKRClassType,M4Code,20,CClassVc);
+  EndBlock;
+  
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Latvian", 0);
