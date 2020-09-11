@@ -494,41 +494,81 @@ begin
   return;
 end;
 
+procedure GetSuretyValues3(record CredManVc CredManr,Integer num,var string name,var string phone,var string mobile,var string email,var string id,var string addr0,var string addr1,var string addr2,var string addr3,var string addr4,var string value,var string signer,var string td)
+begin
+  record CUVc CUr;
+  
+  name = GetFieldValueByName(CredManr,"Surety" & num & "Name",-1);
+  email = GetFieldValueByName(CredManr,"Surety" & num & "eMail",-1);
+  phone = GetFieldValueByName(CredManr,"Surety" & num & "Phone",-1);
+  mobile = GetFieldValueByName(CredManr,"Surety" & num & "Mobile",-1);
+  id = GetFieldValueByName(CredManr,"Surety" & num & "ID",-1);
+  value = GetFieldValueByName(CredManr,"Surety" & num & "Value",-1);
+  signer = GetFieldValueByName(CredManr,"Surety" & num & "Signer",-1);
+  td = GetFieldValueByName(CredManr,"Surety" & num & "Date",-1);
+  CUr.Code = GetFieldValueByName(CredManr,"SuretyProvider" & num,-1);
+  if (ReadFirstMain(CUr,1,true)) then begin
+    addr0 = GetFieldValueByName(CredManr,"Surety" & num & "Addr0",-1);
+    addr1 = GetFieldValueByName(CredManr,"Surety" & num & "Addr1",-1);
+    addr2 = GetFieldValueByName(CredManr,"Surety" & num & "Addr2",-1);
+    addr3 = GetFieldValueByName(CredManr,"Surety" & num & "Addr3",-1);
+    addr4 = GetFieldValueByName(CredManr,"Surety" & num & "Addr4",-1);
+  end else begin
+    addr0 = ""; addr1 = ""; addr2 = ""; addr3 = ""; addr4 = ""; 
+  end;
+
+  return;
+end;
+
 /*real surety agreement*/
 global
 procedure ExternalPrintSuretyAgreementForm(record CredManVc CredManr,var vector string vVals)
 begin
-  string 255 name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4;
+  string 255 name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,signer,value,td;
   record CUVc CUr;
   string 255 tstr;
   val calcfees,fixfees;
+  transaction Longint gSuretyNumber;
 
   Ext_CommonDocumentFields(vVals);
 
-  GetSuretyValues(CredManr,1,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
-  vVals["F_CONTACTNAME"] = name;
-  vVals["F_CONTACTPHONE"] = phone;
-  vVals["F_CONTACTMOBILE"] = mobile;
-  vVals["F_CONTACTMAIL"] = email;
-  vVals["F_CONTACTID"] = id;
-  Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
+  if (gSuretyNumber==-1) then begin
+    GetSuretyValues(CredManr,1,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
+    vVals["F_CONTACTNAME"] = name;
+    vVals["F_CONTACTPHONE"] = phone;
+    vVals["F_CONTACTMOBILE"] = mobile;
+    vVals["F_CONTACTMAIL"] = email;
+    vVals["F_CONTACTID"] = id;
+    Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
 
-  GetSuretyValues(CredManr,2,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
-  vVals["F_CONTACT2NAME"] = name;
-  vVals["F_CONTACT2PHONE"] = phone;
-  vVals["F_CONTACT2MOBILE"] = mobile;
-  vVals["F_CONTACT2MAIL"] = email;
-  vVals["F_CONTACT2ID"] = id;
-  Ext_OutAddress(vVals,"F_CONTACT2ADRESS",name,addr0,addr1,addr2,addr3,addr4);
+    GetSuretyValues(CredManr,2,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
+    vVals["F_CONTACT2NAME"] = name;
+    vVals["F_CONTACT2PHONE"] = phone;
+    vVals["F_CONTACT2MOBILE"] = mobile;
+    vVals["F_CONTACT2MAIL"] = email;
+    vVals["F_CONTACT2ID"] = id;
+    Ext_OutAddress(vVals,"F_CONTACT2ADRESS",name,addr0,addr1,addr2,addr3,addr4);
 
-  GetSuretyValues(CredManr,3,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
-  vVals["F_CONTACT3NAME"] = name;
-  vVals["F_CONTACT3PHONE"] = phone;
-  vVals["F_CONTACT3MOBILE"] = mobile;
-  vVals["F_CONTACT3MAIL"] = email;
-  vVals["F_CONTACT3ID"] = id;
-  Ext_OutAddress(vVals,"F_CONTACT3ADRESS",name,addr0,addr1,addr2,addr3,addr4);
-
+    GetSuretyValues(CredManr,3,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
+    vVals["F_CONTACT3NAME"] = name;
+    vVals["F_CONTACT3PHONE"] = phone;
+    vVals["F_CONTACT3MOBILE"] = mobile;
+    vVals["F_CONTACT3MAIL"] = email;
+    vVals["F_CONTACT3ID"] = id;
+    Ext_OutAddress(vVals,"F_CONTACT3ADRESS",name,addr0,addr1,addr2,addr3,addr4);
+  end else begin
+    GetSuretyValues3(CredManr,1,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,value,signer,td);
+    vVals["F_CONTACTNAME"] = name;
+    vVals["F_CONTACTPHONE"] = phone;
+    vVals["F_CONTACTMOBILE"] = mobile;
+    vVals["F_CONTACTMAIL"] = email;
+    vVals["F_CONTACTID"] = id;
+    vVals["F_CONTACTVALUE"] = id;
+    vVals["F_CONTACTSIGNER"] = id;
+    vVals["F_CONTACTDATE"] = id;
+    Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
+  end;
+  
   CUr.Code = CredManr.CustCode;
   ReadFirstMain(CUr,1,true);
   vVals["F_NUMMER"] = CredManr.SerNr;

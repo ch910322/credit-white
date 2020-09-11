@@ -816,6 +816,7 @@ begin
   string 255 langcode,oldname;
   Integer scnt;
   area filearea;
+  transaction Longint gSuretyNumber;
   
   ArchiveExistingDocument(ADr,oldname);
 
@@ -885,7 +886,9 @@ begin
           if (CredManr.MaxMonthlyPayment>0) then begin
             RepSpec.flags[10] = 1;
           end;
+          gSuretyNumber = ADr.Type-8;
           PrintEBSDocument("SuretyAgreementForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
+          gSuretyNumber = -1;
         end else begin
           PrintCredManDocument("SuretyAgreementForm",fn,CredManr,1,(CredManr.MaxMonthlyPayment>0),langcode);
         end;
