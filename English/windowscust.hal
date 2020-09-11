@@ -1611,6 +1611,16 @@ begin
   EndWindow;
 end;
 
+window CheckCMSchedRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm,vs;
+  WindowBegin("Specify check Schedule Periods",CheckCMSchedRClass,CGRcW,RcType);
+  SetWRect(20,80,420,310);
+  vs = 20;
+  EndWindow;
+end;
+
 
 
 window ReceiptEntryWClass:1
