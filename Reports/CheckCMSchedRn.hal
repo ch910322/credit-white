@@ -1,0 +1,59 @@
+//<halrule>server-only</halrule>
+global
+procedure CheckCMSchedRn(record RcVc RepSpec)
+begin
+  Date lasted;
+  Boolean periodf;
+  Integer i,rwcnt;
+  Date lastinv;
+  row CredManSchedVc CSrw;
+  record CredManSchedVc CSr;
+
+
+  StartReportJob("Check Schedules");
+
+  EndHeader;
+
+  while (LoopMain(CSr,1,true)) begin
+    rwcnt = MatRowCnt(CSr);
+    periodf = false;
+    lasted = "";
+    lastinv = "";
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(CSr,i,CSrw);
+      if (nonblank(CSrw.FromDate)) then begin
+        periodf = true;
+      end;
+      if (periodf) then begin
+        if (nonblank(lasted)) then begin
+          if (lasted!=AddDay(CSrw.FromDate,-1)) then begin
+            StartFormat(15);
+            OutString(0,"DblCredManVc",CSr.CredManNr,false);
+/*
+            OutString(100,0,i,false);
+            OutString(150,0,lasted,false);
+            OutString(200,0,CSrw.FromDate,false);
+*/
+            EndFormat;
+            goto LNext;
+          end;
+        end;
+      end;
+      if (nonblank(lastinv) and i>1) then begin
+        if (GetMonth(lastinv)<GetMonth(AddMonth(CSrw.InvDate,-1))) then begin
+          StartFormat(15);
+          OutString(0,"DblCredManVc",CSr.CredManNr,false);
+          EndFormat;
+          goto LNext;
+        end;
+      end;
+      lasted = CSrw.ToDate;
+      lastinv = CSrw.InvDate;
+    end;
+LNext:;
+  end;
+
+  EndJob;
+
+  return;
+end;
