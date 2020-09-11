@@ -401,7 +401,7 @@ begin
       TrHs = false;
     end else begin
       if (CredPayr.TransDate>CredHistr.PayDate) then begin
-        if (CredPayr.TransDate>sd and CredPayr.TransDate<=ed) then begin
+        if (CredPayr.TransDate>tempsd and CredPayr.TransDate<=ed) then begin
           daydiff = DateDiff(CredPayr.TransDate,tempsd)+1;//or DateDiff2 to get daydiff+1 days
           daydiff2 = DateDiff(CredPayr.TransDate,CredHistr.PayDate);//or DateDiff2 to get daydiff+1 days
           if (CredManr.LateFeeDays<daydiff2) then begin
@@ -414,7 +414,9 @@ begin
         if (CredPayr.TransDate>ed) then begin//no need to continue for later payments
           TrHs = false;
         end else begin
-          tempsd = CredPayr.TransDate;
+          if (tempsd<CredPayr.TransDate) then begin
+            tempsd = CredPayr.TransDate;
+          end;
         end;
       end;
       if (CredPayr.TransDate<=ed) then begin
@@ -502,11 +504,29 @@ begin
   return;
 end;
 
+function Date GetInvoiceEndPeriod(Longint ivnr)
+begin
+  record IVVc IVr;
+  Date res;
+
+  IVr.SerNr = ivnr;
+  if (ReadFirstMain(IVr,1,true)) then begin
+    res = IVr.CredToDate;
+  end;
+
+  if (blank(res)) then begin
+    res = IVr.InvDate;
+  end;
+  
+  GetInvoiceEndPeriod = res;
+  return;
+end;
+
 function Date GetLastOverdueInvoiceDate(Longint sernr,string item)
 begin
   record CredHistVc CredHistr;
   Boolean TrHs;
-  Date res;
+  Date res,td;
 
   TrHs = true;
   CredHistr.ArtCode = item;
@@ -515,8 +535,9 @@ begin
     if (CredHistr.ArtCode!=item or CredHistr.CredManNr!=sernr) then begin
       TrHs = false;
     end else begin
-      if (CredHistr.TransDate>res) then begin
-        res = CredHistr.TransDate;
+      td = GetInvoiceEndPeriod(CredHistr.RecordNr);
+      if (td>res) then begin
+        res = td;
       end;
     end;
   end;
@@ -1016,29 +1037,29 @@ begin
         end;
       end;
       lastd = AddDay(CSrw.InvDate,1);
-      if (CIb.OverdueIVType==2 and GetDay(CurrentDate)==CIb.OverdueIVDay) then begin
-        ted = CurrentDate;
-        ted.Day = 1;
-        sd = AddMonth(ed,-1);
-        ted = AddDay(ed,-1);
-        invdat2 = CurrentDate;
-        GetCredManOverdueInvoices(CredManr,CMb,ted,sd,latedays,lateamount,lateformula,false);
-        addf = true;
-        CMTr.Code = CredManr.Type;
-        if (ReadFirstMain(CMTr,1,true)) then begin
-          if (CMTr.MinOverdueFee>0 and lateamount<CMTr.MinOverdueFee) then begin
-            addf = false;
-          end;
+    end;
+    if (CIb.OverdueIVType==2 and GetDay(CurrentDate)==CIb.OverdueIVDay) then begin
+      ted = CurrentDate;
+      ted.Day = 1;
+      sd = AddMonth(ted,-1);
+      ted = AddDay(ted,-1);
+      invdat2 = CurrentDate;
+      GetCredManOverdueInvoices(CredManr,CMb,ted,sd,latedays,lateamount,lateformula,false);
+      addf = true;
+      CMTr.Code = CredManr.Type;
+      if (ReadFirstMain(CMTr,1,true)) then begin
+        if (CMTr.MinOverdueFee>0 and lateamount<CMTr.MinOverdueFee) then begin
+          addf = false;
         end;
-        if (addf) then begin
-          SetupLoanInvoice(CredManr,CMb,IVr,invdat2,sd,ted,true,false,"",2);
-          SetupOverdueLangCode(IVr,CredManr.Type);
-          AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
-          StoreLoanInvoice(IVr,CredManr);
-          if (firstf==false) then begin
-            RecordCopy(firstIVr,IVr);
-            firstf = true;
-          end;
+      end;
+      if (addf) then begin
+        SetupLoanInvoice(CredManr,CMb,IVr,invdat2,sd,ted,true,false,"",2);
+        SetupOverdueLangCode(IVr,CredManr.Type);
+        AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
+        StoreLoanInvoice(IVr,CredManr);
+        if (firstf==false) then begin
+          RecordCopy(firstIVr,IVr);
+          firstf = true;
         end;
       end;
     end;
@@ -1254,15 +1275,9 @@ begin
   SetupInvoiceRowAndAdd(IVr,CIb.ProlongItem,spec,1,sum,blankval,14,-1);
   AddPrepayments(IVr,CIb);
 
-  IVr.SerNr = NextSerNr("IVVc",IVr.InvDate,-1,false,"");
-  if (IVr.SerNr>-1) then begin
-    if (RecordInsert(IVr,true)) then begin
-      RecordCopy(oldIVr,IVr);
-      IVr.OKFlag = 1;
-      RecordUpdate(oldIVr,IVr,true);
-      LinkCredManAndInvoice(IVr,CredManr);
-      RecordCopy(nIVr,IVr);
-    end;  
+  StoreLoanInvoice(IVr,CredManr);
+  if (IVr.SerNr>0) then begin
+    RecordCopy(nIVr,IVr);
   end;
 
   return;
@@ -1289,15 +1304,7 @@ begin
     SetupInvoiceRowAndAdd(IVr,RepSpec.f1,spec,1,RepSpec.vals0,blankval,15,-1);
     AddPrepayments(IVr,CIb);
 
-    IVr.SerNr = NextSerNr("IVVc",IVr.InvDate,-1,false,"");
-    if (IVr.SerNr>-1) then begin
-      if (RecordInsert(IVr,true)) then begin
-        RecordCopy(oldIVr,IVr);
-        IVr.OKFlag = 1;
-        RecordUpdate(oldIVr,IVr,true);
-        LinkCredManAndInvoice(IVr,CredManr);
-      end;  
-    end;
+    StoreLoanInvoice(IVr,CredManr);
   end;
 
   return;
@@ -1317,8 +1324,8 @@ begin
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,CurrentDate,IVr);
     AddPrepayments(IVr,CIb);
-    if (IVr.SerNr>0) then begin
-      if (IVr.SerNr>-1) then begin
+    if (IVr.SerNr>-1) then begin
+      if (IVr.Sum4>0) then begin
         if (RecordInsert(IVr,true)) then begin
           RecordCopy(oldIVr,IVr);
           IVr.OKFlag = 1;
@@ -1327,6 +1334,8 @@ begin
           GenerateAgreementSchedule(CredManr,true);
         end;
         RecordCopy(firstIVr,IVr);
+      end else begin
+        LogText(0,"Failed to store Invoice. Sum is 0");
       end;
     end else begin
       LogText(0,"Failed to store Invoice. No Serial Number. Check Number Series");
@@ -1382,7 +1391,9 @@ begin
       if (res>CredManPayrw.Bal) then begin
         res = CredManPayrw.Bal;
       end;
-      openamount = openamount + CredManPayrw.OpenAmount;
+      if (CredManPayrw.PlanType==kEventTypeCalcInstalment) then begin
+        openamount = openamount + CredManPayrw.OpenAmount;
+      end;
     end;
     if (CredManPayrw.PlanType<5) then begin
       i = rwcnt;
@@ -1485,13 +1496,11 @@ begin
   end;
   RepSpec.vals4 = dueamount;
   RepSpec.f12 = lateamount;//(RepSpec.vals2-RepSpec.vals3-RepSpec.vals4);
+  
+  BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
+  
   RepSpec.vals3 = GetActualBalance(CredManr,CredManPayPlanr,false);
-  if (schedf) then begin
-    //just get all unpaid invoices 
-    RepSpec.f13 = GetActualBalanceSched(CredManr,CSr) + openamount;
-  end else begin
-    RepSpec.f13 = GetActualBalance(CredManr,CredManPayPlanr,true);
-  end;
+  RepSpec.f13 = GetActualBalance(CredManr,CredManPayPlanr,true);
   gSilenceIVOpenPrepExists = false;
 
 

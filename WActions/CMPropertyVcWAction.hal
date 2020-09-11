@@ -18,6 +18,46 @@ begin
   return;
 end;
 
+function Boolean CMPropertyDClassEvaluatorEFAfter(Integer wn,Integer rownr,Integer changed)
+begin
+  Boolean res;
+  record CUVc CUr;
+  record CMPropertyVc Propr;
+  
+  if (changed!=0) then begin
+    GetWindowRecord(wn,Propr);
+    CUr.Code = Propr.Evaluator;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      Propr.EvaluatorName = CUr.Name;
+      PutWindowRecord(wn,Propr);
+    end; 
+  end;
+
+  CMPropertyDClassEvaluatorEFAfter = res;
+  return;
+end;
+
+function Boolean CMPropertyDClassTypeEFAfter(Integer wn,Integer rownr,Integer changed)
+begin
+  Boolean res;
+  record CMPropertyTypeVc PTr;
+  record CMPropertyVc Propr;
+  
+  if (changed!=0) then begin
+    GetWindowRecord(wn,Propr);
+    PTr.Code = Propr.Type;
+    if (ReadFirstMain(PTr,1,true)) then begin
+      Propr.TypeName = PTr.Comment;
+      Propr.TypeFlag = PTr.TypeFlag;
+      PutWindowRecord(wn,Propr);
+      RerunWindowDef(wn);
+    end; 
+  end;
+
+  CMPropertyDClassTypeEFAfter = res;
+  return;
+end;
+
 function Boolean CMPropertyDClassOwnerCodeEFAfter(Integer wn,Integer rownr,Integer changed)
 begin
   Boolean res;
@@ -51,6 +91,11 @@ begin
         res = CMPropertyDClassInsuranceCompanyEFAfter(wn,rownr,changed);
       case "OwnerCode": 
         res = CMPropertyDClassOwnerCodeEFAfter(wn,rownr,changed);
+      case "Type": 
+        res = CMPropertyDClassTypeEFAfter(wn,rownr,changed);
+      case "Evaluator": 
+        res = CMPropertyDClassEvaluatorEFAfter(wn,rownr,changed);
+
     end;
   end;
 

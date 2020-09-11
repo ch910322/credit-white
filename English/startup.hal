@@ -35,12 +35,18 @@ begin
   Setting("Insurance Types",CMInsuranceTypeLClass,modCredMan);
   Setting("Loan Agreements",CredMan2LClass,modCredMan);
   Setting("Leasing Agreements",CredMan3LClass,modCredMan);
+  Setting("Invega Fund Report Settings",InvegaReportTClass,modCredMan);
+
+  
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
 	Report("Application Overview",LoanApplicationListRClass,LoanApplicationListRn,0,modCredMan);
+	Report("Invega Fund Report",InvegaFundRClass,InvegaFundRn,0,modCredMan);
 
 	Report("Income Analysis",EBSIncomeAnalysisRClass,EBSIncomeAnalysisRn,0,modCredMan);
 	Report("Income Forecast",CMIncomeForecastRClass,CMIncomeForecastRn,0,modCredMan);
+	Report("Check Schedule Periods",CheckCMSchedRClass,CheckCMSchedRn,0,modCredMan);
+
 
   Maintenance("Create Agreement Invoices",GenLoanInvoicesVClass,GenLoanInvoicesMn,modCredMan);
   Maintenance("Create Payment Guarantee Invoices",PmtGrntInvoiceVClass,PmtGrntInvoiceMn,modCredMan);
@@ -64,6 +70,8 @@ begin
   Setting("Reminder Queue",SMSReminderQueueLClass,modDBMain);
   Setting("Legal Record Numbers",OffSerNrLClass,modDBMain);
 
+  Maintenance("Delete not used Attachments",ClearAttachmentsVClass,ClearAttachmentsMn,modDBMain);
+
 /* Sales ledger */
 	Report("Income Analysis",EBSIncomeAnalysisRClass,EBSIncomeAnalysisRn,0,modSL);
 
@@ -75,7 +83,7 @@ begin
   Setting("PayLink",PayLinkTClass,modInteg);
   Setting("Payment Gateways",CCAccountIDLClass,modInteg);
   Setting("Merchant ID",CCMerchantIDLClass,modInteg);
-  
+
 
   SString(200000,"Evaluation report");
   SString(200001,"Company");
@@ -223,6 +231,8 @@ begin
   SString(200263,"Periods not correct");
   SString(200264,"Invoice Required");
   SString(200265,"Agreement must be Active");
+
+  SString(200266,"Invega Fund Report");
 
 
   StrSetAdd(584);
@@ -385,6 +395,12 @@ begin
   SetText(6,"Vekselis");
   SetText(7,"Loan Application");
   SetText(8,"Payment Certificate");
+  SetText(9,"Surety Provider Agreement 1");
+  SetText(10,"Surety Provider Agreement 2");
+  SetText(12,"Surety Provider Agreement 3");
+  SetText(12,"Surety Provider Agreement 4");
+  SetText(13,"Surety Provider Agreement 5");
+  SetText(14,"Surety Provider Agreement 6");
   EndSet;
 
   SetBegin(2018);

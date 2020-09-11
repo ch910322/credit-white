@@ -511,6 +511,87 @@ begin
   RecordField(LeaseSellerContact,M4Str,255,0);
   RecordField(Status,M4Int,0,0);
 
+  RecordField(SuretyProvider4,M4Str,200,0);
+  RecordField(Surety4Name,M4Str,200,0);
+  RecordField(Surety4Position,M4Str,200,0);
+  RecordField(Surety4Phone,M4Str,200,0);
+  RecordField(Surety4eMail,M4Str,200,0);
+  RecordField(Surety4Date,M4Date,0,0);
+  RecordField(Surety4Amount,M4Val,0,0);
+  RecordField(Surety4Signer,M4Str,255,0);
+  RecordField(Surety4Signed,M4Int,0,0);
+
+  RecordField(SuretyProvider5,M4Str,200,0);
+  RecordField(Surety5Name,M4Str,200,0);
+  RecordField(Surety5Position,M4Str,200,0);
+  RecordField(Surety5Phone,M4Str,200,0);
+  RecordField(Surety5eMail,M4Str,200,0);
+  RecordField(Surety5Date,M4Date,0,0);
+  RecordField(Surety5Amount,M4Val,0,0);
+  RecordField(Surety5Signer,M4Str,255,0);
+  RecordField(Surety5Signed,M4Int,0,0);
+
+  RecordField(SuretyProvider6,M4Str,200,0);
+  RecordField(Surety6Name,M4Str,200,0);
+  RecordField(Surety6Position,M4Str,200,0);
+  RecordField(Surety6Phone,M4Str,200,0);
+  RecordField(Surety6eMail,M4Str,200,0);
+  RecordField(Surety6Date,M4Date,0,0);
+  RecordField(Surety6Amount,M4Val,0,0);
+  RecordField(Surety6Signer,M4Str,255,0);
+  RecordField(Surety6Signed,M4Int,0,0);
+
+  RecordField(Surety1Date,M4Date,0,0);
+  RecordField(Surety1Amount,M4Val,0,0);
+  RecordField(Surety1Signer,M4Str,255,0);
+  RecordField(Surety1Signed,M4Int,0,0);
+
+  RecordField(Surety2Date,M4Date,0,0);
+  RecordField(Surety2Amount,M4Val,0,0);
+  RecordField(Surety2Signer,M4Str,255,0);
+  RecordField(Surety2Signed,M4Int,0,0);
+
+  RecordField(Surety3Date,M4Date,0,0);
+  RecordField(Surety3Amount,M4Val,0,0);
+  RecordField(Surety3Signer,M4Str,255,0);
+  RecordField(Surety3Signed,M4Int,0,0);
+
+  RecordField(BOE1Code,M4Str,200,0);
+  RecordField(BOE1Name,M4Str,200,0);
+  RecordField(BOE1Position,M4Str,200,0);
+  RecordField(BOE1Phone,M4Str,200,0);
+  RecordField(BOE1eMail,M4Str,200,0);
+  RecordField(BOE1Date,M4Date,0,0);
+  RecordField(BOE1Amount,M4Val,0,0);
+  RecordField(BOE1Signed,M4Int,0,0);
+
+  RecordField(BOE2Code,M4Str,200,0);
+  RecordField(BOE2Name,M4Str,200,0);
+  RecordField(BOE2Position,M4Str,200,0);
+  RecordField(BOE2Phone,M4Str,200,0);
+  RecordField(BOE2eMail,M4Str,200,0);
+  RecordField(BOE2Date,M4Date,0,0);
+  RecordField(BOE2Amount,M4Val,0,0);
+  RecordField(BOE2Signed,M4Int,0,0);
+
+  RecordField(BOE3Code,M4Str,200,0);
+  RecordField(BOE3Name,M4Str,200,0);
+  RecordField(BOE3Position,M4Str,200,0);
+  RecordField(BOE3Phone,M4Str,200,0);
+  RecordField(BOE3eMail,M4Str,200,0);
+  RecordField(BOE3Date,M4Date,0,0);
+  RecordField(BOE3Amount,M4Val,0,0);
+  RecordField(BOE3Signed,M4Int,0,0);
+
+  RecordField(BOE4Code,M4Str,200,0);
+  RecordField(BOE4Name,M4Str,200,0);
+  RecordField(BOE4Position,M4Str,200,0);
+  RecordField(BOE4Phone,M4Str,200,0);
+  RecordField(BOE4eMail,M4Str,200,0);
+  RecordField(BOE4Date,M4Date,0,0);
+  RecordField(BOE4Amount,M4Val,0,0);
+  RecordField(BOE4Signed,M4Int,0,0);
+
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
   ChangeMatrixField(vRebate,M4Rate,0,0);
@@ -1314,6 +1395,18 @@ begin
   RecordField(Evaluator,M4Code,20,CUVc);
   RecordField(EvalDate,M4Date,0,0);
   RecordField(TypeFlag,M4Int,0,0);
+  RecordField(SerialNo,M4Str,255,0);
+  RecordField(TypeName,M4Str,255,0);
+  RecordField(EstateAreaSize,M4Qty,0,0);
+  RecordField(EstateUnit,M4Code,10,UnitVc);
+  RecordField(EvaluatorName,M4Str,255,0);
+  RecordField(CarFirstRegDate,M4Date,0,0);
+  RecordField(RepValVAT,M4Val,0,0);
+  RecordField(RepValTot,M4Val,0,0);
+  RecordField(AgeType,M4Int,0,0);
+  RecordField(ProductionDate,M4Date,0,0);
+  RecordField(ProducerName,M4Str,255,0);
+
   ArrayBegin(Math,-,1);
   ArrayField(OwnerCode,M4Code,20,CUVc);
   ArrayField(OwnerName,M4Str,255,0);
@@ -1325,12 +1418,16 @@ begin
   KeyBegin(OfficialSerNr);
   KeySegment(OfficialSerNr);
   KeySegment(SerNr);
+  KeyBegin(SerialNo);
+  KeySegment(SerialNo);
+  KeySegment(SerNr);
   EndRecord;
 
   RecordBegin(CMPropertyTypeVc,-,"");
   RecordField(Code,M4Code,20,0);
   RecordField(Comment,M4Str,250,0);
   RecordField(TypeFlag,M4Int,0,0);
+  RecordField(UniqueSerNr,M4Int,0,0);
   MainKeyBegin(Code,0);
   KeySegment(Code);
   EndRecord;
@@ -1359,6 +1456,75 @@ begin
   KeySegment(CredManNr);
   EndRecord;
 
+  RecordBegin(BOESuretyVc,-,"");
+  RecordField(CredManNr,M4Long,0,CredManVc);
+  RecordField(BOENum,M4Int,0,0);
+
+  RecordField(SuretyProvider1,M4Str,200,0);
+  RecordField(Surety1Name,M4Str,200,0);
+  RecordField(Surety1Position,M4Str,200,0);
+  RecordField(Surety1Phone,M4Str,200,0);
+  RecordField(Surety1eMail,M4Str,200,0);
+  RecordField(Surety1Date,M4Date,0,0);
+  RecordField(Surety1Amount,M4Val,0,0);
+  RecordField(Surety1Signer,M4Str,255,0);
+
+  RecordField(SuretyProvider2,M4Str,200,0);
+  RecordField(Surety2Name,M4Str,200,0);
+  RecordField(Surety2Position,M4Str,200,0);
+  RecordField(Surety2Phone,M4Str,200,0);
+  RecordField(Surety2eMail,M4Str,200,0);
+  RecordField(Surety2Date,M4Date,0,0);
+  RecordField(Surety2Amount,M4Val,0,0);
+  RecordField(Surety2Signer,M4Str,255,0);
+
+  RecordField(SuretyProvider3,M4Str,200,0);
+  RecordField(Surety3Name,M4Str,200,0);
+  RecordField(Surety3Position,M4Str,200,0);
+  RecordField(Surety3Phone,M4Str,200,0);
+  RecordField(Surety3eMail,M4Str,200,0);
+  RecordField(Surety3Date,M4Date,0,0);
+  RecordField(Surety3Amount,M4Val,0,0);
+  RecordField(Surety3Signer,M4Str,255,0);
+
+  RecordField(SuretyProvider4,M4Str,200,0);
+  RecordField(Surety4Name,M4Str,200,0);
+  RecordField(Surety4Position,M4Str,200,0);
+  RecordField(Surety4Phone,M4Str,200,0);
+  RecordField(Surety4eMail,M4Str,200,0);
+  RecordField(Surety4Date,M4Date,0,0);
+  RecordField(Surety4Amount,M4Val,0,0);
+  RecordField(Surety4Signer,M4Str,255,0);
+
+  RecordField(SuretyProvider5,M4Str,200,0);
+  RecordField(Surety5Name,M4Str,200,0);
+  RecordField(Surety5Position,M4Str,200,0);
+  RecordField(Surety5Phone,M4Str,200,0);
+  RecordField(Surety5eMail,M4Str,200,0);
+  RecordField(Surety5Date,M4Date,0,0);
+  RecordField(Surety5Amount,M4Val,0,0);
+  RecordField(Surety5Signer,M4Str,255,0);
+
+  RecordField(SuretyProvider6,M4Str,200,0);
+  RecordField(Surety6Name,M4Str,200,0);
+  RecordField(Surety6Position,M4Str,200,0);
+  RecordField(Surety6Phone,M4Str,200,0);
+  RecordField(Surety6eMail,M4Str,200,0);
+  RecordField(Surety6Date,M4Date,0,0);
+  RecordField(Surety6Amount,M4Val,0,0);
+  RecordField(Surety6Signer,M4Str,255,0);
+
+  MainKeyBegin(MainKey,0);
+  KeySegment(CredManNr);
+  KeySegment(BOENum);
+  EndRecord;
+
+  
+  BlockBegin(InvegaReportBlock,-,"");
+  RecordField(CompTypeClass,M4Code,20,CClassVc);
+  RecordField(EVKRClassType,M4Code,20,CClassVc);
+  EndBlock;
+  
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Latvian", 0);

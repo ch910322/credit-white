@@ -38,6 +38,7 @@ external inner procedure PasteFromSysList(Integer ,Integer);
 remote updating procedure CM_CreatePaymentOrder(record CredManVc,record VIVc,val);
 external function Boolean CheckForActiveAgreement(record CredManVc);
 external function Boolean CanCredManMakePayment(record CredManVc);
+remote updating procedure GetCredManBOESuretyRecord(record CredManVc,var record BOESuretyVc,Integer);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -1382,6 +1383,48 @@ begin
 end;
 
 global
+procedure CredManDClassSignSuretySimplified()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record AgreementDocVc ADr;
+  Integer num;
+
+  num = StringToInt(PushButtonTag);
+
+  if (num>0) then begin
+    wn = CurWindow;
+    GetWindowRecord(wn,CredManr);
+    if (GetAgreementDoc(CredManr,8+num,ADr)) then begin
+      OpenWindow("AgreementDocDClass",1,0,"","",ADr);
+    end;
+  end;
+
+  return;
+end;
+
+global
+procedure CredManDClassSignBOESimplified()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record AgreementDocVc ADr;
+  Integer num;
+
+  num = StringToInt(PushButtonTag);
+
+  if (num>0) then begin
+    wn = CurWindow;
+    GetWindowRecord(wn,CredManr);
+    if (GetAgreementDoc(CredManr,15+num,ADr)) then begin
+      OpenWindow("AgreementDocDClass",1,0,"","",ADr);
+    end;
+  end;
+
+  return;
+end;
+
+global
 updating procedure CredManMakePaymentDsm()
 begin
   Integer wn,nwn;
@@ -1565,6 +1608,10 @@ begin
   if (wnst==2) then begin//Rs_update
     switch (fieldname) begin
       case "Classifications": res = true;
+      otherwise
+        if (left(fn,6)=="Surety") then begin
+          res = true;
+        end;
     end;
   end;
   
@@ -1668,6 +1715,24 @@ begin
   end;
   return;
 end;
+
+global
+updating procedure CredManDClassBOESurety()
+begin
+  record CredManVc CredManr;
+  record BOESuretyVc BSr;
+  Integer wn,nwn,num;
+
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_Normal) then begin
+    num = StringToInt(PushButtonTag);
+    GetWindowRecord(wn,CredManr);
+    GetCredManBOESuretyRecord(CredManr,BSr,num);
+    nwn = OpenWindow("BOESuretyDClass",0,0,"","",BSr);
+  end;
+  return;
+end;
+
 
 global
 function Boolean CredMan2LClassUpdateWindowSubset(Integer wn,var string subsetname)

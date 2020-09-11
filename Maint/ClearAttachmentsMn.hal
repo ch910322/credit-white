@@ -1,0 +1,38 @@
+//<halrule>server-only</halrule>
+
+global
+updating procedure ClearAttachmentsMn(record RcVc RepSpec)
+begin
+  Longint i,cnt,ncnt;
+  string 255 fn;
+  record Attach2Vc Attachr;
+  
+  cnt = CountFilesInDir("Attach");
+  for (i=0;i<cnt;i=i+1) begin
+    fn = GetFileNameInDir("Attach",i);
+    Attachr.UUID = StringToUUID(fn);
+    if (ReadFirstKey("UUID",Attachr,1,true)==false) then begin
+      Delete_File("Attach/" & fn);
+      ncnt = CountFilesInDir("Attach");
+      if (ncnt!=cnt) then begin
+        i = i - 1;
+        cnt = ncnt;
+        LogText(0,"Removed file " & fn & " from Attach folder");
+      end;
+    end;
+  end;
+  cnt = CountDirectoriesInDir("Attach");
+  for (i = 0; i<cnt; i = i + 1) begin
+    fn = GetDirectoryNameInDir("Attach",i);
+    if (fn!="." and fn!="..") then begin
+      DeleteFolder("Attach/" & fn);
+      ncnt = CountDirectoriesInDir("Attach");
+      if (ncnt!=cnt) then begin
+        i = i - 1;
+        cnt = ncnt;
+      end;
+    end;
+  end;
+
+  return;
+end;

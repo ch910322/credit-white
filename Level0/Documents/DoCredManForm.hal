@@ -56,15 +56,21 @@ begin
   record ContactRelVc CRr;
   record CUVc ContactCUr;
   string 255 res;
+  Boolean Trhs;
 
+  TrHs = true;
   CRr.CustCode = CUr.Code;
-  while (LoopMain(CRr,1,true)) begin
-    if (CRr.Invalid==0) then begin
-      ContactCUr.Code = CRr.ContactCode;
-      if (ReadFirstMain(ContactCUr,1,true)) then begin
-        if (nonblank(ContactCUr.eMail)) then begin
-          res = ContactCUr.eMail;
-          goto LFindFirstContactPersonWithEmail;
+  while (LoopMain(CRr,1,TrHs)) begin
+    if (CRr.CustCode!=CUr.Code) then begin
+      TrHs = false;
+    end else begin
+      if (CRr.Invalid==0) then begin
+        ContactCUr.Code = CRr.ContactCode;
+        if (ReadFirstMain(ContactCUr,1,true)) then begin
+          if (nonblank(ContactCUr.eMail)) then begin
+            res = ContactCUr.eMail;
+            goto LFindFirstContactPersonWithEmail;
+          end;
         end;
       end;
     end;

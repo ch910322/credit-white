@@ -208,6 +208,8 @@ begin
   record CUVc CUr;
   record CredManVc CredManr;
   val topay2,openamount;
+  string 255 credivno;
+  record IVVc IVCreditr;
 
   Ext_PrintInvoiceSigner(vVals);
 
@@ -277,7 +279,18 @@ begin
         end;
       end;
     end;
+    if (IVrw.stp==kInvoiceRowTypeCredit) then begin
+      credivno = IVrw.OrdRow;
+      IVCreditr.SerNr = IVrw.OrdRow;
+      if (ReadFirstMain(IVCreditr,1,true)) then begin  
+        if (nonblank(IVCreditr.OfficialSerNr)) then begin
+          credivno = IVCreditr.OfficialSerNr;
+        end;
+      end;
+    end;
   end;
+
+  vVals["F_CREDITIVNO"] = credivno;
   
   if (blank(IVr.VATNr)) then begin
     CUr.Code = IVr.CustCode;

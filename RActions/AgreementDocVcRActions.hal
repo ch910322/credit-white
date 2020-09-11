@@ -263,6 +263,13 @@ begin
           case 2: CMr.SignSchedule = 1;
           case 3: CMr.SignSurety = 1;
           case 6: CMr.SignVekselis = 1;
+          otherwise
+            if (ADr.Type>8 and ADr.Type<15) then begin
+              SetFieldValueByName(CMr,"Surety" & (ADr.Type-8) & "Signed",-1,1);
+            end;
+            if (ADr.Type>15 and ADr.Type<20) then begin
+              SetFieldValueByName(CMr,"BOE" & (ADr.Type-15) & "Signed",-1,1);
+            end;
         end;
         RecordUpdate(oldCMr,CMr,true);
       end;
