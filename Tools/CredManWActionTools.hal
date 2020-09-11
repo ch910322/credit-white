@@ -817,6 +817,7 @@ begin
   Integer scnt;
   area filearea;
   transaction Longint gSuretyNumber;
+  transaction Longint gBOENumber;
   
   ArchiveExistingDocument(ADr,oldname);
 
@@ -891,6 +892,21 @@ begin
           gSuretyNumber = -1;
         end else begin
           PrintCredManDocument("SuretyAgreementForm",fn,CredManr,1,(CredManr.MaxMonthlyPayment>0),langcode);
+        end;
+      end;
+      if (ADr.Type>15 and ADr.Type<20) then begin
+        fn = GetAgreementDocumentName(ADr,"Bill",regenf);
+        langcode = GetDocumentLangCode(CredManr,4);
+        if (ExternalDocumentEnabled("VekselisForm")) then begin
+          RepSpec.long1 = CredManr.InstalmentType;
+          if (CredManr.MaxMonthlyPayment>0) then begin
+            RepSpec.flags[10] = 1;
+          end;
+          gBOENumber = ADr.Type-15;
+          PrintEBSDocument("VekselisForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
+          gBOENumber = -1;
+        end else begin
+          PrintCredManDocument("VekselisForm",fn,CredManr,scnt,(CredManr.MaxMonthlyPayment>0),langcode);
         end;
       end;
   end;
@@ -1059,6 +1075,9 @@ begin
       otherwise
         if (ADr.Type>8 and ADr.Type<15) then begin
           SetFieldValueByName(CredManr,"Surety" & (ADr.Type-8) & "Signed",-1,0);
+        end;
+        if (ADr.Type>15 and ADr.Type<20) then begin
+          SetFieldValueByName(CredManr,"BOE" & (ADr.Type-15) & "Signed",-1,0);
         end;
     end;
 
@@ -1399,9 +1418,25 @@ begin
     RecordInsert(CMPr,true);
   end;
 
+  return;
+end;
+
+global
+updating procedure GetCredManBOESuretyRecord(record CredManVc CredManr,var record BOESuretyVc BSr,Integer num)
+begin
+  
+  BSr.CredManNr = CredManr.SerNr;
+  BSr.BOENum = num;
+  if (ReadFirstMain(BSr,2,true)==false) then begin
+    RecordNew(BSr);
+    BSr.CredManNr = CredManr.SerNr;
+    BSr.BOENum = num;
+    RecordInsert(BSr,true);
+  end;
 
   return;
 end;
+
 
 global
 procedure CredManCalcLastMonthPrinciple(var record CredManVc CredManr)

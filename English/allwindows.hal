@@ -800,32 +800,19 @@ begin
     HalPushButton(h4,v,h4+100,v+20,"OpenCredManPayGrntSellersBtn","Sellers");v = v + 30;
     HalPushButton(h4,v,h4+100,v+20,"OpenCredManPayGrntReportsBtn","Reports");v = v + 30;
   end;
-/*
-  SoftEditField(h4,v+=vs,-40,"Annual Interest",ViewOnly,"annualrate",true,0,M4Str,255);
-  SoftEditField(h4,v+=vs,-40,"Monthly Calc. Fees",ViewOnly,"monthlycalcfees",true,0,M4Str,255);
-  SoftEditField(h4,v+=vs,-40,"Monthly Fixed Fees",ViewOnly,"monthlyfixedfees",true,0,M4Val,0);
-*/
-//  ButtonFrame(h4,v=vm+20,150,2,"Charge Method");
-//  RadioButton(h4,v,0,0,"Running Balance",ChargeMethod);
-//  RadioButton(h4,v+=16,1,0,"Monthly Invoices",ChargeMethod);
-//CUST-END
-
-//  EditField(h2,v,82,"Specific #Instalment#",Normal,#Instalment#,false,InstallmentSClass);
-/*
-  ButtonFrame(h3,v=vm+vs,100,2,"Interest Type");
-  RadioButton(h3,v,0,0,"Fixed",RateType);
-  RadioButton(h3,v+=16,1,0,"Floating",RateType);
-*/
   TileButton(1,"Events");
   TileButton(2,"Planned Fees");
   TileButton(3,"Currency");
   TileButton(4,"Terms");
 //CUST-BEGIN
   TileButton(5,"Surety");
+  TileButton(6,"Bill of Exchange");
+/*
   if (type!=1 and type!=2 and type!=3 and type!=4 and type!=5) then begin
     TileButton(6,"Factoring");
     TileButton(7,"Payment Guarantee");
   end;
+*/
 //CUST-END
   Tile(1,500,true,"",Approved);//CUST CurncyCode>>Approved
   if (!statusf) then begin
@@ -833,13 +820,6 @@ begin
     CheckBox(20,-21,0,"OK",OKFlag);
   end;
 //CUST-BEGIN
-/*
-  EditField(200,-21,50,"Currency",Normal,CurncyCode,false,CurncyCodeSClass);
-  EditField(-340,-41,80,"Total Interest",ViewOnly,TotalInterest,true,0);
-  EditField(-340,-21,80,"Total Value in Base",ViewOnly,BaseTotalSum,true,0);
-  EditField(-120,-41,80,"Total Excl. Deposit",ViewOnly,TotalSumExclDep,true,0);
-  EditField(-120,-21,80,"Total Value",ViewOnly,TotalSum,true,0);
-*/
   
 
   SoftEditField(-340,-41,80,"Accum. Penalty",ViewOnly,"acumpenalty",true,0,M4Val,0);
@@ -863,16 +843,6 @@ begin
   end;
   HalPushButton(430,-25,480,-5,"CredManDClassSignVekselis","Open");
 
-/*
-  DataList(10,10,-50,-285,"credmanevents");
-  DataListColumn(1,6,80,AdjLeft,"date","Date",M4Date);
-  DataListColumn(1,80,160,AdjLeft,"duedate","Due Date",M4Date);
-  DataListColumn(1,160,-400,AdjLeft,"comment","Comment",M4Str);
-  DataListColumn(1,-400,-300,AdjRight,"issued","Issued",M4Val);
-  DataListColumn(1,-300,-200,AdjRight,"paid","Paid",M4Val);
-  DataListColumn(1,-200,-100,AdjRight,"balance","Balance",M4Val);
-*/
-
   if (GuiType==kGuiWPF) then begin
     RecordList2(10,10,-30,-52,"CredHistVc");//CUST CredManEventVc >> CredManHistVc  
   end else begin
@@ -885,17 +855,6 @@ begin
   RlCol(-200,-200,"Paid",PaidSum,true);
   RlCol(-100,-100,"Balance",Balance,true);
 
-/*
-  RecordList2(10,10,-30,-80,"CredManEventVc");
-  RlColKey(4,4,"Date",TransDate,false,CredManTransDate);
-  RlColKey(100,100,"Due Date",DueDate,false,CredManTransDate);
-  RlColKey(200,200,"Comment",Comment,false,CredManComment);
-//  RlColKey(-370,-370,"Sub. Type",FileName,false,FindOriginalRecord);
-//  RlColKey(-300,-300,"Sub. Record",RecordNr,false,FindOriginalRecord);
-  RlColKey(-300,-300,"Issued",InvSum,true,CredManPaidFlag);
-  RlColKey(-200,-200,"Paid",PaidSum,true,CredManPaidFlag);
-  RlColKey(-100,-100,"Balance",CredManBal,true,CredManTransDate);
-*/
 //CUST-END
   Tile(2,70,true,"2",Math);
   MatrixBegin(10,v=24,-50,-20,-,99);
@@ -1131,6 +1090,71 @@ begin
     EditField(h3,v+=vs,130,label4,Normal,Surety3Addr3,false,0);
     EditField(h3,v+=vs,130,label5,Normal,Surety3Addr4,false,0);
   end;
+  
+  if (SimplifiedSureties) then begin
+    Tile(6,290,true,"6",BOE1Code); 
+  
+    StaticText(h=40,v=15,"Contact Code",false);
+    StaticText(h+110,v,"Name",false);
+    StaticText(h+200,v,"Position",false);
+    StaticText(h+300,v,"Phone",false);
+    StaticText(h+420,v,"Email",false);
+    StaticText(h+510,v,"Due Date",false);
+    StaticText(h+580,v,"Amount",false);
+    StaticText(h+700,v,"Bill of Exch. Signed",false);
+    v = v + 30;
+
+    EditField(h=50,v,60,"BOE 1",Normal,BOE1Code,false,B2BLoanApp_CUSClass);
+    EditField(h+70,v,100,"",Normal,BOE1Name,false,0);
+    EditField(h+180,v,70,"",Normal,BOE1Position,false,JobTitleSClass);
+    EditField(h+260,v,100,"",Normal,BOE1Phone,false,0);
+    EditField(h+370,v,120,"",Normal,BOE1eMail,false,0);
+    EditField(h+500,v,60,"",Normal,BOE1Date,false,PasteCurDate);
+    EditField(h+570,v,60,"",Normal,BOE1Amount,true,0);
+    HalPushButtonTag(h+650,v,h+730,v+20,"CredManDClassBOESurety","Surety","1");
+    CheckBox(h+740,v,0,"",BOE1Signed);
+    HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignBOESimplified","Open","1");
+    v = v + 30;
+
+    EditField(h=50,v,60,"BOE 2",Normal,BOE2Code,false,B2BLoanApp_CUSClass);
+    EditField(h+70,v,100,"",Normal,BOE2Name,false,0);
+    EditField(h+180,v,70,"",Normal,BOE2Position,false,JobTitleSClass);
+    EditField(h+260,v,100,"",Normal,BOE2Phone,false,0);
+    EditField(h+370,v,120,"",Normal,BOE2eMail,false,0);
+    EditField(h+500,v,60,"",Normal,BOE2Date,false,PasteCurDate);
+    EditField(h+570,v,60,"",Normal,BOE2Amount,true,0);
+    HalPushButtonTag(h+650,v,h+730,v+20,"CredManDClassBOESurety","Surety","2");
+    CheckBox(h+740,v,0,"",BOE2Signed);
+    HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignBOESimplified","Open","2");
+    v = v + 30;
+
+    EditField(h=50,v,60,"BOE 3",Normal,BOE3Code,false,B2BLoanApp_CUSClass);
+    EditField(h+70,v,100,"",Normal,BOE3Name,false,0);
+    EditField(h+180,v,70,"",Normal,BOE3Position,false,JobTitleSClass);
+    EditField(h+260,v,100,"",Normal,BOE3Phone,false,0);
+    EditField(h+370,v,120,"",Normal,BOE3eMail,false,0);
+    EditField(h+500,v,60,"",Normal,BOE3Date,false,PasteCurDate);
+    EditField(h+570,v,60,"",Normal,BOE3Amount,true,0);
+    HalPushButtonTag(h+650,v,h+730,v+20,"CredManDClassBOESurety","Surety","3");
+    CheckBox(h+740,v,0,"",BOE3Signed);
+    HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignBOESimplified","Open","3");
+    v = v + 30;
+
+    EditField(h=50,v,60,"BOE 3",Normal,BOE4Code,false,B2BLoanApp_CUSClass);
+    EditField(h+70,v,100,"",Normal,BOE4Name,false,0);
+    EditField(h+180,v,70,"",Normal,BOE4Position,false,JobTitleSClass);
+    EditField(h+260,v,100,"",Normal,BOE4Phone,false,0);
+    EditField(h+370,v,120,"",Normal,BOE4eMail,false,0);
+    EditField(h+500,v,60,"",Normal,BOE4Date,false,PasteCurDate);
+    EditField(h+570,v,60,"",Normal,BOE4Amount,true,0);
+    HalPushButtonTag(h+650,v,h+730,v+20,"CredManDClassBOESurety","Surety","4");
+    CheckBox(h+740,v,0,"",BOE4Signed);
+    HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignBOESimplified","Open","4");
+    v = v + 30;
+
+  end;
+
+/*
   if (type!=1 and type!=2 and type!=3 and type!=4 and type!=5) then begin//should just remove
     Tile(6,290,true,"6",LoanToValue); 
 
@@ -1155,7 +1179,7 @@ begin
     HalPushButton(h,v,h+100,v+20,"OpenCredManPayGrntSellersBtn","Sellers");v = v + 30;
     HalPushButton(h,v,h+100,v+20,"OpenCredManPayGrntReportsBtn","Reports");v = v + 30;
   end;
-
+*/
   SpecialMenu("Open #NL# Transaction",'t',2,"OpenTRFromCredMan");
   //SpecialMenu("Open Subsystem Record",' ',3,"OpenSubsysCredManDsm");//CUST-REMOVED
 //CUST-BEGIN
