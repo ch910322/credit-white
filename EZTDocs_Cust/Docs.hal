@@ -506,6 +506,9 @@ begin
   value = GetFieldValueByName(CredManr,"Surety" & num & "Value",-1);
   signer = GetFieldValueByName(CredManr,"Surety" & num & "Signer",-1);
   td = GetFieldValueByName(CredManr,"Surety" & num & "Date",-1);
+  if (blank(td)) then begin
+    td = CredManr.TransDate;
+  end;
   CUr.Code = GetFieldValueByName(CredManr,"SuretyProvider" & num,-1);
   if (ReadFirstMain(CUr,1,true)) then begin
     addr0 = GetFieldValueByName(CredManr,"Surety" & num & "Addr0",-1);
