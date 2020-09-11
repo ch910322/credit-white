@@ -505,14 +505,20 @@ begin
   Array string 60 acontact;
   Integer i,acnt;
   longint pos;
-  string 255 namestr,titlestr,code,custcode;
+  string 255 namestr,titlestr,code,custcode,num,fn;
 
   mwn = MotherWindow(wn);
 
   switch (GetWindowFileName(mwn)) begin
     case "CredManVc":
       GetWindowRecord(mwn,CredManr);
-      custcode = CredManr.CustCode;
+      fn = WindowActiveField(mwn);
+      if (left(fn,6)=="Surety") then begin
+        num = mid(fn,7,1);
+        custcode = GetFieldValueByName(CredManr,"SuretyProvider" & num,-1);
+      end else begin
+        custcode = CredManr.CustCode;
+      end;
     case "B2BLoanApplicationVc":
       GetWindowRecord(mwn,LAr);
       custcode = LAr.CustCode;
