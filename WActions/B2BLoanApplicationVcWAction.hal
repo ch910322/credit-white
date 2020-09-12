@@ -514,7 +514,7 @@ begin
       GetWindowRecord(mwn,CredManr);
       fn = WindowActiveField(mwn);
       if (left(fn,6)=="Surety") then begin
-        num = mid(fn,7,1);
+        num = mid(fn,6,1);
         custcode = GetFieldValueByName(CredManr,"SuretyProvider" & num,-1);
       end else begin
         custcode = CredManr.CustCode;
@@ -538,7 +538,7 @@ begin
     GetNextSubstring(acontact[i],pos,"#",code);
     GetNextSubstring(acontact[i],pos,"#",namestr);
     GetNextSubstring(acontact[i],pos,"#",titlestr);
-    if (WindowActiveField(mwn)=="ContactName") then begin
+    if (WindowActiveField(mwn)=="ContactName" or right(WindowActiveField(mwn),6)=="Signer") then begin
       AddListRow(wn,"DLPasteContact",1,namestr,0);
     end else begin
       AddListRow(wn,"DLPasteContact",1,code,0);    
