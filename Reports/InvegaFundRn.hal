@@ -140,7 +140,7 @@ begin
   GetVectorTags(vDates,aDates);
   for (i=0;i<aDates.length;i=i+1) begin
     if (i>0) then begin
-      res = res & ",";
+      res = res & ", ";
     end;
     res = res & aDates[i];
   end;
@@ -244,11 +244,42 @@ begin
   end;
   cnt = 1;
 
+  StartFormat(15);
+  OutString(0,0,1,false);
+  OutString(p[1],0,2,false);
+  OutString(p[2],0,3,false);
+  OutString(p[3],0,4,false);
+  OutString(p[4],0,5,false);
+  OutString(p[5],0,6,false);
+  OutString(p[6],0,7,false);
+  OutString(p[7],0,8,false);
+  OutString(p[8],0,9,false);
+  OutString(p[9],0,10,false);
+  OutString(p[10],0,11,false);
+  OutString(p[11],0,12,false);
+  OutString(p[12],0,13,false);
+  OutString(p[13],0,14,false);
+  OutString(p[14],0,15,false);
+  OutString(p[15],0,16,false);
+  OutString(p[16],0,17,false);
+  OutString(p[17],0,18,false);
+  OutString(p[18],0,19,false);
+  OutString(p[19],0,20,false);
+  OutString(p[20],0,21,false);
+  OutString(p[21],0,22,false);
+  OutString(p[22],0,23,false);
+  OutString(p[23],0,24,false);
+  OutString(p[24],0,25,false);
+  OutString(p[25],0,26,false);
+
+  EndFormat;
+
+
   BlockLoad(IRb);
   BlockLoad(CredManSetb);
   while (LoopMain(CredManr,1,true)) begin
     testf = true;
-    if (nonblank(RepSpec.f1) and RepSpec.f1!=CredManr.Type) then begin
+    if (nonblank(RepSpec.f1) and SetInSet(CredManr.Type,RepSpec.f1)==false) then begin
       testf = false;
     end;
     if (nonblank(RepSpec.f2) and RepSpec.f2!=CredManr.CustCode) then begin
@@ -284,7 +315,7 @@ begin
       OutString(p[1],0,CredManr.Addr0,false);
       OutString(p[2],0,CUr.RegNr1,false);
       OutString(p[3],0,CUr.eMail,false);
-      OutString(p[4],0,CUr.Phone,false);
+      OutString(p[4],0,"\"" & CUr.Phone & "\"",false);
       OutString(p[5],0,GetCompanyType(CUr,IRb),false);
       OutString(p[6],0,GetCompanyEVKRCode(CUr,IRb),false);
       OutString(p[7],0,CUr.InvAddr3,false);
@@ -304,7 +335,7 @@ begin
       OutString(p[21],0,interestlatedays,false);
       OutString(p[22],0,interestlateamount,false);
       OutString(p[23],0,overdueslateamount,false);
-      OutString(p[24],0,"NO",false);
+      OutString(p[24],0,"",false);
       OutString(p[25],0,overduesign,false);
 
       EndFormat;

@@ -2386,7 +2386,7 @@ begin
   WindowBegin("Specify Credit Agreements report",InvegaFundRClass,CGRcW,RcType);
   SetWRect(20,80,440,150);
   PeriodField(h=140,v=6,"Period");
-  EditFieldTL(h,v+=20,150,"Type",M4UStr,Normal,40,f1,false,CredManTypeSClass);
+  EditFieldTL(h,v+=20,150,"Type",M4UStr,Normal,90,f1,false,CredManTypeSClass);
   EditFieldTL(h,v+=20,150,"Customer",M4UStr,Normal,40,f2,false,CUSClass);
   EditFieldTL(h,v+=20,150,"Classifications",M4UStr,Normal,255,f3,false,CredManClassSClass);
   EditFieldTL(h,v+=20,150,"Manager",M4Code,Normal,255,f4,false,UserSClass);
