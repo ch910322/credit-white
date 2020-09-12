@@ -40,6 +40,7 @@ external function Boolean CheckForActiveAgreement(record CredManVc);
 external function Boolean CanCredManMakePayment(record CredManVc);
 remote updating procedure GetCredManBOESuretyRecord(record CredManVc,var record BOESuretyVc,Integer);
 remote procedure InsertCredManDocSignerName(var record CredManVc,Integer);
+remote procedure PasteBOEInCredMan(var record CredManVc,string,Integer);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -271,6 +272,20 @@ begin
   return;
 end;
 
+function Boolean CredManDClassBOEEFAfter(Integer wn,Boolean changedf,Integer num)
+begin
+  record CredManVc CredManr;
+  string 255 warning;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    PasteBOEInCredMan(CredManr,GetFieldValueByName(CredManr,"BOE" & num & "Code",-1),num);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassBOEEFAfter = true;
+  return;
+end;
+
 function Boolean CredManDClassSuretySignerEFAfter(Integer wn,Boolean changedf,Integer num)
 begin
   record CredManVc CredManr;
@@ -383,11 +398,16 @@ begin
     case "MinSum":            res = CredManDClassvRebateEFAfter(wn,changed!=0);
     case "MaxSum":            res = CredManDClassvRebateEFAfter(wn,changed!=0);
     otherwise 
-      if (left(fieldname,6)=="Surety") then begin
+      if (left(fieldname,6)=="Surety" or left(fieldname,3)=="BOE") then begin
         if (left(fieldname,14)=="SuretyProvider") then begin
           num = StringToInt(right(fieldname,1));
           res = CredManDClassSuretyProviderEFAfter(wn,changed!=0,num);
         end;
+        if (left(fieldname,3)=="BOE" and right(fieldname,4)=="Code") then begin
+          num = StringToInt(mid(fieldname,3,1));
+          res = CredManDClassBOEEFAfter(wn,changed!=0,num);
+        end;
+        
         if (right(fieldname,6)=="Signer") then begin
           num = StringToInt(mid(fieldname,6,1));
           res = CredManDClassSuretySignerEFAfter(wn,changed!=0,num);
