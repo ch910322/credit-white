@@ -16,6 +16,7 @@ external inner function LongInt DateDiff(Date,Date);
 remote updating function Boolean SendSuretyInvitation(record RcVc,var record B2BLoanApplicationVc);
 remote procedure GetCreditInfoHistory(var record B2BLoanApplicationVc,var Integer,var string,Integer,Longint);
 remote procedure B2BLoanApplicationMakeEmailOffer_Remote(record B2BLoanApplicationVc,var record MailVc);
+remote procedure InsertB2BLoanApplicationDocSignerName(var record B2BLoanApplicationVc,Integer);
 
 
 function Boolean B2BLoanApplicationDClassCustCodeEFAfter(Integer wn,Integer changed)
@@ -202,6 +203,21 @@ begin
   B2BLoanApplicationDClassSuretyIDEFAfter = res;
   return;
 end;
+
+function Boolean B2BLoanApplicationDClassSuretySignerEFAfter(Integer wn,Boolean changedf,Integer num)
+begin
+  record B2BLoanApplicationVc LAr;
+  record CUVc CUr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,LAr);
+    InsertB2BLoanApplicationDocSignerName(LAr,num);
+    PutWindowRecord(wn,LAr);   
+  end; 
+  B2BLoanApplicationDClassSuretySignerEFAfter = true;
+  return;
+end;
+
 
 function Boolean B2BLoanApplicationDClassLateRatingEFAfter(Integer wn,Integer changed)
 begin
@@ -398,6 +414,7 @@ global
 function Boolean B2BLoanApplicationDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
 begin
   Boolean res;
+  Integer num;
 
   if (changed) then begin
     switch (fieldname) begin
@@ -413,12 +430,6 @@ begin
         res = B2BLoanApplicationDClassStartDateEFAfter(wn,changed);
       case "MonthlyPaymentDay": 
         res = B2BLoanApplicationDClassMonthlyPaymentDayEFAfter(wn,changed);
-      case "SuretyProvider1": 
-        res = B2BLoanApplicationDClassSuretyProviderEFAfter(wn,changed,1);
-      case "SuretyProvider2": 
-        res = B2BLoanApplicationDClassSuretyProviderEFAfter(wn,changed,2);
-      case "SuretyProvider3": 
-        res = B2BLoanApplicationDClassSuretyProviderEFAfter(wn,changed,3);
       case "Surety1ID": 
         res = B2BLoanApplicationDClassSuretyIDEFAfter(wn,changed,1);
       case "Surety2ID": 
@@ -448,7 +459,18 @@ begin
       case "PrevReceivables":
         res = B2BLoanApplicationDClassPrevReceivablesEFAfter(wn,changed);
       case "PrevPayables":
-        res = B2BLoanApplicationDClassPrevPayablesEFAfter(wn,changed);       
+        res = B2BLoanApplicationDClassPrevPayablesEFAfter(wn,changed); 
+      otherwise
+        if (left(fieldname,14)=="SuretyProvider") then begin
+          num = StringToInt(right(fieldname,1));
+          res = B2BLoanApplicationDClassSuretyProviderEFAfter(wn,changed,num);
+        end;
+        if (left(fieldname,6)=="Surety" and right(fieldname,6)=="Signer") then begin
+          num = StringToInt(mid(fieldname,6,1));
+          res = B2BLoanApplicationDClassSuretySignerEFAfter(wn,changed,num);
+        end;
+        
+        
     end;
   end;
     
@@ -521,7 +543,13 @@ begin
       end;
     case "B2BLoanApplicationVc":
       GetWindowRecord(mwn,LAr);
-      custcode = LAr.CustCode;
+      fn = WindowActiveField(mwn);
+      if (left(fn,6)=="Surety") then begin
+        num = mid(fn,6,1);
+        custcode = GetFieldValueByName(LAr,"SuretyProvider" & num,-1);
+      end else begin
+        custcode = LAr.CustCode;
+      end;
     case "AgreementDocVc":
       GetWindowRecord(mwn,ADr);
       if (ADr.RecordType==0) then begin

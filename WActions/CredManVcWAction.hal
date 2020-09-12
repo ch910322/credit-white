@@ -300,8 +300,6 @@ begin
   return;
 end;
 
-
-
 function Boolean CredManDClassLoanToValueEFAfter(Integer wn,Boolean changedf,Integer num)
 begin
   record CredManVc CredManr;
