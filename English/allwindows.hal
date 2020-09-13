@@ -660,7 +660,7 @@ begin
   if (statusf) then begin
     vm = v;
     h4 = -140;
-    ButtonFrame(h4,v=9,100,7,"");
+    ButtonFrame(h4,v=9,100,8,"");
     RadioButton(h4,v,0,0,"New",Status);
     RadioButton(h4,v+=16,1,0,"Approved",Status);
     RadioButton(h4,v+=16,2,0,"Signed",Status);
@@ -668,6 +668,7 @@ begin
     RadioButton(h4,v+=16,4,0,"Disbursed",Status);
     RadioButton(h4,v+=16,5,0,"Cancelled",Status);
     RadioButton(h4,v+=16,6,0,"Paused",Status);
+    RadioButton(h4,v+=16,7,0,"Finished",Status);
     h4 = 780;
     v = vm;
   end;

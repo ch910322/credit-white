@@ -457,7 +457,7 @@ LCredManPmtGrntVcRecordCheck:;
   return;
 end;
 
-
+global
 function Boolean ContractHasHistory(record CredManVc CredManr)
 begin
   record CredHistVc CredHistr;
