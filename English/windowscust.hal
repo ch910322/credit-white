@@ -2133,7 +2133,7 @@ begin
   end;
   WindowBegin("Property",CMPropertyDClass,CGview,-);
   if (type==2) then begin
-    SetWRect(20,80,650,739);
+    SetWRect(20,80,650,649);
   end else begin
     SetWRect(20,80,650,619);
   end;
@@ -2178,8 +2178,8 @@ begin
   vm = v;
   if (type!=2) then begin
     ButtonFrame(h2,v+=20,150,2,"Age");
-    RadioButton(h2,v,0,1,"New",AgeType);
-    RadioButton(h2,v+=16,0,0,"Used",AgeType); 
+    RadioButton(h2,v,0,0,"New",AgeType);
+    RadioButton(h2,v+=16,1,0,"Used",AgeType); 
   end;
   EditField(h,v=vm+vs,100,"Insured Value",Normal,InsuredVal,false,0);
   EditField(h,v+=vs,100,"Insured Until",Normal,InsuredUntil,false,PasteCurDate);
@@ -2187,7 +2187,11 @@ begin
   TextField(10,v+=10,-20,60,Math2,0);
   v = v + vs+50;
   StaticText(10,v+=vs,"Owners",false);
-  MatrixBegin(10,v+=vs,-40,490,-,99);
+  if (type==2) then begin
+    MatrixBegin(10,v+=vs,-40,560,-,99);
+  end else begin
+    MatrixBegin(10,v+=vs,-40,490,-,99);
+  end;
   MatCol(1,24,"Contact",0,OwnerCode,false,AllCUSClass);
   MatCol(1,104,"Name",0,OwnerName,false,0);
   MatCol(1,-154,"Shares %",0,SharesPrc,false,0);
