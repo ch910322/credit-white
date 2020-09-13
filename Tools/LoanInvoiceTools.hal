@@ -24,6 +24,10 @@ external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,reco
 external function Boolean GetCredLegalNrLine(string,string,Date,string,string,var row CredLegalInvNrBlock,Integer);
 external inner function string 50 NextLegalSerNr(string,LongInt,Date,string,string,string);
 external function Boolean CanCreateSingleAgreementInvoice(record CredManVc,var Date);
+external inner procedure IPSumup(var record IPVc);
+external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
+external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var val,Boolean,var Boolean);
+external inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var LongInt);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -2094,5 +2098,45 @@ begin
   end;
 
   GetCredManItemValue = res;
+  return;
+end;
+
+global
+updating procedure MakeMoneyRuturnIVVcRemote(record IVVc IVr,var record IPVc IPr)
+begin
+  row IPVc IPrw;
+  Integer rownr;
+  val chk;
+  Boolean installmentf;
+  Longint err;
+
+  RecordNew(IPr);
+  IPr.TransDate = CurrentDate;
+  IPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
+  IPr.RegDate = CurrentDate;
+  IPr.OKFlag = 0;
+  rownr = 0;
+  ClearRow(IPr,IPrw,1);
+  IPrw.InvoiceNr = IVr.SerNr;
+  MatRowPut(IPr,rownr,IPrw);
+  PasteInvIn2IPr(IPr,rownr,IPr.TransDate,chk,false,installmentf);
+  MatRowGet(IPr,rownr,IPrw);
+  IPrw.RecVal = -IVr.Sum4;
+  MatRowPut(IPr,rownr,IPrw);
+  IPVc_PasteRecVal(IPr,rownr);
+
+  rownr = 1;
+  ClearRow(IPr,IPrw,1);
+  IPrw.CustCode = IVr.CustCode;
+  MatRowPut(IPr,rownr,IPrw);
+  IPVc_PasteCustCode(IPr,rownr,err);
+  MatRowGet(IPr,rownr,IPrw);
+  IPrw.RecVal = IVr.Sum4;
+  IPrw.CUPNr = IPr.SerNr;
+  MatRowPut(IPr,rownr,IPrw);
+  IPVc_PasteRecVal(IPr,rownr);
+  
+  IPSumup(IPr);
+  RecordStore(IPr,false);
   return;
 end;

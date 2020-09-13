@@ -1,4 +1,5 @@
 remote inner procedure PrintEBSDocument(string,string,record RcVc,string,string,var area);
+remote updating procedure MakeMoneyRuturnIVVcRemote(record IVVc,var record IPVc);
 
 global
 procedure Finance_DownloadPDFInvoiceLsm()
@@ -16,6 +17,23 @@ begin
       threadremote.PrintEBSDocument("InvForm","",RepSpec,IVr.SerNr,IVr.LangCode,farea);
       WriteAreaToFile(farea,fname,0);
     end;
+  end;
+
+  return;
+end;
+
+global
+updating procedure MakeMoneyRuturnIVDsm()
+begin
+  record IVVc IVr;
+  record IPVc IPr;
+  Integer wn;
+  
+  wn = CurWindow;
+  GetWindowRecord(wn,IVr);
+  MakeMoneyRuturnIVVcRemote(IVr,IPr);
+  if (IPr.SerNr>0) then begin
+    OpenWindow("IPDClass",0,0,"","",IPr);
   end;
 
   return;
