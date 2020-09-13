@@ -102,18 +102,20 @@ begin
 
   CUr.Code = GetFieldValueByName(LAr,"SuretyProvider" & num,-1);
   if (ReadFirstMain(CUr,1,true)) then begin
-    SetFieldValueByName(LAr,"Surety" & num & "AccessToDataUntil",CUr.AccessToDataUntil,-1);
     SetFieldValueByName(LAr,"Surety" & num & "Name",CUr.Name,-1);
     SetFieldValueByName(LAr,"Surety" & num & "Position",CUr.JobDesc,-1);
     SetFieldValueByName(LAr,"Surety" & num & "Phone",CUr.Phone,-1);
     SetFieldValueByName(LAr,"Surety" & num & "eMail",CUr.eMail,-1);
-    SetFieldValueByName(LAr,"Surety" & num & "ID",CUr.RegNr1,-1);
-    SetFieldValueByName(LAr,"Surety" & num & "Addr0",CUr.InvAddr0,-1);
-    SetFieldValueByName(LAr,"Surety" & num & "Addr1",CUr.InvAddr1,-1);
-    SetFieldValueByName(LAr,"Surety" & num & "Addr2",CUr.InvAddr2,-1);
-    SetFieldValueByName(LAr,"Surety" & num & "Addr3",CUr.InvAddr3,-1);
-    SetFieldValueByName(LAr,"Surety" & num & "Addr4",CUr.InvAddr4,-1);
-    CalculateSuretyAge(LAr,num);
+    if (num<4) then begin
+      SetFieldValueByName(LAr,"Surety" & num & "ID",CUr.RegNr1,-1);
+      SetFieldValueByName(LAr,"Surety" & num & "AccessToDataUntil",CUr.AccessToDataUntil,-1);
+      SetFieldValueByName(LAr,"Surety" & num & "Addr0",CUr.InvAddr0,-1);
+      SetFieldValueByName(LAr,"Surety" & num & "Addr1",CUr.InvAddr1,-1);
+      SetFieldValueByName(LAr,"Surety" & num & "Addr2",CUr.InvAddr2,-1);
+      SetFieldValueByName(LAr,"Surety" & num & "Addr3",CUr.InvAddr3,-1);
+      SetFieldValueByName(LAr,"Surety" & num & "Addr4",CUr.InvAddr4,-1);
+      CalculateSuretyAge(LAr,num);
+    end;
     warning = CUr.WarnText1;
     //UpdateSuretyScoring(LAr,CUr.Code);
 
@@ -211,19 +213,39 @@ begin
   warning = "";
   CUr.Code = code;
   if (ReadFirstMain(CUr,1,true)) then begin
+
     SetFieldValueByName(CredManr,"SuretyProvider" & num,CUr.Code,-1);
     SetFieldValueByName(CredManr,"Surety" & num & "Name",CUr.Name,-1);
     SetFieldValueByName(CredManr,"Surety" & num & "Position",CUr.JobDesc,-1);
     SetFieldValueByName(CredManr,"Surety" & num & "Phone",CUr.Phone,-1);
-    SetFieldValueByName(CredManr,"Surety" & num & "Mobile",CUr.Mobile,-1);
     SetFieldValueByName(CredManr,"Surety" & num & "eMail",CUr.eMail,-1);
-    SetFieldValueByName(CredManr,"Surety" & num & "ID",CUr.RegNr1,-1);
-    SetFieldValueByName(CredManr,"Surety" & num & "Addr0",CUr.InvAddr0,-1);
-    SetFieldValueByName(CredManr,"Surety" & num & "Addr1",CUr.InvAddr1,-1);
-    SetFieldValueByName(CredManr,"Surety" & num & "Addr2",CUr.InvAddr2,-1);
-    SetFieldValueByName(CredManr,"Surety" & num & "Addr3",CUr.InvAddr3,-1);
-    SetFieldValueByName(CredManr,"Surety" & num & "Addr4",CUr.InvAddr4,-1);
+    if (num<4) then begin
+      SetFieldValueByName(CredManr,"Surety" & num & "Mobile",CUr.Mobile,-1);
+      SetFieldValueByName(CredManr,"Surety" & num & "ID",CUr.RegNr1,-1);
+      SetFieldValueByName(CredManr,"Surety" & num & "Addr0",CUr.InvAddr0,-1);
+      SetFieldValueByName(CredManr,"Surety" & num & "Addr1",CUr.InvAddr1,-1);
+      SetFieldValueByName(CredManr,"Surety" & num & "Addr2",CUr.InvAddr2,-1);
+      SetFieldValueByName(CredManr,"Surety" & num & "Addr3",CUr.InvAddr3,-1);
+      SetFieldValueByName(CredManr,"Surety" & num & "Addr4",CUr.InvAddr4,-1);
+    end;
     warning = CUr.WarnText1;
+  end;
+
+  return;
+end;
+
+global
+procedure PasteBOEInCredMan(var record CredManVc CredManr,string code,Integer num)
+begin
+  record CUVc CUr;
+  
+  CUr.Code = code;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    SetFieldValueByName(CredManr,"BOE" & num & "Code",CUr.Code,-1);
+    SetFieldValueByName(CredManr,"BOE" & num & "Name",CUr.Name,-1);
+    SetFieldValueByName(CredManr,"BOE" & num & "Position",CUr.JobDesc,-1);
+    SetFieldValueByName(CredManr,"BOE" & num & "Phone",CUr.Phone,-1);
+    SetFieldValueByName(CredManr,"BOE" & num & "eMail",CUr.eMail,-1);
   end;
 
   return;
@@ -395,7 +417,7 @@ begin
     while (nonblank(GetFieldValueByName(LAr,"SuretyProvider" & scnt,-1))) begin
       scnt = scnt + 1;
     end;
-    if (scnt<4) then begin
+    if (scnt<7) then begin
       BlockLoad(OCb);//loading this block twice....sorry, I know
       SetFieldValueByName(LAr,"SuretyProvider" & scnt,contactcode,-1);
       InsertSuretyInB2BApplication(LAr,scnt,warning);
@@ -748,6 +770,25 @@ begin
     BlockLoad(CMb);
     if (nonblank(CMb.EmailOfferText)) then begin
       SendEmailWithStdTextFromUser(CMb.EmailOfferText,RepSpec,email,Mailr,LAr);
+    end;
+  end;
+
+  return;
+end;
+
+global
+procedure InsertB2BLoanApplicationDocSignerName(var record B2BLoanApplicationVc LAr,Integer num)
+begin
+  Boolean res;
+  record CUVc CUr;
+  record ContactRelVc CRr;
+  
+  CRr.ContactName = GetFieldValueByName(LAr,"Surety" & num & "Signer",-1);
+  CRr.CustCode = GetFieldValueByName(LAr,"SuretyProvider" & num,-1);
+  if (ReadFirstKey("Contact",CRr,2,true)) then begin
+    CUr.Code = CRr.ContactCode;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      SetFieldValueByName(LAr,"Surety" & num & "Position",CUr.JobDesc,-1);
     end;
   end;
 

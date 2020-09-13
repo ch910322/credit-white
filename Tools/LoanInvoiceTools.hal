@@ -2040,6 +2040,7 @@ begin
       BlockLoad(OCb);
       RecordCopy(oldCredManr,CredManr);
       CredManr.OrderClass = OCb.FinishCredOrderClass;
+      CredManr.Status = 7;
       RecordUpdate(oldCredManr,CredManr,true);
     end;
   end;
