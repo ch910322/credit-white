@@ -239,7 +239,11 @@ begin
 
   vVals["F_ABOVEHIDDENBASE"] = abovehiddenbase;
   vVals["F_ABOVEHIDDENVAT"] = abovehiddenvat;
-  vVals["F_ABOVEHIDDENFULL"] = abovehiddenbase + abovehiddenvat;
+  if (IVr.InvType==kInvoiceRowTypeCredit) then begin
+    vVals["F_ABOVEHIDDENFULL"] = -(abovehiddenbase + abovehiddenvat);
+  end else begin
+    vVals["F_ABOVEHIDDENFULL"] = abovehiddenbase + abovehiddenvat;
+  end;
   vVals["F_NUMMER"] = GetCredManNr(IVr.CustCredManNr);
   CredManr.SerNr = IVr.CustCredManNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
