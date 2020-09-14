@@ -633,6 +633,7 @@ begin
     case "F_TOPAY2": res = RepSpec.f12;
     case "F_TOPAY2_TEXT": res = RepSpec.f13;
     case "F_CREDITIVNO": res = RepSpec.f14;
+    case "F_SALESMANJOB": res = RepSpec.f15;
     otherwise
       res = LetVcReplaceTokenCust(RepSpec,token);
   end;

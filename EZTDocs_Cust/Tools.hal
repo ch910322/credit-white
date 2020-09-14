@@ -211,6 +211,7 @@ begin
   val topay2,openamount;
   string 255 credivno;
   record IVVc IVCreditr;
+  record UserVc Userr;
 
   Ext_PrintInvoiceSigner(vVals);
 
@@ -296,6 +297,12 @@ begin
   end;
 
   vVals["F_CREDITIVNO"] = credivno;
+
+  Userr.Code = CredManr.SalesMan;
+  if (ReadFirstMain(Userr,1,true)) then begin
+    vVals["F_SALESMANJOB"] = Userr.Job;
+  end;
+
   
   if (blank(IVr.VATNr)) then begin
     CUr.Code = IVr.CustCode;
