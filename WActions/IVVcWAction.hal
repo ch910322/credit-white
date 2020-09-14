@@ -14,6 +14,7 @@ begin
   if (GetRecordFromBrowse(IVr,wn,1)) then begin
     fname = SaveFileDialog("","","pdf");
     if (nonblank(fname)) then begin
+      RepSpec.flags[10] = IVr.InvType;
       threadremote.PrintEBSDocument("InvForm","",RepSpec,IVr.SerNr,IVr.LangCode,farea);
       WriteAreaToFile(farea,fname,0);
     end;
