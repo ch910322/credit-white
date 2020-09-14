@@ -2006,7 +2006,9 @@ begin
   AutoSizeWindow(false);
   h = 8; v = 20;
   h1=24;
-  MatrixBegin(h,v,-25,-10,-,20);
+  HalPushButton(-110,v=5,-10,v+=20,"CredFeesMatrixVClassSave","Save");
+
+  MatrixBegin(8,v+20,-25,-10,-,20);
   Flip(0);
   MatCol(1,h1,"Item",0,ArtCode,false,INSClass);
   MatCol(1,-60,"Sum",0,Sum,false,0);
