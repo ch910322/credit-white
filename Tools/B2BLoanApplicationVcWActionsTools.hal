@@ -283,6 +283,7 @@ begin
       CredManr.Classifications = CMTr.Classifications;
       CredManr.OverdueRateType = CMTr.OverdueRateType;
       Credmanr.LoanType = CMTr.LoanType;
+      CredManr.RealInterestFlag = CMTr.RealInterestFlag;
     end else begin  
       CredManr.PayDeal = CUr.PayDeal;
     end;

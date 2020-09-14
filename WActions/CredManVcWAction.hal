@@ -245,6 +245,7 @@ begin
         CredManr.PrincipleDelayInterest = CredManr.IntRate;
       end;
       Credmanr.LoanType = CMTr.LoanType;
+      CredManr.RealInterestFlag = CMTr.RealInterestFlag;
     end;
     RecalcCredManFees(CredManr);
     PutWindowRecord(wn,CredManr); 

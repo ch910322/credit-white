@@ -945,6 +945,10 @@ begin
   RadioButton(h2,v,0,0,"Due Date",LateRateOption);
   RadioButton(h2,v+=16,1,0,"Trans. Date",LateRateOption);
 
+  ButtonFrame(h2,v+=40,150,2,"Int. based on Money Trans.");
+  RadioButton(h2,v,0,0,"No",RealInterestFlag);
+  RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
+
   ButtonFrame(h2=h2+170,v=vm,80,3,"Overdue Rate");
   RadioButton(h2,v,0,0,"Default",OverdueRateType);
   RadioButton(h2,v+=16,1,0,"Daily",OverdueRateType);
@@ -1302,6 +1306,11 @@ begin
   RadioButton(h3,v+=16,4,0,"Factoring",LoanType);
   RadioButton(h3,v+=16,5,0,"Paymnt. Grnt.",LoanType);
 
+  ButtonFrame(h2,v+=40,270,2,"Interest according to Money Transfer Date");
+  RadioButton(h2,v,0,0,"No",RealInterestFlag);
+  RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
+
+  vm2 = v;
 //CUST-END
 /*
   ButtonFrame(h=50,vm=(v+=45),140,2,"Default Interest Type");

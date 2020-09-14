@@ -636,6 +636,7 @@ begin
   RecordField(BOE4Date,M4Date,0,0);
   RecordField(BOE4Amount,M4Val,0,0);
   RecordField(BOE4Signed,M4Int,0,0);
+  RecordField(RealInterestFlag,M4Int,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -792,6 +793,7 @@ begin
   RecordField(DaysInMonth,M4Int,0,0);
   RecordField(LoanType,M4Int,0,0);
   RecordField(PauseOffsetDays,M4Qty,0,0);
+  RecordField(RealInterestFlag,M4Int,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);

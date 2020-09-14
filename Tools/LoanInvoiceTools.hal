@@ -28,6 +28,7 @@ external inner procedure IPSumup(var record IPVc);
 external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
 external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var val,Boolean,var Boolean);
 external inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var LongInt);
+external function val FindInvoicePaidAmount_OP(LongInt,LongInt);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -755,6 +756,35 @@ LCheckAndAddHiddenPrinciple:;
   return;
 end;
 
+function val GetPaidAmountRatio(record CredManVc CredManr,Date td)
+begin
+  val res;
+  record OPrsVc OPrsr;
+  Boolean TrHs;
+  val paid;
+  
+  res = 1;
+
+  if (CredManr.VINr>0) then begin
+    OPrsr.TransType = kOPrsTransTypePayment;
+    OPrsr.TransDate = CredManr.startDate;
+    OPrsr.VINr = CredManr.VINr;
+    TrHs = true;
+    while (LoopKey("VIKey",OPrsr,3,TrHs)) begin
+      if (OPrsr.TransDate>td or OPrsr.VINr!=CredManr.VINr or OPrsr.TransType!=kOPrsTransTypePayment) then begin
+        TrHs = false;
+      end else begin
+        paid = paid + FindInvoicePaidAmount_OP(OPrsr.VINr,OPrsr.TransNr);
+      end;
+    end;
+    res = paid/CredManr.InvSum4;
+    
+  end;
+
+  GetPaidAmountRatio = res;
+  return;
+end;
+
 updating procedure CreateInvoicesFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date ed,var record IVVc firstIVr,string ivno)
 begin
   Integer i,rwcnt;
@@ -805,6 +835,11 @@ begin
         lastd = CredManPayPlanrw.TransDate;
         SetupLoanInvoice(CredManr,CMb,IVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno,GetInvoiceType(CredManr,lastd));
 
+      end;
+      if (CredManPayPlanrw.PlanType==kEventTypeCalcInterest) then begin
+        if (CredManr.RealInterestFlag==1) then begin
+          CredManPayPlanrw.Sum = CredManPayPlanrw.Sum*GetPaidAmountRatio(CredManr,IVr.InvDate);
+        end;
       end;
       SetupInvoiceRowAndAdd(IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
 
@@ -962,6 +997,10 @@ begin
   end;
   if (CSrw.Interest>0) then begin
     GetItemName(CMb.RateItem,spec);
+    if (CredManr.RealInterestFlag==1) then begin
+      CSrw.Interest = CSrw.Interest*GetPaidAmountRatio(CredManr,IVr.InvDate);
+    end;
+
     SetupInvoiceRowAndAdd(IVr,CMb.RateItem,spec,1,CSrw.Interest,blankval,kEventTypeCalcInterest,-1);
   end;
   if (CSrw.Fees>0) then begin

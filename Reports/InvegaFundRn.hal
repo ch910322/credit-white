@@ -53,6 +53,7 @@ LGetCompanyEVKRCode:;
   return;
 end;
 
+global
 function val FindInvoicePaidAmount_OP(LongInt VISerNr,LongInt TransNr)
 begin
   val res;
