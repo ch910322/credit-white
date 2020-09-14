@@ -13,6 +13,7 @@ external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var v
 external inner function boolean AddEMailRecipients(var record MailVc,string,string,integer);
 external inner function Boolean FindCustomerRelation(string,string,var record CUVc);
 external inner procedure ValToText(val,Integer,string,string,var string);
+external inner procedure Ext_PrintValueInclZero(var vector string,string,val,Integer,record LangNrVc,record SysFormatBlock,Boolean);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -194,7 +195,7 @@ procedure Ext_PrintCustomInvoiceFields(var vector string vVals,record IVVc IVr)
 begin
   record CredManSetBlock CMb;
   row IVVc IVrw;
-  Integer i,rwcnt;
+  Integer i,rwcnt,j;
   val abovehiddenbase,abovehiddenvat,rowbase;
   record VATCodeBlock VATb;
   row VATCodeBlock VATbrw;
@@ -273,12 +274,12 @@ begin
             end;
 */          
             tstr = "";
-            for (i=0;i<LineTextCnt2(Noter);i=i+1) begin
-              tstr = tstr & LineTextGet2(Noter,i);
+            for (j=0;j<LineTextCnt2(Noter);j=j+1) begin
+              tstr = tstr & LineTextGet2(Noter,j);
             end;
 
             vVals["F_TAXRULE"] = StrReplace(tstr,chr(13),"\\n");
-            i = rwcnt;
+            //i = rwcnt;
           end;
         end;
       end;
@@ -326,7 +327,10 @@ begin
   record RLinkVc RLr;
   Longint pos,l;
   string 255 tstr;
+  record LangNrVc LangNrr;
+  record SysFormatBlock SFb;
 
+  BlockLoad(SFb);
   BlockLoad(VATb);
 
   //vVals["ROW_" & strnum & "_F_ROWNAME"] = 
@@ -347,6 +351,9 @@ begin
         end;
       end;
     end;
+  end;
+  if (IVrw.stp==kInvoiceRowTypeNormal) then begin
+    Ext_PrintValueInclZero(vVals,"ROW_" & strnum & "_F_ANTAL3",IVrw.Quant,M4UVal,LangNrr,SFb,false);
   end;
 
   return;
