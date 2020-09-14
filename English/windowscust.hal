@@ -369,12 +369,6 @@ begin
   EditFieldTL(h,v,120,"Date",M4Date,Normal,0,d1,false,PasteCurDate);
   EndWindow;
 
-  WindowBegin("Specify Overdue Invoices",GenOverdueInvVClass,CGMnt,RcType);
-  SetWRect(64,80,445,95);
-  h = 150; v = 6; vs = 20;
-  EditFieldTL(h,v,120,"Until Date",M4Date,Normal,0,d1,false,PasteCurDate);
-  EndWindow;
-
   WindowBegin("Specify Fix Credit History",CredManRedoCredHistVClass,CGMnt,RcType);
   SetWRect(64,80,445,95);
   h = 150; v = 6; vs = 20;
@@ -2566,4 +2560,29 @@ begin
   EndWindow;
 
   return;
+end;
+
+window GenOverdueInvVClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  record RcVc RepSpec;
+  WindowBegin("Specify Overdue Invoices",GenOverdueInvVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 150; v = 6; vs = 20;
+  DynamicWindow;
+  
+  if (CurWindow>0) then begin
+    GetWindowRecord(CurWindow,RepSpec);
+  end;
+  if (RepSpec.ArtMode==0) then begin
+    PeriodField(h,v,"Period"); 
+  end else begin
+    EditFieldTL(h,v,120,"Until Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  end;
+  ButtonFrame(h,v+=40,150,2,"Calculation");
+  RadioButton(h,v,0,0,"Based on Period",ArtMode);
+  RadioButton(h,v+=16,1,0,"Since Last Overdue Invoice",ArtMode); 
+  EndWindow;
+
 end;

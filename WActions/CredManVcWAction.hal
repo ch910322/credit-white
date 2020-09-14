@@ -2060,3 +2060,15 @@ begin
   CredManDClassStatusButtonAction = res;
   return;
 end;
+
+
+global
+function Boolean GenOverdueInvVClassArtModeButtonAction(Integer wn,Integer value)
+begin
+  record IPConVc PCr;
+
+  NewTimedTask("rerun window def","rerunwindowdef","RerunWindowDefHAL",wn,CurrentDate,CurrentTime,"","");  
+
+  GenOverdueInvVClassArtModeButtonAction = true;
+  return;
+end;

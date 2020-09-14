@@ -1,5 +1,5 @@
 //<halrule>server-only</halrule>
-external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string,Boolean);
+external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string,Boolean,Boolean);
 external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var record IVVc,Date,Date,Date,Boolean,Boolean,string,Integer);
 external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val,array string);
 external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
@@ -32,19 +32,25 @@ begin
   Integer latedays;
   record IVVc IVr,oldIVr;
   array string 255 lateformula;
-  
-  if (blank(RepSpec.d1)) then begin
+  Boolean ignoref;
+
+  if (RepSpec.ArtMode==1 and blank(RepSpec.d1)) then begin
     goto LGenOverdueInvMn;
   end;
   BlockLoad(CMb);
   while (LoopMain(CredManr,1,true)) begin
     if (CredManr.OKFlag==1) then begin
       
-      sd = CredManr.FirstInvDate;
-      //sd = GetLastInvoiceDate(CredManr,RepSpec.d1);
-      //ed = GetLastInvoiceDate(CredManr,RepSpec.d1);
-      ed = RepSpec.d1;
-      GetCredManOverdueInvoices(CredManr,CMb,ed,sd,latedays,lateamount,lateformula,false);
+      if (RepSpec.ArtMode==1) then begin
+        sd = CredManr.FirstInvDate;
+        ed = RepSpec.d1;
+        ignoref = false;
+      end else begin
+        sd = RepSpec.sStartDate;
+        ed = RepSpec.sEndDate;
+        ignoref = true;
+      end;
+      GetCredManOverdueInvoices(CredManr,CMb,ed,sd,latedays,lateamount,lateformula,false,ignoref);
       if (lateamount>0) then begin
         RecordClear(IVr);
         SetupLoanInvoice(CredManr,CMb,IVr,CurrentDate,sd,ed,true,false,"",2);
