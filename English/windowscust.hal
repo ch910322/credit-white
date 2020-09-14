@@ -1929,7 +1929,7 @@ begin
   EditField(h,v+=vs,100,"Object",Normal,FSellerObject,false,ObjSClass);
   EditField(h,v+=vs,100,"Payment Mode",Normal,FIVPaymentMode,false,PMSClass);
   
-  Tile(4,95,false,"4",PGBuyerSecurityItem);
+  Tile(4,305,false,"4",PGBuyerSecurityItem);
  
   ButtonFrame(h-100,v=30,250,5,"Buyer's Invoice");
   EditField(h,v,100,"Security Item",Normal,PGBuyerSecurityItem,false,INSClass);
@@ -1941,7 +1941,7 @@ begin
   EditField(h,v,100,"Account",Normal,PGSellerAccount,false,AccSClass);
   EditField(h,v+=vs,100,"VAT Code",Normal,PGSellerVATCode,false,VATCodeSClass);
 
-  Tile(5,95,false,"5",PaymentPayDeal);
+  Tile(5,305,true,"5",PaymentPayDeal);
 
   EditField(h,v=6,100,"Payment Terms",Normal,PaymentPayDeal,false,PDSClass);
   EditField(h,v+=vs,100,"Account",Normal,PaymentAccount,false,AccSClass);
@@ -1949,9 +1949,9 @@ begin
   EditField(h,v+=vs,100,"Object",Normal,PaymentObject,false,ObjSClass);
   EditField(h,v+=vs,100,"Payment Mode",Normal,PaymentMode,false,PMSClass);
 
-  Checkbox(h,v+=20,0,"Update Money Transfer Date when creating payment",MoneyTransferDateVI);
-  Checkbox(h,v+=16,0,"Update Money Transfer Date when Invoices is paid",MoneyTransferDateOP);
-
+  ButtonFrame(h,v+=50,200,2,"Money Transfer Date");
+  Checkbox(h,v,0,"Update when creating Payment",MoneyTransferDateVI);
+  Checkbox(h,v+=16,0,"Update when Invoices are paid",MoneyTransferDateOP);
 
   EndWindow;
   return;
