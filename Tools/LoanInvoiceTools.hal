@@ -667,7 +667,8 @@ begin
   return;
 end;
 
-procedure AddPrepayments(var record IVVc IVr,record CMInvoicingBlock CIb)
+global
+procedure CM_AddPrepayments(var record IVVc IVr,record CMInvoicingBlock CIb)
 begin
   record ARPayVc ARPayr;
   val remval;
@@ -820,7 +821,7 @@ begin
               AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
               StoreLoanInvoice(oIVr,CredManr);
           end;
-          AddPrepayments(IVr,CIb);
+          CM_AddPrepayments(IVr,CIb);
           if (IVr.SerNr>-1) then begin
             CheckAndAddHiddenPrinciple(IVr,CIb);
             StoreLoanInvoice(IVr,CredManr);
@@ -861,7 +862,7 @@ begin
         SetupOverdueLangCode(IVr,CredManr.Type);
         StoreLoanInvoice(oIVr,CredManr);
     end;
-    AddPrepayments(IVr,CIb);
+    CM_AddPrepayments(IVr,CIb);
     if (IVr.SerNr>-1) then begin
       CheckAndAddHiddenPrinciple(IVr,CIb);
       StoreLoanInvoice(IVr,CredManr);
@@ -1029,7 +1030,7 @@ begin
     end;
   end;
   if (updf) then begin
-    AddPrepayments(IVr,ASb);
+    CM_AddPrepayments(IVr,CIb);
   end;
   CheckAndAddHiddenPrinciple(IVr,CIb);
 
@@ -1318,7 +1319,7 @@ begin
   sum = sum + CredManr.StdProlongFee;
   GetItemName(CIb.ProlongItem,spec);
   SetupInvoiceRowAndAdd(IVr,CIb.ProlongItem,spec,1,sum,blankval,14,-1);
-  AddPrepayments(IVr,CIb);
+  CM_AddPrepayments(IVr,CIb);
 
   StoreLoanInvoice(IVr,CredManr);
   if (IVr.SerNr>0) then begin
@@ -1347,7 +1348,7 @@ begin
     SetupLoanInvoice(CredManr,CMb,IVr,RepSpec.d1,"","",true,false,"",1);
     GetItemName(RepSpec.f1,spec);
     SetupInvoiceRowAndAdd(IVr,RepSpec.f1,spec,1,RepSpec.vals0,blankval,15,-1);
-    AddPrepayments(IVr,CIb);
+    CM_AddPrepayments(IVr,CIb);
 
     StoreLoanInvoice(IVr,CredManr);
   end;
@@ -1368,7 +1369,7 @@ begin
     BlockLoad(CIb);
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,CurrentDate,IVr);
-    AddPrepayments(IVr,CIb);
+    CM_AddPrepayments(IVr,CIb);
     if (IVr.SerNr>-1) then begin
       if (IVr.Sum4>0) then begin
         if (RecordInsert(IVr,true)) then begin
