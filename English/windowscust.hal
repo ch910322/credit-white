@@ -2453,8 +2453,8 @@ begin
   SetBlid(InvegaReportBlock);
   SetWRect(20,80,500,298);
   vs=20; h=250; vs2=16; hm=-100;
-  EditField(h,v=6,100,"Company Type Classification Type",Normal,CompTypeClass,false,CCLassSClass);
-  EditField(h,v+=vs,100,"EVRK Code Classification Type",Normal,EVKRClassType,false,CCLassSClass);
+  EditField(h,v=6,100,"Company Type Classification Type",Normal,CompTypeClass,false,CTypeSClas);
+  EditField(h,v+=vs,100,"EVRK Code Classification Type",Normal,EVKRClassType,false,CTypeSClas);
   EndWindow;
 end;
 
