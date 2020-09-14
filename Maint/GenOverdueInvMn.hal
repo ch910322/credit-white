@@ -50,7 +50,7 @@ begin
         ed = RepSpec.sEndDate;
         ignoref = true;
       end;
-      GetCredManOverdueInvoices(CredManr,CMb,ed,sd,latedays,lateamount,lateformula,false,ignoref);
+      GetCredManOverdueInvoices(CredManr,CMb,ed,AddDay(sd,-1),latedays,lateamount,lateformula,false,ignoref);
       if (lateamount>0) then begin
         RecordClear(IVr);
         SetupLoanInvoice(CredManr,CMb,IVr,CurrentDate,sd,ed,true,false,"",2);

@@ -6,6 +6,7 @@ external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlan
 external inner function Integer GetCheck(string,string,LongInt,var string,var string,var string,var val,var Date,var Date);
 external inner function LongInt DateDiff(Date,Date);
 external inner function Boolean SetInSet2(string,string);
+external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
 
 function string 255 GetCompanyType(record CUVc CUr,record InvegaReportBlock IRb)
 begin
@@ -94,12 +95,31 @@ begin
   record OPrsVc OPrsr;
   array string 255 aDates;
   Integer i;
+  val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
+  record IVVc IVr;
+  row IVVc IVrw;
+  Integer rwcnt;
+  string 255 vatcode;
 
   paid = 0;
   princ = 0;
   interest = 0;
   overdues = 0;
   TrHs = true;
+
+  IVr.SerNr = CredHistr.RecordNr;
+  if (ReadFirstMain(IVr,1,true)) then begin
+    rwcnt = MatRowCnt(IVr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(IVr,i,IVrw);
+      if (IVrw.CredHistNr==CredHistr.SerNr) then begin
+        vatcode = IVrw.VATCode;
+        i = rwcnt;
+      end;
+    end;
+  end;
+
+
   CredHistr.CredManNr = CredManr.SerNr;
   CredHistr.TransDate = sd;
   while (LoopKey("CredManTypeDate",CredHistr,2,TrHs)) begin
@@ -114,7 +134,8 @@ begin
             case 5:
               princ = princ + CredHistr.Sum;
             case 6:
-              interest = interest + CredHistr.Sum;
+              InvVat(1,1,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,CredHistr.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+              interest = interest + (CredHistr.Sum-vatval);
             case 9:
               overdues = overdues + CredHistr.Sum;
           end;
@@ -156,8 +177,26 @@ begin
   record CredHistVc CredPayr;
   val paysum;
   Integer res;
+  val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
+  record IVVc IVr;
+  row IVVc IVrw;
+  Integer i,rwcnt;
+  string 255 vatcode;
 
   paysum = CredHistr.Sum;
+  IVr.SerNr = CredHistr.RecordNr;
+  if (ReadFirstMain(IVr,1,true)) then begin
+    rwcnt = MatRowCnt(IVr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(IVr,i,IVrw);
+      if (IVrw.CredHistNr==CredHistr.SerNr) then begin
+        InvVat(1,1,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,CredHistr.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+        paysum = paysum - vatval;
+        vatcode = IVrw.VATCode;
+        i = rwcnt;
+      end;
+    end;
+  end;
   TrHs = true;
   CredPayr.PreviousNr = CredHistr.SerNr;
   while (LoopKey("PreviousNr",CredPayr,1,TrHs)) begin
@@ -165,13 +204,14 @@ begin
       TrHs = false;
     end else begin
       if (CredPayr.TransDate<=ed) then begin
-        paysum = paysum - CredPayr.Sum;
+        InvVat(1,1,IVr.NoTAXonVAT,IVr.ExportFlag,vatcode,CredPayr.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+        paysum = paysum - CredPayr.Sum - vatval;
       end;
     end;
   end;
 
   if (paysum>0) then begin
-    res = DateDiff(ed,CredHistr.PayDate)+1;
+    res = DateDiff(ed,CredHistr.PayDate);
   end;
   dueamount = paysum;
 
@@ -209,7 +249,7 @@ begin
     if (CredHistr.CredManNr!=CredManr.SerNr or CredHistr.ChargeType!=chargetype) then begin
       TrHs = false;
     end else begin
-      if (CredHistr.RecordType==0 and DateInRange(CredHistr.TransDate,sd,ed)) then begin
+      if (CredHistr.RecordType==0 and CredHistr.TransDate<ed) then begin
         latedays = GetLateDaysInPeriod(CredHistr,sd,ed,dueamount);
         maxlatedays = MAX(maxlatedays,latedays);
       end;
