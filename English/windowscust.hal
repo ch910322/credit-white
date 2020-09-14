@@ -904,7 +904,7 @@ begin
   end;
 
   Tile(tilenr,600,true,tilenr,LateRating); tilenr = tilenr + 1;
-  EditField(h,v=6,100,"Late Rating",Normal,LateRating,true,0);
+  EditField(h=135,v=6,100,"Late Rating",Normal,LateRating,true,0);
   EditField(h2=365,v,100,"Bankruptcy Rating",Normal,BankruptcyRating,true,0);
   EditField(h3=595,v,100,"Established",Normal,Established,false,PasteCurDate);
   EditField(h,v+=vs,100,"Monthly Loan Payment",Normal,MonthlyLoadPayment,true,0);
@@ -945,11 +945,11 @@ begin
   EditField(h3-100,v,80,"Payables",Normal,PrevPayables,true,0);
   EditField(h3+40,v,80,"Total",Normal,PrevTotal,true,0);
 
-  Tile(tilenr,600,true,tilenr,Math2); tilenr = tilenr + 1;
-  StaticText(50,v=30,"Comments",true);
-  TextField(60,v-5,-20,370,Math2,0);
+  Tile(tilenr,560,false,tilenr,Math2); tilenr = tilenr + 1;
+  StaticText(30,v=30,"Comments",false);
+  TextField(100,v-5,-20,270,Math2,0);
 
-  Tile(tilenr,600,true,tilenr,Math2); tilenr = tilenr + 1;
+  Tile(tilenr,600,false,tilenr,Math2); tilenr = tilenr + 1;
 
   MatrixBegin(10,v=20,-30,220,-,10);
   MatCol(1,25,"Contact",0,ShareHolderCode,false,CUSClass);
