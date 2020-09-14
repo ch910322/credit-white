@@ -255,6 +255,20 @@ begin
   return;
 end;
 
+function Boolean CredManDClassIntRateEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManVc CredManr;
+  record CredManTypeVc CMTr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    CredManr.PrincipleDelayInterest = CredManr.IntRate;
+    PutWindowRecord(wn,CredManr); 
+  end; 
+  CredManDClassIntRateEFAfter = true;
+  return;
+end;
+
 function Boolean CredManDClassSuretyProviderEFAfter(Integer wn,Boolean changedf,Integer num)
 begin
   record CredManVc CredManr;
@@ -424,6 +438,7 @@ begin
     case "InvSum4": res = CredManDClassInvSumEFAfter(wn,changed!=0);
     case "vRebate": res = CredManDClassvRebateEFAfter(wn,changed!=0);
     case "Type": res = CredManDClassTypeEFAfter(wn,changed!=0);
+    case "IntRate": res = CredManDClassIntRateEFAfter(wn,changed!=0);
   end;
 /*
   if (changed!=0) then begin
