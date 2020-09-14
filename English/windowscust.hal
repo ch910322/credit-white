@@ -2142,11 +2142,19 @@ begin
   UseView(CMPropertyVc);
   vs=20; h=120; vs2=16; hm=-100;
   EditField(h,v=6,100,"Ser. No.",Normal,SerNr,false,);
-  EditField(h2=350,v,150,"Official No.",Normal,OfficialSerNr,false,0);
+  if (type==1) then begin
+    EditField(h2=350,v,150,"License Plate No.",Normal,OfficialSerNr,false,0);
+  end else begin
+    EditField(h2=350,v,150,"Official No.",Normal,OfficialSerNr,false,0);
+  end;
   EditField(h,v+=vs,100,"Type",Normal,Type,false,CMPropertyTypeSClass);
   EditField(h2,v,150,"Type Name",Normal,TypeName,false,0);
   EditField(h,v+=vs,-40,"Name",Normal,Addr0,false,0);
-  EditField(h,v+=vs,-40,"Serial No.",Normal,SerialNo,false,0);
+  if (type==1) then begin
+    EditField(h,v+=vs,-40,"VIN Number",Normal,SerialNo,false,0);
+  end else begin
+    EditField(h,v+=vs,-40,"Serial No.",Normal,SerialNo,false,0);
+  end;
   if (type==2) then begin
     EditField(h,v+=vs,100,"Land Area",Normal,EstateAreaSize,false,0);
     EditField(h2,v,150,"Land Unit",Normal,EstateUnit,false,UnitSClass);
@@ -2192,7 +2200,7 @@ begin
   end else begin
     MatrixBegin(10,v+=vs,-40,490,-,99);
   end;
-  MatCol(1,24,"Contact",0,OwnerCode,false,AllCUSClass);
+  MatCol(1,24,"Contact",0,OwnerCode,false,ContactCUSClass);
   MatCol(1,104,"Name",0,OwnerName,false,0);
   MatCol(1,-154,"Shares %",0,SharesPrc,false,0);
   MatCol(1,-84,"Shares Part",0,SharesVal,false,0);
