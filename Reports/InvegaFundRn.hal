@@ -107,18 +107,6 @@ begin
   overdues = 0;
   TrHs = true;
 
-  IVr.SerNr = CredHistr.RecordNr;
-  if (ReadFirstMain(IVr,1,true)) then begin
-    rwcnt = MatRowCnt(IVr);
-    for (i=0;i<rwcnt;i=i+1) begin
-      MatRowGet(IVr,i,IVrw);
-      if (IVrw.CredHistNr==CredHistr.SerNr) then begin
-        vatcode = IVrw.VATCode;
-        i = rwcnt;
-      end;
-    end;
-  end;
-
 
   CredHistr.CredManNr = CredManr.SerNr;
   CredHistr.TransDate = sd;
@@ -130,11 +118,23 @@ begin
         vDates[CredHistr.TransDate] = true;
         tCredHistr.SerNr = CredHistr.PreviousNr;
         if (ReadFirstMain(tCredHistr,1,true)) then begin
+          IVr.SerNr = tCredHistr.RecordNr;
+          if (ReadFirstMain(IVr,1,true)) then begin
+            rwcnt = MatRowCnt(IVr);
+            for (i=0;i<rwcnt;i=i+1) begin
+              MatRowGet(IVr,i,IVrw);
+              if (IVrw.CredHistNr==tCredHistr.SerNr) then begin
+                vatcode = IVrw.VATCode;
+                i = rwcnt;
+              end;
+            end;
+          end;
+
           switch (tCredHistr.ChargeType) begin
             case 5:
               princ = princ + CredHistr.Sum;
             case 6:
-              InvVat(1,1,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,CredHistr.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+              InvVat(1,1,IVr.NoTAXonVAT,IVr.ExportFlag,vatcode,CredHistr.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
               interest = interest + (CredHistr.Sum-vatval);
             case 9:
               overdues = overdues + CredHistr.Sum;
@@ -146,15 +146,16 @@ begin
 
   if (CredManr.VINr>0) then begin
     OPrsr.TransType = kOPrsTransTypePayment;
-    OPrsr.TransDate = sd;
     OPrsr.VINr = CredManr.VINr;
     TrHs = true;
-    while (LoopKey("VIKey",OPrsr,3,TrHs)) begin
-      if (OPrsr.TransDate>ed or OPrsr.VINr!=CredManr.VINr or OPrsr.TransType!=kOPrsTransTypePayment) then begin
+    while (LoopKey("VIKey",OPrsr,2,TrHs)) begin
+      if (OPrsr.VINr!=CredManr.VINr or OPrsr.TransType!=kOPrsTransTypePayment) then begin
         TrHs = false;
       end else begin
-        vDates[OPrsr.TransDate] = true;
-        paid = paid + FindInvoicePaidAmount_OP(OPrsr.VINr,OPrsr.TransNr);
+        if (DateInRange(OPrsr.TransDate,sd,ed)) then begin
+          vDates[OPrsr.TransDate] = true;
+          paid = paid + FindInvoicePaidAmount_OP(OPrsr.VINr,OPrsr.TransNr);
+        end;
       end;
     end;
   end;
@@ -205,7 +206,7 @@ begin
     end else begin
       if (CredPayr.TransDate<=ed) then begin
         InvVat(1,1,IVr.NoTAXonVAT,IVr.ExportFlag,vatcode,CredPayr.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
-        paysum = paysum - CredPayr.Sum - vatval;
+        paysum = paysum - (CredPayr.Sum - vatval);
       end;
     end;
   end;
