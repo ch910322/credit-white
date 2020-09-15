@@ -35,3 +35,11 @@ begin
   return;
 end;
 
+global
+function Boolean IsNovitiCustomer()
+begin
+  
+  IsNovitiCustomer = false;
+  return;
+end;
+

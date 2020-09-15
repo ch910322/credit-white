@@ -7,6 +7,9 @@ external inner function Integer GetCheck(string,string,LongInt,var string,var st
 external inner function LongInt DateDiff(Date,Date);
 external inner function Boolean SetInSet2(string,string);
 external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
+external inner function roundmode SetRoundMOdeD(integer);
+external inner function string 255 FindFirstContactPersonWithEmail(record CUVc);
+external function Boolean IsNovitiCustomer;
 
 function string 255 GetCompanyType(record CUVc CUr,record InvegaReportBlock IRb)
 begin
@@ -161,6 +164,7 @@ begin
   end;
 
   GetVectorTags(vDates,aDates);
+  SortArray(aDates,M4Date);
   for (i=0;i<aDates.length;i=i+1) begin
     if (i>0) then begin
       res = res & ", ";
@@ -260,6 +264,20 @@ begin
   return;
 end;
 
+function string 255 GetCustomerEmail(record CUVc CUr)
+begin
+  string 255 res;
+  
+  res = CUr.eMail;
+  if (blank(res)) then begin
+    res = FindFirstContactPersonWithEmail(CUr);
+  end;
+
+
+  GetCustomerEmail = res;
+  return;
+end;
+
 global
 procedure InvegaFundRn(record RcVc RepSpec)
 begin
@@ -275,6 +293,7 @@ begin
   val princ,interest,overdues,startbal,endbal,paidval,rate;
   string 255 translist,overduesign;
   Longint cnt;
+  Boolean novitif;
 
   StartReportJob(UsetStr(200266));
 
@@ -285,6 +304,8 @@ begin
     num = num + 50;
   end;
   cnt = 1;
+
+  novitif = IsNovitiCustomer;
 
   StartFormat(15);
   OutString(0,0,1,false);
@@ -356,15 +377,23 @@ begin
       OutString(0,0,cnt,false);
       OutString(p[1],0,CredManr.Addr0,false);
       OutString(p[2],0,CUr.RegNr1,false);
-      OutString(p[3],0,CUr.eMail,false);
+      if (novitif) then begin
+        OutString(p[3],0,GetCustomerEmail(CUr),false);
+      end else begin
+        OutString(p[3],0,CUr.eMail,false);
+      end;
       OutString(p[4],0,"\"" & CUr.Phone & "\"",false);
       OutString(p[5],0,GetCompanyType(CUr,IRb),false);
       OutString(p[6],0,GetCompanyEVKRCode(CUr,IRb),false);
       OutString(p[7],0,CUr.InvAddr3,false);
-      OutString(p[8],0,CredManr.TransDate,false);
+      if (novitif) then begin
+        OutString(p[8],0,CredManr.startDate,false);
+      end else begin
+        OutString(p[8],0,CredManr.TransDate,false);
+      end;
       OutString(p[9],0,GetCredManNr(CredManr.SerNr),false);
       OutString(p[10],0,CredManr.InvSum4,false);
-      OutString(p[11],0,rate,false);
+      OutVal(p[11],0,Round(rate,SetRoundModeD(2)),M4Val,false);
       OutString(p[12],0,CredManr.endDate,false);
       OutString(p[13],0,startbal,false);
       OutString(p[14],0,translist,false);

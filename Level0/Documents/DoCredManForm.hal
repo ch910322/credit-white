@@ -51,6 +51,7 @@ begin
   return;
 end;
 
+global
 function string 255 FindFirstContactPersonWithEmail(record CUVc CUr)
 begin
   record ContactRelVc CRr;
