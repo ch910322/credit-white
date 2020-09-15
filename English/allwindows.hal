@@ -277,6 +277,9 @@ begin
 //  CheckBox(h5,v+=16,0,"Collection",ColectionFlag);
   CheckBox(h5,v+=16,0,"Interest",InterestFlag);
   CheckBox(h5,v+=16,0,"On Account",OnAccount);
+  if (HasPayLinkTransactions) then begin
+    CheckBox(h5,v+=16,0,"Enable PayLink",PayLinkFlag);
+  end;
   if (StandardHansa==false) then begin
     CheckBox(h5,v+=16,0,"No Factoring",NoFactoringFlag);
     CheckBox(h5,v+=16,0,"No Extra Tax",NoTax1);
