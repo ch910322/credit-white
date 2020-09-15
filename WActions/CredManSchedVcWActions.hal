@@ -190,6 +190,18 @@ LCredFeesMatrixVClassOnOKWindow:;
   return;
 end;
 
+global
+procedure CredFeesMatrixVClassSave()
+begin
+  Integer wn;
+  
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  CredFeesMatrixVClassOnOKWindow(wn);
+
+  return;
+end;
+
 
 global
 function Boolean CredManSchedDClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)

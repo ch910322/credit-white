@@ -39,6 +39,8 @@ remote updating procedure CM_CreatePaymentOrder(record CredManVc,record VIVc,val
 external function Boolean CheckForActiveAgreement(record CredManVc);
 external function Boolean CanCredManMakePayment(record CredManVc);
 remote updating procedure GetCredManBOESuretyRecord(record CredManVc,var record BOESuretyVc,Integer);
+remote procedure InsertCredManDocSignerName(var record CredManVc,Integer);
+remote procedure PasteBOEInCredMan(var record CredManVc,string,Integer);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -243,6 +245,7 @@ begin
         CredManr.PrincipleDelayInterest = CredManr.IntRate;
       end;
       Credmanr.LoanType = CMTr.LoanType;
+      CredManr.RealInterestFlag = CMTr.RealInterestFlag;
     end;
     RecalcCredManFees(CredManr);
     PutWindowRecord(wn,CredManr); 
@@ -250,6 +253,20 @@ begin
     //
   end; 
   CredManDClassTypeEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassIntRateEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManVc CredManr;
+  record CredManTypeVc CMTr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    CredManr.PrincipleDelayInterest = CredManr.IntRate;
+    PutWindowRecord(wn,CredManr); 
+  end; 
+  CredManDClassIntRateEFAfter = true;
   return;
 end;
 
@@ -267,6 +284,34 @@ begin
     PutWindowRecord(wn,CredManr);   
   end; 
   CredManDClassSuretyProviderEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassBOEEFAfter(Integer wn,Boolean changedf,Integer num)
+begin
+  record CredManVc CredManr;
+  string 255 warning;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    PasteBOEInCredMan(CredManr,GetFieldValueByName(CredManr,"BOE" & num & "Code",-1),num);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassBOEEFAfter = true;
+  return;
+end;
+
+function Boolean CredManDClassSuretySignerEFAfter(Integer wn,Boolean changedf,Integer num)
+begin
+  record CredManVc CredManr;
+  record CUVc CUr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    InsertCredManDocSignerName(CredManr,num);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassSuretySignerEFAfter = true;
   return;
 end;
 
@@ -344,6 +389,7 @@ function Boolean CredManDClassAfterEditField(Integer wn,string fieldname,Integer
 begin
   Boolean res;
   record CredManVc CredManr;
+  Integer num;
 
   if (changed==0) then begin
     goto LCredManDClassAfterEditField;
@@ -357,9 +403,6 @@ begin
     case "StdProlongPrc":     res = CredManDClassStdProlongPrcEFAfter(wn,rownr,changed!=0);
     case "startDate":         res = CredManDClassstartDateEFAfter(wn,changed!=0,true);
     case "MonthlyPaymentDay": res = CredManDClassstartDateEFAfter(wn,changed!=0,true);
-    case "SuretyProvider1":   res = CredManDClassSuretyProviderEFAfter(wn,changed!=0,1);
-    case "SuretyProvider2":   res = CredManDClassSuretyProviderEFAfter(wn,changed!=0,2);
-    case "SuretyProvider3":   res = CredManDClassSuretyProviderEFAfter(wn,changed!=0,3);
     case "LoanToValue":       res = CredManDClassLoanToValueEFAfter(wn,changed!=0,3);
     case "PayGrntPayDate1":   res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
     case "PayGrntPayDate2":   res = CredManDClassDayValueEFAfter(wn,changed!=0,fieldname);
@@ -368,7 +411,23 @@ begin
     case "MinSum":            res = CredManDClassvRebateEFAfter(wn,changed!=0);
     case "MaxSum":            res = CredManDClassvRebateEFAfter(wn,changed!=0);
     otherwise 
-      res = inner.CredManDClassAfterEditField(wn,fieldname,fn,rownr,changed);
+      if (left(fieldname,6)=="Surety" or left(fieldname,3)=="BOE") then begin
+        if (left(fieldname,14)=="SuretyProvider") then begin
+          num = StringToInt(right(fieldname,1));
+          res = CredManDClassSuretyProviderEFAfter(wn,changed!=0,num);
+        end;
+        if (left(fieldname,3)=="BOE" and right(fieldname,4)=="Code") then begin
+          num = StringToInt(mid(fieldname,3,1));
+          res = CredManDClassBOEEFAfter(wn,changed!=0,num);
+        end;
+        
+        if (right(fieldname,6)=="Signer") then begin
+          num = StringToInt(mid(fieldname,6,1));
+          res = CredManDClassSuretySignerEFAfter(wn,changed!=0,num);
+        end;
+      end else begin
+        res = inner.CredManDClassAfterEditField(wn,fieldname,fn,rownr,changed);
+      end;
   end;
   switch (fieldname) begin
     case "DepositSum": res = CredManDClassDepositSumEFAfter(wn,changed!=0);
@@ -380,6 +439,7 @@ begin
     case "InvSum4": res = CredManDClassInvSumEFAfter(wn,changed!=0);
     case "vRebate": res = CredManDClassvRebateEFAfter(wn,changed!=0);
     case "Type": res = CredManDClassTypeEFAfter(wn,changed!=0);
+    case "IntRate": res = CredManDClassIntRateEFAfter(wn,changed!=0);
   end;
 /*
   if (changed!=0) then begin
@@ -1998,5 +2058,17 @@ begin
 
 
   CredManDClassStatusButtonAction = res;
+  return;
+end;
+
+
+global
+function Boolean GenOverdueInvVClassArtModeButtonAction(Integer wn,Integer value)
+begin
+  record IPConVc PCr;
+
+  NewTimedTask("rerun window def","rerunwindowdef","RerunWindowDefHAL",wn,CurrentDate,CurrentTime,"","");  
+
+  GenOverdueInvVClassArtModeButtonAction = true;
   return;
 end;

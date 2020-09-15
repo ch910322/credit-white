@@ -57,6 +57,11 @@ BEGIN
   CredManr.MoneyTransferDate = "";
   CredManr.Status = 0;
   CredManr.VINr = -1;
+  CredManr.Status = 0;
+  CredManr.SignSurety = 0;
+  CredManr.SignAgreement = 0;
+  CredManr.SignVekselis = 0;
+  CredManr.SignSchedule = 0;
 /*
   CredManr.FactInvAmount = t;
   CredManr.LoanToValue = t;
@@ -457,7 +462,7 @@ LCredManPmtGrntVcRecordCheck:;
   return;
 end;
 
-
+global
 function Boolean ContractHasHistory(record CredManVc CredManr)
 begin
   record CredHistVc CredHistr;

@@ -50,7 +50,7 @@ begin
       Propr.TypeName = PTr.Comment;
       Propr.TypeFlag = PTr.TypeFlag;
       PutWindowRecord(wn,Propr);
-      RerunWindowDef(wn);
+      NewTimedTask("rerun window def","rerunwindowdef","RerunWindowDefHAL",wn,CurrentDate,AddSeconds(CurrentTime,1),"","");  
     end; 
   end;
 

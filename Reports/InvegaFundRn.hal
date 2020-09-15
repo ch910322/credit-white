@@ -6,6 +6,10 @@ external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlan
 external inner function Integer GetCheck(string,string,LongInt,var string,var string,var string,var val,var Date,var Date);
 external inner function LongInt DateDiff(Date,Date);
 external inner function Boolean SetInSet2(string,string);
+external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
+external inner function roundmode SetRoundMOdeD(integer);
+external inner function string 255 FindFirstContactPersonWithEmail(record CUVc);
+external function Boolean IsNovitiCustomer;
 
 function string 255 GetCompanyType(record CUVc CUr,record InvegaReportBlock IRb)
 begin
@@ -53,6 +57,7 @@ LGetCompanyEVKRCode:;
   return;
 end;
 
+global
 function val FindInvoicePaidAmount_OP(LongInt VISerNr,LongInt TransNr)
 begin
   val res;
@@ -93,12 +98,19 @@ begin
   record OPrsVc OPrsr;
   array string 255 aDates;
   Integer i;
+  val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
+  record IVVc IVr;
+  row IVVc IVrw;
+  Integer rwcnt;
+  string 255 vatcode;
 
   paid = 0;
   princ = 0;
   interest = 0;
   overdues = 0;
   TrHs = true;
+
+
   CredHistr.CredManNr = CredManr.SerNr;
   CredHistr.TransDate = sd;
   while (LoopKey("CredManTypeDate",CredHistr,2,TrHs)) begin
@@ -109,11 +121,24 @@ begin
         vDates[CredHistr.TransDate] = true;
         tCredHistr.SerNr = CredHistr.PreviousNr;
         if (ReadFirstMain(tCredHistr,1,true)) then begin
+          IVr.SerNr = tCredHistr.RecordNr;
+          if (ReadFirstMain(IVr,1,true)) then begin
+            rwcnt = MatRowCnt(IVr);
+            for (i=0;i<rwcnt;i=i+1) begin
+              MatRowGet(IVr,i,IVrw);
+              if (IVrw.CredHistNr==tCredHistr.SerNr) then begin
+                vatcode = IVrw.VATCode;
+                i = rwcnt;
+              end;
+            end;
+          end;
+
           switch (tCredHistr.ChargeType) begin
             case 5:
               princ = princ + CredHistr.Sum;
             case 6:
-              interest = interest + CredHistr.Sum;
+              InvVat(1,1,IVr.NoTAXonVAT,IVr.ExportFlag,vatcode,CredHistr.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+              interest = interest + (CredHistr.Sum-vatval);
             case 9:
               overdues = overdues + CredHistr.Sum;
           end;
@@ -124,23 +149,25 @@ begin
 
   if (CredManr.VINr>0) then begin
     OPrsr.TransType = kOPrsTransTypePayment;
-    OPrsr.TransDate = sd;
     OPrsr.VINr = CredManr.VINr;
     TrHs = true;
-    while (LoopKey("VIKey",OPrsr,3,TrHs)) begin
-      if (OPrsr.TransDate>ed or OPrsr.VINr!=CredManr.VINr or OPrsr.TransType!=kOPrsTransTypePayment) then begin
+    while (LoopKey("VIKey",OPrsr,2,TrHs)) begin
+      if (OPrsr.VINr!=CredManr.VINr or OPrsr.TransType!=kOPrsTransTypePayment) then begin
         TrHs = false;
       end else begin
-        vDates[OPrsr.TransDate] = true;
-        paid = paid + FindInvoicePaidAmount_OP(OPrsr.VINr,OPrsr.TransNr);
+        if (DateInRange(OPrsr.TransDate,sd,ed)) then begin
+          vDates[OPrsr.TransDate] = true;
+          paid = paid + FindInvoicePaidAmount_OP(OPrsr.VINr,OPrsr.TransNr);
+        end;
       end;
     end;
   end;
 
   GetVectorTags(vDates,aDates);
+  SortArray(aDates,M4Date);
   for (i=0;i<aDates.length;i=i+1) begin
     if (i>0) then begin
-      res = res & ",";
+      res = res & ", ";
     end;
     res = res & aDates[i];
   end;
@@ -155,8 +182,26 @@ begin
   record CredHistVc CredPayr;
   val paysum;
   Integer res;
+  val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
+  record IVVc IVr;
+  row IVVc IVrw;
+  Integer i,rwcnt;
+  string 255 vatcode;
 
   paysum = CredHistr.Sum;
+  IVr.SerNr = CredHistr.RecordNr;
+  if (ReadFirstMain(IVr,1,true)) then begin
+    rwcnt = MatRowCnt(IVr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(IVr,i,IVrw);
+      if (IVrw.CredHistNr==CredHistr.SerNr) then begin
+        InvVat(1,1,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,CredHistr.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+        paysum = paysum - vatval;
+        vatcode = IVrw.VATCode;
+        i = rwcnt;
+      end;
+    end;
+  end;
   TrHs = true;
   CredPayr.PreviousNr = CredHistr.SerNr;
   while (LoopKey("PreviousNr",CredPayr,1,TrHs)) begin
@@ -164,13 +209,14 @@ begin
       TrHs = false;
     end else begin
       if (CredPayr.TransDate<=ed) then begin
-        paysum = paysum - CredPayr.Sum;
+        InvVat(1,1,IVr.NoTAXonVAT,IVr.ExportFlag,vatcode,CredPayr.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+        paysum = paysum - (CredPayr.Sum - vatval);
       end;
     end;
   end;
 
   if (paysum>0) then begin
-    res = DateDiff(ed,CredHistr.PayDate)+1;
+    res = DateDiff(ed,CredHistr.PayDate);
   end;
   dueamount = paysum;
 
@@ -208,13 +254,27 @@ begin
     if (CredHistr.CredManNr!=CredManr.SerNr or CredHistr.ChargeType!=chargetype) then begin
       TrHs = false;
     end else begin
-      if (CredHistr.RecordType==0 and DateInRange(CredHistr.TransDate,sd,ed)) then begin
+      if (CredHistr.RecordType==0 and CredHistr.TransDate<ed) then begin
         latedays = GetLateDaysInPeriod(CredHistr,sd,ed,dueamount);
         maxlatedays = MAX(maxlatedays,latedays);
       end;
     end;
   end;
 
+  return;
+end;
+
+function string 255 GetCustomerEmail(record CUVc CUr)
+begin
+  string 255 res;
+  
+  res = CUr.eMail;
+  if (blank(res)) then begin
+    res = FindFirstContactPersonWithEmail(CUr);
+  end;
+
+
+  GetCustomerEmail = res;
   return;
 end;
 
@@ -233,6 +293,7 @@ begin
   val princ,interest,overdues,startbal,endbal,paidval,rate;
   string 255 translist,overduesign;
   Longint cnt;
+  Boolean novitif;
 
   StartReportJob(UsetStr(200266));
 
@@ -244,11 +305,44 @@ begin
   end;
   cnt = 1;
 
+  novitif = IsNovitiCustomer;
+
+  StartFormat(15);
+  OutString(0,0,1,false);
+  OutString(p[1],0,2,false);
+  OutString(p[2],0,3,false);
+  OutString(p[3],0,4,false);
+  OutString(p[4],0,5,false);
+  OutString(p[5],0,6,false);
+  OutString(p[6],0,7,false);
+  OutString(p[7],0,8,false);
+  OutString(p[8],0,9,false);
+  OutString(p[9],0,10,false);
+  OutString(p[10],0,11,false);
+  OutString(p[11],0,12,false);
+  OutString(p[12],0,13,false);
+  OutString(p[13],0,14,false);
+  OutString(p[14],0,15,false);
+  OutString(p[15],0,16,false);
+  OutString(p[16],0,17,false);
+  OutString(p[17],0,18,false);
+  OutString(p[18],0,19,false);
+  OutString(p[19],0,20,false);
+  OutString(p[20],0,21,false);
+  OutString(p[21],0,22,false);
+  OutString(p[22],0,23,false);
+  OutString(p[23],0,24,false);
+  OutString(p[24],0,25,false);
+  OutString(p[25],0,26,false);
+
+  EndFormat;
+
+
   BlockLoad(IRb);
   BlockLoad(CredManSetb);
   while (LoopMain(CredManr,1,true)) begin
     testf = true;
-    if (nonblank(RepSpec.f1) and RepSpec.f1!=CredManr.Type) then begin
+    if (nonblank(RepSpec.f1) and SetInSet(CredManr.Type,RepSpec.f1)==false) then begin
       testf = false;
     end;
     if (nonblank(RepSpec.f2) and RepSpec.f2!=CredManr.CustCode) then begin
@@ -283,15 +377,23 @@ begin
       OutString(0,0,cnt,false);
       OutString(p[1],0,CredManr.Addr0,false);
       OutString(p[2],0,CUr.RegNr1,false);
-      OutString(p[3],0,CUr.eMail,false);
-      OutString(p[4],0,CUr.Phone,false);
+      if (novitif) then begin
+        OutString(p[3],0,GetCustomerEmail(CUr),false);
+      end else begin
+        OutString(p[3],0,CUr.eMail,false);
+      end;
+      OutString(p[4],0,"\"" & CUr.Phone & "\"",false);
       OutString(p[5],0,GetCompanyType(CUr,IRb),false);
       OutString(p[6],0,GetCompanyEVKRCode(CUr,IRb),false);
       OutString(p[7],0,CUr.InvAddr3,false);
-      OutString(p[8],0,CredManr.TransDate,false);
+      if (novitif) then begin
+        OutString(p[8],0,CredManr.startDate,false);
+      end else begin
+        OutString(p[8],0,CredManr.TransDate,false);
+      end;
       OutString(p[9],0,GetCredManNr(CredManr.SerNr),false);
       OutString(p[10],0,CredManr.InvSum4,false);
-      OutString(p[11],0,rate,false);
+      OutVal(p[11],0,Round(rate,SetRoundModeD(2)),M4Val,false);
       OutString(p[12],0,CredManr.endDate,false);
       OutString(p[13],0,startbal,false);
       OutString(p[14],0,translist,false);
@@ -304,7 +406,7 @@ begin
       OutString(p[21],0,interestlatedays,false);
       OutString(p[22],0,interestlateamount,false);
       OutString(p[23],0,overdueslateamount,false);
-      OutString(p[24],0,"NO",false);
+      OutString(p[24],0,"",false);
       OutString(p[25],0,overduesign,false);
 
       EndFormat;
