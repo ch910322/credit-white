@@ -278,6 +278,50 @@ begin
   return;
 end;
 
+function string 255 FindFirstContactPersonWithPhone(record CUVc CUr)
+begin
+  record ContactRelVc CRr;
+  record CUVc ContactCUr;
+  string 255 res;
+  Boolean Trhs;
+
+  TrHs = true;
+  CRr.CustCode = CUr.Code;
+  while (LoopMain(CRr,1,TrHs)) begin
+    if (CRr.CustCode!=CUr.Code) then begin
+      TrHs = false;
+    end else begin
+      if (CRr.Invalid==0) then begin
+        ContactCUr.Code = CRr.ContactCode;
+        if (ReadFirstMain(ContactCUr,1,true)) then begin
+          if (nonblank(ContactCUr.Phone)) then begin
+            res = ContactCUr.Phone;
+            goto LFindFirstContactPersonWithPhone;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+LFindFirstContactPersonWithPhone:;
+  FindFirstContactPersonWithPhone = res;
+  return;
+end;
+
+function string 255 GetCustomerPhone(record CUVc CUr)
+begin
+  string 255 res;
+  
+  res = CUr.Phone;
+  if (blank(res)) then begin
+    res = FindFirstContactPersonWithPhone(CUr);
+  end;
+
+
+  GetCustomerPhone = res;
+  return;
+end;
+
 global
 procedure InvegaFundRn(record RcVc RepSpec)
 begin
@@ -294,6 +338,8 @@ begin
   string 255 translist,overduesign;
   Longint cnt;
   Boolean novitif;
+  vector string 255 vClass;
+  record CredManTypeVc CMTr;
 
   StartReportJob(UsetStr(200266));
 
@@ -337,6 +383,9 @@ begin
 
   EndFormat;
 
+  while (LoopMain(CMTr,1,true)) begin
+    vClass[CMTr.Code] = CMTr.Classifications;
+  end;
 
   BlockLoad(IRb);
   BlockLoad(CredManSetb);
@@ -354,6 +403,10 @@ begin
     if (nonblank(RepSpec.f4) and RepSpec.f4!=CredManr.SalesMan) then begin
       testf = false;
     end;
+    if (nonblank(RepSpec.f5) and SetInSet2(RepSpec.f5,vClass[CredManr.Type])) then begin
+      testf = false;
+    end;
+    
     if (testf) then begin
       CUr.Code = CredManr.CustCode;
       rate = CredManr.IntRate;
@@ -382,7 +435,11 @@ begin
       end else begin
         OutString(p[3],0,CUr.eMail,false);
       end;
-      OutString(p[4],0,"\"" & CUr.Phone & "\"",false);
+      if (novitif) then begin
+        OutString(p[4],0,"\"" & GetCustomerPhone(CUr) & "\"",false);
+      end else begin
+        OutString(p[4],0,"\"" & CUr.Phone & "\"",false);
+      end;
       OutString(p[5],0,GetCompanyType(CUr,IRb),false);
       OutString(p[6],0,GetCompanyEVKRCode(CUr,IRb),false);
       OutString(p[7],0,CUr.InvAddr3,false);

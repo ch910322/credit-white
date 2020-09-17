@@ -131,6 +131,8 @@ begin
   val rowbase;
   val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
   
+  abovehiddenvat = 0;
+  abovehiddenbase = 0;
   rwcnt = MatRowCnt(IVr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(IVr,i,IVrw);
@@ -156,12 +158,14 @@ begin
 end;
 
 global
-function val GetCustomerOpenAmount(string custcode)
+function val GetCustomerOpenAmount(string custcode,record IVVc IVr)
 begin
   val res;
   record ARVc ARr;
   Boolean TrHs;
   record ARPayVc ARPayr;
+  row IVVc IVrw;
+  Integer i,rwcnt;
 
   TrHs = true;
   res = 0;
@@ -185,6 +189,14 @@ begin
       if (ARPayr.RVal>0) then begin
         res = res - ARPayr.RVal;
       end;
+    end;
+  end;
+
+  rwcnt = MatRowCnt(IVr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    if (IVrw.stp==kInvoiceRowTypePrepayment) then begin
+      res = res - IVrw.Sum;
     end;
   end;
 
@@ -221,13 +233,14 @@ begin
 
   del = ":";
   BlockLoad(CIb);
+  BlockLoad(CMb);
   if (nonblank(CIb.PeriodDelimiter)) then begin
     del = CIb.PeriodDelimiter;
   end;
   vVals["F_LOANPERIOD"] = IVr.CredFromDate & del & IVr.CredToDate;
 
   GetHiddenInvoiceValues(IVr,abovehiddenbase,abovehiddenvat);
-  openamount = GetCustomerOpenAmount(IVr.CustCode);
+  openamount = GetCustomerOpenAmount(IVr.CustCode,IVr);
 
   topay2 = openamount;
   if (IVr.PayDate>=CurrentDate) then begin
