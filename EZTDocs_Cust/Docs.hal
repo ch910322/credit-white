@@ -829,6 +829,51 @@ begin
   return;
 end;
 
+function string 255 AddValue(string tstr,string tmpstr)
+begin
+  string 255 res;
+  
+  res = tstr;
+  if (nonblank(tmpstr)) then begin
+    if (nonblank(res)) then begin
+      res = res & ", ";
+    end;
+    res = res & tmpstr;
+  end;
+
+  AddValue = res;
+  return;
+end;
+
+procedure GetCFOContacts(string custcode,var array record CUVc aCUr)
+begin
+  Boolean TrHs;
+  record ContactRelVc CRr;
+  record CMApplicationSetBlock CMb;
+  record CUVc ContactCur;
+  
+  BlockLoad(CMb);
+  TrHs = true;
+  CRr.CustCode = custcode;
+  while (LoopMain(CRr,1,TrHs)) begin
+    if (CRr.CustCode!=custcode) then begin
+      TrHs = false;
+    end else begin
+      if (CRr.Invalid==0) then begin
+        ContactCUr.Code = CRr.ContactCode;
+        if (ReadFirstMain(ContactCUr,1,true)) then begin
+          if (SetInSet(ContactCUr.JobDesc,CMb.CFOTitle)) then begin
+            aCUr[aCUr.length] = ContactCur;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+
+  return;
+end;
+
 global
 procedure ExternalPrintCredManForm(record CredManVc CredManr,var vector string vVals)
 begin
@@ -842,7 +887,9 @@ begin
   record CMPropertyVc Propr;
   row CMPropertyVc Proprw;
   record CMInsuranceTypeVc ITr;
-
+  array record CUVc aCUr;
+  record CUVc CUr;
+  
   GetLangNr(CredManr.LangCode,LangNrr);      
   Ext_CommonDocumentFields(vVals);
   CredManHeader(vVals,CredManr);
@@ -912,6 +959,23 @@ begin
 
       end;
     end;
+  end;
+
+  GetCFOContacts(CredManr.CustCode,aCUr);
+  for (i=0;i<aCUr.length;i=i+1) begin
+    CUr = aCUr[i];
+    tstr = "";
+    tstr = AddValue(tstr,CUr.Name);
+    if (nonblank(CUr.Phone)) then begin
+      tstr = AddValue(tstr,CUr.Phone);
+    end else begin
+      tstr = AddValue(tstr,CUr.Mobile);
+    end;
+    tstr = AddValue(tstr,CUr.eMail);
+    if (nonblank(vVals["F_CFOLIST"])) then begin
+      vVals["F_CFOLIST"] = vVals["F_CFOLIST"] & "\\n";
+    end;
+    vVals["F_CFOLIST"] = vVals["F_CFOLIST"] & tstr;
   end;
 
   return;   
