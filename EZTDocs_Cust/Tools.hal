@@ -137,16 +137,18 @@ begin
     if (IVrw.stp==kInvoiceRowTypeHidden) then begin
       i = rwcnt;
     end else begin
-      InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+      if (IVrw.stp==kInvoiceRowTypeNormal) then begin
+        InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
 
-      if (IVr.InclVAT==0) then begin
-        rowbase = IVrw.Sum;
-      end else begin
-        rowbase = IVrw.Sum - vatval;
+        if (IVr.InclVAT==0) then begin
+          rowbase = IVrw.Sum;
+        end else begin
+          rowbase = IVrw.Sum - vatval;
+        end;
+
+        abovehiddenvat = abovehiddenvat + vatval;
+        abovehiddenbase = abovehiddenbase + rowbase;
       end;
-
-      abovehiddenvat = abovehiddenvat + vatval;
-      abovehiddenbase = abovehiddenbase + rowbase;
     end;
   end;
 
