@@ -160,7 +160,7 @@ begin
   record ARVc ARr;
   Boolean TrHs;
   record ARPayVc ARPayr;
-  row IVVc IVr;
+  row IVVc IVrw;
   Integer i,rwcnt;
 
   TrHs = true;
