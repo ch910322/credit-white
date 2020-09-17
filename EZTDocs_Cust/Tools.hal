@@ -131,6 +131,8 @@ begin
   val rowbase;
   val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
   
+  abovehiddenvat = 0;
+  abovehiddenbase = 0;
   rwcnt = MatRowCnt(IVr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(IVr,i,IVrw);
@@ -231,6 +233,7 @@ begin
 
   del = ":";
   BlockLoad(CIb);
+  BlockLoad(CMb);
   if (nonblank(CIb.PeriodDelimiter)) then begin
     del = CIb.PeriodDelimiter;
   end;
