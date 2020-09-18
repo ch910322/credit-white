@@ -369,6 +369,7 @@ begin
       end;
     end;
   end;
+  fees = Round(fees,SetRoundModeD(2));
   vVals["F_FEES"] = fees;
   ValToText(fees,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
   vVals["F_FEESINTEXT"] = tstr;
