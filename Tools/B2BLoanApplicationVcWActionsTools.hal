@@ -655,20 +655,42 @@ begin
   Boolean res;
   record Attach2Vc Attachr;
   record RLinkVc RLr;
+  area htmlarea,html1,html2,reshtml;
+  record LTxtVc LTxt2r;
+  Longint pos;
   
   Mailr.SerNr = NextSerNr("MailVc",CurrentDate,-1,false,"");
   if (RecordInsert(Mailr,true)) then begin
     if (ReadFirstMain(Mailr,1,true)) then begin
       if (ReadRecordLink(Mailr,1,Attachr,RLr)) begin
-        RecordRemove(RLr);
+        //RecordRemove(RLr);
       end;    
-      CopyRecordLinks(LTxtr,Mailr);
+      //CopyRecordLinks(LTxtr,Mailr);
       if (Mailr.HtmlFlag==1) then begin
-        ParseHtmlField(Mailr,RepSpec,"MailVcReplaceToken");
+        if (ReadRecordLink(LTxtr,1,Attachr,RLr)) begin
+          AddAttachFileToArea(Attachr,htmlarea,false);
+        //AddHtmlRecordToText(LTxtr,LTxt2r);
+          pos = FindStringInArea("<!--schedulerow-->",htmlarea);
+          if (pos>0) then begin
+            GetAreaFromArea(htmlarea,0,pos,html1);
+            GetAreaFromArea(htmlarea,pos+18,GetAreaLength(htmlarea)-pos-18,html2);
+            AddAreaToArea(html1,reshtml);
+            AddTextToArea("?schedulerow?",reshtml);
+            AddAreaToArea(html2,reshtml);
+            AddAreaToTextField(reshtml,LTxt2r);
+            AddToHtmlRecord(Ltxt2r,true,Mailr,true,true);
+            ParseHtmlField(Mailr,RepSpec,"MailVcReplaceToken");
+          end;
+        end;
       end;
       res = true;
     end;
   end;
+
+//AddStringToHTML
+//AddHTMLRecordToHTMLRecord
+//StringInHTML
+//AddToRecordHTML
 
   StoreEmailRecord = res;
   return;
