@@ -50,7 +50,7 @@ begin
     emqrp.HtmlFlag = LTxtr.HtmlFlag;
 
     if (CheckAttachedFilesSizeToLetter(LTxtr)) then begin
-      if (RecordStore(emqrp,false)) then begin
+      if (RecordInsert(emqrp,false)) then begin
         CopyRecordLinks(LTxtr,emqrp);
         if (LTxtr.HtmlFlag==1) then begin
           ParseHtmlField(emqrp,RepSpec,"EMailQueVcReplaceToken");
