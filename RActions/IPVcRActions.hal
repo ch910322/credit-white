@@ -53,6 +53,30 @@ LIPVcRecordCheck:;
 end;
 
 global
+updating function LongInt IPVcRecordRemoveTest(var record IPVc IPr,record IPVc IP2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  record BankTRVc BTr;
+
+  res = 1;
+  if (UserCanAction("ReceiptBankTRDiffAmounts",false)==false) then begin
+    BTr.FileName = "IPVc";
+    BTr.TransNr = IPr.SerNr;
+    if (ReadFirstKey("FileName",BTr,2,true)) then begin
+      res = 0;
+      goto LIPVcRecordRemoveTest;
+    end;
+  end;
+
+  res = inner.IPVcRecordRemoveTest(IPr,IP2r,stat,long4);
+
+LIPVcRecordRemoveTest:;
+  IPVcRecordRemoveTest = res;
+  return;
+end;
+
+
+global
 updating function LongInt IPVcRecordSaveAfter(var record IPVc IPr,record IPVc IP2r,LongInt stat,LongInt long4)
 BEGIN
   LongInt res;

@@ -65,6 +65,31 @@ begin
   return;
 end;
 
+function Boolean GetCredManCustContactRecord(record CredManVc CredManr,var record CUVc CUr)
+begin
+  record CUVc ContactCUr,tCUr;
+  Boolean res;
+
+  if (nonblank(CredManr.ClientContact)) then begin
+    if (FindCustomerRelationCred(CredManr.CustCode,CredManr.ClientContact,ContactCUr)) then begin
+      RecordCopy(CUr,ContactCUr);
+      tCUr.Code = CredManr.CustCode;
+      if (ReadFirstMain(tCUr,1,true)) then begin
+        if (blank(CUr.eMail)) then begin
+          CUr.eMail = tCUr.eMail;
+        end;
+        if (blank(CUr.Phone)) then begin
+          CUr.Phone = tCUr.Phone;
+        end;
+      end;
+      res = true;
+    end;
+  end;
+
+  GetCredManCustContactRecord = res;
+  return;
+end;
+
 function string 255 AddToList(string tstr,string astr)
 begin
   string 255 res;
@@ -133,6 +158,39 @@ begin
   end;
 
   vVals["F_INSTALMENTDUEDATE"] = res;
+
+  return;
+end;
+
+function string 255 AddValue(string tstr,string tmpstr)
+begin
+  string 255 res;
+  
+  res = tstr;
+  if (nonblank(tmpstr)) then begin
+    if (nonblank(res)) then begin
+      res = res & ", ";
+    end;
+    res = res & tmpstr;
+  end;
+
+  AddValue = res;
+  return;
+end;
+
+procedure PrintSingleContactLine(var vector string vVals,string fname,record CUVc CUr)
+begin
+  string 255 tstr;
+  
+  tstr = "";
+  tstr = AddValue(tstr,CUr.Name);
+  if (nonblank(CUr.Phone)) then begin
+    tstr = AddValue(tstr,CUr.Phone);
+  end else begin
+    tstr = AddValue(tstr,CUr.Mobile);
+  end;
+  tstr = AddValue(tstr,CUr.eMail);
+  vVals[fname] = tstr;
 
   return;
 end;
@@ -311,6 +369,7 @@ begin
       end;
     end;
   end;
+  fees = Round(fees,SetRoundModeD(2));
   vVals["F_FEES"] = fees;
   ValToText(fees,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
   vVals["F_FEESINTEXT"] = tstr;
@@ -372,13 +431,28 @@ begin
     vVals["F_CEOID"] = CUr.RegNr1;
     vVals["F_CEOPHONE"] = CUr.Phone;
     vVals["F_CEOEMAIL"] = CUr.eMail;
+    PrintSingleContactLine(vVals,"F_CEODETAILS",CUr);
   end;
+  if (blank(vVals["F_CEODETAILS"])) then begin
+    vVals["F_CEODETAILS"] = "-";
+  end;
+
   RecordCLear(CUr);
   if (FindCFOContact(CredManr.CustCode,CUr)) then begin
     vVals["F_CFONAME"] = CUr.Name;
     vVals["F_CFOID"] = CUr.RegNr1;
     vVals["F_CFOPHONE"] = CUr.Phone;
     vVals["F_CFOEMAIL"] = CUr.eMail;
+    PrintSingleContactLine(vVals,"F_CFODETAILS",CUr);
+  end;
+  if (blank(vVals["F_CFODETAILS"])) then begin
+    vVals["F_CFODETAILS"] = "-";
+  end;
+  if (GetCredManCustContactRecord(CredManr,CUr)) then begin
+    PrintSingleContactLine(vVals,"F_CONTACTDETAILS",CUr);
+  end;
+  if (blank(vVals["F_CONTACTDETAILS"])) then begin
+    vVals["F_CONTACTDETAILS"] = "-";
   end;
 
   Userr.Code = CredManr.SalesMan;
@@ -386,6 +460,7 @@ begin
     vVals["F_SALESMANPHONE"] = Userr.Phone1;
     vVals["F_SALESMANNAME"] = Userr.Name;
     vVals["F_SALESMANEMAIL"] = Userr.emailAddr;
+    vVals["F_SALESMANJOB"] = Userr.Job;
   end;
 
   vVals["F_FIRSTINVDATE"] = CredManr.FirstInvDate;
@@ -560,6 +635,7 @@ begin
   string 255 tstr;
   val calcfees,fixfees;
   transaction Longint gSuretyNumber;
+  record UserVc Userr;
 
   Ext_CommonDocumentFields(vVals);
 
@@ -644,6 +720,14 @@ begin
   fixfees =  GetMonthlyFees(CredManr,1);
   vVals["F_CALCFEES"] = calcfees & " %";
   vVals["F_FIXFEES"] = fixfees;
+
+  Userr.Code = CredManr.SalesMan;
+  if (ReadFirstMain(Userr,1,true)) then begin
+    vVals["F_SALESMANPHONE"] = Userr.Phone1;
+    vVals["F_SALESMANNAME"] = Userr.Name;
+    vVals["F_SALESMANEMAIL"] = Userr.emailAddr;
+    vVals["F_SALESMANJOB"] = Userr.Job;
+  end;
 
   return;
 end;
@@ -829,6 +913,35 @@ begin
   return;
 end;
 
+procedure GetCFOContacts(string custcode,var array record CUVc aCUr)
+begin
+  Boolean TrHs;
+  record ContactRelVc CRr;
+  record CMApplicationSetBlock CMb;
+  record CUVc ContactCur;
+  
+  BlockLoad(CMb);
+  TrHs = true;
+  CRr.CustCode = custcode;
+  while (LoopMain(CRr,1,TrHs)) begin
+    if (CRr.CustCode!=custcode) then begin
+      TrHs = false;
+    end else begin
+      if (CRr.Invalid==0) then begin
+        ContactCUr.Code = CRr.ContactCode;
+        if (ReadFirstMain(ContactCUr,1,true)) then begin
+          if (SetInSet(ContactCUr.JobDesc,CMb.CFOTitle)) then begin
+            aCUr[aCUr.length] = ContactCur;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+
+  return;
+end;
+
 global
 procedure ExternalPrintCredManForm(record CredManVc CredManr,var vector string vVals)
 begin
@@ -842,7 +955,9 @@ begin
   record CMPropertyVc Propr;
   row CMPropertyVc Proprw;
   record CMInsuranceTypeVc ITr;
-
+  array record CUVc aCUr;
+  record CUVc CUr;
+  
   GetLangNr(CredManr.LangCode,LangNrr);      
   Ext_CommonDocumentFields(vVals);
   CredManHeader(vVals,CredManr);
@@ -912,6 +1027,23 @@ begin
 
       end;
     end;
+  end;
+
+  GetCFOContacts(CredManr.CustCode,aCUr);
+  for (i=0;i<aCUr.length;i=i+1) begin
+    CUr = aCUr[i];
+    tstr = "";
+    tstr = AddValue(tstr,CUr.Name);
+    if (nonblank(CUr.Phone)) then begin
+      tstr = AddValue(tstr,CUr.Phone);
+    end else begin
+      tstr = AddValue(tstr,CUr.Mobile);
+    end;
+    tstr = AddValue(tstr,CUr.eMail);
+    if (nonblank(vVals["F_CFOLIST"])) then begin
+      vVals["F_CFOLIST"] = vVals["F_CFOLIST"] & "\\n";
+    end;
+    vVals["F_CFOLIST"] = vVals["F_CFOLIST"] & tstr;
   end;
 
   return;   

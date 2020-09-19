@@ -273,6 +273,7 @@ begin
       end;
     end;
   end;
+  fees = Round(fees,SetRoundModeD(2));
   OUTFORMFIELD("F_FEES",fees);
   if (FIELDINFORM("F_FEESINTEXT")) then begin
     ValToText(fees,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
