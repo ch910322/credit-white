@@ -1668,6 +1668,10 @@ begin
   if (wnst==2) then begin//Rs_update
     switch (fieldname) begin
       case "Classifications": res = true;
+      case "MoneyTransferDate": 
+        if (UserCanAction("CredManChangeTransferDate",false)==true) then begin
+          res = true;
+        end;
       otherwise
         if (left(fn,6)=="Surety") then begin
           res = true;
