@@ -431,8 +431,11 @@ begin
           RecordUpdate(oldIPr,IPr,true);
         end;
       end;
-
+    end else begin
+      LogText(0,"Failed to store receipt from Bank Transaction failed insert");
     end;
+  end else begin
+    LogText(0,"Failed to store receipt from Bank Transaction matrowcnt==0");
   end;
 
   return;
