@@ -1,3 +1,4 @@
+//<halrule>server-only</halrule>
 external function Boolean SetInSet2(string,string);
 external procedure ARPrintDueDetailedInstalmenInvoice(record IVVc,record RcVc,record CUVc,Integer,Integer);
 external procedure FindInstalmentInvoiceBalance(record RcVc,record IVVc,Date,var val,var val);
@@ -49,7 +50,8 @@ external procedure OutEmpty(record RcVc,Integer);
 external procedure PrintCurncyTotalsToFile(array string,array val,array val,array val,Integer,Integer,Integer,Integer,Integer,Integer,Integer,Integer,Integer,Boolean,Integer);
 external function Boolean ReportMediaIsFile(record RcVc);
 //CUST-BEGIN
-external procedure SumAgedNewWithItems(record IVVc,Date,Date,Date,Boolean,Integer,Integer,var val,var val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector val)
+external outer procedure SumAgedNewWithItems(record IVVc,Date,Date,Date,Boolean,Integer,Integer,var val,var val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector Boolean,var vector Boolean);
+external outer procedure PrintAgedLineWithItems(val,vector val,vector val,vector val,vector val,vector val,vector val,vector val,vector val,val,val,Integer,Integer,vector Boolean,vector Boolean,record RcVc);
 
 //CUST-END
 
@@ -162,6 +164,10 @@ BEGIN
   val onaccsumbooked,onaccsumnow,onaccsumcurncy,onaccsumdiff,totonacctmp;
   record AgedBlock AgedRec;
   record AccBlock Accb;
+//CUST-BEGIN
+  vector val v_s0,v_s1,v_s2,v_s3,v_s4,v_s5,v_s6,v_s7;
+  vector Boolean vItems,vCust;
+//CUST-END
   
   BlockLoad(AgedRec);
   BlockLoad(Accb);
@@ -178,7 +184,7 @@ BEGIN
   frcc = FirstInRange(RepSpec.f1,20);
   tocc = LastInRange(RepSpec.f1,20);
   CountPeriods(nrofper);
-  if ((RepSpec.ArtMode==2) or (RepSpec.ArtMode==5)) then begin    
+  if ((RepSpec.ArtMode==2) or (RepSpec.ArtMode==5) or RepSpec.ArtMode==7) then begin //CUST   
     ncols = CalcARRnColumnSpacing(nrofper,Agedb.UseAccPeriod,colwidth,colstart,col2start);
     
     SetRepColBiDi(2,colstart,col2start);
@@ -668,7 +674,7 @@ L22:;
             for (i=0;i<rwcnt;i=i+1) begin
               MatRowGet(IVr,i,IVrw);
               if (RepSpec.f14==IVrw.ArtCode) then begin
-                res = true;
+                testf = true;
                 i = rwcnt;
               end;
             end;
@@ -715,7 +721,7 @@ L22:;
       end;
     end;
     if (testf) then begin
-        if ((CustOut==false) and (RepSpec.ArtMode<>3) and (RepSpec.ArtMode<>2) and (RepSpec.ArtMode<>4) and (RepSpec.ArtMode<>6) and (RepSpec.ArtMode!=10)) then begin
+        if ((CustOut==false) and (RepSpec.ArtMode<>3) and (RepSpec.ArtMode<>2) and (RepSpec.ArtMode<>4) and (RepSpec.ArtMode<>6) and (RepSpec.ArtMode!=10 and (RepSpec.ArtMode<>7))) then begin//CUST
           Gray_Divider(0,1);
           StartFormat(15);
            OutString(0,"DblCUVc",CUr.Code,false);
@@ -841,7 +847,7 @@ L22:;
         end;
 //CUST-BEGIN
         if (RepSpec.ArtMode==7) then begin//aged item
-          SumAgedNewWithItems(IVr,agedate,IVr.PayDate,IVr.InvDate,RepSpec.flags[22]!=0,latedays,Agedb.ActualInvoices,rs,sact,v_s0,v_s1,v_s2,v_s3,v_s4,v_s5,v_s6,v_s7);
+          SumAgedNewWithItems(IVr,agedate,IVr.PayDate,IVr.InvDate,RepSpec.flags[22]!=0,latedays,Agedb.ActualInvoices,rs,sact,v_s0,v_s1,v_s2,v_s3,v_s4,v_s5,v_s6,v_s7,vItems,vCust);
         end;
 //CUST-END
 L55:;
@@ -1099,11 +1105,6 @@ if (testf) then begin
       EndFormat;
     end;
   end;
-//CUST-BEGIN
-  if (RepSpec.ArtMode==7) then begin
-    
-  end;
-//CUST-END
 end;
  
  Total1Due = Total1Due + overduetot[1];
@@ -1314,7 +1315,7 @@ L77:;
   goto L22;
 L88:;
 
-  if (RepSpec.ArtMode!=10) then begin
+  if (RepSpec.ArtMode!=10 and (RepSpec.ArtMode<>7)) then begin//CUST
     Gray_Divider(0,1);
   end;
   if ((RepSpec.ArtMode==2) or (RepSpec.ArtMode==5)) then begin
@@ -1350,7 +1351,7 @@ L88:;
 //  if ((RepSpec.flags[2]==1) and (RepSpec.ArtMode==3)) then begin goto L99; end;
   if ((RepSpec.flags[2]==1) and (RepSpec.ArtMode==5)) then begin goto L99; end;
   
-  if (RepSpec.ArtMode!=10) then begin
+  if (RepSpec.ArtMode!=10 and (RepSpec.ArtMode<>7)) then begin//CUST
     PrintARReportTotals(RepSpec,Agedb.ActualInvoices,tot1Sum,Total1Due,Total1NotDue,TotOnAcc,tot2Sum,Total2Due,Total2NotDue,totCurSum,TotalCurDue,TotalCurNotDue,TotalCurrent);
     if (RepSpec.ArtMode==3) then begin
       if (RepSpec.flags[2]==1) then begin
@@ -1374,6 +1375,22 @@ L88:;
     EndFormat;
     PrintCurTotalsRow(CurTotalsr,-1,150,240,-1,-1);
   end;
+//CUST-BEGIN
+  if (RepSpec.ArtMode==7) then begin
+    if (RepSpec.flags[2]==1) then begin
+      if (blank(CUr.CurncyCode)) then begin
+        PrintAgedLineWithItems(sact,v_s0,v_s1,v_s2,v_s3,v_s4,v_s5,v_s6,v_s7,sum,tot,nrofper,480,vItems,vCust,RepSpec);
+      end else begin
+        PrintAgedLineWithItems(sact,v_s0,v_s1,v_s2,v_s3,v_s4,v_s5,v_s6,v_s7,sum,tot,nrofper,480,vItems,vCust,RepSpec);
+        OutString(465,0,CUr.CurncyCode,false);
+      end;
+    end else begin
+      PrintAgedLineWithItems(sact,v_s0,v_s1,v_s2,v_s3,v_s4,v_s5,v_s6,v_s7,sum,tot,nrofper,480,vItems,vCust,RepSpec);
+    end;
+  end;
+//CUST-END
+
+
   if ((RepSpec.flags[18]!=0) and (RepSpec.ArtMode!=4) and (RepSpec.ArtMode!=6)) then begin
     ARRnPrintDebtorsAccounts(debaccs,debbal,debcnt);
   end;  

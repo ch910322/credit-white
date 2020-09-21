@@ -1,9 +1,19 @@
-procedure AddInvoiceToItemAged(var vector val vval,val tval,record IVVc IVr)
+//<halrule>server-only</halrule>
+external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
+external inner function Boolean FindAccPeriod(Date,var record AccPeriodr);
+external inner function LongInt CalcARRnColumnSpacing(LongInt,Integer,var LongInt,var LongInt,var LongInt);
+
+procedure AddInvoiceToItemAged(var vector val vval,val tval,record IVVc IVr,var vector Boolean vItems,var vector Boolean vCust)
 begin
   val tmpval;
+  row IVVc IVrw;
+  val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
+  Integer i,rwcnt;
+  val sum;
 
   tmpval = tval; 
 
+  vCust[IVr.CustCode] = true;
   rwcnt = MatRowCnt(IVr);
   for (i=0;i<rwcnt and tmpval>0;i=i+1) begin
     MatRowGet(IVr,i,IVrw);
@@ -13,21 +23,20 @@ begin
       if (IVr.InclVAT==0) then begin
         sum = sum + vatval;
       end;
-    end;
-    tmpval = tmpval - sum;
-    if (tmpval<0) then begin
-      sum = sum + tmpval;
-    end;
-
-    vval[IVr.CustCode & ":" & IVrw.ArtCode];
-
+      tmpval = tmpval - sum;
+      if (tmpval<0) then begin
+        sum = sum + tmpval;
+      end;
+      vItems[IVrw.ArtCode] = true;
+      vval[IVr.CustCode & ":" & IVrw.ArtCode] = vval[IVr.CustCode & ":" & IVrw.ArtCode] + sum;
+    end;  
   end;
 
   return;
 end;
 
 global
-procedure SumAgedNewWithItems(record IVVc IVr,Date aondat,Date duedate,Date invdate,Boolean basedoninvdate,Integer latedays,Integer actualinvoices,var val valp,var val sact,var vector val s0,var vector val s1,var vector val s2,var vector val s3,var vector val s4,var vector val s5,var vector val s6,var vector val s7)
+procedure SumAgedNewWithItems(record IVVc IVr,Date aondat,Date duedate,Date invdate,Boolean basedoninvdate,Integer latedays,Integer actualinvoices,var val valp,var val sact,var vector val s0,var vector val s1,var vector val s2,var vector val s3,var vector val s4,var vector val s5,var vector val s6,var vector val s7,var vector Boolean vItems,var vector Boolean vCust)
 begin
   LongInt per1,per2,per3;
   record AgedBlock AgedRec;
@@ -59,7 +68,7 @@ begin
         dt = duedate;
       end;
       if (dt>ondat) then  begin
-        s0 = valp + s0;
+        AddInvoiceToItemAged(s0,valp,IVr,vItems,vCust);
       end else begin
         dt = AddDay(tmpAccPeriodr.FiscalStartDate,-1);
         rwcnt = MatRowCnt(tmpAccPeriodr);
@@ -107,7 +116,7 @@ begin
           dt = AddDay(ondat,latedays);
         end;
         if (dt>aondat) then begin
-          AddInvoiceToItemAged(s0,valp,IVr);
+          AddInvoiceToItemAged(s0,valp,IVr,vItems,vCust);
         end else begin
           thisperiod = 1;
           rwcnt = MatRowCnt(AccPeriodr);
@@ -121,19 +130,19 @@ begin
             if (thisperiod>nrofperiods) then begin
               switch (thisperiod-1) begin
                 case 1:
-                  AddInvoiceToItemAged(s1,valp,IVr);
+                  AddInvoiceToItemAged(s1,valp,IVr,vItems,vCust);
                 case 2:
-                  AddInvoiceToItemAged(s2,valp,IVr);
+                  AddInvoiceToItemAged(s2,valp,IVr,vItems,vCust);
                 case 3:
-                  AddInvoiceToItemAged(s3,valp,IVr);
+                  AddInvoiceToItemAged(s3,valp,IVr,vItems,vCust);
                 case 4:
-                  AddInvoiceToItemAged(s4,valp,IVr);
+                  AddInvoiceToItemAged(s4,valp,IVr,vItems,vCust);
                 case 5:
-                  AddInvoiceToItemAged(s5,valp,IVr);
+                  AddInvoiceToItemAged(s5,valp,IVr,vItems,vCust);
                 case 6:
-                  AddInvoiceToItemAged(s6,valp,IVr);
+                  AddInvoiceToItemAged(s6,valp,IVr,vItems,vCust);
                 case 7:
-                  AddInvoiceToItemAged(s7,valp,IVr);
+                  AddInvoiceToItemAged(s7,valp,IVr,vItems,vCust);
               end;
               i = -1;
             end else begin
@@ -149,19 +158,19 @@ begin
                 i = -1;
                 switch (thisperiod) begin
                   case 1:
-                    AddInvoiceToItemAged(s1,valp,IVr);
+                    AddInvoiceToItemAged(s1,valp,IVr,vItems,vCust);
                   case 2:
-                    AddInvoiceToItemAged(s2,valp,IVr);
+                    AddInvoiceToItemAged(s2,valp,IVr,vItems,vCust);
                   case 3:
-                    AddInvoiceToItemAged(s3,valp,IVr);
+                    AddInvoiceToItemAged(s3,valp,IVr,vItems,vCust);
                   case 4:
-                    AddInvoiceToItemAged(s4,valp,IVr);
+                    AddInvoiceToItemAged(s4,valp,IVr,vItems,vCust);
                   case 5:
-                    AddInvoiceToItemAged(s5,valp,IVr);
+                    AddInvoiceToItemAged(s5,valp,IVr,vItems,vCust);
                   case 6:
-                    AddInvoiceToItemAged(s6,valp,IVr);
+                    AddInvoiceToItemAged(s6,valp,IVr,vItems,vCust);
                   case 7:
-                    AddInvoiceToItemAged(s7,valp,IVr);
+                    AddInvoiceToItemAged(s7,valp,IVr,vItems,vCust);
                 end;
               end;
               thisperiod = thisperiod + 1;
@@ -180,47 +189,217 @@ begin
     if (per1==-1) then begin per1 = -15; end;  
     if (per2==-1) then begin per2 = -30; end;  
     if (per3==-1) then begin per3 = 0; end;  
-    if (latedays>=0) then  begin s0 = valp + s0; end;  
-    if (latedays<0 and latedays>=-per1) then begin s1 = valp + s1; end; 
-    if (latedays<-per1 and latedays>=-per2) then begin s2 = valp + s2; end;  
+    if (latedays>=0) then  begin 
+      AddInvoiceToItemAged(s0,valp,IVr,vItems,vCust); 
+    end;  
+    if (latedays<0 and latedays>=-per1) then begin 
+      AddInvoiceToItemAged(s1,valp,IVr,vItems,vCust); 
+    end; 
+    if (latedays<-per1 and latedays>=-per2) then begin 
+      AddInvoiceToItemAged(s2,valp,IVr,vItems,vCust); 
+    end;  
     if ((AgedRec.Per2>-1) and (latedays<-AgedRec.Per2)) then begin
       if (AgedRec.Per3==-1) then begin
-        AddInvoiceToItemAged(s3,valp,IVr);
+        AddInvoiceToItemAged(s3,valp,IVr,vItems,vCust);
       end else begin
-        if (latedays<-per2 and latedays>=-AgedRec.Per3) then begin s3 = valp + s3; end;  
+        if (latedays<-per2 and latedays>=-AgedRec.Per3) then begin 
+          AddInvoiceToItemAged(s3,valp,IVr,vItems,vCust);
+        end;  
       end;
       
     end;
     if ((AgedRec.Per3>-1) and (latedays<-AgedRec.Per3)) then begin
       if (AgedRec.Per4==-1) then begin
-        AddInvoiceToItemAged(s4,valp,IVr);
+        AddInvoiceToItemAged(s4,valp,IVr,vItems,vCust);
       end else begin
         if (latedays<-AgedRec.Per3 and latedays>=-AgedRec.Per4) then begin 
-          AddInvoiceToItemAged(s4,valp,IVr);
+          AddInvoiceToItemAged(s4,valp,IVr,vItems,vCust);
         end;  
       end;
     end;
     if ((AgedRec.Per4>-1) and (latedays<-AgedRec.Per4)) then begin
       if (AgedRec.Per5==-1) then begin
-        AddInvoiceToItemAged(s5,valp,IVr);
+        AddInvoiceToItemAged(s5,valp,IVr,vItems,vCust);
       end else begin
         if (latedays<-AgedRec.Per4 and latedays>=-AgedRec.Per5) then begin 
-          AddInvoiceToItemAged(s5,valp,IVr);
+          AddInvoiceToItemAged(s5,valp,IVr,vItems,vCust);
         end;  
       end;
     end;
     if ((AgedRec.Per5>-1) and (latedays<-AgedRec.Per5)) then begin
       if (AgedRec.Per6==-1) then begin
-        AddInvoiceToItemAged(s6,valp,IVr);
+        AddInvoiceToItemAged(s6,valp,IVr,vItems,vCust);
       end else begin
         if (latedays<-AgedRec.Per5 and latedays>=-AgedRec.Per6) then begin 
-          AddInvoiceToItemAged(s6,valp,IVr);
+          AddInvoiceToItemAged(s6,valp,IVr,vItems,vCust);
         end;  
       end;
     end;
     if ((AgedRec.Per6>-1) and (latedays<-AgedRec.Per6)) then begin 
-      AddInvoiceToItemAged(s7,valp,IVr);
+      AddInvoiceToItemAged(s7,valp,IVr,vItems,vCust);
     end;
   end;
   return;  
+end;
+
+function Boolean ShouldShowCustomer(string cust,string item,vector val v_s0,vector val v_s1,vector val v_s2,vector val v_s3,vector val v_s4,vector val v_s5,vector val v_s6,vector val v_s7)
+begin
+  Boolean res;
+
+  res = false;
+  if (v_s0[cust & ":" & item]!=0) then begin
+    res = true;
+  end;
+  if (v_s1[cust & ":" & item]!=0) then begin
+    res = true;
+  end;
+  if (v_s2[cust & ":" & item]!=0) then begin
+    res = true;
+  end;
+  if (v_s3[cust & ":" & item]!=0) then begin
+    res = true;
+  end;
+  if (v_s4[cust & ":" & item]!=0) then begin
+    res = true;
+  end;
+  if (v_s5[cust & ":" & item]!=0) then begin
+    res = true;
+  end;
+  if (v_s6[cust & ":" & item]!=0) then begin
+    res = true;
+  end;
+  if (v_s7[cust & ":" & item]!=0) then begin
+    res = true;
+  end;
+
+  ShouldShowCustomer = res;
+  return;
+end;
+
+procedure PrintAgedValue(Integer pos,val tval)
+begin
+  
+  if (tval==0) then begin
+    OutVal(pos,0,0.00,M4Val,true);
+  end else begin
+    OutVal(pos,0,tval,M4Val,true);
+  end;
+
+  return;
+end;
+
+global
+procedure PrintAgedLineWithItems(val sact,vector val v_s0,vector val v_s1,vector val v_s2,vector val v_s3,vector val v_s4,vector val v_s5,vector val v_s6,vector val v_s7,val onaccsum,val totinv,Integer nrofper,Integer totpos,vector Boolean vItems,vector string vCust,record RcVc RepSpec)
+begin
+  record AgedBlock Ab;
+  LongInt totcols,colwidth,colstart,col2start;
+  array string 255 aItems,aCust;
+  Longint i,j;
+  val tots0,tots1,tots2,tots3,tots4,tots5,tots6,tots7;
+  val tots0_2,tots1_2,tots2_2,tots3_2,tots4_2,tots5_2,tots6_2,tots7_2;
+  record CUVc CUr;
+  
+  BlockLoad(Ab);
+  
+  totcols = CalcARRnColumnSpacing(nrofper,Ab.UseAccPeriod,colwidth,colstart,col2start);
+  
+  GetVectorTags(vItems,aItems);
+  GetVectorTags(vCust,aCust);
+//sact+onaccsum
+  for (i=0;i<aItems.length;i=i+1) begin
+    tots0 = 0; tots1 = 0; tots2 = 0; tots3 = 0; tots4 = 0; tots5 = 0; tots6 = 0; tots7 = 0;
+    if (blank(RepSPec.f14) or RepSPec.f14==aItems[i]) then begin
+      StartFormat(15);
+        OutString(0,"DblINVc",aItems[i],false);
+        //OutString(48,0,CUr.Name,false);
+      EndFormat;
+      for (j=0;j<aCust.length;j=j+1) begin
+        if (ShouldShowCustomer(aCust[j],aItems[i],v_s0,v_s1,v_s2,v_s3,v_s4,v_s5,v_s6,v_s7)) then begin
+          StartFormat(15);
+          Cur.Code = aCust[j];
+          ReadFirstMain(Cur,1,true);
+          OutString(0,"DblCUVc",CUr.Code,false);
+          OutString(48,0,CUr.Name,false);
+          PrintAgedValue(2,v_s0[aCust[j] & ":" & aItems[i]]);
+          PrintAgedValue(3,v_s1[aCust[j] & ":" & aItems[i]]);
+          PrintAgedValue(4,v_s2[aCust[j] & ":" & aItems[i]]);
+          PrintAgedValue(5,v_s3[aCust[j] & ":" & aItems[i]]);
+          if (totcols>3) then begin
+            PrintAgedValue(6,v_s4[aCust[j] & ":" & aItems[i]]);
+          end;
+          if (totcols>4) then begin
+            PrintAgedValue(7,v_s5[aCust[j] & ":" & aItems[i]]);
+          end;
+          if (totcols>5) then begin
+            PrintAgedValue(8,v_s6[aCust[j] & ":" & aItems[i]]);
+          end;
+          if (totcols>6) then begin
+            PrintAgedValue(9,v_s7[aCust[j] & ":" & aItems[i]]);
+          end;
+
+          EndFormat;
+          tots0 = tots0 + v_s0[aCust[j] & ":" & aItems[i]];
+          tots1 = tots1 + v_s1[aCust[j] & ":" & aItems[i]];
+          tots2 = tots2 + v_s2[aCust[j] & ":" & aItems[i]];
+          tots3 = tots3 + v_s3[aCust[j] & ":" & aItems[i]];
+          tots4 = tots4 + v_s4[aCust[j] & ":" & aItems[i]];
+          tots5 = tots5 + v_s5[aCust[j] & ":" & aItems[i]];
+          tots6 = tots6 + v_s6[aCust[j] & ":" & aItems[i]];
+          tots7 = tots7 + v_s7[aCust[j] & ":" & aItems[i]];
+
+          tots0_2 = tots0_2 + v_s0[aCust[j] & ":" & aItems[i]];
+          tots1_2 = tots1_2 + v_s1[aCust[j] & ":" & aItems[i]];
+          tots2_2 = tots2_2 + v_s2[aCust[j] & ":" & aItems[i]];
+          tots3_2 = tots3_2 + v_s3[aCust[j] & ":" & aItems[i]];
+          tots4_2 = tots4_2 + v_s4[aCust[j] & ":" & aItems[i]];
+          tots5_2 = tots5_2 + v_s5[aCust[j] & ":" & aItems[i]];
+          tots6_2 = tots6_2 + v_s6[aCust[j] & ":" & aItems[i]];
+          tots7_2 = tots7_2 + v_s7[aCust[j] & ":" & aItems[i]];
+        end;
+      end;
+      StartFormat(15);
+      PrintAgedValue(2,tots0);
+      PrintAgedValue(3,tots1);
+      PrintAgedValue(4,tots2);
+      PrintAgedValue(5,tots3);
+
+      if (totcols>3) then begin
+        PrintAgedValue(6,tots4);
+      end;
+      if (totcols>4) then begin
+        PrintAgedValue(7,tots5);
+      end;
+      if (totcols>5) then begin
+        PrintAgedValue(8,tots6);
+      end;
+      if (totcols>6) then begin
+        PrintAgedValue(9,tots7);
+      end;
+      EndFormat;
+      StartFormat(1);
+      Gray_divider(0,1);
+      EndFormat;
+    end;
+  end;
+
+  StartFormat(15);
+  PrintAgedValue(2,tots0_2);
+  PrintAgedValue(3,tots1_2);
+  PrintAgedValue(4,tots2_2);
+  PrintAgedValue(5,tots3_2);
+
+  if (totcols>3) then begin
+    PrintAgedValue(6,tots4_2);
+  end;
+  if (totcols>4) then begin
+    PrintAgedValue(7,tots5_2);
+  end;
+  if (totcols>5) then begin
+    PrintAgedValue(8,tots6_2);
+  end;
+  if (totcols>6) then begin
+    PrintAgedValue(9,tots7_2);
+  end;
+  
+  return;
 end;
