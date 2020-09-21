@@ -1,0 +1,226 @@
+procedure AddInvoiceToItemAged(var vector val vval,val tval,record IVVc IVr)
+begin
+  val tmpval;
+
+  tmpval = tval; 
+
+  rwcnt = MatRowCnt(IVr);
+  for (i=0;i<rwcnt and tmpval>0;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    if (nonblank(IVrw.ArtCode)) then begin
+      InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+      sum = IVrw.Sum;
+      if (IVr.InclVAT==0) then begin
+        sum = sum + vatval;
+      end;
+    end;
+    tmpval = tmpval - sum;
+    if (tmpval<0) then begin
+      sum = sum + tmpval;
+    end;
+
+    vval[IVr.CustCode & ":" & IVrw.ArtCode];
+
+  end;
+
+  return;
+end;
+
+global
+procedure SumAgedNewWithItems(record IVVc IVr,Date aondat,Date duedate,Date invdate,Boolean basedoninvdate,Integer latedays,Integer actualinvoices,var val valp,var val sact,var vector val s0,var vector val s1,var vector val s2,var vector val s3,var vector val s4,var vector val s5,var vector val s6,var vector val s7)
+begin
+  LongInt per1,per2,per3;
+  record AgedBlock AgedRec;
+  record AccPeriodVc prevAccPeriodr,AccPeriodr,tmpAccPeriodr;
+  row AccPeriodVc AccPeriodrw;
+  row AccPeriodVc pAccPeriodrw;
+  Integer rwcnt,rwcnt2,i;
+  Integer periodzero,thisperiod,nrofperiods;
+  Boolean testf,addedf;
+  Date dt,StartDate,ondat;
+    
+  ondat = aondat;
+  if (blankdate(ondat)) then begin
+    ondat = CurrentDate;
+  end;
+  testf = true;
+  BlockLoad(AgedRec);
+  if (AgedRec.UseAccPeriod!=0) then begin
+    periodzero = 0;
+    if (AgedRec.AccPeriods>0) then begin
+      nrofperiods = AgedRec.AccPeriods;
+    end else begin
+      nrofperiods = 2;
+    end;
+    if (FindAccPeriod(ondat,tmpAccPeriodr)) then begin
+      if (basedoninvdate) then begin
+        dt = invdate;
+      end else begin
+        dt = duedate;
+      end;
+      if (dt>ondat) then  begin
+        s0 = valp + s0;
+      end else begin
+        dt = AddDay(tmpAccPeriodr.FiscalStartDate,-1);
+        rwcnt = MatRowCnt(tmpAccPeriodr);
+  // Merge previous and current Accounting Periods so previous year is first..
+        if (FindAccPeriod(dt,prevAccPeriodr)) then begin
+          rwcnt2 = MatRowCnt(prevAccPeriodr);
+          for (i=0;i<rwcnt2;i=i+1) begin
+            MatRowGet(prevAccPeriodr,i,AccPeriodrw);
+            if (rwcnt>0) then begin
+              MatRowInsert(tmpAccPeriodr,i,AccPeriodrw);
+            end else begin
+              MatRowPut(tmpAccPeriodr,i,AccPeriodrw);
+            end;
+          end;
+        end;
+        rwcnt = MatRowCnt(tmpAccPeriodr);
+        for (i=rwcnt-1;i>=0;i=i-1) begin
+          MatRowGet(tmpAccPeriodr,i,AccPeriodrw);
+          if (ondat>AccPeriodrw.StartDate) then begin
+            MatRowInsert(AccPeriodr,0,AccPeriodrw);
+          end;
+        end;
+
+        rwcnt = MatRowCnt(AccPeriodr);
+        for (i=rwcnt-1;i>=0;i=i-1) begin
+          MatRowGet(AccPeriodr,i,AccPeriodrw);
+          if (blankdate(AccPeriodrw.DueDate)) then begin
+            AccPeriodrw.DueDate = AccPeriodrw.EndDate;
+          end;
+          if (periodzero==0) then begin
+            if (ondat>=AccPeriodrw.DueDate) then begin
+              if (i+1<rwcnt) then begin
+                i = i + 1;
+                periodzero = i;
+              end;
+            end;
+          end;
+        end;
+        if (basedoninvdate) then begin
+          dt = invdate;
+        end else begin
+          dt = duedate;
+        end;
+        if (blankdate(dt)) then begin
+          dt = AddDay(ondat,latedays);
+        end;
+        if (dt>aondat) then begin
+          AddInvoiceToItemAged(s0,valp,IVr);
+        end else begin
+          thisperiod = 1;
+          rwcnt = MatRowCnt(AccPeriodr);
+          for (i=rwcnt-1;i>=0;i=i-1) begin
+            MatRowGet(AccPeriodr,i,AccPeriodrw);
+            if (i-1>=0) then begin
+              MatRowGet(AccPeriodr,i-1,pAccPeriodrw);
+            end else begin
+              MatRowGet(AccPeriodr,i,pAccPeriodrw);
+            end;
+            if (thisperiod>nrofperiods) then begin
+              switch (thisperiod-1) begin
+                case 1:
+                  AddInvoiceToItemAged(s1,valp,IVr);
+                case 2:
+                  AddInvoiceToItemAged(s2,valp,IVr);
+                case 3:
+                  AddInvoiceToItemAged(s3,valp,IVr);
+                case 4:
+                  AddInvoiceToItemAged(s4,valp,IVr);
+                case 5:
+                  AddInvoiceToItemAged(s5,valp,IVr);
+                case 6:
+                  AddInvoiceToItemAged(s6,valp,IVr);
+                case 7:
+                  AddInvoiceToItemAged(s7,valp,IVr);
+              end;
+              i = -1;
+            end else begin
+/*
+  StartFormat(15);
+  OutString(0,0,dt,false);
+  OutString(100,0,AccPeriodrw.DueDate,false);
+  OutString(200,0,AddDay(pAccPeriodrw.DueDate,1),false);
+  OutString(300,0,thisperiod,false);
+  EndFOrmat;
+*/
+              if (DateInRange(dt,AddDay(pAccPeriodrw.DueDate,1),AccPeriodrw.DueDate)) then begin
+                i = -1;
+                switch (thisperiod) begin
+                  case 1:
+                    AddInvoiceToItemAged(s1,valp,IVr);
+                  case 2:
+                    AddInvoiceToItemAged(s2,valp,IVr);
+                  case 3:
+                    AddInvoiceToItemAged(s3,valp,IVr);
+                  case 4:
+                    AddInvoiceToItemAged(s4,valp,IVr);
+                  case 5:
+                    AddInvoiceToItemAged(s5,valp,IVr);
+                  case 6:
+                    AddInvoiceToItemAged(s6,valp,IVr);
+                  case 7:
+                    AddInvoiceToItemAged(s7,valp,IVr);
+                end;
+              end;
+              thisperiod = thisperiod + 1;
+            end;
+          end;
+        end;
+      end;
+      testf = false;
+    end;
+  end;
+  if (testf) then begin
+    per1 = AgedRec.Per1;
+    per2 = AgedRec.Per2;
+    per3 = AgedRec.Per3;
+
+    if (per1==-1) then begin per1 = -15; end;  
+    if (per2==-1) then begin per2 = -30; end;  
+    if (per3==-1) then begin per3 = 0; end;  
+    if (latedays>=0) then  begin s0 = valp + s0; end;  
+    if (latedays<0 and latedays>=-per1) then begin s1 = valp + s1; end; 
+    if (latedays<-per1 and latedays>=-per2) then begin s2 = valp + s2; end;  
+    if ((AgedRec.Per2>-1) and (latedays<-AgedRec.Per2)) then begin
+      if (AgedRec.Per3==-1) then begin
+        AddInvoiceToItemAged(s3,valp,IVr);
+      end else begin
+        if (latedays<-per2 and latedays>=-AgedRec.Per3) then begin s3 = valp + s3; end;  
+      end;
+      
+    end;
+    if ((AgedRec.Per3>-1) and (latedays<-AgedRec.Per3)) then begin
+      if (AgedRec.Per4==-1) then begin
+        AddInvoiceToItemAged(s4,valp,IVr);
+      end else begin
+        if (latedays<-AgedRec.Per3 and latedays>=-AgedRec.Per4) then begin 
+          AddInvoiceToItemAged(s4,valp,IVr);
+        end;  
+      end;
+    end;
+    if ((AgedRec.Per4>-1) and (latedays<-AgedRec.Per4)) then begin
+      if (AgedRec.Per5==-1) then begin
+        AddInvoiceToItemAged(s5,valp,IVr);
+      end else begin
+        if (latedays<-AgedRec.Per4 and latedays>=-AgedRec.Per5) then begin 
+          AddInvoiceToItemAged(s5,valp,IVr);
+        end;  
+      end;
+    end;
+    if ((AgedRec.Per5>-1) and (latedays<-AgedRec.Per5)) then begin
+      if (AgedRec.Per6==-1) then begin
+        AddInvoiceToItemAged(s6,valp,IVr);
+      end else begin
+        if (latedays<-AgedRec.Per5 and latedays>=-AgedRec.Per6) then begin 
+          AddInvoiceToItemAged(s6,valp,IVr);
+        end;  
+      end;
+    end;
+    if ((AgedRec.Per6>-1) and (latedays<-AgedRec.Per6)) then begin 
+      AddInvoiceToItemAged(s7,valp,IVr);
+    end;
+  end;
+  return;  
+end;
