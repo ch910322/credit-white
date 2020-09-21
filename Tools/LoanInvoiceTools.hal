@@ -1856,7 +1856,7 @@ begin
           i = rwcnt;
         end;
       end;
-      RecordUpdate(oldCSr,CSr,true);
+      RecordUpdate(oldCSr,CSr,false);
     end;
   end;
 
@@ -2062,7 +2062,7 @@ begin
   end;
 
   if (updf) then begin
-    RecordUpdate(oldCSr,CSr,true);
+    RecordUpdate(oldCSr,CSr,false);
   end else begin
     RecordInsert(CSr,true);
   end;
