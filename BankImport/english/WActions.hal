@@ -8,6 +8,7 @@ external procedure RecalculateIPDOverpaid(var record IPConDistributeVc);
 remote procedure PayModeBankAccCustSClassArrayOnOpen(var Array string,var Array string);
 external inner procedure PasteFromSysList(Integer ,Integer);
 external inner procedure In2Period(var string,var Date,var Date);
+remote updating procedure ChangeReceiptCustomerRemote(record RcVc);
 
 
 global
@@ -284,11 +285,41 @@ begin
         IPDr.Total = IPr.CurPayVal;
         IPDr.Overpaid = IPr.CurPayVal;
         OpenWindow("ReceiptConnectionDistributeWClass",0,0,"","",IPDr);
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+global
+procedure ReceiptConnectionChangeCustDsm()
+begin
+  Integer wn,rw,nwn;
+  record IPConVc PCr;
+  row IPConVc PCrw;
+  record IPVc IPr,nIPr;
+  record RcVc RepSpec;
+  row IPVc IPrw;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,PCr);
+  rw = WindowActiveRow(wn);
+  if (rw>-1) then begin
+    MatRowGet(PCr,rw,PCrw); 
+    if (PCrw.IPNr>0) then begin
+      IPr.SerNr = PCrw.IPNr;
+      if (ReadFirstMain(IPr,1,true)) then begin
+        RepSpec.long1 = IPr.SerNr;
+        MatRowGet(IPr,0,IPrw);
+        RepSpec.f1 = IPrw.CustCode;
+        RepSpec.f2 = IPrw.CustName;
+        nwn = OpenWindow("ReceiptConnectionChangeCustWClass",0,0,"","",RepSpec);
+        WindowFieldGoto(nwn,RepSpec,-1,"f4",true);
 
       end;
     end;
   end;
-  
 
   return;
 end;
@@ -315,6 +346,30 @@ begin
 
   return;
 end;
+
+global
+updating procedure ReceiptConnectionChangeCustWClassSave()
+begin
+  Integer wn,rw,twn;  
+  record RcVc RepSpec;
+  record IPConVc PCr;
+
+
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  ChangeReceiptCustomerRemote(RepSpec);
+  CloseWindow(wn);
+  twn = FindWindow("ReceiptConnectionWClass");
+  if (twn>0) then begin
+    GetWindowRecord(twn,PCr);
+    threadremote.FillBankTransactionsAndReceipts(PCr);
+    PutWindowRecord(twn,PCr);
+  end;
+
+  return;
+end;
+
 
 function Boolean ReceiptConnectionDistributeWClassInvoiceNrEFAfter(Integer wn,Integer changed,Integer rownr)
 begin

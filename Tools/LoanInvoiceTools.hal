@@ -1188,6 +1188,27 @@ begin
   return;
 end;
 
+procedure AddBuyOutFee(record CredManVc CredManr,var record IVVc IVr)
+begin
+  val rate,sum;
+  record CMInvoicingBlock CIb;
+  string 255 spec;
+  
+  BlockLoad(CIb);
+  rate = CredManr.BuyoutFeePrc;
+  if (CredManr.AnnualRate==1) then begin
+    rate = rate/12;
+  end;
+  sum = (CredManr.InvSum4 - CredManr.DepositSum) *(rate/100);
+  sum = sum + CredManr.BuyoutFeeFixed;
+  GetItemName(CIb.BuyOutItem,spec);
+  if (nonblank(CIb.BuyOutItem) and sum>0) then begin
+    SetupInvoiceRowAndAdd(IVr,CIb.BuyOutItem,spec,1,sum,blankval,15,-1);
+  end;
+
+  return;
+end;
+
 global
 procedure CreateBuyOutInvoiceFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date td,var record IVVc IVr)
 begin
@@ -1201,6 +1222,7 @@ begin
   val cumint,calcbal;
   record CredHistVc CredHistr;
   array string 255 lateformula;
+  record CredManVc tCredManr;
 
 /*
 1. Get the last invoice date and the balance
@@ -1230,13 +1252,17 @@ begin
   if (balance>0) then begin
     SetupLoanInvoice(CredManr,CMb,IVr,td,lastinv,td,true,false,"",1);
     AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td);
-    AddInterest(CredManr,CredManPayPlan2r,CMb,kMonthTypeFirst,td,cumint,balance,lastinv,td,-1,true);
+    RecordCopy(tCredManr,CredManr);
+    tCredManr.InvSum4 = balance;
+    tCredManr.DepositSum = 0;
+    AddInterest(tCredManr,CredManPayPlan2r,CMb,kMonthTypeFirst,td,cumint,balance,lastinv,td,-1,true);
     AddPlannedFees(CredManr,CredManPayPlan2r,CMb,kPlannedFeesMonthly,kMonthTypeFirst,td,cumint,balance,lastinv,td,-1);
     rwcnt = MatRowCnt(CredManPayPlan2r);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CredManPayPlan2r,i,CredManPayPlanrw);
       SetupInvoiceRowAndAdd(IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
     end;
+    AddBuyOutFee(CredManr,IVr);
     GetCredManOverdueInvoices(CredManr,CMb,td,AddDay(lastinv,1),latedays,lateamount,lateformula,false,false);
     AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
   end;
@@ -1259,6 +1285,7 @@ begin
   val cumint,calcbal;
   record CredHistVc CredHistr;
   array string 255 lateformula;
+  record CredManVc tCredManr;
 
 /*
 1. Get the last invoice date and the balance
@@ -1284,13 +1311,17 @@ begin
   if (balance>0) then begin
     SetupLoanInvoice(CredManr,CMb,IVr,td,lastinv,td,true,false,"",1);
     AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td);
-    AddInterest(CredManr,CredManPayPlan2r,CMb,kMonthTypeFirst,td,cumint,balance,lastinv,td,-1,true);
+    RecordCopy(tCredManr,CredManr);
+    tCredManr.InvSum4 = balance;
+    tCredManr.DepositSum = 0;
+    AddInterest(tCredManr,CredManPayPlan2r,CMb,kMonthTypeFirst,td,cumint,balance,lastinv,td,-1,true);
     AddPlannedFees(CredManr,CredManPayPlan2r,CMb,kPlannedFeesMonthly,kMonthTypeFirst,td,cumint,balance,lastinv,td,-1);
     rwcnt = MatRowCnt(CredManPayPlan2r);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CredManPayPlan2r,i,CredManPayPlanrw);
       SetupInvoiceRowAndAdd(IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
     end;
+    AddBuyOutFee(CredManr,IVr);
     GetCredManOverdueInvoices(CredManr,CMb,td,AddDay(lastinv,1),latedays,lateamount,lateformula,false,false);
     AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
   end;
@@ -1520,14 +1551,16 @@ begin
 
   gSilenceIVOpenPrepExists = true;
   BlockLoad(CMb);
+/* why should be base this on schedule. we should always take "actual" data
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin
     CreateBuyOutInvoiceFromSchedule(CredManr,CMb,CSr,RepSpec.d1,IVr);
     schedf = true;
   end else begin
+*/
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,RepSpec.d1,IVr);
-  end;
+//  end;
   CheckUnpaidInvoices(CredManr,dueamount,openamount);
   sd = GetLastInvoiceDate(CredManr,RepSpec.d1);
   GetCredManOverdueInvoices(CredManr,CMb,RepSpec.d1,sd,latedays,lateamount,lateformula,false,false);
@@ -2143,6 +2176,32 @@ begin
   return;
 end;
 
+function string 255 GetReceiptsPayMode(record IVVc IVr)
+begin
+  Boolean foundf;
+  record IPrsVc IPrsr;
+  string 255 res;
+  record IPVc IPr;
+  
+  IPrsr.IVNr = IVr.SerNr;
+  IPrsr.TransType = kIPrsTransTypeReceipt;
+  foundf = true;
+  while (LoopKey("IVKey",IPrsr,2,foundf)) begin
+    if (IPrsr.IVNr!=IVr.SerNr or IPrsr.TransType!=kIPrsTransTypeReceipt) then begin 
+      foundf = false;
+    end else begin
+      IPr.SerNr = IPrsr.TransNr;
+      if (ReadFirstMain(IPr,1,true)) then begin
+        res = IPr.PayMode;
+        foundf = false;
+      end;
+    end;
+  end;
+
+  GetReceiptsPayMode = res;
+  return;
+end;
+
 global
 updating procedure MakeMoneyRuturnIVVcRemote(record IVVc IVr,var record IPVc IPr)
 begin
@@ -2157,6 +2216,7 @@ begin
   IPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
   IPr.RegDate = CurrentDate;
   IPr.OKFlag = 0;
+  IPr.PayMode = GetReceiptsPayMode(IVr);
   rownr = 0;
   ClearRow(IPr,IPrw,1);
   IPrw.InvoiceNr = IVr.SerNr;

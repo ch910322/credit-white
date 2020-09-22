@@ -157,7 +157,7 @@ begin
         months = months - 1;//MonthDiff returns +1 if there are extra days
       end;
       if (months>0 and (fixeddaysf or GetDaysInMonth(CMb,CredManr)==0)) then begin
-        days = DateDiff(todate,AddMonth(frdate,months));
+        days = DateDiff(todate,AddMonth(frdate,months))+1;
         res = GetAmount(CredManr)*(rate/100)*months;
         res = res + (GetAmount(CredManr)*rate/100*12/GetDaysInYear(CMb,CredManr)*days);
       end else begin

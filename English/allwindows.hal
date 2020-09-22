@@ -764,6 +764,9 @@ begin
 //CUST-BEGIN
   EditField(h3,v+=vs,72,"Order Class",Normal,OrderClass,false,OrderClassSClass);
   EditField(h3,v+=vs,72,"Overdue percentage",Normal,OverduePercentage,false,0);
+  EditField(h3,v+=vs,72,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
+  EditField(h3,v+=vs,72,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
+
 //  EditField(h3,v+=vs,72,"Surety Interest Rate",Normal,SuretyInterestRate,false,0);
   EditField(h3,v+=vs,72,"Std Prolongation Fee",Normal,StdProlongFee,false,0);
   EditField(h3,v+=vs,72,"Std Prolongation Fee %",Normal,StdProlongPrc,false,0);
@@ -1268,13 +1271,15 @@ begin
   //CUST-BEGIN
   
   EditField(h,v+=vs,40,"Days in Year",Normal,DaysInYear,false,0);
+  EditField(h2,v,82,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
   vm2 = v;
-  ButtonFrame(h2,v+=20,82,3,"Days in Month");
+  ButtonFrame(h2,v+=60,82,3,"Days in Month");
   RadioButton(h2,v,0,0,"Default",DaysInMonth);
   RadioButton(h2,v+=16,1,0,"30",DaysInMonth);
   RadioButton(h2,v+=16,2,0,"Actual",DaysInMonth); 
 
   EditField(h,v=vm2+vs,40,"Overdue Language",Normal,OverdueLangCode,false,LangSClass);
+  EditField(h2,v,82,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
   
   h2 = 330;
   h2 = h2 + 110;
@@ -1282,6 +1287,8 @@ begin
   EditField(h,v+=vs,150,"Classifications",Normal,Classifications,false,CredManClassSClass);
   CheckBox(h2,v,0,"Annual Rate",AnnualRate);
   EditField(h,vm2=(v+=vs),150,"Bank Account",Normal,OwnBankAccount,false,0);
+
+
   if (UseCredManStatus) then begin
     EditField(h,vm2=(v+=vs),150,"Pause Offset Days",Normal,PauseOffsetDays,false,0);
   end;
@@ -1313,7 +1320,9 @@ begin
   RadioButton(h2,v,0,0,"No",RealInterestFlag);
   RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
 
-  vm2 = v;
+  if (v>vm2) then begin
+    vm2 = v;
+  end;
 //CUST-END
 /*
   ButtonFrame(h=50,vm=(v+=45),140,2,"Default Interest Type");

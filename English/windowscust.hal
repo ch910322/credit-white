@@ -1868,6 +1868,8 @@ begin
   EditField(h,v+=vs,140,"Replace VAT Nr.",Normal,ReplaceVATNr,false,0);
   EditField(h+200,v,140,"with",Normal,ReplaceVATNrWith,false,0);
   EditField(h,v+=vs,100,"Prolong Item",Normal,ProlongItem,false,INSClass);  
+  EditField(h,v+=vs,100,"Premature Term. Item",Normal,BuyOutItem,false,INSClass);  
+
   EditField(h,v+=vs,100,"Period Delimiter",Normal,PeriodDelimiter,false,0);  
   
   ButtonFrame(h,v+=40,400,4,"Interest Invoicing");

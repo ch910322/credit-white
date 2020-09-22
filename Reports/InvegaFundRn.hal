@@ -297,6 +297,11 @@ begin
           if (nonblank(ContactCUr.Phone)) then begin
             res = ContactCUr.Phone;
             goto LFindFirstContactPersonWithPhone;
+          end else begin
+            if (nonblank(ContactCUr.Mobile)) then begin
+              res = ContactCUr.Mobile;
+              goto LFindFirstContactPersonWithPhone;
+            end;
           end;
         end;
       end;
@@ -313,6 +318,9 @@ begin
   string 255 res;
   
   res = CUr.Phone;
+  if (blank(res)) then begin
+    res = CUr.Mobile;
+  end;
   if (blank(res)) then begin
     res = FindFirstContactPersonWithPhone(CUr);
   end;

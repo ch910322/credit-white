@@ -53,7 +53,7 @@ begin
   priority = tpriority;
   BlockLoad(BISb);
   if (BISb.InvFIFO==1) then begin
-    if (CredHistr.PayDate<CurrentDate) then begin
+    if (CredHistr.PayDate>CurrentDate) then begin
       priority = priority + 1000;
     end;
   end;

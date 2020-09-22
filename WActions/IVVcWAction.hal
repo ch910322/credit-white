@@ -34,7 +34,7 @@ begin
   GetWindowRecord(wn,IVr);
   MakeMoneyRuturnIVVcRemote(IVr,IPr);
   if (IPr.SerNr>0) then begin
-    OpenWindow("IPDClass",0,0,"","",IPr);
+    OpenWindow("IPDClass",1,0,"","",IPr);
   end;
 
   return;

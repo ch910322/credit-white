@@ -249,6 +249,8 @@ begin
       end;
       Credmanr.LoanType = CMTr.LoanType;
       CredManr.RealInterestFlag = CMTr.RealInterestFlag;
+      CredManr.BuyoutFeeFixed = CMTr.BuyoutFeeFixed;
+      CredManr.BuyoutFeePrc = CMTr.BuyoutFeePrc;
     end;
     RecalcCredManFees(CredManr);
     PutWindowRecord(wn,CredManr); 

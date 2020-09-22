@@ -114,6 +114,7 @@ begin
   RowMenuItem(0,"Redistribute",'','',0,"ReceiptConnectionRedistributeDsm");
   RowMenuItem(0,"OK/UnOK Receipt",'','',0,"ReceiptConnectionOKReceiptDsm");
   RowMenuItem(0,"Periodic Customer Status",'','',0,"ReceiptConnectionCUPerDsm");
+  RowMenuItem(0,"Change Customer",'','',0,"ReceiptConnectionChangeCustDsm");
   EndRowMenu;
   EndMatrix;
 
@@ -153,6 +154,32 @@ begin
   DeleteRowTest;
   EndMatrix;
 	EditField(-95,-30,-15,"Overpaid",ViewOnly,Overpaid,true,0);
+
+  EndWindow;
+  return;
+end;
+
+
+window ReceiptConnectionChangeCustWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,h2,h3,h4,h5;
+
+  WindowBegin("Distribute Receipt",ReceiptConnectionChangeCustWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,680,301);
+  h = 80; v = 27; h2 = 300; h3 = 480;
+  vs = 20;
+  StaticText(h,v=20,"Original Customer",false);
+	EditField(h,v+=vs,120,"Customer",ViewOnly,f1,false,0);
+	EditField(h+200,v,-40,"Name",ViewOnly,f2,false,0);
+
+  StaticText(h,v+=50,"New Customer",false);
+	EditField(h,v+=vs,120,"Customer",Normal,f4,false,CUSClass);
+	EditField(h+200,v,-40,"Name",ViewOnly,f5,false,0);
+	EditField(h,v+=vs,120,"Payment Date",Normal,d1,false,PasteCurDate);
+
+  HalPushButton(h,v+=vs,h+100,v+20,"ReceiptConnectionChangeCustWClassSave","Save");
 
   EndWindow;
   return;
