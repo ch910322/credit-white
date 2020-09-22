@@ -1202,7 +1202,9 @@ begin
   sum = (CredManr.InvSum4 - CredManr.DepositSum) *(rate/100);
   sum = sum + CredManr.BuyoutFeeFixed;
   GetItemName(CIb.BuyOutItem,spec);
-  SetupInvoiceRowAndAdd(IVr,CIb.BuyOutItem,spec,1,sum,blankval,15,-1);
+  if (nonblank(CIb.BuyOutItem) and sum>0) then begin
+    SetupInvoiceRowAndAdd(IVr,CIb.BuyOutItem,spec,1,sum,blankval,15,-1);
+  end;
 
   return;
 end;
