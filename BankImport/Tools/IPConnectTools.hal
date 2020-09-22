@@ -581,6 +581,43 @@ begin
   return;
 end;
 
+global
+updating procedure ChangeReceiptCustomerRemote(record RcVc RepSpec)
+begin
+  val remsum;
+  Integer i,rwcnt;
+  record IPVc IPr,oldIPr;
+  Boolean okf;
+  
+  IPr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(IPr,1,true)) then begin
+    RecordCopy(oldIPr,IPr);
+    if (IPr.OKFlag==1) then begin
+      IPr.OKFlag = 0;
+      RecordUpdate(oldIPr,IPr,true);
+      okf = true;
+    end;
+    remsum = IPr.CurPayVal;
+    //remove rows and fill with new customer
+    if (nonblank(RepSpec.d1)) then begin
+      IPr.TransDate = RepSpec.d1;
+    end;
+    rwcnt = MatRowCnt(IPr);
+    for (i=rwcnt-1;i>=0;i=i-1) begin
+      MatRowDelete(IPr,i);
+    end;
+    BankFillIProws(IPr,RepSpec.f5,IPr.PayCurCode,remsum,RepSpec.f4,nonblank(RepSpec.f4),"","",true);
+    RecordUpdate(oldIPr,IPr,true);
+    if (okf) then begin
+      RecordCopy(oldIPr,IPr);
+      IPr.OKFlag = 1;
+      RecordUpdate(oldIPr,IPr,true);
+    end;
+  end;
+
+  return;
+end;
+
 procedure AddDistributeRow(var record IPConDistributeVc IPDr,var Integer rownr,row ORVc ORrw,val sum,Longint invoicenr)
 begin
   row IPConDistributeVc IPDrw;
