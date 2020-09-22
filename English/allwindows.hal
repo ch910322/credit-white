@@ -38,6 +38,14 @@ external function Boolean HasVarieties();
 external function Boolean HasPayLinkTransactions();
 external function Boolean HasTREO();
 external function Boolean HasApprovals();
+external function Boolean HasCategories();
+external function Boolean HasContactClassification();
+external function Boolean HasAged();
+external function Boolean HasOfficialSerNr();
+external function Boolean HasInvoiceOfficialSerNr();
+external function Boolean HasLanguages();
+external function Boolean HasPrepayments();
+
 external function Boolean TouchScreenLookVertical();
 external function Boolean ReadPOSButtons(string,string,longint,var string,var string,var string,var record POSButtonsVc);
 external function Boolean IsSessionOpen(string,string,Date,Time);
@@ -975,84 +983,76 @@ begin
 
     StaticText(h=40,v=15,"Contact Code",false);
     StaticText(h+110,v,"Name",false);
-    StaticText(h+220,v,"Phone",false);
-    StaticText(h+330,v,"Email",false);
-    StaticText(h+440,v,"Date",false);
-    StaticText(h+510,v,"Amount",false);
-    StaticText(h+590,v,"Signing Pers.",false);
-    StaticText(h+680,v,"Position",false);
-    StaticText(h+730,v,"Surety Signed",false);
+    StaticText(h+220,v,"Date",false);
+    StaticText(h+300,v,"Amount",false);
+    StaticText(h+390,v,"Signing Pers.",false);
+    StaticText(h+510,v,"Position",false);
+    StaticText(h+610,v,"Legal No.",false);
     v = v + 30;
     
     EditField(h=50,v,60,"Surety 1",Normal,SuretyProvider1,false,B2BLoanApp_CUSClass);
     EditField(h+70,v,100,"",Normal,Surety1Name,false,0);
-    EditField(h+180,v,100,"",Normal,Surety1Phone,false,0);
-    EditField(h+290,v,120,"",Normal,Surety1eMail,false,0);
-    EditField(h+420,v,60,"",Normal,Surety1Date,false,PasteCurDate);
-    EditField(h+490,v,60,"",Normal,Surety1Amount,true,0);
-    EditField(h+560,v,100,"",Normal,Surety1Signer,false,B2BLoanApp_ContactSClass);
-    EditField(h+670,v,70,"",Normal,Surety1Position,false,JobTitleSClass);
-    CheckBox(h+750,v,0,"",Surety1Signed);
+    EditField(h+180,v,80,"",Normal,Surety1Date,false,PasteCurDate);
+    EditField(h+270,v,80,"",Normal,Surety1Amount,true,0);
+    EditField(h+360,v,100,"",Normal,Surety1Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+470,v,100,"",Normal,Surety1Position,false,JobTitleSClass);
+    EditField(h+580,v,100,"",Normal,Surety1OfficialSerNr,false,0);
+    CheckBox(h+730,v,0,"",Surety1Signed);
     HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","1");
     v = v + 30;
 
     EditField(h=50,v,60,"Surety 2",Normal,SuretyProvider2,false,B2BLoanApp_CUSClass);
     EditField(h+70,v,100,"",Normal,Surety2Name,false,0);
-    EditField(h+180,v,100,"",Normal,Surety2Phone,false,0);
-    EditField(h+290,v,120,"",Normal,Surety2eMail,false,0);
-    EditField(h+420,v,60,"",Normal,Surety2Date,false,PasteCurDate);
-    EditField(h+490,v,60,"",Normal,Surety2Amount,true,0);
-    EditField(h+560,v,100,"",Normal,Surety2Signer,false,B2BLoanApp_ContactSClass);
-    EditField(h+670,v,70,"",Normal,Surety2Position,false,JobTitleSClass);
-    CheckBox(h+750,v,0,"",Surety2Signed);
+    EditField(h+180,v,80,"",Normal,Surety2Date,false,PasteCurDate);
+    EditField(h+270,v,80,"",Normal,Surety2Amount,true,0);
+    EditField(h+360,v,100,"",Normal,Surety2Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+470,v,100,"",Normal,Surety2Position,false,JobTitleSClass);
+    EditField(h+580,v,100,"",Normal,Surety2OfficialSerNr,false,0);
+    CheckBox(h+730,v,0,"",Surety2Signed);
     HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","2");
     v = v + 30;
 
     EditField(h=50,v,60,"Surety 3",Normal,SuretyProvider3,false,B2BLoanApp_CUSClass);
     EditField(h+70,v,100,"",Normal,Surety3Name,false,0);
-    EditField(h+180,v,100,"",Normal,Surety3Phone,false,0);
-    EditField(h+290,v,120,"",Normal,Surety3eMail,false,0);
-    EditField(h+420,v,60,"",Normal,Surety3Date,false,PasteCurDate);
-    EditField(h+490,v,60,"",Normal,Surety3Amount,true,0);
-    EditField(h+560,v,100,"",Normal,Surety3Signer,false,B2BLoanApp_ContactSClass);
-    EditField(h+670,v,70,"",Normal,Surety3Position,false,JobTitleSClass);
-    CheckBox(h+750,v,0,"",Surety3Signed);
+    EditField(h+180,v,80,"",Normal,Surety3Date,false,PasteCurDate);
+    EditField(h+270,v,80,"",Normal,Surety3Amount,true,0);
+    EditField(h+360,v,100,"",Normal,Surety3Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+470,v,100,"",Normal,Surety3Position,false,JobTitleSClass);
+    EditField(h+580,v,100,"",Normal,Surety3OfficialSerNr,false,0);
+    CheckBox(h+730,v,0,"",Surety3Signed);
     HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","3");
     v = v + 30;
 
     EditField(h=50,v,60,"Surety 4",Normal,SuretyProvider4,false,B2BLoanApp_CUSClass);
     EditField(h+70,v,100,"",Normal,Surety4Name,false,0);
-    EditField(h+180,v,100,"",Normal,Surety4Phone,false,0);
-    EditField(h+290,v,120,"",Normal,Surety4eMail,false,0);
-    EditField(h+420,v,60,"",Normal,Surety4Date,false,PasteCurDate);
-    EditField(h+490,v,60,"",Normal,Surety4Amount,true,0);
-    EditField(h+560,v,100,"",Normal,Surety4Signer,false,B2BLoanApp_ContactSClass);
-    EditField(h+670,v,70,"",Normal,Surety4Position,false,JobTitleSClass);
-    CheckBox(h+750,v,0,"",Surety4Signed);
+    EditField(h+180,v,80,"",Normal,Surety4Date,false,PasteCurDate);
+    EditField(h+270,v,80,"",Normal,Surety4Amount,true,0);
+    EditField(h+360,v,100,"",Normal,Surety4Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+470,v,100,"",Normal,Surety4Position,false,JobTitleSClass);
+    EditField(h+580,v,100,"",Normal,Surety4OfficialSerNr,false,0);
+    CheckBox(h+730,v,0,"",Surety4Signed);
     HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","4");
     v = v + 30;
 
     EditField(h=50,v,60,"Surety 5",Normal,SuretyProvider5,false,B2BLoanApp_CUSClass);
     EditField(h+70,v,100,"",Normal,Surety5Name,false,0);
-    EditField(h+180,v,100,"",Normal,Surety5Phone,false,0);
-    EditField(h+290,v,120,"",Normal,Surety5eMail,false,0);
-    EditField(h+420,v,60,"",Normal,Surety5Date,false,PasteCurDate);
-    EditField(h+490,v,60,"",Normal,Surety5Amount,true,0);
-    EditField(h+560,v,100,"",Normal,Surety5Signer,false,B2BLoanApp_ContactSClass);
-    EditField(h+670,v,70,"",Normal,Surety5Position,false,JobTitleSClass);
-    CheckBox(h+750,v,0,"",Surety5Signed);
+    EditField(h+180,v,80,"",Normal,Surety5Date,false,PasteCurDate);
+    EditField(h+270,v,80,"",Normal,Surety5Amount,true,0);
+    EditField(h+360,v,100,"",Normal,Surety5Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+470,v,100,"",Normal,Surety5Position,false,JobTitleSClass);
+    EditField(h+580,v,100,"",Normal,Surety5OfficialSerNr,false,0);
+    CheckBox(h+730,v,0,"",Surety5Signed);
     HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","5");
     v = v + 30;
 
     EditField(h=50,v,60,"Surety 6",Normal,SuretyProvider6,false,B2BLoanApp_CUSClass);
     EditField(h+70,v,100,"",Normal,Surety6Name,false,0);
-    EditField(h+180,v,100,"",Normal,Surety6Phone,false,0);
-    EditField(h+290,v,120,"",Normal,Surety6eMail,false,0);
-    EditField(h+420,v,60,"",Normal,Surety6Date,false,PasteCurDate);
-    EditField(h+490,v,60,"",Normal,Surety6Amount,true,0);
-    EditField(h+560,v,100,"",Normal,Surety6Signer,false,B2BLoanApp_ContactSClass);
-    EditField(h+670,v,70,"",Normal,Surety6Position,false,JobTitleSClass);
-    CheckBox(h+750,v,0,"",Surety6Signed);
+    EditField(h+180,v,80,"",Normal,Surety6Date,false,PasteCurDate);
+    EditField(h+270,v,80,"",Normal,Surety6Amount,true,0);
+    EditField(h+360,v,100,"",Normal,Surety6Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+470,v,100,"",Normal,Surety6Position,false,JobTitleSClass);
+    EditField(h+580,v,100,"",Normal,Surety6OfficialSerNr,false,0);
+    CheckBox(h+730,v,0,"",Surety6Signed);
     HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","6");
     v = v + 30;
 
@@ -1114,21 +1114,21 @@ begin
   
     StaticText(h=40,v=15,"Contact Code",false);
     StaticText(h+110,v,"Name",false);
-    StaticText(h+200,v,"Position",false);
-    StaticText(h+300,v,"Phone",false);
-    StaticText(h+420,v,"Email",false);
-    StaticText(h+510,v,"Due Date",false);
-    StaticText(h+580,v,"Amount",false);
+    StaticText(h+200,v,"Amount",false);
+    StaticText(h+290,v,"Date",false);
+    StaticText(h+360,v,"Due Date",false);
+    StaticText(h+440,v,"Signing Pers.",false);
+    StaticText(h+550,v,"Position",false);
     StaticText(h+700,v,"Bill of Exch. Signed",false);
     v = v + 30;
 
     EditField(h=50,v,60,"BOE 1",Normal,BOE1Code,false,B2BLoanApp_CUSClass);
     EditField(h+70,v,100,"",Normal,BOE1Name,false,0);
-    EditField(h+180,v,70,"",Normal,BOE1Position,false,JobTitleSClass);
-    EditField(h+260,v,100,"",Normal,BOE1Phone,false,0);
-    EditField(h+370,v,120,"",Normal,BOE1eMail,false,0);
-    EditField(h+500,v,60,"",Normal,BOE1Date,false,PasteCurDate);
-    EditField(h+570,v,60,"",Normal,BOE1Amount,true,0);
+    EditField(h+180,v,70,"",Normal,BOE1Amount,true,0);
+    EditField(h+260,v,70,"",Normal,BOE1Date,false,PasteCurDate);
+    EditField(h+340,v,70,"",Normal,BOE1DueDate,false,PasteCurDate);
+    EditField(h+420,v,100,"",Normal,BOE1Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+530,v,80,"",Normal,BOE1Position,false,JobTitleSClass);
     HalPushButtonTag(h+650,v,h+730,v+20,"CredManDClassBOESurety","Surety","1");
     CheckBox(h+740,v,0,"",BOE1Signed);
     HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignBOESimplified","Open","1");
@@ -1136,11 +1136,11 @@ begin
 
     EditField(h=50,v,60,"BOE 2",Normal,BOE2Code,false,B2BLoanApp_CUSClass);
     EditField(h+70,v,100,"",Normal,BOE2Name,false,0);
-    EditField(h+180,v,70,"",Normal,BOE2Position,false,JobTitleSClass);
-    EditField(h+260,v,100,"",Normal,BOE2Phone,false,0);
-    EditField(h+370,v,120,"",Normal,BOE2eMail,false,0);
-    EditField(h+500,v,60,"",Normal,BOE2Date,false,PasteCurDate);
-    EditField(h+570,v,60,"",Normal,BOE2Amount,true,0);
+    EditField(h+180,v,70,"",Normal,BOE2Amount,true,0);
+    EditField(h+260,v,70,"",Normal,BOE2Date,false,PasteCurDate);
+    EditField(h+340,v,70,"",Normal,BOE2DueDate,false,PasteCurDate);
+    EditField(h+420,v,100,"",Normal,BOE2Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+530,v,80,"",Normal,BOE2Position,false,JobTitleSClass);
     HalPushButtonTag(h+650,v,h+730,v+20,"CredManDClassBOESurety","Surety","2");
     CheckBox(h+740,v,0,"",BOE2Signed);
     HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignBOESimplified","Open","2");
@@ -1148,23 +1148,23 @@ begin
 
     EditField(h=50,v,60,"BOE 3",Normal,BOE3Code,false,B2BLoanApp_CUSClass);
     EditField(h+70,v,100,"",Normal,BOE3Name,false,0);
-    EditField(h+180,v,70,"",Normal,BOE3Position,false,JobTitleSClass);
-    EditField(h+260,v,100,"",Normal,BOE3Phone,false,0);
-    EditField(h+370,v,120,"",Normal,BOE3eMail,false,0);
-    EditField(h+500,v,60,"",Normal,BOE3Date,false,PasteCurDate);
-    EditField(h+570,v,60,"",Normal,BOE3Amount,true,0);
+    EditField(h+180,v,70,"",Normal,BOE3Amount,true,0);
+    EditField(h+260,v,70,"",Normal,BOE3Date,false,PasteCurDate);
+    EditField(h+340,v,70,"",Normal,BOE3DueDate,false,PasteCurDate);
+    EditField(h+420,v,100,"",Normal,BOE3Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+530,v,80,"",Normal,BOE3Position,false,JobTitleSClass);
     HalPushButtonTag(h+650,v,h+730,v+20,"CredManDClassBOESurety","Surety","3");
     CheckBox(h+740,v,0,"",BOE3Signed);
     HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignBOESimplified","Open","3");
     v = v + 30;
 
-    EditField(h=50,v,60,"BOE 3",Normal,BOE4Code,false,B2BLoanApp_CUSClass);
+    EditField(h=50,v,60,"BOE 4",Normal,BOE4Code,false,B2BLoanApp_CUSClass);
     EditField(h+70,v,100,"",Normal,BOE4Name,false,0);
-    EditField(h+180,v,70,"",Normal,BOE4Position,false,JobTitleSClass);
-    EditField(h+260,v,100,"",Normal,BOE4Phone,false,0);
-    EditField(h+370,v,120,"",Normal,BOE4eMail,false,0);
-    EditField(h+500,v,60,"",Normal,BOE4Date,false,PasteCurDate);
-    EditField(h+570,v,60,"",Normal,BOE4Amount,true,0);
+    EditField(h+180,v,70,"",Normal,BOE4Amount,true,0);
+    EditField(h+260,v,70,"",Normal,BOE4Date,false,PasteCurDate);
+    EditField(h+340,v,70,"",Normal,BOE4DueDate,false,PasteCurDate);
+    EditField(h+420,v,100,"",Normal,BOE4Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+530,v,80,"",Normal,BOE4Position,false,JobTitleSClass);
     HalPushButtonTag(h+650,v,h+730,v+20,"CredManDClassBOESurety","Surety","4");
     CheckBox(h+740,v,0,"",BOE4Signed);
     HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignBOESimplified","Open","4");
@@ -2803,5 +2803,192 @@ end else begin
     BottomBar;
   end;
 end;
+  EndWindow;
+end;
+
+
+window ARRClass:2
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,v3,vm,vs;
+  WindowBegin("Specify #Sales Ledger#",ARRClass,CGRcW,RcType);
+  if (IsEnterprise) then begin
+    SetWRect(20,80,532,360);
+    Tile(0,20,false,"",f1);
+    EditFieldTL(h=150,v=6, 150,"Customer",   M4UStr,Normal,30,f1,false,CUSClass);
+    TileButtons(v,2);
+    Tile(1,340,false,"1",f3);
+    v = 6; vm = v; vs = 20;
+    if (HasCategories) then begin
+      EditFieldTL(h,v, 70, "Category",   M4UStr,Normal,5,f3,false,CCatSClass);
+      v = v + 20;
+    end;
+    if (HasContactClassification) then begin
+      EditFieldTL(h,v,70,"Classification",M4UStr,Normal,30,f4,false,CClassSClass);
+      v = v + 20;
+      EditFieldTL(h,v,70,"Classification Types",M4UStr,Normal,60,f5,false,CTypeSClass);
+      v = v + 20;
+    end;
+//CUST-BEGIN
+    EditFieldTL(h,v,70,"Item",M4UStr,Normal,60,f14,false,INSClass);
+    v = v + 20;
+//CUST-END
+    if (HasSalesman or HasSalesmanBonus) then begin
+      EditFieldTL(h,v, 70, "#Salesman#",   M4UStr,Normal,10,f2,false,UserSClass);
+      v = v + 20;
+    end;
+    if (HasSalesGroup) then begin
+      EditFieldTL(h,v ,50,"Sales Group",M4UStr,Normal,10,TransStr,false,SalesGroupSClass);
+      v = v + 20;
+    end;
+    if (HasObjects) then begin
+      EditFieldTL(h,v, 150, "Tags/Objects",M4UStr,Normal,60,ObjStr,false,ObjSClass);
+      v = v + 20;
+      EditFieldTL(h,v, 70, "Tag/Object Type",M4UStr,Normal,5,ObjType,false,OTSClass);
+      v = v + 20;
+    end;
+    if (HasMultiCurrency or HasBase2) then begin
+      EditFieldTL(h,v, 70, "Currency",M4UStr,Normal,5,CurncyCode,false,CurncyCodeSClass);
+    end;
+    EditFieldTL(h,v+=20, 70, "Due more than",   M4Long,Normal,0,long1,false,0);
+    EditFieldTL(h,v+=20, 70, "Date",   M4Date,Normal,0,d1,false,PasteCurDate);
+    EditFieldTL(h,v3=(v+=20), 70, "Debtors A/C",   M4UStr,Normal,10,AccStr,false,AccSClass);
+    if (HasMultiCurrency or HasBase2) then begin
+      ButtonFrame(h=20,v=(vm=(v3+=42)),123,2,"Amounts");
+      RadioButton(h,v,0,0,"Base Currency 1",flags[2]);
+      RadioButton(h,v+=16,1,0,"Currency",flags[2]);
+    end;
+    ButtonFrame(h,v+=45,123,2,"Sorting");
+    RadioButton(h,v,0,0,"Customer C_ode",flags[1]);
+    RadioButton(h,v+=16,1,0,"Customer Name",flags[1]);
+    ButtonFrame(h+=148,v=vm,140,4,"On Account");
+    RadioButton(h,v,0,0,"Include On Account",flags[21]);
+    RadioButton(h,v+=16,1,0,"Only On Account",flags[21]);
+    RadioButton(h,v+=16,2,0,"Skip On Account",flags[21]);
+    CheckBox(h,v+=18,0,"Show Prepayment No.",flags[20]);
+/*    
+    ButtonFrame(h,v+=40,140,2,"Invoice Sorting");
+    RadioButton(h,v,0,0,"Customer C_ode",flags[22]);
+    RadioButton(h,v+=16,1,0,"Invoice Date",flags[22]);
+*/    
+    ButtonFrame(h+=168,v=90,123,8,"Function");//CUST 7>>8
+    RadioButton(h,v,0,0,"Detailed",ArtMode);
+    RadioButton(h,v+=16,1,0,"Overview",ArtMode);
+    if (HasAged) then begin
+      RadioButton(h,v+=16,2,0,"Aged",ArtMode);
+      RadioButton(h,v+=16,5,0,"Detailed Aged",ArtMode);
+    end;
+    RadioButton(h,v+=16,3,0,"Balance",ArtMode);
+    RadioButton(h,v+=16,4,0,"Rate Differences",ArtMode);
+    RadioButton(h,v+=16,6,0,"Rate Diff. Detailed",ArtMode);
+//CUST-BEGIN
+    RadioButton(h,v+=16,7,0,"Aged with Items",ArtMode);
+//CUST-END
+    ButtonFrame(h,v=vm,123,2,"Status");
+    RadioButton(h,v,0,0,"Op_en",flags[0]);
+    RadioButton(h,v+=16,2,0,"Overdue",flags[0]);
+    ButtonFrame(h,v+=40,123,3,"Disputed");
+    RadioButton(h,v,0,0,"Include Disputed",flags[3]);
+    RadioButton(h,v+=16,1,0,"Exclude Disputed",flags[3]);
+    RadioButton(h,v+=16,2,0,"Only Disputed",flags[3]);
+    Tile(2,320,false,"2",Language);
+    v = 6;h=150;
+    EditFieldTL(h,v, 80, "Language",M4UStr,Normal,5,Language,false,LangSClass);
+    EditFieldTL(h,v+=20, 80, "Main Partner",M4UStr,Normal,20,f9,false,CUSClass);
+
+    EditFieldTL(h,v+=vs, 80, "Amount from",M4Val,Normal,0,vals0,true,0);
+    StaticText(h+94,v+13,"to",false);
+    EditFieldTL(h+120,v, 80, "",M4Val,Normal,0,vals1,true,0);
+
+    CheckBox(h,v+=30,0,"Show Base Currency 2 Totals",flags[12]);
+    CheckBox(h,v+=16,0,"Only Interest Invoices",flags[13]);
+    CheckBox(h,v+=16,0,"Show Invoice Comment",flags[14]);
+    if (HasOfficialSerNr or HasInvoiceOfficialSerNr) then begin
+      CheckBox(h,v+=16,0,"Show Official Ser. No.",flags[23]);
+    end;
+    CheckBox(h,v+=16,0,"Show Debtor Accounts",flags[18]);
+    if (StandardHansa==false) then begin
+      CheckBox(h,v+=16,0,"Show #Instalments#",flags[19]);
+    end;
+    CheckBox(h,v+=16,0,"Aged based on Invoice Date",flags[22]);
+    CheckBox(h,v+=16,0,"Skip No Reminder",flags[16]);
+    if (StandardHansa==false) then begin
+      CheckBox(h,v+=16,0,"Skip No Collection",flags[17]);
+    end;
+  end else begin
+    SetWRect(20,80,400,300);
+    EditFieldTL(h=120,v=6, 150,"Customer",   M4UStr,Normal,30,f1,false,CUSClass);
+    if (HasCategories) then begin
+      EditFieldTL(h,v+=20, 50, "Category",   M4UStr,Normal,5,f3,false,CCatSClass);
+    end;
+    if (HasObjects) then begin
+      EditFieldTL(h,v+=20, 150, "Tags/Objects",M4UStr,Normal,60,ObjStr,false,ObjSClass);
+      EditFieldTL(h,v+=20, 50, "Tag/Object Type",M4UStr,Normal,5,ObjType,false,OTSClass);
+    end;
+    if (HasMultiCurrency or HasBase2) then begin
+      EditFieldTL(h,v+=20, 50, "Currency",M4UStr,Normal,5,CurncyCode,false,CurncyCodeSClass);
+    end;
+    if (HasContactClassification) then begin
+      EditFieldTL(h,v+=20 ,70,"Classification",M4UStr,Normal,30,f4,false,CClassSClass);
+    end;
+    EditFieldTL(h,v+=20, 82, "Date",   M4Date,Normal,0,d1,false,PasteCurDate);
+    if (HasLanguages) then begin
+      EditFieldTL(h,v+=20,30,"Language",M4UStr,Normal,5,Language,false,LangSClass);
+    end;
+    if (HasModCO) then begin
+      ButtonFrame(h = 30,vm=(v+=40),123,5,"Function");
+      RadioButton(h,v,0,0,"History",ArtMode);
+      RadioButton(h,v+=16,1,0,"Overview",ArtMode);
+      if (HasAged) then begin
+        RadioButton(h,v+=16,2,0,"Aged",ArtMode);
+        RadioButton(h,v+=16,4,0,"Detailed Aged",ArtMode);
+      end;
+      RadioButton(h,v+=16,3,0,"Balance",ArtMode);
+    end else begin
+      ButtonFrame(h = 30,vm=(v+=40),123,3,"Function");
+      RadioButton(h,v,0,0,"History",ArtMode);
+      RadioButton(h,v+=16,1,0,"Overview",ArtMode);
+      if (HasAged) then begin
+        RadioButton(h,v+=16,2,0,"Aged",ArtMode);
+      end;
+      RadioButton(h,v+=16,3,0,"Balance",ArtMode);
+      if (HasAged) then begin
+        RadioButton(h,v+=16,4,0,"Detailed Aged",ArtMode);
+      end;
+    end;
+    if (HasMultiCurrency or HasBase2) then begin
+      ButtonFrame(h,v+=40,123,2,"Amounts");
+      if (HasBase2) then begin
+        RadioButton(h,v,0,0,"Base Currency 1",flags[2]);
+      end else begin
+        RadioButton(h,v,0,0,"Base Currency",flags[2]);
+      end;
+      RadioButton(h,v+=16,1,0,"Currency",flags[2]);
+      if (HasBase2) then begin
+        CheckBox(h,v+=32,0,"Show Base Currency 2 Totals",flags[12]);
+      end;
+    end;
+
+    if (HasPrepayments) then begin 
+      if (HasMultiCurrency or HasBase2) then begin 
+        CheckBox(h,v+=16,0,"Show Prepayment No.",flags[20]);
+      end else begin
+        CheckBox(h,v+=32,0,"Show Prepayment No.",flags[20]);
+      end;
+    end;
+    if (HasOfficialSerNr) then begin
+      CheckBox(h,v+=16,0,"Show Official Ser. No.",flags[23]); v = v + 16;
+    end;
+    if (HasLocalization("PRT")) then begin
+      CheckBox(h,v,0,"Show Debtor Accounts",flags[18]); v = v + 16;
+    end;
+    ButtonFrame(h+=165,v = vm,153,2,"Status");
+    RadioButton(h,v,0,0,"Open",flags[0]);
+    RadioButton(h,v+=16,2,0,"Due",flags[0]);
+    ButtonFrame(h,v+=56,153,2,"Sorting");
+    RadioButton(h,v,0,0,"N_o.",flags[1]);
+    RadioButton(h,v+=16,1,0,"Name",flags[1]);
+    
+  end;
   EndWindow;
 end;

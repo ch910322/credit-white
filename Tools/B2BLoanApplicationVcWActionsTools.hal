@@ -252,6 +252,42 @@ begin
 end;
 
 global
+procedure PasteBOESignerInCredMan(var record CredManVc CredManr,string code,Integer num)
+begin
+  record CUVc CUr;
+  record ContactRelVc CRr;
+  
+  CRr.ContactName = GetFieldValueByName(CredManr,"BOE" & num & "Signer",-1);
+  CRr.CustCode = GetFieldValueByName(CredManr,"BOE" & num & "Code",-1);
+  if (ReadFirstKey("Contact",CRr,2,true)) then begin
+    CUr.Code = CRr.ContactCode;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      SetFieldValueByName(CredManr,"BOE" & num & "Position",CUr.JobDesc,-1);
+    end;
+  end;
+
+  return;
+end;
+
+global
+procedure PasteSuretyInBOESurety(var record BOESuretyVc BSr,string code,Integer num)
+begin
+  record CUVc CUr;
+  
+  CUr.Code = code;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    SetFieldValueByName(BSr,"SuretyProvider" & num,CUr.Code,-1);
+    SetFieldValueByName(BSr,"Surety" & num & "Name",CUr.Name,-1);
+    SetFieldValueByName(BSr,"Surety" & num & "Position",CUr.JobDesc,-1);
+    SetFieldValueByName(BSr,"Surety" & num & "Phone",CUr.Phone,-1);
+    SetFieldValueByName(BSr,"Surety" & num & "eMail",CUr.eMail,-1);
+  end;
+
+  return;
+end;
+
+
+global
 updating function Boolean B2BLoanAppCreateCredMan(var record B2BLoanApplicationVc LAr,var record CredManVc CredManr,Boolean storef)
 begin
   record CUVc CUr;

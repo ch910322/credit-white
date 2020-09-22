@@ -41,6 +41,9 @@ external function Boolean CanCredManMakePayment(record CredManVc);
 remote updating procedure GetCredManBOESuretyRecord(record CredManVc,var record BOESuretyVc,Integer);
 remote procedure InsertCredManDocSignerName(var record CredManVc,Integer);
 remote procedure PasteBOEInCredMan(var record CredManVc,string,Integer);
+remote procedure PasteBOESignerInCredMan(var record CredManVc,string,Integer);
+remote procedure PasteSuretyInBOESurety(var record BOESuretyVc,string,Integer);
+remote procedure InsertBOESuretySignerName(var record BOESuretyVc,Integer);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -287,20 +290,6 @@ begin
   return;
 end;
 
-function Boolean CredManDClassBOEEFAfter(Integer wn,Boolean changedf,Integer num)
-begin
-  record CredManVc CredManr;
-  string 255 warning;
-
-  if (changedf) then begin  
-    GetWindowRecord(wn,CredManr);
-    PasteBOEInCredMan(CredManr,GetFieldValueByName(CredManr,"BOE" & num & "Code",-1),num);
-    PutWindowRecord(wn,CredManr);   
-  end; 
-  CredManDClassBOEEFAfter = true;
-  return;
-end;
-
 function Boolean CredManDClassSuretySignerEFAfter(Integer wn,Boolean changedf,Integer num)
 begin
   record CredManVc CredManr;
@@ -314,6 +303,34 @@ begin
   CredManDClassSuretySignerEFAfter = true;
   return;
 end;
+
+function Boolean CredManDClassBOEEFAfter(Integer wn,Boolean changedf,Integer num)
+begin
+  record CredManVc CredManr;
+  string 255 warning;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    PasteBOEInCredMan(CredManr,GetFieldValueByName(CredManr,"BOE" & num & "Code",-1),num);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassBOEEFAfter = true;
+  return;
+end;
+function Boolean CredManDClassBOESignerEFAfter(Integer wn,Boolean changedf,Integer num)
+begin
+  record CredManVc CredManr;
+  string 255 warning;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    PasteBOESignerInCredMan(CredManr,GetFieldValueByName(CredManr,"BOE" & num & "Code",-1),num);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassBOESignerEFAfter = true;
+  return;
+end;
+
 
 function Boolean CredManDClassLoanToValueEFAfter(Integer wn,Boolean changedf,Integer num)
 begin
@@ -420,8 +437,12 @@ begin
           num = StringToInt(mid(fieldname,3,1));
           res = CredManDClassBOEEFAfter(wn,changed!=0,num);
         end;
+        if (left(fieldname,3)=="BOE" and right(fieldname,6)=="Signer") then begin
+          num = StringToInt(mid(fieldname,3,1));
+          res = CredManDClassBOESignerEFAfter(wn,changed!=0,num);
+        end;
         
-        if (right(fieldname,6)=="Signer") then begin
+        if (left(fieldname,6)=="Surety" and right(fieldname,6)=="Signer") then begin
           num = StringToInt(mid(fieldname,6,1));
           res = CredManDClassSuretySignerEFAfter(wn,changed!=0,num);
         end;
@@ -1668,6 +1689,10 @@ begin
   if (wnst==2) then begin//Rs_update
     switch (fieldname) begin
       case "Classifications": res = true;
+      case "MoneyTransferDate": 
+        if (UserCanAction("CredManChangeTransferDate",false)==true) then begin
+          res = true;
+        end;
       otherwise
         if (left(fn,6)=="Surety") then begin
           res = true;
@@ -2070,5 +2095,53 @@ begin
   NewTimedTask("rerun window def","rerunwindowdef","RerunWindowDefHAL",wn,CurrentDate,CurrentTime,"","");  
 
   GenOverdueInvVClassArtModeButtonAction = true;
+  return;
+end;
+
+function Boolean BOESuretyDClassSuretyProviderEFAfter(Integer wn,Boolean changedf,Integer num)
+begin
+  record BOESuretyVc BSr;
+  string 255 warning;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,BSr);
+    PasteSuretyInBOESurety(BSr,GetFieldValueByName(BSr,"SuretyProvider" & num,-1),num);
+    PutWindowRecord(wn,BSr);   
+  end; 
+  BOESuretyDClassSuretyProviderEFAfter = true;
+  return;
+end;
+
+function Boolean BOESuretyDClassSuretySignerEFAfter(Integer wn,Boolean changedf,Integer num)
+begin
+  record BOESuretyVc BSr;
+  record CUVc CUr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,BSr);
+    InsertBOESuretySignerName(BSr,num);
+    PutWindowRecord(wn,BSr);   
+  end; 
+  BOESuretyDClassSuretySignerEFAfter = true;
+  return;
+end;
+
+global
+function Boolean BOESuretyDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+  Integer num;
+
+  if (left(fieldname,14)=="SuretyProvider") then begin
+    num = StringToInt(right(fieldname,1));
+    res = BOESuretyDClassSuretyProviderEFAfter(wn,changed!=0,num);
+  end;
+  
+  if (left(fieldname,6)=="Surety" and right(fieldname,6)=="Signer") then begin
+    num = StringToInt(mid(fieldname,6,1));
+    res = BOESuretyDClassSuretySignerEFAfter(wn,changed!=0,num);
+  end;
+
+  BOESuretyDClassAfterEditField = res;
   return;
 end;

@@ -339,7 +339,7 @@ begin
     emqrp.QueDate = CurrentDate;
     emqrp.QueTime = CurrentTime;
 
-    if (RecordStore(emqrp,false)==false) then begin
+    if (RecordInsert(emqrp,false)==false) then begin
     end;
   end;
 
