@@ -1557,3 +1557,22 @@ begin
 
   return;
 end;
+
+global
+procedure InsertBOESuretySignerName(var record BOESuretyVc BSr,Integer num)
+begin
+  Boolean res;
+  record CUVc CUr;
+  record ContactRelVc CRr;
+  
+  CRr.ContactName = GetFieldValueByName(BSr,"Surety" & num & "Signer",-1);
+  CRr.CustCode = GetFieldValueByName(BSr,"SuretyProvider" & num,-1);
+  if (ReadFirstKey("Contact",CRr,2,true)) then begin
+    CUr.Code = CRr.ContactCode;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      SetFieldValueByName(BSr,"Surety" & num & "Position",CUr.JobDesc,-1);
+    end;
+  end;
+
+  return;
+end;

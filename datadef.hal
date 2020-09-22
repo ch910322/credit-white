@@ -638,6 +638,22 @@ begin
   RecordField(BOE4Signed,M4Int,0,0);
   RecordField(RealInterestFlag,M4Int,0,0);
 
+  RecordField(BOE1DueDate,M4Date,0,0);
+  RecordField(BOE1Signer,M4Str,200,0);
+  RecordField(BOE2DueDate,M4Date,0,0);
+  RecordField(BOE2Signer,M4Str,200,0);
+  RecordField(BOE3DueDate,M4Date,0,0);
+  RecordField(BOE3Signer,M4Str,200,0);
+  RecordField(BOE4DueDate,M4Date,0,0);
+  RecordField(BOE4Signer,M4Str,200,0);
+
+  RecordField(Surety1OfficialSerNr,M4Str,255,0);
+  RecordField(Surety2OfficialSerNr,M4Str,255,0);
+  RecordField(Surety3OfficialSerNr,M4Str,255,0);
+  RecordField(Surety4OfficialSerNr,M4Str,255,0);
+  RecordField(Surety5OfficialSerNr,M4Str,255,0);
+  RecordField(Surety6OfficialSerNr,M4Str,255,0);
+
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
   ChangeMatrixField(vRebate,M4Rate,0,0);

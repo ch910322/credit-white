@@ -523,6 +523,7 @@ begin
   Integer mwn;
   record B2BLoanApplicationVc LAr;
   record CredManVc CredManr;
+  record BOESuretyVc BSr;
   record AgreementDocVc ADr;
   Array string 60 acontact;
   Integer i,acnt;
@@ -539,7 +540,12 @@ begin
         num = mid(fn,6,1);
         custcode = GetFieldValueByName(CredManr,"SuretyProvider" & num,-1);
       end else begin
-        custcode = CredManr.CustCode;
+        if (left(fn,3)=="BOE") then begin
+          num = mid(fn,3,1);
+          custcode = GetFieldValueByName(CredManr,"BOE" & num & "Code",-1);
+        end else begin
+          custcode = CredManr.CustCode;
+        end;
       end;
     case "B2BLoanApplicationVc":
       GetWindowRecord(mwn,LAr);
@@ -549,6 +555,13 @@ begin
         custcode = GetFieldValueByName(LAr,"SuretyProvider" & num,-1);
       end else begin
         custcode = LAr.CustCode;
+      end;
+    case "BOESuretyVc":
+      GetWindowRecord(mwn,BSr);
+      fn = WindowActiveField(mwn);
+      if (left(fn,6)=="Surety") then begin
+        num = mid(fn,6,1);
+        custcode = GetFieldValueByName(BSr,"SuretyProvider" & num,-1);
       end;
     case "AgreementDocVc":
       GetWindowRecord(mwn,ADr);
