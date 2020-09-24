@@ -2648,3 +2648,40 @@ begin
   InsertRowTest;
   EndWindow;
 end;
+
+window CredManAccLCLass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Testss",CredManAccLCLass,CGmlist,-);
+  SetWRect(20,80,560,298);
+  SpawnClass(CredManAccDCLass);
+  UseView(CredManAccVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Type",CredManType,false,CredManType);
+  RlCol(124,124,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+
+window CredManAccDCLass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h2,v,vs,vm;
+  vs = 20;
+  WindowBegin("Account",CredManAccDCLass,CGview,-);
+  UseView(CredManAccVc);
+  SetWRect(64,80,509,375);
+  EditField(h=105,v=6, 100, "Type",Normal,CredManType,false,CredManTypeSClass);
+  EditField(h,v+=vs,-40,"Name",Normal,Comment,false,0);
+  EditField(h,v+=vs,100,"P/L Debit Acc",Normal,PLDebitAcc,false,AccSClass);
+  EditField(h,v+=vs,100,"P/L Credit Acc",Normal,PLCreditAcc,false,AccSClass);
+
+  MatrixBegin(4,v=v+40,-32,-3,-,99);
+  MatCol(1,24,"Item",0,ArtCode,false,INSClass);
+  MatCol(1,134,"Debit Acc.",0,DebitAcc,false,AccSClass);
+  MatCol(1,284,"Credit Acc.",0,CreditAcc,false,AccSClass);
+  EndMatrix;
+
+  EndWindow;
+end;

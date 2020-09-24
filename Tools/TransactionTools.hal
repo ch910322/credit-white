@@ -1,0 +1,156 @@
+external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
+external function Integer GetItemPriority(record ItemPriorityBlock,string);
+
+global
+function string 255 CM_GetCredManTypeSalesItemAccount(Longint sernr,string artcode,string fallback,Boolean debitf)
+begin
+  record CredManVc CredManr;
+  record CredManAccVc CredManAccr;
+  row CredManAccVc CredManAccrw;
+  string 255 res;
+  Integer i,rwcnt;
+
+  CredManr.SerNr = sernr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    CredManAccr.CredManType = CredManr.Type;
+    if (ReadFirstMain(CredManAccr,1,true)) then begin
+      rwcnt = MatRowcnt(CredManAccr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(CredManAccr,i,CredManAccrw);
+        if (CredManAccrw.ArtCode==artcode) then begin
+          if (debitf) then begin
+            res = CredManAccrw.DebitAcc;
+          end else begin
+            res = CredManAccrw.CreditAcc;
+          end;
+          i = rwcnt;
+        end;
+      end;
+    end;
+  end;
+  if (blank(res)) then begin
+    res = fallback;
+  end;
+  
+  CM_GetCredManTypeSalesItemAccount = res;
+  return;
+end;
+
+global
+function string 255 CM_GetCredManTypeSalesItemAccount2(Longint histsernr,string fallback,Boolean debitf)
+begin
+  record CredManVc CredManr;
+  record CredManAccVc CredManAccr;
+  row CredManAccVc CredManAccrw;
+  string 255 res;
+  Integer i,rwcnt;
+  record CredHistVc CredHistr;
+
+  CredHistr.SerNr = histsernr;
+  if (ReadFirstMain(CredHistr,1,true)) then begin
+    CredManr.SerNr = CredHistr.CredManNr;
+    if (ReadFirstMain(CredManr,1,true)) then begin
+      CredManAccr.CredManType = CredManr.Type;
+      if (ReadFirstMain(CredManAccr,1,true)) then begin
+        rwcnt = MatRowcnt(CredManAccr);
+        for (i=0;i<rwcnt;i=i+1) begin
+          MatRowGet(CredManAccr,i,CredManAccrw);
+          if (CredManAccrw.ArtCode==CredHistr.ArtCode) then begin
+            if (debitf) then begin
+              res = CredManAccrw.DebitAcc;
+            end else begin
+              res = CredManAccrw.CreditAcc;
+            end;
+            i = rwcnt;
+          end;
+        end;
+      end;
+    end;
+  end;
+  if (blank(res)) then begin
+    res = fallback;
+  end;
+  
+  CM_GetCredManTypeSalesItemAccount2 = res;
+  return;
+end;
+
+
+global
+function string 255 CM_GetCredManTypePurchItemAccount(Longint sernr,string fallback,Boolean debitf)
+begin
+  record CredManVc CredManr;
+  record CredManAccVc CredManAccr;
+  string 255 res;
+
+  CredManr.SerNr = sernr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    CredManAccr.CredManType = CredManr.Type;
+    if (ReadFirstMain(CredManAccr,1,true)) then begin
+      if (debitf) then begin
+        res = CredManAccr.PLDebitAcc;
+      end else begin
+        res = CredManAccr.PLCreditAcc;
+      end;
+    end;
+  end;
+  if (blank(res)) then begin
+    res = fallback;
+  end;
+  
+  CM_GetCredManTypePurchItemAccount = res;
+  return;
+end;
+
+global
+function Boolean CM_GetInvoiceItemOrder(record IVVc IVr,val tsum,var vector val vAmounts,Boolean debitf)
+begin
+  val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
+  record IVVc tIVr;
+  row IVVc IVrw;
+  Integer i,rwcnt;
+  string 255 acc;
+  val sum,tval;
+  Boolean res;
+  Integer prio;
+  record ItemPriorityBlock IPb;
+
+  BlockLoad(IPb);
+
+  tval = tsum;
+
+  rwcnt = MatRowCnt(IVr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    if (IVrw.stp==kInvoiceRowTypeNormal and IVrw.Sum>0) then begin
+      prio = GetItemPriority(IPb,IVrw.ArtCode);
+      IVrw.rowGP = prio;
+      MatRowPut(tIVr,MatRowCnt(tIVr),IVrw);
+    end;
+  end;
+  SortRows(tIVr,"rowGP",false);
+
+  rwcnt = MatRowCnt(tIVr);
+  for (i=0;i<rwcnt and tval>0;i=i+1) begin
+    MatRowGet(tIVr,i,IVrw);
+    InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+
+    acc = CM_GetCredManTypeSalesItemAccount(IVr.CustCredManNr,IVrw.ArtCode,IVr.ARAcc,debitf);
+    sum = IVrw.Sum;
+
+    if (IVr.InclVAT==0) then begin
+      sum = sum + vatval;
+    end;
+    tval = tval - sum;
+    if (tval<0) then begin
+      sum = sum + tval;
+    end;
+
+    vAmounts[acc] = vAmounts[acc] + sum;
+    logtext(0,"add " & acc & ":" & sum & ":" & IVrw.Sum & ":" & vatval);
+    res = true;
+  end;
+
+  CM_GetInvoiceItemOrder = res;
+  return;
+end;

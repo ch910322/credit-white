@@ -37,6 +37,7 @@ begin
   Setting("Loan Agreements",CredMan2LClass,modCredMan);
   Setting("Leasing Agreements",CredMan3LClass,modCredMan);
   Setting("Invega Fund Report Settings",InvegaReportTClass,modCredMan);
+  Setting("Agreement Type Accounts",CredManAccLClass,modCredMan);
 
   
 

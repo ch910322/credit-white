@@ -2185,6 +2185,42 @@ LCredManTestDClassAfterEditField:;
   return;
 end;
 
+
+function Boolean CredManAccDClassTypeEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManAccVc CredManAccr;
+  record CredManTypeVc CMTr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManAccr);
+    CMTr.Code = CredManAccr.CredManType;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      CredManAccr.Comment = CMTr.Comment;
+    end;
+    PutWindowRecord(wn,CredManAccr); 
+  end; 
+  CredManAccDClassTypeEFAfter = true;
+  return;
+end;
+
+
+global
+function Boolean CredManAccDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+
+  if (changed==0) then begin
+    goto LCredManAccDClassAfterEditField;
+  end;
+  if (fieldname=="CredManType") then begin
+    res = CredManAccDClassTypeEFAfter(wn,changed!=0);
+  end;
+
+LCredManAccDClassAfterEditField:;
+  CredManAccDClassAfterEditField = res;
+  return;
+end;
+
 global
 procedure DblCredManTestVc(string dblstr,string l,Integer currepwn)
 begin
