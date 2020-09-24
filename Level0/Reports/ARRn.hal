@@ -52,7 +52,7 @@ external function Boolean ReportMediaIsFile(record RcVc);
 //CUST-BEGIN
 external outer procedure SumAgedNewWithItems(record IVVc,Date,Date,Date,Boolean,Integer,Integer,var val,var val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector Boolean,var vector Boolean);
 external outer procedure PrintAgedLineWithItems(val,vector val,vector val,vector val,vector val,vector val,vector val,vector val,vector val,val,val,Integer,Integer,vector Boolean,vector Boolean,record RcVc);
-
+external outer  function val GetCredHistOpenValue(Longint);
 //CUST-END
 
 global
@@ -675,6 +675,10 @@ L22:;
               MatRowGet(IVr,i,IVrw);
               if (RepSpec.f14==IVrw.ArtCode) then begin
                 testf = true;
+                rs = GetCredHistOpenValue(IVrw.CredHistNr);
+                if (rs==0) then begin
+                  testf = false;
+                end;
                 i = rwcnt;
               end;
             end;
