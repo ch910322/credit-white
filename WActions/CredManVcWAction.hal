@@ -2147,3 +2147,56 @@ begin
   BOESuretyDClassAfterEditField = res;
   return;
 end;
+
+
+function Boolean CredManTestDClassTypeEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManTestVc CredManTestr;
+  record CredManTypeVc CMTr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManTestr);
+    CMTr.Code = CredManTestr.Type;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      CredManTestr.Months = CMTr.InstalmentMonths;
+      CredManTestr.IntRate = CMTr.IntRate;
+    end;
+    PutWindowRecord(wn,CredManTestr); 
+  end; 
+  CredManTestDClassTypeEFAfter = true;
+  return;
+end;
+
+
+global
+function Boolean CredManTestDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+
+  if (changed==0) then begin
+    goto LCredManTestDClassAfterEditField;
+  end;
+  if (fieldname=="Type") then begin
+    res = CredManTestDClassTypeEFAfter(wn,changed!=0);
+  end;
+
+LCredManTestDClassAfterEditField:;
+  CredManTestDClassAfterEditField = res;
+  return;
+end;
+
+global
+procedure DblCredManTestVc(string dblstr,string l,Integer currepwn)
+begin
+  record CredManTestVc CredManTestr;
+
+  if (nonblank(l)) then begin
+    CredManTestr.UUID = StringToUUID(l);
+  end else begin
+    CredManTestr.UUID = StringToUUID(dblstr);
+  end;
+  if (ReadFirstMain(CredManTestr,1,true)) then begin
+    OpenWindow("CredManTestDClass",1,0,"","",CredManTestr);
+  end;
+  return;
+end;

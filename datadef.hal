@@ -1594,6 +1594,48 @@ begin
   RecordField(CompTypeClass,M4Code,20,CClassVc);
   RecordField(EVKRClassType,M4Code,20,CClassVc);
   EndBlock;
+
+  RecordBegin(CredManTestVc,-,"");
+  NewAutosyncRegister(kSyncDirectionToClient,true);
+  RecordField(Comment,M4Str,255,0);
+  RecordField(TransDate,M4Date,0,0);
+  RecordField(Type,M4Code,20,CredManTypeVc);
+  RecordField(IntRate,M4Rate,0,0);
+  RecordField(Months,M4Long,0,0);
+  RecordField(startDate,M4Date,0,0);
+  RecordField(PrincipleDelayMonths,M4Qty,0,0);
+  RecordField(PrincipleDelayInterest,M4Rate,0,0);
+  RecordField(MaxMonthlyPayment,M4Val,0,0);
+  RecordField(ProlongMonths,M4Qty,0,0);
+  RecordField(ProlongDate,M4Date,0,0);//For now the same as pause date
+  RecordField(AnnualRate,M4Int,0,0);
+  RecordField(LastMonthPrinc,M4Val,0,0);
+  RecordField(MonthlyPaymentDay,M4Long,0,0);
+  RecordField(PauseDate,M4Date,0,0);
+  RecordField(PauseMonths,M4Long,0,0);
+  RecordField(Math,M4Matrix,0,0);
+  RecordField(InvSum4,M4Val,0,0);
+  RecordField(PayDeal,M4Code,20,PDVc);
+  ArrayBegin(Math,-,1);
+  ArrayField(InvDate,M4Date,0,0);
+  ArrayField(Principle,M4Val,0,0);
+  ArrayField(Interest,M4Val,0,0);
+  ArrayField(Fees,M4Val,0,0);
+  ArrayField(Total,M4Val,0,0);
+  ArrayField(Invoiced,M4Set,432,0);
+  ArrayField(FromDate,M4Date,0,0);
+  ArrayField(ToDate,M4Date,0,0);
+  ArrayField(InvoiceNr,M4Str,60,0);
+  ArrayField(PayDate,M4Date,0,0);
+  ArrayField(Balance,M4Val,0,0);
+  ArrayField(Deposit,M4Val,0,0);
+  EndArray;
+  MainKeyBegin(MainKey,0);
+  KeySegment(UUID);
+  KeyBegin(Comment);
+  KeySegment(Comment);
+  KeySegment(UUID);
+  EndRecord;
   
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);

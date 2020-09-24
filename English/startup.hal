@@ -7,7 +7,8 @@ begin
   Register("B2B Loan Applications","B2B Loan Applications",B2BLoanApplicationVc,modCredMan);
   Register("Agreement Schedules","Agreement Schedules",CredManSchedVc,modCredMan);
   Register("Properties","Properties",CMPropertyVc,modCredMan);
-
+  Register("Agreement Tests","Agreement Tests",CredManTestVc,modCredMan);
+ 
   Setting("Number Series - B2B Loan Applications",B2BLoanAppSerTClass,modCredMan);
   Setting("Credit Management Settings",CMApplicationSetTClass,modCredMan);
   Setting("Invoicing Settings",CMInvoicingTClass,modCredMan);
@@ -46,6 +47,7 @@ begin
 	Report("Income Analysis",EBSIncomeAnalysisRClass,EBSIncomeAnalysisRn,0,modCredMan);
 	Report("Income Forecast",CMIncomeForecastRClass,CMIncomeForecastRn,0,modCredMan);
 	Report("Check Schedule Periods",CheckCMSchedRClass,CheckCMSchedRn,0,modCredMan);
+	Report("Test Credit Agreements",CredManTestRClass,CredManTestRn,0,modCredMan);
 
 
   Maintenance("Create Agreement Invoices",GenLoanInvoicesVClass,GenLoanInvoicesMn,modCredMan);
