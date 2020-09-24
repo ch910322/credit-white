@@ -2604,7 +2604,7 @@ end;
 window CredManTestDClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  real h,v,vs,v2,vs2,hm,h2,vm;
+  real h,v,vs,v2,vs2,hm,h2,vm,vm2;
   WindowBegin("Agreement Tests",CredManTestDClass,CGview,-);
   SetWRect(20,80,660,339);
   Sizeable(-1,-1,0,0);
@@ -2619,6 +2619,10 @@ begin
   EditField(h,v+=vs,50,"Sum",Normal,InvSum4,false,0);
   EditField(h,v+=vs,50,"Pay Deal",Normal,PayDeal,false,PDSClass);
   EditField(h,v+=vs,90,"Start Date",Normal,startDate,false,PasteCurDate);
+  EditField(h,v+=vs,50,"Deposit Sum",Normal,DepositSum,false,0);
+  EditField(h,v+=vs,50,"Additional Downp. Months",Normal,ExtraDepositMonths,false,0);
+  EditField(h,v+=vs,50,"Additional Downp. Sum",Normal,ExtraDepositSum,true,0);
+  vm2 = v;
   EditField(h2,v=vm,50,"Principle Delay Months",Normal,PrincipleDelayMonths,false,0);
   EditField(h2,v+=vs,50,"Principle Delay Interest",Normal,PrincipleDelayInterest,false,0);
   EditField(h2,v+=vs,50,"Max Monthly Payment",Normal,MaxMonthlyPayment,false,0);
@@ -2628,7 +2632,10 @@ begin
   EditField(h2,v+=vs,90,"Prolong Date",Normal,ProlongDate,false,0);
   EditField(h2,v+=vs,90,"Pause Date",Normal,PauseDate,false,0);
   EditField(h2,v+=vs,50,"Pause Months",Normal,PauseMonths,false,0);
-  MatrixBegin(10,v+=vs+20,-40,-40,-,999);
+  if (vm2<v) then begin
+    vm2 = v;
+  end;
+  MatrixBegin(10,v=vm2+40,-40,-40,-,999);
   MatCol(1,24,"Inv. Date",0,InvDate,false,0);
   MatCol(1,100,"Period From",0,FromDate,false,0);
   MatCol(1,165,"Period To",0,ToDate,false,0);

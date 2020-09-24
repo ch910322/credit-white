@@ -51,6 +51,10 @@ begin
   CredManr.PauseMonths = CredManTestr.PauseMonths;
   CredManr.InvSum4 = CredManTestr.InvSum4;
   CredManr.PayDeal = CredManTestr.PayDeal;
+  CredManr.DepositSum = CredManTestr.DepositSum;
+  CredManr.ExtraDepositMonths = CredManTestr.ExtraDepositMonths;
+  CredManr.ExtraDepositSum = CredManTestr.ExtraDepositSum;
+
   CredManSetDatesCust(CredManr,true);
   RecalcCredManFees(CredManr);
 
