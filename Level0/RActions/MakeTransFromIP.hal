@@ -1152,7 +1152,6 @@ BEGIN
           if (ARAccb.IPBookVAT) then begin
             vatcode = IPrw.VATCode;
           end;
-          logtext(0,"eeeee");
           if (IPp.ARonTR!=0) then begin
             AddEuroCurncyNomARTrRow(gTRp,accstr,otxt,vatcode,tstr,rs,rs2,true,onaccdc1,TotSum,
                               IPrw.InvCurncy,frrate,torate1,torate2,baserate1,baserate2,v,blankval,

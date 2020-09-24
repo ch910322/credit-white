@@ -685,7 +685,6 @@ LkInvoiceTypeCash:;
           tacc = aAmounts[i];
           tsum = vAmounts[aAmounts[i]];
           rs = MulRateToBase1(IVp.CurncyCode,tsum,frrate,torate1,torate2,baserate1,baserate2,DefaultCurRoundOff);
-          logtext(0,"dd " & tacc & ":" & tsum & ":" & rs);
           if (CheckTTRPerRow("IVVc",tacc,cuobj,dc1,taccnumber,0)) then begin end;
           if (IVp.ARonTR!=0) then begin
             AddEuroCurncyNomARTrRow(gTRp,tacc,cuobj,"",tstr,rs,blankval,false,dc1,TotSum,

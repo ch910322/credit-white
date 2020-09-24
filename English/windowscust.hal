@@ -1865,6 +1865,7 @@ begin
   CheckBox(h,v+=16,0,"Interest on due Principle",IntDuePrinciple);
   CheckBox(h,v+=16,0,"Manual Contract Fee Invoice Number",ManualInvoiceNumber);
   CheckBox(h,v+=16,0,"Principle below hidden Line",HiddenPrinciple);
+  CheckBox(h,v+=16,0,"Use Agreement Type Accounts",UseTypeAccounts);
 
   CheckBox(h,v+=30,0,"Automatically issue Invoices",AutoInvoiceFlag);
   EditField(h,v+=20,100,"Time",Normal,AutoInvoiceTime,false,PasteCurTime);

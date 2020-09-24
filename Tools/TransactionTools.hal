@@ -9,21 +9,25 @@ begin
   row CredManAccVc CredManAccrw;
   string 255 res;
   Integer i,rwcnt;
+  record CMInvoicingBlock CIb;
 
-  CredManr.SerNr = sernr;
-  if (ReadFirstMain(CredManr,1,true)) then begin
-    CredManAccr.CredManType = CredManr.Type;
-    if (ReadFirstMain(CredManAccr,1,true)) then begin
-      rwcnt = MatRowcnt(CredManAccr);
-      for (i=0;i<rwcnt;i=i+1) begin
-        MatRowGet(CredManAccr,i,CredManAccrw);
-        if (CredManAccrw.ArtCode==artcode) then begin
-          if (debitf) then begin
-            res = CredManAccrw.DebitAcc;
-          end else begin
-            res = CredManAccrw.CreditAcc;
+  BlockLoad(CIb);
+  if (CIb.UseTypeAccounts==1) then begin
+    CredManr.SerNr = sernr;
+    if (ReadFirstMain(CredManr,1,true)) then begin
+      CredManAccr.CredManType = CredManr.Type;
+      if (ReadFirstMain(CredManAccr,1,true)) then begin
+        rwcnt = MatRowcnt(CredManAccr);
+        for (i=0;i<rwcnt;i=i+1) begin
+          MatRowGet(CredManAccr,i,CredManAccrw);
+          if (CredManAccrw.ArtCode==artcode) then begin
+            if (debitf) then begin
+              res = CredManAccrw.DebitAcc;
+            end else begin
+              res = CredManAccrw.CreditAcc;
+            end;
+            i = rwcnt;
           end;
-          i = rwcnt;
         end;
       end;
     end;
@@ -45,23 +49,27 @@ begin
   string 255 res;
   Integer i,rwcnt;
   record CredHistVc CredHistr;
+  record CMInvoicingBlock CIb;
 
-  CredHistr.SerNr = histsernr;
-  if (ReadFirstMain(CredHistr,1,true)) then begin
-    CredManr.SerNr = CredHistr.CredManNr;
-    if (ReadFirstMain(CredManr,1,true)) then begin
-      CredManAccr.CredManType = CredManr.Type;
-      if (ReadFirstMain(CredManAccr,1,true)) then begin
-        rwcnt = MatRowcnt(CredManAccr);
-        for (i=0;i<rwcnt;i=i+1) begin
-          MatRowGet(CredManAccr,i,CredManAccrw);
-          if (CredManAccrw.ArtCode==CredHistr.ArtCode) then begin
-            if (debitf) then begin
-              res = CredManAccrw.DebitAcc;
-            end else begin
-              res = CredManAccrw.CreditAcc;
+  BlockLoad(CIb);
+  if (CIb.UseTypeAccounts==1) then begin
+    CredHistr.SerNr = histsernr;
+    if (ReadFirstMain(CredHistr,1,true)) then begin
+      CredManr.SerNr = CredHistr.CredManNr;
+      if (ReadFirstMain(CredManr,1,true)) then begin
+        CredManAccr.CredManType = CredManr.Type;
+        if (ReadFirstMain(CredManAccr,1,true)) then begin
+          rwcnt = MatRowcnt(CredManAccr);
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(CredManAccr,i,CredManAccrw);
+            if (CredManAccrw.ArtCode==CredHistr.ArtCode) then begin
+              if (debitf) then begin
+                res = CredManAccrw.DebitAcc;
+              end else begin
+                res = CredManAccrw.CreditAcc;
+              end;
+              i = rwcnt;
             end;
-            i = rwcnt;
           end;
         end;
       end;
@@ -82,15 +90,19 @@ begin
   record CredManVc CredManr;
   record CredManAccVc CredManAccr;
   string 255 res;
+  record CMInvoicingBlock CIb;
 
-  CredManr.SerNr = sernr;
-  if (ReadFirstMain(CredManr,1,true)) then begin
-    CredManAccr.CredManType = CredManr.Type;
-    if (ReadFirstMain(CredManAccr,1,true)) then begin
-      if (debitf) then begin
-        res = CredManAccr.PLDebitAcc;
-      end else begin
-        res = CredManAccr.PLCreditAcc;
+  BlockLoad(CIb);
+  if (CIb.UseTypeAccounts==1) then begin
+    CredManr.SerNr = sernr;
+    if (ReadFirstMain(CredManr,1,true)) then begin
+      CredManAccr.CredManType = CredManr.Type;
+      if (ReadFirstMain(CredManAccr,1,true)) then begin
+        if (debitf) then begin
+          res = CredManAccr.PLDebitAcc;
+        end else begin
+          res = CredManAccr.PLCreditAcc;
+        end;
       end;
     end;
   end;
@@ -114,41 +126,44 @@ begin
   Boolean res;
   Integer prio;
   record ItemPriorityBlock IPb;
+  record CMInvoicingBlock CIb;
 
-  BlockLoad(IPb);
+  BlockLoad(CIb);
+  if (CIb.UseTypeAccounts==1) then begin
+    BlockLoad(IPb);
 
-  tval = tsum;
+    tval = tsum;
 
-  rwcnt = MatRowCnt(IVr);
-  for (i=0;i<rwcnt;i=i+1) begin
-    MatRowGet(IVr,i,IVrw);
-    if (IVrw.stp==kInvoiceRowTypeNormal and IVrw.Sum>0) then begin
-      prio = GetItemPriority(IPb,IVrw.ArtCode);
-      IVrw.rowGP = prio;
-      MatRowPut(tIVr,MatRowCnt(tIVr),IVrw);
+    rwcnt = MatRowCnt(IVr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(IVr,i,IVrw);
+      if (IVrw.stp==kInvoiceRowTypeNormal and IVrw.Sum>0) then begin
+        prio = GetItemPriority(IPb,IVrw.ArtCode);
+        IVrw.rowGP = prio;
+        MatRowPut(tIVr,MatRowCnt(tIVr),IVrw);
+      end;
     end;
-  end;
-  SortRows(tIVr,"rowGP",false);
+    SortRows(tIVr,"rowGP",false);
 
-  rwcnt = MatRowCnt(tIVr);
-  for (i=0;i<rwcnt and tval>0;i=i+1) begin
-    MatRowGet(tIVr,i,IVrw);
-    InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+    rwcnt = MatRowCnt(tIVr);
+    for (i=0;i<rwcnt and tval>0;i=i+1) begin
+      MatRowGet(tIVr,i,IVrw);
+      InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
 
-    acc = CM_GetCredManTypeSalesItemAccount(IVr.CustCredManNr,IVrw.ArtCode,IVr.ARAcc,debitf);
-    sum = IVrw.Sum;
+      acc = CM_GetCredManTypeSalesItemAccount(IVr.CustCredManNr,IVrw.ArtCode,IVr.ARAcc,debitf);
+      sum = IVrw.Sum;
 
-    if (IVr.InclVAT==0) then begin
-      sum = sum + vatval;
+      if (IVr.InclVAT==0) then begin
+        sum = sum + vatval;
+      end;
+      tval = tval - sum;
+      if (tval<0) then begin
+        sum = sum + tval;
+      end;
+
+      vAmounts[acc] = vAmounts[acc] + sum;
+      res = true;
     end;
-    tval = tval - sum;
-    if (tval<0) then begin
-      sum = sum + tval;
-    end;
-
-    vAmounts[acc] = vAmounts[acc] + sum;
-    logtext(0,"add " & acc & ":" & sum & ":" & IVrw.Sum & ":" & vatval);
-    res = true;
   end;
 
   CM_GetInvoiceItemOrder = res;

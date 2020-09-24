@@ -1385,7 +1385,7 @@ begin
   RecordField(MoneyTransferDateVI,M4Int,0,0);
   RecordField(MoneyTransferDateOP,M4Int,0,0);
   RecordField(BuyOutItem,M4Code,20,INVc);
-
+  RecordField(UseTypeAccounts,M4Int,0,0);
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
