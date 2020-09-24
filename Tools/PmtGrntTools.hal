@@ -79,7 +79,7 @@ begin
   record CMInvoicingBlock CIb;
   record CredManGrntReportVc oldGRr;
   record IVVc IVr;
-  record VIVc VIr;
+  record VIVc VIr,oldVIr;
   row IVVc IVrw;
   row VIVc VIrw;
   Integer sernrf;
@@ -145,8 +145,10 @@ begin
     MatRowPut(VIr,0,VIrw);
     VICalcVals(VIr);
     VISumup(VIr,ct);
-    VIr.OKFlag = 1;
     if (RecordInsert(VIr,true)) then begin
+      RecordCopy(oldVIr,VIr);
+      VIr.OKFlag = 1;
+      RecordUpdate(oldVIr,VIr,true);
       GRr.SellerVINr = VIr.SerNr;
       GRr.InitPLInvFlag = 1;
     end; 

@@ -94,8 +94,8 @@ begin
 
   BlockLoad(CIb);
   if (CIb.UseTypeAccounts==1) then begin
-    CredManr.SerNr = sernr;
-    if (ReadFirstMain(CredManr,1,true)) then begin
+    CredManr.VINr = sernr;
+    if (ReadFirstKey("VINr",CredManr,1,true)) then begin
       CredManAccr.CredManType = CredManr.Type;
       if (ReadFirstMain(CredManAccr,1,true)) then begin
         if (debitf) then begin
