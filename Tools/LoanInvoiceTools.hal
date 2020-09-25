@@ -2210,35 +2210,47 @@ begin
   val chk;
   Boolean installmentf;
   Longint err;
+  record ARVc ARr;
+  val sum;
 
-  RecordNew(IPr);
-  IPr.TransDate = CurrentDate;
-  IPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
-  IPr.RegDate = CurrentDate;
-  IPr.OKFlag = 0;
-  IPr.PayMode = GetReceiptsPayMode(IVr);
-  rownr = 0;
-  ClearRow(IPr,IPrw,1);
-  IPrw.InvoiceNr = IVr.SerNr;
-  MatRowPut(IPr,rownr,IPrw);
-  PasteInvIn2IPr(IPr,rownr,IPr.TransDate,chk,false,installmentf);
-  MatRowGet(IPr,rownr,IPrw);
-  IPrw.RecVal = -IVr.Sum4;
-  MatRowPut(IPr,rownr,IPrw);
-  IPVc_PasteRecVal(IPr,rownr);
+  sum = IVr.Sum4;
+  ARr.InvoiceNr = IVr.SerNr;
+  if (ReadFirstMain(ARr,1,true)) then begin
+    if (ARr.RVal>=0) then begin
+      sum =   IVr.Sum4 - ARr.RVal;
+    end;
+  end;
 
-  rownr = 1;
-  ClearRow(IPr,IPrw,1);
-  IPrw.CustCode = IVr.CustCode;
-  MatRowPut(IPr,rownr,IPrw);
-  IPVc_PasteCustCode(IPr,rownr,err);
-  MatRowGet(IPr,rownr,IPrw);
-  IPrw.RecVal = IVr.Sum4;
-  IPrw.CUPNr = IPr.SerNr;
-  MatRowPut(IPr,rownr,IPrw);
-  IPVc_PasteRecVal(IPr,rownr);
-  
-  IPSumup(IPr);
-  RecordStore(IPr,false);
+  if (sum>0) then begin
+    RecordNew(IPr);
+    IPr.TransDate = CurrentDate;
+    IPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
+    IPr.RegDate = CurrentDate;
+    IPr.OKFlag = 0;
+    IPr.PayMode = GetReceiptsPayMode(IVr);
+    rownr = 0;
+    ClearRow(IPr,IPrw,1);
+    IPrw.InvoiceNr = IVr.SerNr;
+    MatRowPut(IPr,rownr,IPrw);
+    PasteInvIn2IPr(IPr,rownr,IPr.TransDate,chk,false,installmentf);
+    MatRowGet(IPr,rownr,IPrw);
+    IPrw.RecVal = -sum;
+    MatRowPut(IPr,rownr,IPrw);
+    IPVc_PasteRecVal(IPr,rownr);
+
+    rownr = 1;
+    ClearRow(IPr,IPrw,1);
+    IPrw.CustCode = IVr.CustCode;
+    MatRowPut(IPr,rownr,IPrw);
+    IPVc_PasteCustCode(IPr,rownr,err);
+    MatRowGet(IPr,rownr,IPrw);
+    IPrw.RecVal = sum;
+    IPrw.CUPNr = IPr.SerNr;
+    MatRowPut(IPr,rownr,IPrw);
+    IPVc_PasteRecVal(IPr,rownr);
+    
+    IPSumup(IPr);
+    RecordStore(IPr,false);
+  end;
   return;
 end;
