@@ -115,6 +115,50 @@ begin
 end;
 
 global
+function string 255 CM_GetTransactionControlAcc(record CredManVc CredManr,string fallback)
+begin
+  record CredManAccVc CredManAccr;
+  string 255 res;
+  record CMInvoicingBlock CIb;
+
+  BlockLoad(CIb);
+  if (CIb.UseTypeAccounts==1) then begin
+    CredManAccr.CredManType = CredManr.Type;
+    if (ReadFirstMain(CredManAccr,1,true)) then begin
+      res = CredManAccr.ControlAcc;
+    end;
+  end;
+  if (blank(res)) then begin
+    res = fallback;
+  end;
+  
+  CM_GetTransactionControlAcc = res;
+  return;
+end;
+
+global
+function string 255 CM_GetTransactionDebtorsAcc(record CredManVc CredManr,string fallback)
+begin
+  record CredManAccVc CredManAccr;
+  string 255 res;
+  record CMInvoicingBlock CIb;
+
+  BlockLoad(CIb);
+  if (CIb.UseTypeAccounts==1) then begin
+    CredManAccr.CredManType = CredManr.Type;
+    if (ReadFirstMain(CredManAccr,1,true)) then begin
+      res = CredManAccr.DebtorsAcc;
+    end;
+  end;
+  if (blank(res)) then begin
+    res = fallback;
+  end;
+  
+  CM_GetTransactionDebtorsAcc = res;
+  return;
+end;
+
+global
 function Boolean CM_GetInvoiceItemOrder(record IVVc IVr,val tsum,var vector val vAmounts,Boolean debitf)
 begin
   val vatprc,vatval,vatexclprc,vatinclprc,rowtax;

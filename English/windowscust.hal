@@ -2673,15 +2673,17 @@ begin
   WindowBegin("Account",CredManAccDCLass,CGview,-);
   UseView(CredManAccVc);
   SetWRect(64,80,509,375);
-  EditField(h=105,v=6, 100, "Type",Normal,CredManType,false,CredManTypeSClass);
+  EditField(h=145,v=6, 100, "Type",Normal,CredManType,false,CredManTypeSClass);
   EditField(h,v+=vs,-40,"Name",Normal,Comment,false,0);
-  EditField(h,v+=vs,100,"P/L Debit Acc",Normal,PLDebitAcc,false,AccSClass);
-  EditField(h,v+=vs,100,"P/L Credit Acc",Normal,PLCreditAcc,false,AccSClass);
+  EditField(h,v+=vs,100,"P/L Debit Account",Normal,PLDebitAcc,false,AccSClass);
+  EditField(h,v+=vs,100,"P/L Credit Account",Normal,PLCreditAcc,false,AccSClass);
+  EditField(h,v+=vs,100,"Control Account",Normal,ControlAcc,false,AccSClass);
+  EditField(h,v+=vs,100,"Debtors Account",Normal,DebtorsAcc,false,AccSClass);
 
   MatrixBegin(4,v=v+40,-32,-3,-,99);
   MatCol(1,24,"Item",0,ArtCode,false,INSClass);
-  MatCol(1,134,"Debit Acc.",0,DebitAcc,false,AccSClass);
-  MatCol(1,284,"Credit Acc.",0,CreditAcc,false,AccSClass);
+  MatCol(1,134,"Debit Account",0,DebitAcc,false,AccSClass);
+  MatCol(1,284,"Credit Account",0,CreditAcc,false,AccSClass);
   EndMatrix;
 
   EndWindow;
