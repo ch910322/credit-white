@@ -13,7 +13,7 @@ external updating procedure AsyncSwedBankImportSTIn(area);
 external updating procedure AsyncSEBBankImportSTIn(area);
 external updating procedure AsyncLuminorImportSTIn(area);
 external updating procedure AsyncSiauliuImportSTIn(area);
-external procedure GetCustomerLoanAmounts(var record IPVc,var integer,string,var string,var val,string,boolean,string,string,var vector Boolean);
+external procedure GetCustomerLoanAmounts(var record IPVc,var integer,string,var string,var val,string,boolean,string,string,var vector Boolean,Date);
 
 global function string 255 ConvertNameToSet(string name)
 begin
@@ -231,9 +231,8 @@ begin
 return;
 end;
 
-
-
-global procedure BankFillIProws(var record IPVc IPr,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,Boolean allf)
+global 
+procedure BankFillIProws2(var record IPVc IPr,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,Boolean allf,Date untildate)
 begin
 	row IPVc IPrw;
 	boolean installmentf;
@@ -258,7 +257,7 @@ begin
 	end;
 	
 	if(nonblank(cucode))then begin
-    GetCustomerLoanAmounts(IPr,k,RecName,CurncyCode,remsum,cucode,cufnd,instr,origcomm,invused);
+    GetCustomerLoanAmounts(IPr,k,RecName,CurncyCode,remsum,cucode,cufnd,instr,origcomm,invused,untildate);
 
 		ARr.CustCode = cucode;
 		TrHs = true;
@@ -266,7 +265,7 @@ begin
 			if(ARr.CustCode!=cucode)then begin TrHs = false; end;
 									
 			if(TrHs)then begin
-				if(remsum>0 and ARr.RVal>0)then begin
+				if(remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate))then begin
 					
 					primsearch = false;
 					if(BISb.DefSearchInv==0)then begin
@@ -339,7 +338,7 @@ begin
 		while(loopkey("CustCode",ARr,1,TrHs))begin
 			if(ARr.CustCode!=cucode)then begin TrHs = false; end;
 			if(TrHs)then begin
-				if(remsum>0 and ARr.RVal>0)then begin
+				if(remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate))then begin
 					primsearch = false;
 					if(BISb.DefSearchInv==1)then begin
 						primsearch = setinset(ARr.InvoiceNr,instr);
@@ -424,7 +423,7 @@ begin
 				if(invused[ARr.InvoiceNr]==true)then begin testf = false; end;
 							
 				if(testf)then begin
-					if(remsum>0 and ARr.RVal>0)then begin
+					if(remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate))then begin
 						clearrow(IPr,IPrw,1);
 						IPrw.InvoiceNr = ARr.InvoiceNr;
 						matrowput(IPr,k,IPrw);
@@ -472,7 +471,7 @@ begin
 		ARr.CustCode = "";
 		while(loopkey("CustCode",ARr,1,TrHs))begin												
 			if(TrHs)then begin
-				if(remsum>0 and ARr.RVal>0)then begin
+				if(remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate))then begin
 					primsearch = false;
 					if(BISb.DefSearchInv==0)then begin
 						primsearch = setinset(ARr.InvoiceNr,instr);
@@ -543,7 +542,7 @@ begin
 		ARr.CustCode = "";
 		while(loopkey("CustCode",ARr,1,TrHs))begin												
 			if(TrHs)then begin
-				if(remsum>0 and ARr.RVal>0)then begin
+				if(remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate))then begin
 					primsearch = false;
 					if(BISb.DefSearchInv==1)then begin
 						primsearch = setinset(ARr.InvoiceNr,instr);
@@ -655,6 +654,15 @@ begin
 	end;
 	
 return;
+end;
+
+global
+procedure BankFillIProws(var record IPVc IPr,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,Boolean allf)
+begin
+  
+  BankFillIProws2(IPr,RecName,CurncyCode,remsum,cucode,cufnd,instr,origcomm,allf,"");
+
+  return;
 end;
 
 

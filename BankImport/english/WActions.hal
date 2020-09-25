@@ -669,3 +669,38 @@ begin
 
   return;
 end;
+
+function Boolean ReceiptConnectionChangeCustWClassSum4EFAfter(Integer wn,Integer rownr,Integer changed)
+begin
+  record RcVc RepSpec;
+  record CUVc CUr;
+
+  if (changed!=0) then begin
+    GetWindowRecord(wn,RepSpec);
+    CUr.Code = RepSpec.f4;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      RepSpec.f5 = CUr.Name;
+    end;
+    PutWindowRecord(wn,RepSpec);
+  end;
+  
+
+  ReceiptConnectionChangeCustWClassSum4EFAfter = false;
+  return;
+end;
+
+global
+function Boolean ReceiptConnectionChangeCustWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+
+  if (changed) then begin
+    switch (fieldname) begin
+      case "f4": 
+        res = ReceiptConnectionChangeCustWClassSum4EFAfter(wn,rownr,changed);
+    end;
+  end;
+    
+  ReceiptConnectionChangeCustWClassAfterEditField = res;
+  return;
+end;

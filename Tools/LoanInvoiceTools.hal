@@ -29,6 +29,7 @@ external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
 external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var val,Boolean,var Boolean);
 external inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var LongInt);
 external function val FindInvoicePaidAmount_OP(LongInt,LongInt);
+external inner procedure IPPastePayMode(var record IPVc);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -2221,6 +2222,7 @@ begin
   Longint err;
   record ARVc ARr;
   val sum;
+  record IPVc oldIPr;
 
   sum = IVr.Sum4;
   ARr.InvoiceNr = IVr.SerNr;
@@ -2237,6 +2239,7 @@ begin
     IPr.RegDate = CurrentDate;
     IPr.OKFlag = 0;
     IPr.PayMode = GetReceiptsPayMode(IVr);
+    IPPastePayMode(IPr);
     rownr = 0;
     ClearRow(IPr,IPrw,1);
     IPrw.InvoiceNr = IVr.SerNr;
@@ -2259,7 +2262,11 @@ begin
     IPVc_PasteRecVal(IPr,rownr);
     
     IPSumup(IPr);
-    RecordStore(IPr,false);
+    if (RecordInsert(IPr,true)) then begin
+      RecordCopy(oldIPr,IPr);
+      IPr.OKFlag = 1;
+      RecordUpdate(oldIPr,IPr,true);
+    end;
   end;
   return;
 end;
