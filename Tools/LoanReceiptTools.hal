@@ -211,7 +211,7 @@ end;
 
 /*main function*/
 global
-procedure GetCustomerLoanAmounts(var record IPVc IPr,var integer k,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,var vector Boolean invused)
+procedure GetCustomerLoanAmounts(var record IPVc IPr,var integer k,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,var vector Boolean invused,Date untildate)
 begin
   record ItemPriorityBlock IPb;
   record ORVc ORr;
@@ -235,7 +235,7 @@ begin
     if (CredHistr.CustCode!=cucode or CredHistr.PaidFlag!=0) then begin
       TrHs = false;
     end else begin
-      if (CredHistr.RecordType==0) then begin
+      if (CredHistr.RecordType==0 and (blank(untildate) or CredHistr.TransDate<=untildate)) then begin
         priority = GetItemPriority(IPb,CredHistr.ArtCode);
         InsertCredHistInArray(CredHistr,arrORr,priority);
       end;
