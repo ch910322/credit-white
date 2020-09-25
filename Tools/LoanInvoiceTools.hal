@@ -1234,6 +1234,7 @@ begin
 */ 
   lastinv = CredManr.startDate;
   rwcnt = MatRowCnt(CredManPayPlanr);
+  balance = CredManr.InvSum4;
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
     if (CredManPayPlanrw.PlanType<=4) then begin
