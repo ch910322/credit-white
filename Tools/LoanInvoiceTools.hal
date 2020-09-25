@@ -1223,6 +1223,7 @@ begin
   record CredHistVc CredHistr;
   array string 255 lateformula;
   record CredManVc tCredManr;
+  Boolean foundf;
 
 /*
 1. Get the last invoice date and the balance
@@ -1230,7 +1231,6 @@ begin
 */ 
   lastinv = CredManr.startDate;
   rwcnt = MatRowCnt(CredManPayPlanr);
-  balance = CredManr.InvSum4;
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
     if (CredManPayPlanrw.PlanType<=4) then begin
@@ -1241,6 +1241,7 @@ begin
         if (CredManPayPlanrw.ArtCode!=CMb.LateFeeItem and CredManPayPlanrw.ArtCode!=CMb.LateRateItem and (CredHistr.RecordType==0 or CredHistr.RecordType==4)) then begin
           if (CredManPayPlanrw.Bal<balance or balance==0) then begin
             balance = CredManPayPlanrw.Bal;
+            foundf = true;
           end;
           if (CredHistr.RecordType==0 and CredManPayPlanrw.TransDate>lastinv) then begin
             lastinv = AddDay(CredManPayPlanrw.TransDate,1);
@@ -1248,6 +1249,9 @@ begin
         end;
       end;
     end;
+  end;
+  if (!foundf) then begin
+    balance = CredManr.InvSum4;
   end;
   
   if (balance>0) then begin
