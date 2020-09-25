@@ -62,6 +62,16 @@ BEGIN
   CredManr.SignAgreement = 0;
   CredManr.SignVekselis = 0;
   CredManr.SignSchedule = 0;
+  CredManr.Surety1Signed = 0;
+  CredManr.Surety2Signed = 0;
+  CredManr.Surety3Signed = 0;
+  CredManr.Surety4Signed = 0;
+  CredManr.Surety5Signed = 0;
+  CredManr.Surety6Signed = 0;
+  CredManr.BOE1Signed = 0;
+  CredManr.BOE2Signed = 0;
+  CredManr.BOE3Signed = 0;
+  CredManr.BOE4Signed = 0;
 /*
   CredManr.FactInvAmount = t;
   CredManr.LoanToValue = t;
