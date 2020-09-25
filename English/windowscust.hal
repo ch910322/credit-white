@@ -1819,7 +1819,8 @@ begin
   MatCol(1,290,"Downpmnt",0,Deposit,true,0);
   MatCol(1,360,"Principle",0,Principle,true,0);
   MatCol(1,430,"Interest",0,Interest,true,0);
-  MatCol(1,500,"Fees",0,Fees,true,0);
+  MatColTL(1,500,"Fees",0,-1,ViewOnly,0,Fees,true,0);
+
   MatCol(1,574,"Total",0,Total,true,0);
   MatCol(1,-180,"Invoiced",0,Invoiced,false,SetSClass);
   MatCol(1,-120,"Balance",0,Balance,true,0);

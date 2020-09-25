@@ -1029,6 +1029,7 @@ begin
         end;
     end;
   end;
+  
   if (updf) then begin
     CM_AddPrepayments(IVr,CIb);
   end;
@@ -1155,12 +1156,15 @@ begin
   Boolean firstf;
   Boolean res;
   record CredManVc CredManr;
+  transaction Boolean gSilenceIVOpenPrepExists;
   
   BlockLoad(CMb);
   BlockLoad(ASb);
   CredManr.SerNr = CSr.CredManNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
+    gSilenceIVOpenPrepExists = true;
     BuildInvoiceBasedOnSchedule(CredManr,CSrw,CMb,ASb,"",IVr,false,false);
+    gSilenceIVOpenPrepExists = false;
   end;
 
   return;
