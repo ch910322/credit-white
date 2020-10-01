@@ -2105,7 +2105,7 @@ begin
   UseView(CMPropertyVc);
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
-  RlCol(100,100,"Official No.",OfficialSerNr,false);
+  RlCol(100,100,"Licence Plate No.",OfficialSerNr,false);
   RlCol(230,230,"Name",Addr0,false);
   SearchField("Search");
   EndWindow;
