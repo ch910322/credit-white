@@ -55,11 +55,13 @@ begin
   Boolean res;
  
   while (LoopKey("CustContactCode:" & custcode,CRr,1,true)) begin
-    CUr.Code = CRr.ContactCode;
-    if (ReadFirstMain(CUr,1,true)) then begin
-      if (SetInSet(CUr.JobDesc,title)) then begin
-        res = true;
-        goto LFindContactWithJobTitle;
+    if (CRr.Invalid==0) then begin
+      CUr.Code = CRr.ContactCode;
+      if (ReadFirstMain(CUr,1,true)) then begin
+        if (SetInSet(CUr.JobDesc,title)) then begin
+          res = true;
+          goto LFindContactWithJobTitle;
+        end;
       end;
     end;
   end;
