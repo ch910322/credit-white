@@ -1521,6 +1521,8 @@ begin
   ArrayField(PledgeType,M4Set,2030,0);
   ArrayField(PledgeVal,M4Val,0,0);
   ArrayField(PledgeDate,M4Date,0,0);
+  ArrayField(SerialNo,M4Str,255,0);
+  
   EndArray;
   MainKeyBegin(CredManNr,0);
   KeySegment(CredManNr);

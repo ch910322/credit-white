@@ -2105,7 +2105,7 @@ begin
   UseView(CMPropertyVc);
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
-  RlCol(100,100,"Licence Plate No.",OfficialSerNr,false);
+  RlCol(100,100,"License Plate No.",OfficialSerNr,false);
   RlCol(230,230,"Name",Addr0,false);
   SearchField("Search");
   EndWindow;
@@ -2345,7 +2345,12 @@ begin
     MatCol(1,-170,"Pledge Val",0,PledgeVal,true,0);
     MatCol(1,-80,"Pledge Date",0,PledgeDate,false,PasteCurDate);
   end else begin
-    MatCol(1,-260,"ID",0,OfficialSerNr,false,0);
+    if (type==2) then begin
+      MatCol(1,-380,"VIN Number",0,OfficialSerNr,false,0);
+      MatCol(1,-270,"License Plate No.",0,SerialNo,false,0);
+    end else begin
+      MatCol(1,-260,"ID",0,OfficialSerNr,false,0);
+    end;
     MatCol(1,-170,"Reported Value",0,RepVal,true,0);
     MatCol(1,-80,"Evaluated Value",0,EvalVal,true,0);
   end;
