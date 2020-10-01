@@ -1,5 +1,5 @@
 external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
-remote inner function Boolean PasteCust2InInv(var record IVVc,record LocalMachineBlock,string,Boolean,var string,var string,var string,var string,var string);
+external inner function Boolean PasteCust2InInv(var record IVVc,record LocalMachineBlock,string,Boolean,var string,var string,var string,var string,var string);
 remote inner procedure IVVc_PastePayDeal(var record IVVc,string,string);
 remote inner procedure IVVc_PasteSalesMan(var record IVVc,string);
 external inner function Boolean IVVc_PasteArtCode(var record IVVc,Integer,var string,var string,Boolean,var Integer);
@@ -2041,7 +2041,9 @@ begin
   Boolean updf;
   record CredFeesMatrixVc FMr;
   val bal;
+  transaction Boolean gSilenceIVOpenPrepExists;
   
+  gSilenceIVOpenPrepExists = true;
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin
     RecordCopy(oldCSr,CSr);
@@ -2063,7 +2065,6 @@ begin
   CSr.TransTime = CurrentTime;
   BlockLoad(CMb);
   BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
-
   BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CMb,SMr);
   bal = CredManr.InvSum4;
   rwcnt = MatRowCnt(SMr);
@@ -2107,6 +2108,7 @@ begin
   end;
 
 lout:;
+  gSilenceIVOpenPrepExists = false;
   return;
 end;
 

@@ -435,8 +435,9 @@ begin
   val calcbal;
   array record IVVc aIVr;
   record IVVc IVr;
- 
+  transaction Boolean gSilenceIVOpenPrepExists;
   
+  gSilenceIVOpenPrepExists = true;
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin
     res = true;
@@ -460,6 +461,7 @@ begin
     end;
   end;
 
+  gSilenceIVOpenPrepExists = false;
   BuildCredManInfoMatrixOnSchedule = res;
   return;
 end;
