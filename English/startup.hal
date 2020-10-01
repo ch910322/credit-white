@@ -256,7 +256,7 @@ begin
   StrSetText(RemoveLoanAppAttach,"Allow removing Loan Application Attachments");
   StrSetText(ReceiptBankTRDiffAmounts,"Allow saving Receipt with different Total than Bank Transaction");
   StrSetText(CredManChangeTransferDate,"Allow changing Money Transfer Date");
-  
+  StrSetText(CredManChangeInvoicedMonths,"Allow changing Credit Agreement Months when invoiced");
   EndStrSet;
 
   SetBegin(2000);
