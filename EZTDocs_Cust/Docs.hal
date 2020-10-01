@@ -1055,6 +1055,7 @@ procedure ExternalPrintLoanAppForm(record B2BLoanApplicationVc LAr,var vector st
 begin
   record CUVc CUr;
 
+  Ext_CommonDocumentFields(vVals);
   if (GetLoanAppContact(LAr.ContactName,LAr.CustCode,CUr)) then begin
     vVals["F_CONTACTNAME"] = CUr.Name;
     vVals["F_CONTACTID"] = CUr.RegNr1;
@@ -1083,6 +1084,7 @@ begin
   string 255 name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4;
   Integer surety;
 
+  Ext_CommonDocumentFields(vVals);
   surety = LAr.SuretyCnt;
   if (surety>0) then begin
     GetSuretyValues(LAr,surety,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);

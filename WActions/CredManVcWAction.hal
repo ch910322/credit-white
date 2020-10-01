@@ -1710,8 +1710,10 @@ begin
     switch (fieldname) begin
       case "InstalmentMonths": 
         GetWindowRecord(wn,CredManr);
-        if (ContractHasInvoiceCreated(CredManr)) then begin
-          res = false;
+        if (UserCanAction("CredManChangeInvoicedMonths",false)==false) then begin
+          if (ContractHasInvoiceCreated(CredManr)) then begin
+            res = false;
+          end;
         end;
     end;
   end;
