@@ -1710,8 +1710,10 @@ begin
     switch (fieldname) begin
       case "InstalmentMonths": 
         GetWindowRecord(wn,CredManr);
-        if (ContractHasInvoiceCreated(CredManr)) then begin
-          res = false;
+        if (UserCanAction("CredManChangeInvoicedMonths",false)==false) then begin
+          if (ContractHasInvoiceCreated(CredManr)) then begin
+            res = false;
+          end;
         end;
     end;
   end;
@@ -1815,7 +1817,8 @@ begin
     num = StringToInt(PushButtonTag);
     GetWindowRecord(wn,CredManr);
     GetCredManBOESuretyRecord(CredManr,BSr,num);
-    nwn = OpenWindow("BOESuretyDClass",0,0,"","",BSr);
+    nwn = OpenWindow("BOESuretyDClass",1,0,"","",BSr);
+    PutWindowString(nwn,"CredManWin",wn);
   end;
   return;
 end;
@@ -2145,5 +2148,94 @@ begin
   end;
 
   BOESuretyDClassAfterEditField = res;
+  return;
+end;
+
+
+function Boolean CredManTestDClassTypeEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManTestVc CredManTestr;
+  record CredManTypeVc CMTr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManTestr);
+    CMTr.Code = CredManTestr.Type;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      CredManTestr.Months = CMTr.InstalmentMonths;
+      CredManTestr.IntRate = CMTr.IntRate;
+    end;
+    PutWindowRecord(wn,CredManTestr); 
+  end; 
+  CredManTestDClassTypeEFAfter = true;
+  return;
+end;
+
+
+global
+function Boolean CredManTestDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+
+  if (changed==0) then begin
+    goto LCredManTestDClassAfterEditField;
+  end;
+  if (fieldname=="Type") then begin
+    res = CredManTestDClassTypeEFAfter(wn,changed!=0);
+  end;
+
+LCredManTestDClassAfterEditField:;
+  CredManTestDClassAfterEditField = res;
+  return;
+end;
+
+
+function Boolean CredManAccDClassTypeEFAfter(Integer wn,Boolean changedf)
+begin
+  record CredManAccVc CredManAccr;
+  record CredManTypeVc CMTr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManAccr);
+    CMTr.Code = CredManAccr.CredManType;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      CredManAccr.Comment = CMTr.Comment;
+    end;
+    PutWindowRecord(wn,CredManAccr); 
+  end; 
+  CredManAccDClassTypeEFAfter = true;
+  return;
+end;
+
+
+global
+function Boolean CredManAccDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+
+  if (changed==0) then begin
+    goto LCredManAccDClassAfterEditField;
+  end;
+  if (fieldname=="CredManType") then begin
+    res = CredManAccDClassTypeEFAfter(wn,changed!=0);
+  end;
+
+LCredManAccDClassAfterEditField:;
+  CredManAccDClassAfterEditField = res;
+  return;
+end;
+
+global
+procedure DblCredManTestVc(string dblstr,string l,Integer currepwn)
+begin
+  record CredManTestVc CredManTestr;
+
+  if (nonblank(l)) then begin
+    CredManTestr.UUID = StringToUUID(l);
+  end else begin
+    CredManTestr.UUID = StringToUUID(dblstr);
+  end;
+  if (ReadFirstMain(CredManTestr,1,true)) then begin
+    OpenWindow("CredManTestDClass",1,0,"","",CredManTestr);
+  end;
   return;
 end;

@@ -657,6 +657,11 @@ begin
   RecordField(BuyoutFeeFixed,M4Val,0,0);
   RecordField(BuyoutFeePrc,M4Qty,0,0);
 
+  RecordField(BOE1HasSurety,M4Int,0,0);
+  RecordField(BOE2HasSurety,M4Int,0,0);
+  RecordField(BOE3HasSurety,M4Int,0,0);
+  RecordField(BOE4HasSurety,M4Int,0,0);
+
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
   ChangeMatrixField(vRebate,M4Rate,0,0);
@@ -1385,7 +1390,7 @@ begin
   RecordField(MoneyTransferDateVI,M4Int,0,0);
   RecordField(MoneyTransferDateOP,M4Int,0,0);
   RecordField(BuyOutItem,M4Code,20,INVc);
-
+  RecordField(UseTypeAccounts,M4Int,0,0);
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
@@ -1521,6 +1526,8 @@ begin
   ArrayField(PledgeType,M4Set,2030,0);
   ArrayField(PledgeVal,M4Val,0,0);
   ArrayField(PledgeDate,M4Date,0,0);
+  ArrayField(SerialNo,M4Str,255,0);
+  
   EndArray;
   MainKeyBegin(CredManNr,0);
   KeySegment(CredManNr);
@@ -1594,6 +1601,68 @@ begin
   RecordField(CompTypeClass,M4Code,20,CClassVc);
   RecordField(EVKRClassType,M4Code,20,CClassVc);
   EndBlock;
+
+  RecordBegin(CredManTestVc,-,"");
+  NewAutosyncRegister(kSyncDirectionToClient,true);
+  RecordField(Comment,M4Str,255,0);
+  RecordField(TransDate,M4Date,0,0);
+  RecordField(Type,M4Code,20,CredManTypeVc);
+  RecordField(IntRate,M4Rate,0,0);
+  RecordField(Months,M4Long,0,0);
+  RecordField(startDate,M4Date,0,0);
+  RecordField(PrincipleDelayMonths,M4Qty,0,0);
+  RecordField(PrincipleDelayInterest,M4Rate,0,0);
+  RecordField(MaxMonthlyPayment,M4Val,0,0);
+  RecordField(ProlongMonths,M4Qty,0,0);
+  RecordField(ProlongDate,M4Date,0,0);//For now the same as pause date
+  RecordField(AnnualRate,M4Int,0,0);
+  RecordField(LastMonthPrinc,M4Val,0,0);
+  RecordField(MonthlyPaymentDay,M4Long,0,0);
+  RecordField(PauseDate,M4Date,0,0);
+  RecordField(PauseMonths,M4Long,0,0);
+  RecordField(Math,M4Matrix,0,0);
+  RecordField(InvSum4,M4Val,0,0);
+  RecordField(PayDeal,M4Code,20,PDVc);
+  RecordField(DepositSum,M4Val,0,0);
+  RecordField(ExtraDepositSum,M4Val,0,0);
+  RecordField(ExtraDepositMonths,M4Str,50,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(InvDate,M4Date,0,0);
+  ArrayField(Principle,M4Val,0,0);
+  ArrayField(Interest,M4Val,0,0);
+  ArrayField(Fees,M4Val,0,0);
+  ArrayField(Total,M4Val,0,0);
+  ArrayField(Invoiced,M4Set,432,0);
+  ArrayField(FromDate,M4Date,0,0);
+  ArrayField(ToDate,M4Date,0,0);
+  ArrayField(InvoiceNr,M4Str,60,0);
+  ArrayField(PayDate,M4Date,0,0);
+  ArrayField(Balance,M4Val,0,0);
+  ArrayField(Deposit,M4Val,0,0);
+  EndArray;
+  MainKeyBegin(MainKey,0);
+  KeySegment(UUID);
+  KeyBegin(Comment);
+  KeySegment(Comment);
+  KeySegment(UUID);
+  EndRecord;
+
+  RecordBegin(CredManAccVc,-,"");
+  RecordField(CredManType,M4Code,20,CredManTypeVc);
+  RecordField(Comment,M4Str,255,0);
+  RecordField(Math,M4Matrix,0,0);
+  RecordField(PLCreditAcc,M4Code,20,AccVc);
+  RecordField(PLDebitAcc,M4Code,20,AccVc);
+  RecordField(ControlAcc,M4Code,20,AccVc);
+  RecordField(DebtorsAcc,M4Code,20,AccVc);
+  ArrayBegin(Math,-,1);
+  ArrayField(ArtCode,M4Code,20,INVc);
+  ArrayField(CreditAcc,M4Code,20,AccVc);
+  ArrayField(DebitAcc,M4Code,20,AccVc);
+  EndArray;
+  MainKeyBegin(CredManType,0);
+  KeySegment(CredManType);
+  EndRecord;
   
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);

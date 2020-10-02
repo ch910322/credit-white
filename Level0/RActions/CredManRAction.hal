@@ -15,6 +15,9 @@ external function Boolean SerNrTestCredManVc(LongInt,Date,var Boolean);
 external function Integer CashSerNumberTest(string,val,string,LongInt,var Boolean);
 external procedure AddCredManTypeMatrix(var record CredManVc,record CredManTypeVc);
 external function val GetIntRate(string,Date);
+external outer function string 255 CM_GetTransactionDebtorsAcc(record CredManVc,string);
+external outer function string 255 CM_GetTransactionControlAcc(record CredManVc,string);
+
 
 global
 function LongInt CredManVcRecordDefaults(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
@@ -167,6 +170,9 @@ BEGIN
     controlacc = CredManSetb.CredManAcc;
   end;
   otxt = CredManr.Objects;
+//CUST-BEGIN
+  controlacc = CM_GetTransactionControlAcc(CredManr,controlacc);
+//CUST-END
   Accr.AccNumber = controlacc;
   if (ReadFirstMain(Accr,1,true)==false) then begin
     res = 1007;
@@ -190,6 +196,9 @@ BEGIN
   if (invfound) then begin
     ftxt = "" & CredManr.IVNr & " " & CredManr.Addr0;
   end;
+//CUST-BEGIN
+  aracc = CM_GetTransactionDebtorsAcc(CredManr,aracc);
+//CUST-END
   Accr.AccNumber = aracc;
   if (ReadFirstMain(Accr,1,true)==false) then begin
     res = 1007;

@@ -319,7 +319,8 @@ begin
           Cur.Code = aCust[j];
           ReadFirstMain(Cur,1,true);
           OutString(0,"DblCUVc",CUr.Code,false);
-          OutString(48,0,CUr.Name,false);
+          OutString(38,0,CUr.RegNr1,false);
+          OutString(78,0,CUr.Name,false);
           PrintAgedValue(2,v_s0[aCust[j] & ":" & aItems[i]]);
           PrintAgedValue(3,v_s1[aCust[j] & ":" & aItems[i]]);
           PrintAgedValue(4,v_s2[aCust[j] & ":" & aItems[i]]);
@@ -401,5 +402,20 @@ begin
     PrintAgedValue(9,tots7_2);
   end;
   
+  return;
+end;
+
+global
+function val GetCredHistOpenValue(Longint sernr)
+begin
+  record CredHistVc CredHistr;
+  val res;
+
+  CredHistr.SerNr = sernr;
+  if (ReadFirstMain(CredHistr,1,true)) then begin
+    res = CredHistr.Sum-CredHistr.PaidSum;
+  end;
+
+  GetCredHistOpenValue = res;
   return;
 end;

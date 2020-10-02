@@ -76,13 +76,14 @@ begin
     UnpackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
   end;
   
-  nwn = OpenWindow("CredFeesMatrixVClass",0,wn,"","",FMr);
+  if (CSrw.Invoiced==0 and rowno>=0) then begin
+    nwn = OpenWindow("CredFeesMatrixVClass",0,wn,"","",FMr);
   
-  PutWindowRecord(nwn,FMr);
-  PutWindowPrevRecord(nwn,FMr);
-  PutWindowString(nwn,"TaxMatrixActiveRow",rowno)
-  SetWindowState(nwn,Rs_normal);
-  
+    PutWindowRecord(nwn,FMr);
+    PutWindowPrevRecord(nwn,FMr);
+    PutWindowString(nwn,"TaxMatrixActiveRow",rowno)
+    SetWindowState(nwn,Rs_normal);
+  end;
   return;
 end;
 
@@ -130,7 +131,6 @@ begin
     fees = fees + FMrw.Sum;
   end;
 */
-
   TestInvoiceBasedOnScheduleRow(CSr,CSrw,IVr);
 
   CSrw.Total = IVr.Sum4;
@@ -152,7 +152,7 @@ begin
   
   //wn = CurWindow;
   mwn = MotherWindow(wn);
-  
+  DeselectWindow(wn,true);
   GetWindowRecord(wn,FMr);
   rwcnt = MatRowCnt(FMr);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -166,7 +166,6 @@ begin
     end;
   end;
   GetWindowRecord(mwn,SCr);
-  
   rowno = StringToInt(GetWindowString(wn,"TaxMatrixActiveRow"));
   if (rowno>=0) then begin
     MatRowGet(SCr,rowno,SCrw);
@@ -177,12 +176,11 @@ begin
   end;
 
   CloseWindow(wn);
-
+  WindowFieldGoto(mwn,SCr,i,"Total",false);
   PutWindowRecord(mwn,SCr);
   if (WindowState(mwn)==Rs_normal) then begin
     SetWindowState(mwn,Rs_update);
   end;
-
   UpdateCredManSchedSoftFields(mwn);
 
 LCredFeesMatrixVClassOnOKWindow:;
@@ -216,7 +214,7 @@ begin
     case "Balance": 
       res = false;
     case "Fees": 
-      res = false;
+      //res = false;
   end;
 
   CredManSchedDClassActiveEditField = res;

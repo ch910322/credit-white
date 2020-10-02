@@ -151,7 +151,7 @@ begin
   if (credsum<=0) then begin
     goto LAddCredHistToIP;
   end;
-
+/*
   if (FindExistingRow(IPr,ORrw.GroupOrdRow,num)) then begin
     MatRowGet(IPr,num,IPrw);
     IPrw.BankVal = IPrw.BankVal + credsum;
@@ -159,6 +159,7 @@ begin
     MatRowPut(IPr,num,IPrw);
     IPVc_PasteRecVal(IPr,num);
   end else begin
+*/
     num = MatRowCnt(IPr);
     ClearRow(IPr,IPrw,1);
     IPrw.InvoiceNr = ORrw.GroupOrdRow;
@@ -179,10 +180,11 @@ begin
     IPrw.RecCurncy = CurncyCode;
     IPrw.BankCurncy = CurncyCode;
     IPrw.PayDate = IPr.TransDate;
-    IPrw.PayDate =IPr.TransDate;
+    IPrw.PayDate = IPr.TransDate;
+    IPrw.CredHistNr = ORrw.CUServiceHistNr;
     MatRowPut(IPr,num,IPrw);
     IPVc_PasteRecVal(IPr,num);
-  end;
+//  end;
   remsum = remsum - credsum;
 
 LAddCredHistToIP:;
@@ -209,7 +211,7 @@ end;
 
 /*main function*/
 global
-procedure GetCustomerLoanAmounts(var record IPVc IPr,var integer k,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,var vector Boolean invused)
+procedure GetCustomerLoanAmounts(var record IPVc IPr,var integer k,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,var vector Boolean invused,Date untildate)
 begin
   record ItemPriorityBlock IPb;
   record ORVc ORr;
@@ -233,7 +235,7 @@ begin
     if (CredHistr.CustCode!=cucode or CredHistr.PaidFlag!=0) then begin
       TrHs = false;
     end else begin
-      if (CredHistr.RecordType==0) then begin
+      if (CredHistr.RecordType==0 and (blank(untildate) or CredHistr.TransDate<=untildate)) then begin
         priority = GetItemPriority(IPb,CredHistr.ArtCode);
         InsertCredHistInArray(CredHistr,arrORr,priority);
       end;

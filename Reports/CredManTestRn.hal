@@ -1,0 +1,186 @@
+external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
+external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
+external procedure CredManSetDatesCust(var record CredManVc,Boolean);
+external inner procedure CredManVc_PasteType(var record CredManVc);
+external procedure RecalcCredManFees(var record CredManVc);
+
+procedure ShowCredManField(Integer pos,string v1,string v2,Boolean align)
+begin
+  
+  if (v1==v2) then begin
+    OutString(pos,0,v1,align);
+  end else begin
+    OutString(pos,0,"*" & v2 & "*",align);
+  end;
+
+  return;
+end;
+
+procedure CreateAndTestSingleAgreement(record CredManTestVc CredManTestr)
+begin
+  record CredManVc CredManr,tCredManr;
+  record CredManSetBlock CredManSetb;
+  record SMVc SMr;
+  row SMVc SMrw;
+  row CredManTestVc CredManTestrw;
+  Integer i,rwcnt,rwcnt2;
+  val bal;
+  record CredManPayPlanVc CredManPayPlanr;
+  Boolean showf;
+
+  BlockLoad(CredManSetb);
+
+  RecordNew(CredManr);
+  CredManr.Type = CredManTestr.Type;
+  
+  CredManr.TransDate = CredManTestr.TransDate;
+  CredManr.Type = CredManTestr.Type;
+  CredManVc_PasteType(CredManr);
+  CredManr.IntRate = CredManTestr.IntRate;
+  CredManr.InstalmentMonths = CredManTestr.Months;
+  CredManr.startDate = CredManTestr.startDate;
+  CredManr.PrincipleDelayMonths = CredManTestr.PrincipleDelayMonths;
+  CredManr.PrincipleDelayInterest = CredManTestr.PrincipleDelayInterest;
+  CredManr.MaxMonthlyPayment = CredManTestr.MaxMonthlyPayment;
+  CredManr.ProlongMonths = CredManTestr.ProlongMonths;
+  CredManr.ProlongDate = CredManTestr.ProlongDate;
+  CredManr.AnnualRate = CredManTestr.AnnualRate;
+  CredManr.LastMonthPrinc = CredManTestr.LastMonthPrinc;
+  CredManr.MonthlyPaymentDay = CredManTestr.MonthlyPaymentDay;
+  CredManr.PauseDate = CredManTestr.PauseDate;
+  CredManr.PauseMonths = CredManTestr.PauseMonths;
+  CredManr.InvSum4 = CredManTestr.InvSum4;
+  CredManr.PayDeal = CredManTestr.PayDeal;
+  CredManr.DepositSum = CredManTestr.DepositSum;
+  CredManr.ExtraDepositMonths = CredManTestr.ExtraDepositMonths;
+  CredManr.ExtraDepositSum = CredManTestr.ExtraDepositSum;
+
+  CredManSetDatesCust(CredManr,true);
+  RecalcCredManFees(CredManr);
+
+  
+  RecordCopy(tCredManr,CredManr);
+  BuildCredManPayPlanCust(tCredManr,CredManPayPlanr,CredManSetb,true,true);
+  BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+  
+  StartFormat(15);
+  OutStringID(0,"DblCredManTestVc",CredManTestr.Comment,false,CredManTestr.UUID);
+  EndFormat;
+
+  rwcnt = MatRowCnt(SMr);
+  rwcnt2 = MatRowCnt(CredManTestr);
+  if (rwcnt2>rwcnt) then begin
+    rwcnt = rwcnt2;
+  end;
+  bal = CredManr.InvSum4;
+  for (i=0;i<rwcnt and showf==false;i=i+1) begin
+    MatRowGet(SMr,i,SMrw);
+    MatRowGet(CredManTestr,i,CredManTestrw);
+  
+    if (CredManTestrw.InvDate!=SMrw.TransDate) then begin
+      showf = true;
+    end;
+    if (CredManTestrw.PayDate!=SMrw.DueDate) then begin
+      showf = true;
+    end;
+    if ((CredManTestrw.FromDate & "")!=SMrw.Objects) then begin
+      showf = true;
+    end;
+    if ((CredManTestrw.ToDate & "")!=SMrw.Comment) then begin
+      showf = true;
+    end;
+    if (CredManTestrw.Principle!=(SMrw.DebVal - SMrw.ToRateB1)) then begin
+      showf = true;
+    end;
+    if (CredManTestrw.Deposit!=SMrw.ToRateB1) then begin
+      showf = true;
+    end;
+    bal = bal - SMrw.DebVal - SMrw.ToRateB1;
+    if (CredManTestrw.Balance!=bal) then begin
+      showf = true;
+    end;
+    if (CredManTestrw.Interest!=SMrw.CredVal) then begin
+      showf = true;
+    end;
+    if (CredManTestrw.Fees!=SMrw.DebVal2) then begin
+      showf = true;
+    end;
+    if (CredManTestrw.Total!=SMrw.CurDebVal) then begin
+      showf = true;
+    end;
+  end;
+  if (showf) then begin
+    bal = CredManr.InvSum4;
+    for (i=0;i<rwcnt2;i=i+1) begin
+      MatRowGet(SMr,i,SMrw);
+      MatRowGet(CredManTestr,i,CredManTestrw);
+      StartFormat(15);
+      bal = bal - SMrw.DebVal - SMrw.ToRateB1;
+      ShowCredManField(0,CredManTestrw.InvDate,SMrw.TransDate,false);
+      //ShowCredManField(2,CredManTestrw.PayDate,SMrw.DueDate,false);
+      ShowCredManField(3,CredManTestrw.FromDate,SMrw.Objects,false);
+      ShowCredManField(4,CredManTestrw.ToDate,SMrw.Comment,false);
+      ShowCredManField(5,CredManTestrw.Principle,(SMrw.DebVal - SMrw.ToRateB1),true);
+      ShowCredManField(6,CredManTestrw.Deposit,SMrw.ToRateB1,true);
+      ShowCredManField(7,CredManTestrw.Interest,SMrw.CredVal,true);
+      ShowCredManField(8,CredManTestrw.Fees,SMrw.DebVal2,true);
+      ShowCredManField(9,CredManTestrw.Total,SMrw.CurDebVal,true);
+      ShowCredManField(480,CredManTestrw.Balance,bal,true);
+      EndFormat;
+    end;
+  end else begin
+    StartFormat(15);
+    OutString(0,0,"There are no differences",false);
+    EndFormat;
+  end;
+  StartFormat(1);
+  Gray_divider(0,1);
+  EndFormat;
+  return;
+end;
+
+
+
+global
+procedure CredManTestRn(record RcVc RepSpec)
+begin
+  record CredManTestVc CredManTestr;
+
+  StartReportJob("Test Agreements");
+
+  EndHeader;
+
+  //SetRepCol(2,50);
+  SetRepCol(3,50);
+  SetRepCol(4,100);
+  SetRepCol(5,200);
+  SetRepCol(6,260);
+  SetRepCol(7,330);
+  SetRepCol(8,380);
+  SetRepCol(9,430);
+
+  StartFormat(15);
+  OutString(0,0,"Inv. Date",false);
+  //OutString(2,0,"Pay Date",false);
+  OutString(3,0,"From Date",false);
+  OutString(4,0,"To Date",false);
+  OutString(5,0,"Princ.",true);
+  OutString(6,0,"Dep.",true);
+  OutString(7,0,"Intr.",true);
+  OutString(8,0,"Fees",true);
+  OutString(9,0,"Total",true);
+  OutString(480,0,"Bal",true);
+  EndFormat;
+
+  StartFormat(1);
+  Gray_divider(0,1);
+  EndFormat;
+
+  while (LoopMain(CredManTestr,1,true)) begin
+    CreateAndTestSingleAgreement(CredManTestr);
+  end;
+
+  EndJob;
+
+  return;
+end;

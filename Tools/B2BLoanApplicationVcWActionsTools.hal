@@ -46,13 +46,15 @@ begin
   BlockLoad(ASb);
   if (nonblank(ASb.CEOTitle) or nonblank(ASb.OwnerTitle)) then begin
     while (LoopKey("CustContactCode:" & LAr.CustCode,CRr,1,true)) begin
-      if (SetInSet(ASb.OwnerTitle,CRr.JobTitle)) then begin
-        LAr.OwnerCustCode = CRr.ContactCode;
-        LAr.OwnerName = CRr.ContactName;
-      end;
-      if (SetInSet(ASb.CEOTitle,CRr.JobTitle)) then begin
-        LAr.CEOCustCode = CRr.ContactCode;
-        LAr.CEOName = CRr.ContactName;
+      if (CRr.Invalid==0) then begin
+        if (SetInSet(ASb.OwnerTitle,CRr.JobTitle)) then begin
+          LAr.OwnerCustCode = CRr.ContactCode;
+          LAr.OwnerName = CRr.ContactName;
+        end;
+        if (SetInSet(ASb.CEOTitle,CRr.JobTitle)) then begin
+          LAr.CEOCustCode = CRr.ContactCode;
+          LAr.CEOName = CRr.ContactName;
+        end;
       end;
     end;
   end;  

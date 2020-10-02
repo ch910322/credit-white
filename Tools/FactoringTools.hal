@@ -34,6 +34,8 @@ begin
   record LocalMachineBlock LMb;
   val ct;
   record CredManVc CredManr;
+  record IVVc oldIVr;
+  record VIVc oldVIr;
   
   CredManr.SerNr = CMIr.CredManNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
@@ -64,8 +66,10 @@ begin
     IVrw.Price = CMIr.TotalSum;
     MatRowPut(IVr,0,IVrw);
     IVVc_PasteQuantity(IVr,0);
-    IVr.OKFlag = 1;
     if (RecordInsert(IVr,true)) then begin
+      RecordCopy(oldIVr,IVr);
+      IVr.OKFlag = 1;
+      RecordUpdate(oldIVr,IVr,true);
       CMIr.SellerIVNr = IVr.SerNr;
       CMIr.InitSLInvFlag = 1;
     end;
@@ -94,8 +98,10 @@ begin
     MatRowPut(VIr,0,VIrw);
     VICalcVals(VIr);
     VISumup(VIr,ct);
-    VIr.OKFlag = 1;
     if (RecordInsert(VIr,true)) then begin
+      RecordCopy(oldIVr,VIr);
+      VIr.OKFlag = 1;
+      RecordUpdate(oldVIr,VIr,true);
       CMIr.BuyerVINr = VIr.SerNr;
       CMIr.InitPLInvFlag = 1;
     end; 
@@ -419,7 +425,7 @@ begin
   val amount;
   row IVVc IVrw;
   Integer i,rwcnt;
-  record VIVc VIr;
+  record VIVc VIr,oldVIr;
   row VIVc VIrw;
   record CMInvoicingBlock CIb;
   record CredManFactInvoiceVc CMIr;
@@ -463,8 +469,10 @@ begin
               MatRowPut(VIr,0,VIrw);
               VICalcVals(VIr);
               VISumup(VIr,ct);
-              VIr.OKFlag = 1;
               if (RecordInsert(VIr,true)) then begin
+                RecordCopy(oldVIr,VIr);
+                VIr.OKFlag = 1;
+                RecordUpdate(oldVIr,VIr,true);
                 CreateFeePaymentAndReceipt(IVr,VIr);
               end; 
             end;

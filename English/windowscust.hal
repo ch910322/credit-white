@@ -1689,8 +1689,15 @@ begin
   vs = 20;
   EndWindow;
 end;
-
-
+window CredManTestRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm,vs;
+  WindowBegin("Specify Test Credit Agreements",CredManTestRClass,CGRcW,RcType);
+  SetWRect(20,80,420,310);
+  vs = 20;
+  EndWindow;
+end;
 
 window ReceiptEntryWClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
@@ -1812,7 +1819,8 @@ begin
   MatCol(1,290,"Downpmnt",0,Deposit,true,0);
   MatCol(1,360,"Principle",0,Principle,true,0);
   MatCol(1,430,"Interest",0,Interest,true,0);
-  MatCol(1,500,"Fees",0,Fees,true,0);
+  MatColTL(1,500,"Fees",0,-1,ViewOnly,0,Fees,true,0);
+
   MatCol(1,574,"Total",0,Total,true,0);
   MatCol(1,-180,"Invoiced",0,Invoiced,false,SetSClass);
   MatCol(1,-120,"Balance",0,Balance,true,0);
@@ -1858,6 +1866,7 @@ begin
   CheckBox(h,v+=16,0,"Interest on due Principle",IntDuePrinciple);
   CheckBox(h,v+=16,0,"Manual Contract Fee Invoice Number",ManualInvoiceNumber);
   CheckBox(h,v+=16,0,"Principle below hidden Line",HiddenPrinciple);
+  CheckBox(h,v+=16,0,"Use Agreement Type Accounts",UseTypeAccounts);
 
   CheckBox(h,v+=30,0,"Automatically issue Invoices",AutoInvoiceFlag);
   EditField(h,v+=20,100,"Time",Normal,AutoInvoiceTime,false,PasteCurTime);
@@ -2096,7 +2105,7 @@ begin
   UseView(CMPropertyVc);
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
-  RlCol(100,100,"Official No.",OfficialSerNr,false);
+  RlCol(100,100,"License Plate No.",OfficialSerNr,false);
   RlCol(230,230,"Name",Addr0,false);
   SearchField("Search");
   EndWindow;
@@ -2336,7 +2345,12 @@ begin
     MatCol(1,-170,"Pledge Val",0,PledgeVal,true,0);
     MatCol(1,-80,"Pledge Date",0,PledgeDate,false,PasteCurDate);
   end else begin
-    MatCol(1,-260,"ID",0,OfficialSerNr,false,0);
+    if (type==2) then begin
+      MatCol(1,-380,"VIN Number",0,OfficialSerNr,false,0);
+      MatCol(1,-270,"License Plate No.",0,SerialNo,false,0);
+    end else begin
+      MatCol(1,-260,"ID",0,OfficialSerNr,false,0);
+    end;
     MatCol(1,-170,"Reported Value",0,RepVal,true,0);
     MatCol(1,-80,"Evaluated Value",0,EvalVal,true,0);
   end;
@@ -2574,4 +2588,109 @@ begin
   RadioButton(h,v+=16,1,0,"Since Last Overdue Invoice",ArtMode); 
   EndWindow;
 
+end;
+
+window CredManTestLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Testss",CredManTestLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManTestDClass);
+  UseView(CredManTestVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Comment",Comment,false,Comment);
+  RlCol(74,74,"Type",Type,false);
+  RlCol(204,204,"Rate",IntRate,false);
+  RlCol(334,334,"Months",Months,false);
+  RlCol(430,430,"Start Date",startDate,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CredManTestDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm,h2,vm,vm2;
+  WindowBegin("Agreement Tests",CredManTestDClass,CGview,-);
+  SetWRect(20,80,660,339);
+  Sizeable(-1,-1,0,0);
+  UseView(CredManTestVc);
+  vs=20; h=160; vs2=16; hm=-100;h2 = 430;
+  EditField(h,v=6,-40,"Comment",Normal,Comment,false,);
+  EditField(h,v+=vs,120,"Type",Normal,Type,false,CredManTypeSClass);vm = v;
+  EditField(h,v+=vs,90,"Date",Normal,TransDate,false,PasteCurDate);
+  EditField(h,v+=vs,50,"Rate",Normal,IntRate,false,0);
+  CheckBox(h+65,v,0,"Annual",AnnualRate);
+  EditField(h,v+=vs,50,"Months",Normal,Months,false,0);
+  EditField(h,v+=vs,50,"Sum",Normal,InvSum4,false,0);
+  EditField(h,v+=vs,50,"Pay Deal",Normal,PayDeal,false,PDSClass);
+  EditField(h,v+=vs,90,"Start Date",Normal,startDate,false,PasteCurDate);
+  EditField(h,v+=vs,50,"Deposit Sum",Normal,DepositSum,false,0);
+  EditField(h,v+=vs,50,"Additional Downp. Months",Normal,ExtraDepositMonths,false,0);
+  EditField(h,v+=vs,50,"Additional Downp. Sum",Normal,ExtraDepositSum,true,0);
+  vm2 = v;
+  EditField(h2,v=vm,50,"Principle Delay Months",Normal,PrincipleDelayMonths,false,0);
+  EditField(h2,v+=vs,50,"Principle Delay Interest",Normal,PrincipleDelayInterest,false,0);
+  EditField(h2,v+=vs,50,"Max Monthly Payment",Normal,MaxMonthlyPayment,false,0);
+  EditField(h2,v+=vs,50,"Last Month Principle",Normal,LastMonthPrinc,false,0);
+  EditField(h2,v+=vs,50,"Monthly Payment Day",Normal,MonthlyPaymentDay,false,0);
+  EditField(h2,v+=vs,50,"Prolong Months",Normal,ProlongMonths,false,0);
+  EditField(h2,v+=vs,90,"Prolong Date",Normal,ProlongDate,false,0);
+  EditField(h2,v+=vs,90,"Pause Date",Normal,PauseDate,false,0);
+  EditField(h2,v+=vs,50,"Pause Months",Normal,PauseMonths,false,0);
+  if (vm2<v) then begin
+    vm2 = v;
+  end;
+  MatrixBegin(10,v=vm2+40,-40,-40,-,999);
+  MatCol(1,24,"Inv. Date",0,InvDate,false,0);
+  MatCol(1,100,"Period From",0,FromDate,false,0);
+  MatCol(1,165,"Period To",0,ToDate,false,0);
+  MatCol(1,240,"Downpmnt",0,Deposit,true,0);
+  MatCol(1,310,"Principle",0,Principle,true,0);
+  MatCol(1,380,"Interest",0,Interest,true,0);
+  MatCol(1,450,"Fees",0,Fees,true,0);
+  MatCol(1,524,"Total",0,Total,true,0);
+  MatCol(1,-90,"Balance",0,Balance,true,0);
+  InsertRowTest;
+  EndWindow;
+end;
+
+window CredManAccLCLass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Testss",CredManAccLCLass,CGmlist,-);
+  SetWRect(20,80,560,298);
+  SpawnClass(CredManAccDCLass);
+  UseView(CredManAccVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Type",CredManType,false,CredManType);
+  RlCol(124,124,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+
+window CredManAccDCLass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h2,v,vs,vm;
+  vs = 20;
+  WindowBegin("Account",CredManAccDCLass,CGview,-);
+  UseView(CredManAccVc);
+  SetWRect(64,80,509,375);
+  EditField(h=145,v=6, 100, "Type",Normal,CredManType,false,CredManTypeSClass);
+  EditField(h,v+=vs,-40,"Name",Normal,Comment,false,0);
+  EditField(h,v+=vs,100,"P/L Debit Account",Normal,PLDebitAcc,false,AccSClass);
+  EditField(h,v+=vs,100,"P/L Credit Account",Normal,PLCreditAcc,false,AccSClass);
+  EditField(h,v+=vs,100,"Control Account",Normal,ControlAcc,false,AccSClass);
+  EditField(h,v+=vs,100,"Debtors Account",Normal,DebtorsAcc,false,AccSClass);
+
+  MatrixBegin(4,v=v+40,-32,-3,-,99);
+  MatCol(1,24,"Item",0,ArtCode,false,INSClass);
+  MatCol(1,134,"Debit Account",0,DebitAcc,false,AccSClass);
+  MatCol(1,284,"Credit Account",0,CreditAcc,false,AccSClass);
+  EndMatrix;
+
+  EndWindow;
 end;

@@ -120,6 +120,7 @@ begin
       CMPrw.RepVal = Propr.RepVal;
       CMPrw.EvalVal = Propr.EvalVal;
       CMPrw.OfficialSerNr = Propr.OfficialSerNr;
+      CMPrw.SerialNo = Propr.SerialNo;
       MatRowPut(CMPr,rownr,CMPrw);
       PutWindowRecord(wn,CMPr);
     end; 

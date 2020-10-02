@@ -1,4 +1,5 @@
 external function string 255 BPI_ParseInvStr(string);
+external procedure BankFillIProws2(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean,Date);
 external procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
 external procedure BankFillOProws(var record OPVc,string,string,var val,string,boolean,string,string);
 external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
@@ -419,6 +420,8 @@ begin
     IPr.OKFlag = 0;
     IPr.Comment = BTr.Reference;
     IPr.PayMode = paymode;
+    IPPastePayMode(IPr);
+   
     FindCustomerForBankImport(BTr.PayCustCode,BTr.PayRegNr1,BTr.PayVATNr,BTr.PayBankAcc,BTr.PayName,CUr);
     instr = BPI_ParseInvStr(BTr.PayReference);
     remsum = BTr.Sum;
@@ -606,7 +609,7 @@ begin
     for (i=rwcnt-1;i>=0;i=i-1) begin
       MatRowDelete(IPr,i);
     end;
-    BankFillIProws(IPr,RepSpec.f5,IPr.PayCurCode,remsum,RepSpec.f4,nonblank(RepSpec.f4),"","",true);
+    BankFillIProws2(IPr,RepSpec.f5,IPr.PayCurCode,remsum,RepSpec.f4,nonblank(RepSpec.f4),"","",true,IPr.TransDate);
     RecordUpdate(oldIPr,IPr,true);
     if (okf) then begin
       RecordCopy(oldIPr,IPr);

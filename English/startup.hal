@@ -7,7 +7,8 @@ begin
   Register("B2B Loan Applications","B2B Loan Applications",B2BLoanApplicationVc,modCredMan);
   Register("Agreement Schedules","Agreement Schedules",CredManSchedVc,modCredMan);
   Register("Properties","Properties",CMPropertyVc,modCredMan);
-
+  Register("Agreement Tests","Agreement Tests",CredManTestVc,modCredMan);
+ 
   Setting("Number Series - B2B Loan Applications",B2BLoanAppSerTClass,modCredMan);
   Setting("Credit Management Settings",CMApplicationSetTClass,modCredMan);
   Setting("Invoicing Settings",CMInvoicingTClass,modCredMan);
@@ -36,6 +37,7 @@ begin
   Setting("Loan Agreements",CredMan2LClass,modCredMan);
   Setting("Leasing Agreements",CredMan3LClass,modCredMan);
   Setting("Invega Fund Report Settings",InvegaReportTClass,modCredMan);
+  Setting("Agreement Type Accounts",CredManAccLClass,modCredMan);
 
   
 
@@ -46,6 +48,7 @@ begin
 	Report("Income Analysis",EBSIncomeAnalysisRClass,EBSIncomeAnalysisRn,0,modCredMan);
 	Report("Income Forecast",CMIncomeForecastRClass,CMIncomeForecastRn,0,modCredMan);
 	Report("Check Schedule Periods",CheckCMSchedRClass,CheckCMSchedRn,0,modCredMan);
+	Report("Test Credit Agreements",CredManTestRClass,CredManTestRn,0,modCredMan);
 
 
   Maintenance("Create Agreement Invoices",GenLoanInvoicesVClass,GenLoanInvoicesMn,modCredMan);
@@ -253,7 +256,7 @@ begin
   StrSetText(RemoveLoanAppAttach,"Allow removing Loan Application Attachments");
   StrSetText(ReceiptBankTRDiffAmounts,"Allow saving Receipt with different Total than Bank Transaction");
   StrSetText(CredManChangeTransferDate,"Allow changing Money Transfer Date");
-  
+  StrSetText(CredManChangeInvoicedMonths,"Allow changing Credit Agreement Months when invoiced");
   EndStrSet;
 
   SetBegin(2000);

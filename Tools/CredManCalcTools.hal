@@ -452,7 +452,6 @@ begin
 
   days = DateDiff(todate,frdate);
   res = rate*12/GetDaysInYear(CMAb,CredManr)*days;
-//  logtext(0,"GetActualDaysRate " & res & ":" & frdate & ":" & todate & ":" & days);
   
   GetActualDaysRate = res;
   return;
@@ -463,6 +462,8 @@ begin
   val sum,curpayment,rate,tusesum;
   Integer months,tusemonths;
   record CMApplicationSetBlock CMAb;
+  row CredManPayPlanVc CredManPayPlanrw;
+  val tsum,tint;
   
   switch (type) begin
     case 0:
@@ -500,12 +501,7 @@ begin
           rate = rate/12;
         end;
         rate = rate/100;
-        /*
-        BlockLoad(CMAb);
-        if (GetDaysInMonth(CMAb,CredManr)==1) then begin
-          rate = GetActualDaysRate(CMAb,CredManr,rate,frdate,todate);
-        end;
-        */
+
         tusemonths = usemonths;
         tusesum = usesum;
         if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
@@ -513,6 +509,15 @@ begin
           tusesum = usesum - CredManr.LastMonthPrinc;
         end;
         sum = FIN_PPMT(rate, tusemonths, tusesum, month+1);
+        BlockLoad(CMAb);
+        if (GetDaysInMonth(CMAb,CredManr)==1) then begin
+          //get monthly sum
+          //substract interest
+          tsum = FIN_PMT(rate, tusemonths, GetAmount(CredManr));
+          MatRowGet(CredManPayPlanr,MatRowCnt(CredManPayPlanr)-1,CredManPayPlanrw);
+          tint = CredManPayPlanrw.Sum;
+          sum = tsum - tint;
+        end;
         if (CredManr.MaxMonthlyPayment>0) then begin
           curpayment = GetCurrentMonthPayment(CredManPayPlanr,invdate,sum);
           if (CredManr.MaxMonthlyPayment<curpayment) then begin

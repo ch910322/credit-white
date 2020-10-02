@@ -283,7 +283,11 @@ begin
     CredManr.RebCode = CUr.RebCode;
     CredManr.Objects = CUr.Objects;
     CredManr.SalesMan = USr.Code;
+  //CUST-BEGIN
+    if (nonblank(CUr.LangCode)) then begin
     CredManr.LangCode = CUr.LangCode;
+    end;
+  //CUST-END
     CredManUpdate(CredManr,-1,"");
     CredManSumup(CredManr);
     res = true;

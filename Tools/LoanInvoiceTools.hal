@@ -1,5 +1,5 @@
 external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
-remote inner function Boolean PasteCust2InInv(var record IVVc,record LocalMachineBlock,string,Boolean,var string,var string,var string,var string,var string);
+external inner function Boolean PasteCust2InInv(var record IVVc,record LocalMachineBlock,string,Boolean,var string,var string,var string,var string,var string);
 remote inner procedure IVVc_PastePayDeal(var record IVVc,string,string);
 remote inner procedure IVVc_PasteSalesMan(var record IVVc,string);
 external inner function Boolean IVVc_PasteArtCode(var record IVVc,Integer,var string,var string,Boolean,var Integer);
@@ -29,6 +29,7 @@ external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
 external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var val,Boolean,var Boolean);
 external inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var LongInt);
 external function val FindInvoicePaidAmount_OP(LongInt,LongInt);
+external inner procedure IPPastePayMode(var record IPVc);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -1029,6 +1030,7 @@ begin
         end;
     end;
   end;
+  
   if (updf) then begin
     CM_AddPrepayments(IVr,CIb);
   end;
@@ -1155,12 +1157,15 @@ begin
   Boolean firstf;
   Boolean res;
   record CredManVc CredManr;
+  transaction Boolean gSilenceIVOpenPrepExists;
   
   BlockLoad(CMb);
   BlockLoad(ASb);
   CredManr.SerNr = CSr.CredManNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
+    gSilenceIVOpenPrepExists = true;
     BuildInvoiceBasedOnSchedule(CredManr,CSrw,CMb,ASb,"",IVr,false,false);
+    gSilenceIVOpenPrepExists = false;
   end;
 
   return;
@@ -2040,7 +2045,9 @@ begin
   Boolean updf;
   record CredFeesMatrixVc FMr;
   val bal;
+  transaction Boolean gSilenceIVOpenPrepExists;
   
+  gSilenceIVOpenPrepExists = true;
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin
     RecordCopy(oldCSr,CSr);
@@ -2062,7 +2069,6 @@ begin
   CSr.TransTime = CurrentTime;
   BlockLoad(CMb);
   BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
-
   BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CMb,SMr);
   bal = CredManr.InvSum4;
   rwcnt = MatRowCnt(SMr);
@@ -2106,6 +2112,7 @@ begin
   end;
 
 lout:;
+  gSilenceIVOpenPrepExists = false;
   return;
 end;
 
@@ -2215,35 +2222,53 @@ begin
   val chk;
   Boolean installmentf;
   Longint err;
+  record ARVc ARr;
+  val sum;
+  record IPVc oldIPr;
 
-  RecordNew(IPr);
-  IPr.TransDate = CurrentDate;
-  IPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
-  IPr.RegDate = CurrentDate;
-  IPr.OKFlag = 0;
-  IPr.PayMode = GetReceiptsPayMode(IVr);
-  rownr = 0;
-  ClearRow(IPr,IPrw,1);
-  IPrw.InvoiceNr = IVr.SerNr;
-  MatRowPut(IPr,rownr,IPrw);
-  PasteInvIn2IPr(IPr,rownr,IPr.TransDate,chk,false,installmentf);
-  MatRowGet(IPr,rownr,IPrw);
-  IPrw.RecVal = -IVr.Sum4;
-  MatRowPut(IPr,rownr,IPrw);
-  IPVc_PasteRecVal(IPr,rownr);
+  sum = IVr.Sum4;
+  ARr.InvoiceNr = IVr.SerNr;
+  if (ReadFirstMain(ARr,1,true)) then begin
+    if (ARr.RVal>=0) then begin
+      sum =   IVr.Sum4 - ARr.RVal;
+    end;
+  end;
 
-  rownr = 1;
-  ClearRow(IPr,IPrw,1);
-  IPrw.CustCode = IVr.CustCode;
-  MatRowPut(IPr,rownr,IPrw);
-  IPVc_PasteCustCode(IPr,rownr,err);
-  MatRowGet(IPr,rownr,IPrw);
-  IPrw.RecVal = IVr.Sum4;
-  IPrw.CUPNr = IPr.SerNr;
-  MatRowPut(IPr,rownr,IPrw);
-  IPVc_PasteRecVal(IPr,rownr);
-  
-  IPSumup(IPr);
-  RecordStore(IPr,false);
+  if (sum>0) then begin
+    RecordNew(IPr);
+    IPr.TransDate = CurrentDate;
+    IPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
+    IPr.RegDate = CurrentDate;
+    IPr.OKFlag = 0;
+    IPr.PayMode = GetReceiptsPayMode(IVr);
+    IPPastePayMode(IPr);
+    rownr = 0;
+    ClearRow(IPr,IPrw,1);
+    IPrw.InvoiceNr = IVr.SerNr;
+    MatRowPut(IPr,rownr,IPrw);
+    PasteInvIn2IPr(IPr,rownr,IPr.TransDate,chk,false,installmentf);
+    MatRowGet(IPr,rownr,IPrw);
+    IPrw.RecVal = -sum;
+    MatRowPut(IPr,rownr,IPrw);
+    IPVc_PasteRecVal(IPr,rownr);
+
+    rownr = 1;
+    ClearRow(IPr,IPrw,1);
+    IPrw.CustCode = IVr.CustCode;
+    MatRowPut(IPr,rownr,IPrw);
+    IPVc_PasteCustCode(IPr,rownr,err);
+    MatRowGet(IPr,rownr,IPrw);
+    IPrw.RecVal = sum;
+    IPrw.CUPNr = IPr.SerNr;
+    MatRowPut(IPr,rownr,IPrw);
+    IPVc_PasteRecVal(IPr,rownr);
+    
+    IPSumup(IPr);
+    if (RecordInsert(IPr,true)) then begin
+      RecordCopy(oldIPr,IPr);
+      IPr.OKFlag = 1;
+      RecordUpdate(oldIPr,IPr,true);
+    end;
+  end;
   return;
 end;
