@@ -1,3 +1,4 @@
+//<halrule>server-only</halrule>
 external procedure GetARPrepaymentRate(LongInt,var val,var val,var val,var val,var val);
 external function Boolean UseTaxTemplatesforTaxCalc();
 external procedure GetVATRowFromBlock(string,record VATCodeBlock,var row VATCodeBlock);
@@ -211,7 +212,7 @@ begin
     ConvertSalesAcc(revacc,IVp.ExportFlag);
     if (gain!=-1) then begin//tofollow corsp rules
 //CUST-BEGIN
-      if (CM_GetInvoiceItemOrder(IVp,rs,vAmounts,false)) then begin
+      if (CM_GetInvoiceItemOrder(IVp,rs,vAmounts,true)) then begin
         GetVectorTags(vAmounts,aAmounts);
         for (i=0;i<aAmounts.length;i=i+1) begin
           tacc = aAmounts[i];
