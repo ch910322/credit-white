@@ -1,0 +1,27 @@
+
+global
+updating function LongInt BOESuretyVcRecordUpdateClient(Longint wn,var record BOESuretyVc BSr,record BOESuretyVc BS2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  record CredManVc CredManr;
+  Integer mwn;
+
+  mwn = StringToInt(GetWindowString(wn,"CredManWin"));
+  if (mwn>0) then begin
+    if (nonblank(BSr.SuretyProvider1) and blank(BS2r.SuretyProvider1)) then begin
+      GetWindowRecord(mwn,CredManr);
+      SetFieldValueByName(CredManr,"BOE" & BSr.BOENum & "HasSurety",1,-1);
+      PutWindowRecord(mwn,CredManr);
+      WindowDoOK(mwn,0);
+    end;
+    if (nonblank(BS2r.SuretyProvider1) and blank(BSr.SuretyProvider1)) then begin
+      GetWindowRecord(mwn,CredManr);
+      SetFieldValueByName(CredManr,"BOE" & BSr.BOENum & "HasSurety",0,-1);
+      PutWindowRecord(mwn,CredManr);
+      WindowDoOK(mwn,0);
+    end;
+  end;
+
+  BOESuretyVcRecordUpdateClient = 1;
+  return;
+END;

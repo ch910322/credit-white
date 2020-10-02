@@ -1817,7 +1817,8 @@ begin
     num = StringToInt(PushButtonTag);
     GetWindowRecord(wn,CredManr);
     GetCredManBOESuretyRecord(CredManr,BSr,num);
-    nwn = OpenWindow("BOESuretyDClass",0,0,"","",BSr);
+    nwn = OpenWindow("BOESuretyDClass",1,0,"","",BSr);
+    PutWindowString(nwn,"CredManWin",wn);
   end;
   return;
 end;

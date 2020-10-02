@@ -1132,6 +1132,7 @@ begin
     EditField(h+340,v,70,"",Normal,BOE1DueDate,false,PasteCurDate);
     EditField(h+420,v,100,"",Normal,BOE1Signer,false,B2BLoanApp_ContactSClass);
     EditField(h+530,v,80,"",Normal,BOE1Position,false,JobTitleSClass);
+    CheckBox(h+620,v,0,"",BOE1HasSurety);
     HalPushButtonTag(h+650,v,h+730,v+20,"CredManDClassBOESurety","Surety","1");
     CheckBox(h+740,v,0,"",BOE1Signed);
     HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignBOESimplified","Open","1");
@@ -1144,6 +1145,7 @@ begin
     EditField(h+340,v,70,"",Normal,BOE2DueDate,false,PasteCurDate);
     EditField(h+420,v,100,"",Normal,BOE2Signer,false,B2BLoanApp_ContactSClass);
     EditField(h+530,v,80,"",Normal,BOE2Position,false,JobTitleSClass);
+    CheckBox(h+620,v,0,"",BOE2HasSurety);
     HalPushButtonTag(h+650,v,h+730,v+20,"CredManDClassBOESurety","Surety","2");
     CheckBox(h+740,v,0,"",BOE2Signed);
     HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignBOESimplified","Open","2");
@@ -1156,6 +1158,7 @@ begin
     EditField(h+340,v,70,"",Normal,BOE3DueDate,false,PasteCurDate);
     EditField(h+420,v,100,"",Normal,BOE3Signer,false,B2BLoanApp_ContactSClass);
     EditField(h+530,v,80,"",Normal,BOE3Position,false,JobTitleSClass);
+    CheckBox(h+620,v,0,"",BOE3HasSurety);
     HalPushButtonTag(h+650,v,h+730,v+20,"CredManDClassBOESurety","Surety","3");
     CheckBox(h+740,v,0,"",BOE3Signed);
     HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignBOESimplified","Open","3");
@@ -1168,6 +1171,7 @@ begin
     EditField(h+340,v,70,"",Normal,BOE4DueDate,false,PasteCurDate);
     EditField(h+420,v,100,"",Normal,BOE4Signer,false,B2BLoanApp_ContactSClass);
     EditField(h+530,v,80,"",Normal,BOE4Position,false,JobTitleSClass);
+    CheckBox(h+620,v,0,"",BOE4HasSurety);
     HalPushButtonTag(h+650,v,h+730,v+20,"CredManDClassBOESurety","Surety","4");
     CheckBox(h+740,v,0,"",BOE4Signed);
     HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignBOESimplified","Open","4");
