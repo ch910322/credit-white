@@ -420,6 +420,8 @@ begin
     IPr.OKFlag = 0;
     IPr.Comment = BTr.Reference;
     IPr.PayMode = paymode;
+    IPPastePayMode(IPr);
+   
     FindCustomerForBankImport(BTr.PayCustCode,BTr.PayRegNr1,BTr.PayVATNr,BTr.PayBankAcc,BTr.PayName,CUr);
     instr = BPI_ParseInvStr(BTr.PayReference);
     remsum = BTr.Sum;

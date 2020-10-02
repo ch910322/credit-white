@@ -542,11 +542,13 @@ BEGIN
         errstrno = 2191;
         goto LIVVc_CASHRow;
       end;
+/*
     case kInvoiceRowTypeMPesaPayment:
       if (GetPMRow(IVrw.PayMode,PMrw)==false) then begin
         errstrno = 2191;
         goto LIVVc_CASHRow;
       end;
+*/
     case kInvoiceRowTypeQRPayment:
       if (GetPMRow(IVrw.PayMode,PMrw)==false) then begin
         errstrno = 2191;
@@ -682,7 +684,9 @@ BEGIN
     case kInvoiceRowTypeCashPayment: errstrno = IVVc_CASHRow(gTRp,ARAccRec,IVp,IVrw,cuobj,dc1,dc2,TotSum);
     case kInvoiceRowTypeCreditCardPayment: errstrno = IVVc_CASHRow(gTRp,ARAccRec,IVp,IVrw,cuobj,dc1,dc2,TotSum);
     case kInvoiceRowTypeSwishPayment: errstrno = IVVc_CASHRow(gTRp,ARAccRec,IVp,IVrw,cuobj,dc1,dc2,TotSum);
+/*
     case kInvoiceRowTypeMPesaPayment: errstrno = IVVc_CASHRow(gTRp,ARAccRec,IVp,IVrw,cuobj,dc1,dc2,TotSum);
+*/
     case kInvoiceRowTypeQRPayment: errstrno = IVVc_CASHRow(gTRp,ARAccRec,IVp,IVrw,cuobj,dc1,dc2,TotSum);
     case kInvoiceRowTypeCashWithdrawal: errstrno = IVVc_CASHRow(gTRp,ARAccRec,IVp,IVrw,cuobj,dc1,dc2,TotSum);
     case kInvoiceRowTypeChequePayment: errstrno = IVVc_CASHRow(gTRp,ARAccRec,IVp,IVrw,cuobj,dc1,dc2,TotSum);
