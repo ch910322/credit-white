@@ -450,7 +450,7 @@ L22:;
                 ivrwcnt = MatRowCnt(IVr);
                 for (ivi=0;ivi<ivrwcnt;ivi=ivi+1) begin
                   MatRowGet(IVr,ivi,IVrw);
-                  if (IVrw.stp==kInvoiceRowTypeGiftVoucherPayment or IVrw.stp==kInvoiceRowTypeCashPayment or IVrw.stp==kInvoiceRowTypeCreditCardPayment or IVrw.stp==kInvoiceRowTypeSwishPayment or IVrw.stp==kInvoiceRowTypeMPesaPayment or IVrw.stp==kInvoiceRowTypeQRPayment or IVrw.stp==kInvoiceRowTypeLoyaltyPointsPayment or IVrw.stp==kInvoiceRowTypeChequePayment) then begin
+                  if (IVrw.stp==kInvoiceRowTypeGiftVoucherPayment or IVrw.stp==kInvoiceRowTypeCashPayment or IVrw.stp==kInvoiceRowTypeCreditCardPayment or IVrw.stp==kInvoiceRowTypeSwishPayment/* or IVrw.stp==kInvoiceRowTypeMPesaPayment*/ or IVrw.stp==kInvoiceRowTypeQRPayment or IVrw.stp==kInvoiceRowTypeLoyaltyPointsPayment or IVrw.stp==kInvoiceRowTypeChequePayment) then begin
                     test2f = true;
                     ivi = ivrwcnt;
                   end;
