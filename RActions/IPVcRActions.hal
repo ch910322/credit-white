@@ -64,6 +64,7 @@ BEGIN
     BTr.TransNr = IPr.SerNr;
     if (ReadFirstKey("FileName",BTr,2,true)) then begin
       res = 0;
+      MessageBox(200267,"");
       goto LIPVcRecordRemoveTest;
     end;
   end;

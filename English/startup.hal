@@ -236,6 +236,8 @@ begin
   SString(200265,"Agreement must be Active");
 
   SString(200266,"Invega Fund Report");
+  SString(200267,"Can't delete receipt with linked bank transaction without having access rights");
+
 
 
   StrSetAdd(584);
