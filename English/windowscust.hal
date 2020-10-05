@@ -155,7 +155,11 @@ begin
   ButtonFrame(h2,v+=40,150,2,"Days in Month");
   RadioButton(h2,v,0,0,"30",DaysInMonth);
   RadioButton(h2,v+=16,1,0,"Actual",DaysInMonth); 
-
+  
+  if (SimplifiedSureties) then begin
+    CheckBox(h2,v+=30,0,"Automatically insert Surety Legal Number",AutoSuretyOfficalNr);
+  end;
+  
   EndWindow;
 
   WindowBegin("Scoring",ScoringSupLClass,CGmlist,-);
@@ -2346,8 +2350,8 @@ begin
     MatCol(1,-80,"Pledge Date",0,PledgeDate,false,PasteCurDate);
   end else begin
     if (type==2) then begin
-      MatCol(1,-380,"VIN Number",0,OfficialSerNr,false,0);
-      MatCol(1,-270,"License Plate No.",0,SerialNo,false,0);
+      MatCol(1,-380,"VIN Number",0,SerialNo,false,0);
+      MatCol(1,-270,"License Plate No.",0,OfficialSerNr,false,0);
     end else begin
       MatCol(1,-260,"ID",0,OfficialSerNr,false,0);
     end;

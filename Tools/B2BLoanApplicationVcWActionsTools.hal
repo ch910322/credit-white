@@ -221,6 +221,7 @@ begin
     SetFieldValueByName(CredManr,"Surety" & num & "Position",CUr.JobDesc,-1);
     SetFieldValueByName(CredManr,"Surety" & num & "Phone",CUr.Phone,-1);
     SetFieldValueByName(CredManr,"Surety" & num & "eMail",CUr.eMail,-1);
+//  SetFieldValueByName(CredManr,"Surety" & num & "OfficialSerNr",GetNextSuretyOfficialSerNr,-1);
     if (num<4) then begin
       SetFieldValueByName(CredManr,"Surety" & num & "Mobile",CUr.Mobile,-1);
       SetFieldValueByName(CredManr,"Surety" & num & "ID",CUr.RegNr1,-1);

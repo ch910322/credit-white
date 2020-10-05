@@ -298,7 +298,10 @@ begin
   Longint histnr,credmannr;
   
   if (IPrw.CredHistNr>0) then begin
-    InsertCredHistInArray(CredHistr,arrORr,10);
+    CredHistr.SerNr = IPrw.CredHistNr;
+    if (ReadFirstMain(CredHistr,1,true)) then begin
+      InsertCredHistInArray(CredHistr,arrORr,10);
+    end;
   end else begin
     TrHs = true;
     CredHistr.RecordNr = IPrw.InvoiceNr;
