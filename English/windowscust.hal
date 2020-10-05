@@ -155,7 +155,11 @@ begin
   ButtonFrame(h2,v+=40,150,2,"Days in Month");
   RadioButton(h2,v,0,0,"30",DaysInMonth);
   RadioButton(h2,v+=16,1,0,"Actual",DaysInMonth); 
-
+  
+  if (SimplifiedSureties) then begin
+    CheckBox(h2,v+=30,0,"Automatically insert Surety Legal Number",AutoSuretyOfficalNr);
+  end;
+  
   EndWindow;
 
   WindowBegin("Scoring",ScoringSupLClass,CGmlist,-);

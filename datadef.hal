@@ -335,6 +335,7 @@ begin
   RecordField(MailingList2,M4Code,30,0);
   RecordField(AutoPauseCredMan,M4Int,0,0);
   RecordField(AutoPauseCredManTime,M4Time,0,0);
+  RecordField(AutoSuretyOfficalNr,M4Int,0,0);
   EndBlock;
   
   RecordAddBegin(CUVc,"CredCUVc");
