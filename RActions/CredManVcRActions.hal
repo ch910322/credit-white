@@ -8,7 +8,7 @@ external function Boolean GetCredLegalNrLine(string,string,Date,string,string,va
 external inner function string 50 NextLegalSerNr(string,LongInt,Date,string,string,string);
 external updating procedure DeleteCredOffSerNr(LongInt,string);
 external updating procedure StoreCredOffSerNrIV(LongInt,string,string);
-
+external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
 
 global
 function LongInt CredManVcRecordDefaults(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
@@ -124,6 +124,10 @@ BEGIN
   record CUVc CUr;
   record CredManFactVc CMFr;
   row CredLegalInvNrBlock LegalInvNrrw;
+  record CredManPayPlanVc CredManPayPlanr;
+  row CredManPayPlanVc CredManPayPlanrw;
+  LongInt i,rwcnt;
+  record CredManSetBlock CredManSetb;
 
   res = 0;
 
@@ -220,6 +224,20 @@ BEGIN
     if (GetCredLegalNrLine("CredManVc",CredManr.SerNr,CredManr.startDate,CredManr.Type,CredManr.Classifications,LegalInvNrrw,-1)) then begin
       if (LegalInvNrrw.Serie!=left(CredManr.OfficialSerNr,len(LegalInvNrrw.Serie))) then begin
         RecordCheckError(200262,"",-1,"OfficialSerNr");
+        res = -1;
+        goto LCredManVcRecordCheck;
+      end;
+    end;
+  end;
+
+  if (CredManr.MaxMonthlyPayment!=CredMan2r.MaxMonthlyPayment and CredManr.MaxMonthlyPayment>0) then begin
+    BlockLoad(CredManSetb);
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+    rwcnt = MatRowCnt(CredManPayPlanr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
+      if (CredManPayPlanrw.PlanType==2 and CredManPayPlanrw.Sum>CredManr.MaxMonthlyPayment) then begin
+        RecordCheckError(200268,"",-1,"MaxMonthlyPayment");
         res = -1;
         goto LCredManVcRecordCheck;
       end;

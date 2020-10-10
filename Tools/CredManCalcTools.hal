@@ -463,7 +463,7 @@ begin
   Integer months,tusemonths;
   record CMApplicationSetBlock CMAb;
   row CredManPayPlanVc CredManPayPlanrw;
-  val tsum,tint;
+  val tsum,tint,nint;
   
   switch (type) begin
     case 0:
@@ -510,14 +510,22 @@ begin
         end;
         sum = FIN_PPMT(rate, tusemonths, tusesum, month+1);
         BlockLoad(CMAb);
+
         if (GetDaysInMonth(CMAb,CredManr)==1) then begin
           //get monthly sum
           //substract interest
-          tsum = FIN_PMT(rate, tusemonths, GetAmount(CredManr));
+          tsum = FIN_PMT(rate, tusemonths, tusesum);
           MatRowGet(CredManPayPlanr,MatRowCnt(CredManPayPlanr)-1,CredManPayPlanrw);
           tint = CredManPayPlanrw.Sum;
+          if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
+            //get interest from 1000 eur 
+            //nint/tusemonths
+            nint = GetRateAmount(CredManr,CredManr.IntRate,2,frdate,todate,CredManr.LastMonthPrinc,false,true);
+            tint = tint - nint;
+          end;
           sum = tsum - tint;
         end;
+
         if (CredManr.MaxMonthlyPayment>0) then begin
           curpayment = GetCurrentMonthPayment(CredManPayPlanr,invdate,sum);
           if (CredManr.MaxMonthlyPayment<curpayment) then begin
