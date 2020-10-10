@@ -641,7 +641,7 @@ end;
 window CredManDClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  real h,h2,h3,h4,t,v,vm,vs;
+  real h,h2,h3,h4,t,v,vm,vs,th;
   string 255 label1,label2,label3,label4,label5;
   record CredManVc CredManr;
   Integer type,n;
@@ -727,14 +727,24 @@ begin
       EditField(h,v+=vs,82,"Deposit Sum",Normal,DepositSum,true,0);
     end;
   end;
+  th = h;
   if (type==1 or type==3) then begin
     if (type==3 or HideLoanPledges==false) then begin
       HalPushButton(h-50,v+=vs,h+70,v+20,"CredManDClassOpenProperties","Pledges");
+      th = h + 140;
     end;
   end;
   if (type==2) then begin
     HalPushButton(h-50,v+=vs,h+70,v+20,"CredManDClassOpenProperties","Assets");
+    th = h + 140;
   end;
+  if (HasMoneyReceivers) then begin
+    if (th==h) then begin
+      v = v + 30;
+    end;
+    HalPushButton(th,v,th+120,v+20,"CredManDClassMoneyReceivers","Money Receivers");
+  end;
+
   EditField(h2,v=vm,82,"Start Date",Normal,startDate,false,PasteCurDate);
 //CUST-BEGIN switched fields and renamed FirstIntDate
 //CUST-BEGIN
@@ -954,9 +964,6 @@ begin
 //CUST-BEGIN
   if (type!=2 and type!=3) then begin
     HalPushButton(h,v+=vs,h+120,v+20,"CredManDClassOpenProperties","Properties");
-  end;
-  if (HasMoneyReceivers) then begin
-    HalPushButton(h,v+=30,h+120,v+20,"CredManDClassMoneyReceivers","Money Receivers");
   end;
 
   EditField(h2,v=vm-20,-40,"Bank Code",Normal,BankCode,false,BankSClass);
