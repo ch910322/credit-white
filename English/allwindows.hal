@@ -59,6 +59,7 @@ external outer function Boolean UseCredManStatus();
 external outer function Boolean HasPaymentWithoutRecons();
 external outer function Boolean SimplifiedSureties();
 external outer function Boolean UseBuyOutMonths();
+external outer function Boolean HideLeasingSeller();
 remote function Boolean ExternalDocumentEnabled(string);
 //CUST-END
 
@@ -733,11 +734,11 @@ begin
   EditField(h2,v=vm,82,"Start Date",Normal,startDate,false,PasteCurDate);
 //CUST-BEGIN switched fields and renamed FirstIntDate
 //CUST-BEGIN
-  //if (HasMoneyTransferDate) then begin
+  if (HasMoneyTransferDate) then begin
     EditField(h2,v+=vs,82,"Money Transf. Date",Normal,MoneyTransferDate,false,PasteCurDate);
-  //end else begin
-  //  v = vm-vs;
-  //end;
+  end else begin
+    //v = vm-vs;
+  end;
 //CUST-END
   if (type!=4 and type!=5) then begin
     EditField(h2,v+=vs,82,"First Invoice Date",Normal,FirstInvDate,false,PasteCurDate);
@@ -775,7 +776,7 @@ begin
 //  EditField(h3,v+=vs,72,"Surety Interest Rate",Normal,SuretyInterestRate,false,0);
   EditField(h3,v+=vs,72,"Std Prolongation Fee",Normal,StdProlongFee,false,0);
   EditField(h3,v+=vs,72,"Std Prolongation Fee %",Normal,StdProlongPrc,false,0);
-  if (type==2) then begin
+  if (type==2 and HideLeasingSeller==false) then begin
     EditField(h3,v+=vs,72,"Seller",Normal,LeaseSellerCode,false,CUSClass);
     EditField(h3,v+=vs,72,"Seller Contact",Normal,LeaseSellerContact,false,ContactSClass);
   end;
