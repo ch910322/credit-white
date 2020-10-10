@@ -58,6 +58,7 @@ external outer function Boolean CanEditCredManCreateDate();
 external outer function Boolean UseCredManStatus();
 external outer function Boolean HasPaymentWithoutRecons();
 external outer function Boolean SimplifiedSureties();
+external outer function Boolean UseBuyOutMonths();
 remote function Boolean ExternalDocumentEnabled(string);
 //CUST-END
 
@@ -764,8 +765,12 @@ begin
 //CUST-BEGIN
   EditField(h3,v+=vs,72,"Order Class",Normal,OrderClass,false,OrderClassSClass);
   EditField(h3,v+=vs,72,"Overdue percentage",Normal,OverduePercentage,false,0);
-  EditField(h3,v+=vs,72,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
-  EditField(h3,v+=vs,72,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
+  if (UseBuyOutMonths) then begin
+    EditField(h3,v+=vs,72,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
+  end else begin
+    EditField(h3,v+=vs,72,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
+    EditField(h3,v+=vs,72,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
+  end;
 
 //  EditField(h3,v+=vs,72,"Surety Interest Rate",Normal,SuretyInterestRate,false,0);
   EditField(h3,v+=vs,72,"Std Prolongation Fee",Normal,StdProlongFee,false,0);
@@ -1275,7 +1280,13 @@ begin
   //CUST-BEGIN
   
   EditField(h,v+=vs,40,"Days in Year",Normal,DaysInYear,false,0);
-  EditField(h2,v,82,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
+  if (UseBuyOutMonths) then begin
+    EditField(h2,v,82,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
+    v = v - 20;
+  end else begin
+    EditField(h2,v,82,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
+  end;
+
   vm2 = v;
   ButtonFrame(h2,v+=60,82,3,"Days in Month");
   RadioButton(h2,v,0,0,"Default",DaysInMonth);
@@ -1283,7 +1294,9 @@ begin
   RadioButton(h2,v+=16,2,0,"Actual",DaysInMonth); 
 
   v=vm2+vs;
-  EditField(h2,v,82,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
+  if (UseBuyOutMonths==false) then begin
+    EditField(h2,v,82,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
+  end;
   
   h2 = 330;
   h2 = h2 + 110;

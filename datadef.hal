@@ -663,6 +663,8 @@ begin
   RecordField(BOE3HasSurety,M4Int,0,0);
   RecordField(BOE4HasSurety,M4Int,0,0);
 
+  RecordField(BuyoutFeeMonths,M4Long,0,0);
+
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
   ChangeMatrixField(vRebate,M4Rate,0,0);
@@ -822,6 +824,7 @@ begin
 
   RecordField(BuyoutFeeFixed,M4Val,0,0);
   RecordField(BuyoutFeePrc,M4Qty,0,0);
+  RecordField(BuyoutFeeMonths,M4Long,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
