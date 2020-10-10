@@ -1437,6 +1437,19 @@ begin
   return;
 end;
 
+global
+updating procedure GetCredManMoneyReceiverRecord(record CredManVc CredManr,var record CredManMoneyRecVc MRr)
+begin
+  
+  MRr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(MRr,2,true)==false) then begin
+    RecordNew(MRr);
+    MRr.CredManNr = CredManr.SerNr;
+    RecordInsert(MRr,true);
+  end;
+
+  return;
+end;
 
 global
 procedure CredManCalcLastMonthPrinciple(var record CredManVc CredManr)

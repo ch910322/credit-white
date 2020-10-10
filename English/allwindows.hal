@@ -61,6 +61,7 @@ external outer function Boolean SimplifiedSureties();
 external outer function Boolean UseBuyOutMonths();
 external outer function Boolean HideLeasingSeller();
 external outer function Boolean HideLoanPledges();
+external outer function Boolean HasMoneyReceivers();
 remote function Boolean ExternalDocumentEnabled(string);
 //CUST-END
 
@@ -953,6 +954,9 @@ begin
 //CUST-BEGIN
   if (type!=2 and type!=3) then begin
     HalPushButton(h,v+=vs,h+120,v+20,"CredManDClassOpenProperties","Properties");
+  end;
+  if (HasMoneyReceivers) then begin
+    HalPushButton(h,v+=30,h+120,v+20,"CredManDClassMoneyReceivers","Money Receivers");
   end;
 
   EditField(h2,v=vm-20,-40,"Bank Code",Normal,BankCode,false,BankSClass);

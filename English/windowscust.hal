@@ -2706,3 +2706,25 @@ begin
 
   EndWindow;
 end;
+
+window CredManMoneyRecDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+
+  WindowBegin("Money Receivers",CredManMoneyRecDClass,CGview,-);
+  SetWRect(20,80,760,339);
+  DynamicWindow;
+  UseView(CredManMoneyRecVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  MatrixBegin(0,16,-16,-50,-,20);
+  MatCol(1,24,"Customer",0,CustCode,false,CUSClass);
+  MatCol(1,120,"Name",0,CustName,false,0);
+  MatCol(1,-160,"Amount %",0,AmountPrc,true,0);
+  MatCol(1,-80,"Amount",0,AmountVal,true,0);
+  InsertRowTest;
+  DeleteRowTest;
+  EndMatrix;
+  EditField(-90,-30,80,"Total",ViewOnly,Total,true,0);
+  EndWindow;
+end;
