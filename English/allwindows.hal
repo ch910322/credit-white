@@ -60,6 +60,7 @@ external outer function Boolean HasPaymentWithoutRecons();
 external outer function Boolean SimplifiedSureties();
 external outer function Boolean UseBuyOutMonths();
 external outer function Boolean HideLeasingSeller();
+external outer function Boolean HideLoanPledges();
 remote function Boolean ExternalDocumentEnabled(string);
 //CUST-END
 
@@ -726,7 +727,9 @@ begin
     end;
   end;
   if (type==1 or type==3) then begin
-    HalPushButton(h-50,v+=vs,h+70,v+20,"CredManDClassOpenProperties","Pledges");
+    if (type==3 or HideLoanPledges==false) then begin
+      HalPushButton(h-50,v+=vs,h+70,v+20,"CredManDClassOpenProperties","Pledges");
+    end;
   end;
   if (type==2) then begin
     HalPushButton(h-50,v+=vs,h+70,v+20,"CredManDClassOpenProperties","Assets");
