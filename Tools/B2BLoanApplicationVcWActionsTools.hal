@@ -325,6 +325,7 @@ begin
       CredManr.RealInterestFlag = CMTr.RealInterestFlag;
       CredManr.BuyoutFeeFixed = CMTr.BuyoutFeeFixed;
       CredManr.BuyoutFeePrc = CMTr.BuyoutFeePrc;
+      CredManr.BuyoutFeeMonths = CMTr.BuyoutFeeMonths;
     end else begin  
       CredManr.PayDeal = CUr.PayDeal;
     end;

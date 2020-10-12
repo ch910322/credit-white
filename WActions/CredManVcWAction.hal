@@ -44,6 +44,7 @@ remote procedure PasteBOEInCredMan(var record CredManVc,string,Integer);
 remote procedure PasteBOESignerInCredMan(var record CredManVc,string,Integer);
 remote procedure PasteSuretyInBOESurety(var record BOESuretyVc,string,Integer);
 remote procedure InsertBOESuretySignerName(var record BOESuretyVc,Integer);
+remote updating procedure GetCredManMoneyReceiverRecord(record CredManVc,var record CredManMoneyRecVc);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -251,6 +252,7 @@ begin
       CredManr.RealInterestFlag = CMTr.RealInterestFlag;
       CredManr.BuyoutFeeFixed = CMTr.BuyoutFeeFixed;
       CredManr.BuyoutFeePrc = CMTr.BuyoutFeePrc;
+      CredManr.BuyoutFeeMonths = CMTr.BuyoutFeeMonths;
     end;
     RecalcCredManFees(CredManr);
     PutWindowRecord(wn,CredManr); 
@@ -2236,6 +2238,110 @@ begin
   end;
   if (ReadFirstMain(CredManTestr,1,true)) then begin
     OpenWindow("CredManTestDClass",1,0,"","",CredManTestr);
+  end;
+  return;
+end;
+
+
+
+function Boolean CredManMoneyRecDClassCustCodeEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record CredManMoneyRecVc MRr;
+  row CredManMoneyRecVc MRrw;
+  record CUVc CUr;
+
+  if (changedf and rownr>-1) then begin  
+    GetWindowRecord(wn,MRr);
+    MatRowGet(MRr,rownr,MRrw);
+    CUr.Code = MRrw.CustCode;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      MRrw.CustName = CUr.Name;
+    end;
+    MatRowPut(MRr,rownr,MRrw);
+    PutWindowRecord(wn,MRr);   
+  end; 
+  CredManMoneyRecDClassCustCodeEFAfter = true;
+  return;
+end;
+
+procedure SumupCredManReceivers(var record CredManMoneyRecVc MRr)
+begin
+  row CredManMoneyRecVc MRrw;
+  Integer i,rwcnt;
+  val tot;
+
+  rwcnt = MatRowCnt(MRr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(MRr,i,MRrw);
+    tot = tot + MRrw.AmountVal;
+  end;
+  MRr.Total = tot;
+
+  return;
+end;
+
+function Boolean CredManMoneyRecDClassAmountValEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record CredManMoneyRecVc MRr;
+
+  if (changedf and rownr>-1) then begin  
+    GetWindowRecord(wn,MRr);
+    SumupCredManReceivers(MRr);
+    PutWindowRecord(wn,MRr);   
+  end; 
+  CredManMoneyRecDClassAmountValEFAfter = true;
+  return;
+end;
+
+function Boolean CredManMoneyRecDClassAmountPrcEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record CredManMoneyRecVc MRr;
+  row CredManMoneyRecVc MRrw;
+  record CredManVc CredManr;
+
+  if (changedf and rownr>-1) then begin  
+    GetWindowRecord(wn,MRr);
+    MatRowGet(MRr,rownr,MRrw);
+    CredManr.SerNr = MRr.CredManNr;
+    if (ReadFirstMain(CredManr,1,true)) then begin
+      MRrw.AmountVal = CredManr.InvSum4*(MRrw.AmountPrc/100);
+      MatRowPut(MRr,rownr,MRrw);
+    end;
+    SumupCredManReceivers(MRr);
+    PutWindowRecord(wn,MRr);   
+  end; 
+  CredManMoneyRecDClassAmountPrcEFAfter = true;
+  return;
+end;
+
+global
+function Boolean CredManMoneyRecDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+
+  switch (fieldname) begin
+    case "CustCode": res = CredManMoneyRecDClassCustCodeEFAfter(wn,rownr,changed!=0);
+    case "AmountPrc": res = CredManMoneyRecDClassAmountPrcEFAfter(wn,rownr,changed!=0);
+    case "AmountVal": res = CredManMoneyRecDClassAmountValEFAfter(wn,rownr,changed!=0);
+  end;
+  
+  CredManMoneyRecDClassAfterEditField = res;
+  return;
+end;
+
+
+global
+updating procedure CredManDClassMoneyReceivers()
+begin
+  record CredManVc CredManr;
+  record CredManMoneyRecVc MRr;
+  Integer wn,nwn,num;
+
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_Normal) then begin
+    GetWindowRecord(wn,CredManr);
+    GetCredManMoneyReceiverRecord(CredManr,MRr);
+    nwn = OpenWindow("CredManMoneyRecDClass",1,0,"","",MRr);
   end;
   return;
 end;

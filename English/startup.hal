@@ -237,6 +237,8 @@ begin
 
   SString(200266,"Invega Fund Report");
   SString(200267,"Can't delete receipt with linked bank transaction without having access rights");
+  SString(200268,"Interest exceeds Max Monthly Payment");
+  SString(200269,"Amount is different than specified in Credit Agreement");
 
 
 

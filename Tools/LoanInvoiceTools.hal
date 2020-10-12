@@ -30,6 +30,7 @@ external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var 
 external inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var LongInt);
 external function val FindInvoicePaidAmount_OP(LongInt,LongInt);
 external inner procedure IPPastePayMode(var record IPVc);
+external inner updating procedure CreateInvoicePdfFile(record IVVc);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -1187,28 +1188,82 @@ begin
       BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
       CreateInvoicesFromPlan(CredManr,CMb,CredManPayPlanr,ed,IVr,ivno);
     end;
+    CreateInvoicePdfFile(IVr);
     ResetCompanyLanguage(oldlang);
   end;
 
   return;
 end;
 
-procedure AddBuyOutFee(record CredManVc CredManr,var record IVVc IVr)
+function val GetBuyOutFee(record CredManVc CredManr,Date td)
 begin
-  val rate,sum;
-  record CMInvoicingBlock CIb;
-  string 255 spec;
-  
-  BlockLoad(CIb);
+  val res;
+  val rate;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  Integer i,rwcnt,cnt;
+  record CredManSetBlock CMb;
+  record CredManPayPlanVc CredManPayPlanr;
+  record SMVc SMr;
+  row SMVc SMrw;
+
   rate = CredManr.BuyoutFeePrc;
   if (CredManr.AnnualRate==1) then begin
     rate = rate/12;
   end;
-  sum = (CredManr.InvSum4 - CredManr.DepositSum) *(rate/100);
-  sum = sum + CredManr.BuyoutFeeFixed;
+  res = (CredManr.InvSum4 - CredManr.DepositSum) *(rate/100);
+  res = res + CredManr.BuyoutFeeFixed;
+
+  if (CredManr.BuyoutFeeMonths>0) then begin
+    CSr.CredManNr = CredManr.SerNr;
+    if (ReadFirstMain(CSr,1,true)) then begin
+      rwcnt = MatRowCnt(CSr);
+      cnt = CredManr.BuyoutFeeMonths;
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(CSr,i,CSrw);
+        if (CSrw.InvDate>td and cnt>0) then begin
+          res = res + CSrw.Interest;
+          cnt = cnt - 1;
+        end;
+        if (cnt<=0) then begin
+          i = rwcnt;
+        end;
+      end;
+
+    end else begin
+      BlockLoad(CMb);
+      BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
+      BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CMb,SMr);
+      rwcnt = MatRowCnt(SMr);
+      cnt = CredManr.BuyoutFeeMonths;
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(SMr,i,SMrw);
+        if (SMrw.TransDate>td and cnt>0) then begin
+          res = res + SMrw.CredVal;
+          cnt = cnt - 1;
+        end;
+        if (cnt<=0) then begin
+          i = rwcnt;
+        end;
+      end;
+    end;
+  end;
+
+  GetBuyOutFee = res;
+  return;
+end;
+
+procedure AddBuyOutFee(record CredManVc CredManr,var record IVVc IVr)
+begin
+  record CMInvoicingBlock CIb;
+  string 255 spec;
+  val buyoutfee;
+  
+  BlockLoad(CIb);
+  buyoutfee = GetBuyOutFee(CredManr,IVr.InvDate);
   GetItemName(CIb.BuyOutItem,spec);
-  if (nonblank(CIb.BuyOutItem) and sum>0) then begin
-    SetupInvoiceRowAndAdd(IVr,CIb.BuyOutItem,spec,1,sum,blankval,15,-1);
+  if (nonblank(CIb.BuyOutItem) and buyoutfee>0) then begin
+    SetupInvoiceRowAndAdd(IVr,CIb.BuyOutItem,spec,1,buyoutfee,blankval,15,-1);
   end;
 
   return;
@@ -1552,7 +1607,7 @@ begin
   record CredManPayPlanVc CredManPayPlanr;
   record CredManSchedVc CSr;
   record IVVc IVr;
-  val dueamount,openamount,lateamount,prepayval;
+  val dueamount,openamount,lateamount,prepayval,buyoutfee;
   Integer latedays;
   Date sd;
   transaction Boolean gSilenceIVOpenPrepExists;
@@ -1576,10 +1631,11 @@ begin
   GetCredManOverdueInvoices(CredManr,CMb,RepSpec.d1,sd,latedays,lateamount,lateformula,false,false);
 
   prepayval = GetPrepaymentValue(CredManr);
-
+  buyoutfee = GetBuyOutFee(CredManr,RepSpec.d1);
   RepSpec.vals1 = IVr.Sum4;
   RepSpec.vals0 = dueamount;//should this be openamount?
   RepSpec.vals2 = openamount + IVr.Sum4 - prepayval;
+  RepSpec.f14 = buyoutfee;
   if (prepayval>0 and RepSpec.vals2<0) then begin
     RepSpec.vals2 = 0;
   end;

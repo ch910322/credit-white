@@ -58,6 +58,10 @@ external outer function Boolean CanEditCredManCreateDate();
 external outer function Boolean UseCredManStatus();
 external outer function Boolean HasPaymentWithoutRecons();
 external outer function Boolean SimplifiedSureties();
+external outer function Boolean UseBuyOutMonths();
+external outer function Boolean HideLeasingSeller();
+external outer function Boolean HideLoanPledges();
+external outer function Boolean HasMoneyReceivers();
 remote function Boolean ExternalDocumentEnabled(string);
 //CUST-END
 
@@ -637,7 +641,7 @@ end;
 window CredManDClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  real h,h2,h3,h4,t,v,vm,vs;
+  real h,h2,h3,h4,t,v,vm,vs,th;
   string 255 label1,label2,label3,label4,label5;
   record CredManVc CredManr;
   Integer type,n;
@@ -723,20 +727,32 @@ begin
       EditField(h,v+=vs,82,"Deposit Sum",Normal,DepositSum,true,0);
     end;
   end;
+  th = h;
   if (type==1 or type==3) then begin
-    HalPushButton(h-50,v+=vs,h+70,v+20,"CredManDClassOpenProperties","Pledges");
+    if (type==3 or HideLoanPledges==false) then begin
+      HalPushButton(h-50,v+=vs,h+70,v+20,"CredManDClassOpenProperties","Pledges");
+      th = h + 140;
+    end;
   end;
   if (type==2) then begin
     HalPushButton(h-50,v+=vs,h+70,v+20,"CredManDClassOpenProperties","Assets");
+    th = h + 140;
   end;
+  if (HasMoneyReceivers) then begin
+    if (th==h) then begin
+      v = v + 30;
+    end;
+    HalPushButton(th,v,th+120,v+20,"CredManDClassMoneyReceivers","Money Receivers");
+  end;
+
   EditField(h2,v=vm,82,"Start Date",Normal,startDate,false,PasteCurDate);
 //CUST-BEGIN switched fields and renamed FirstIntDate
 //CUST-BEGIN
-  //if (HasMoneyTransferDate) then begin
+  if (HasMoneyTransferDate) then begin
     EditField(h2,v+=vs,82,"Money Transf. Date",Normal,MoneyTransferDate,false,PasteCurDate);
-  //end else begin
-  //  v = vm-vs;
-  //end;
+  end else begin
+    //v = vm-vs;
+  end;
 //CUST-END
   if (type!=4 and type!=5) then begin
     EditField(h2,v+=vs,82,"First Invoice Date",Normal,FirstInvDate,false,PasteCurDate);
@@ -764,13 +780,17 @@ begin
 //CUST-BEGIN
   EditField(h3,v+=vs,72,"Order Class",Normal,OrderClass,false,OrderClassSClass);
   EditField(h3,v+=vs,72,"Overdue percentage",Normal,OverduePercentage,false,0);
-  EditField(h3,v+=vs,72,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
-  EditField(h3,v+=vs,72,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
+  if (UseBuyOutMonths) then begin
+    EditField(h3,v+=vs,72,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
+  end else begin
+    EditField(h3,v+=vs,72,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
+    EditField(h3,v+=vs,72,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
+  end;
 
 //  EditField(h3,v+=vs,72,"Surety Interest Rate",Normal,SuretyInterestRate,false,0);
   EditField(h3,v+=vs,72,"Std Prolongation Fee",Normal,StdProlongFee,false,0);
   EditField(h3,v+=vs,72,"Std Prolongation Fee %",Normal,StdProlongPrc,false,0);
-  if (type==2) then begin
+  if (type==2 and HideLeasingSeller==false) then begin
     EditField(h3,v+=vs,72,"Seller",Normal,LeaseSellerCode,false,CUSClass);
     EditField(h3,v+=vs,72,"Seller Contact",Normal,LeaseSellerContact,false,ContactSClass);
   end;
@@ -1275,7 +1295,13 @@ begin
   //CUST-BEGIN
   
   EditField(h,v+=vs,40,"Days in Year",Normal,DaysInYear,false,0);
-  EditField(h2,v,82,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
+  if (UseBuyOutMonths) then begin
+    EditField(h2,v,82,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
+    v = v - 20;
+  end else begin
+    EditField(h2,v,82,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
+  end;
+
   vm2 = v;
   ButtonFrame(h2,v+=60,82,3,"Days in Month");
   RadioButton(h2,v,0,0,"Default",DaysInMonth);
@@ -1283,7 +1309,9 @@ begin
   RadioButton(h2,v+=16,2,0,"Actual",DaysInMonth); 
 
   v=vm2+vs;
-  EditField(h2,v,82,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
+  if (UseBuyOutMonths==false) then begin
+    EditField(h2,v,82,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
+  end;
   
   h2 = 330;
   h2 = h2 + 110;
