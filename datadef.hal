@@ -1395,6 +1395,7 @@ begin
   RecordField(MoneyTransferDateOP,M4Int,0,0);
   RecordField(BuyOutItem,M4Code,20,INVc);
   RecordField(UseTypeAccounts,M4Int,0,0);
+  RecordField(UsePreCreatedInvoicePdf,M4Int,0,0);
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
@@ -1701,6 +1702,7 @@ begin
   SourceFile("halcust\\LoanApp\\Level0\\WActions", 0);
   SourceFile("halcust\\LoanApp\\Level0\\WebNG", 0);
   SourceFile("halcust\\LoanApp\\Level0\\amainhal\\Tools", 0);
+  SourceFile("halcust\\LoanApp\\Level0\\CustomTools", 0);
 
 /*Mesente SMS*/
   Exec_file("halcust\\LoanApp\\Integrations\\Mesente\\datadef.hal");
