@@ -1395,6 +1395,7 @@ begin
   RecordField(MoneyTransferDateOP,M4Int,0,0);
   RecordField(BuyOutItem,M4Code,20,INVc);
   RecordField(UseTypeAccounts,M4Int,0,0);
+  RecordField(UsePreCreatedInvoicePdf,M4Int,0,0);
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
@@ -1667,6 +1668,20 @@ begin
   MainKeyBegin(CredManType,0);
   KeySegment(CredManType);
   EndRecord;
+
+  RecordBegin(CredManMoneyRecVc,-,"");
+  RecordField(CredManNr,M4Long,0,0);
+  RecordField(Total,M4Val,0,0);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(CustCode,M4Code,20,CUVc);
+  ArrayField(CustName,M4Str,255,0);
+  ArrayField(AmountPrc,M4Qty,0,0);
+  ArrayField(AmountVal,M4Val,0,0);
+  EndArray;
+  MainKeyBegin(CredManNr,0);
+  KeySegment(CredManNr);
+  EndRecord;  
   
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
@@ -1687,6 +1702,7 @@ begin
   SourceFile("halcust\\LoanApp\\Level0\\WActions", 0);
   SourceFile("halcust\\LoanApp\\Level0\\WebNG", 0);
   SourceFile("halcust\\LoanApp\\Level0\\amainhal\\Tools", 0);
+  SourceFile("halcust\\LoanApp\\Level0\\CustomTools", 0);
 
 /*Mesente SMS*/
   Exec_file("halcust\\LoanApp\\Integrations\\Mesente\\datadef.hal");

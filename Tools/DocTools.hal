@@ -9,3 +9,43 @@ begin
 
   return;
 end;
+
+function Boolean FindInvoicePdf(record IVVc IVr,var record Attach2Vc Attachr)
+begin
+  Boolean res;
+  Integer i;
+  record RLinkVc RLr;
+
+  i = 1;
+  while (ReadRecordLink(IVr,i,Attachr,RLr)) begin
+    if (right(Attachr.FileName,4)==".pdf") then begin
+      res = true;
+      goto LFindInvoicePdf;
+    end;
+    i = i + 1;
+  end;
+
+LFindInvoicePdf:;
+  FindInvoicePdf = res;
+  return;
+end;
+
+global
+updating function Boolean Ext_AddPreCreatedDocument(record IVVc IVr,record MailVc Mailr)
+begin
+  record CMInvoicingBlock CIb;
+  Boolean res;
+  record Attach2Vc Attachr;
+
+  BlockLoad(CIb);
+
+  if (CIb.UsePreCreatedInvoicePdf==1) then begin
+    if (FindInvoicePdf(IVr,Attachr)) then begin
+      CreateRecordLink(Mailr,CurrentCompany,Attachr,CurrentCompany);
+      res = true;
+    end;
+  end;
+ 
+  Ext_AddPreCreatedDocument = res;
+  return;
+end;

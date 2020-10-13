@@ -567,6 +567,28 @@ begin
   return;
 end;
 
+global
+function LongInt CredManMoneyRecVcRecordCheck(var record CredManMoneyRecVc MRr,record CredManMoneyRecVc MR2r,LongInt stat,LongInt long4)
+begin
+  Longint res;
+  record CredManVc CredManr;
+
+  res = 0;
+  
+  CredManr.SerNr = MRr.CredManNr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    if (MRr.Total!=CredManr.InvSum4) then begin
+      RecordCheckError(200269,"",-1,"Total");
+      res = -1;
+      goto LCredManMoneyRecVcRecordCheck;
+    end;
+  end;
+
+LCredManMoneyRecVcRecordCheck:;
+  CredManMoneyRecVcRecordCheck = res;
+  return;
+end;
+
 
 global
 function LongInt CredManAccVcRecordCheck(var record CredManAccVc CMAr,record CredManAccVc CMA2r,LongInt stat,LongInt long4)

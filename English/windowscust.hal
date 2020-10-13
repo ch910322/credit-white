@@ -1884,6 +1884,7 @@ begin
   EditField(h,v+=20,100,"Time",Normal,AutoInvoiceTime,false,PasteCurTime);
   CheckBox(h,v+=20,0,"Automatically send issued Invoices",AutoInvoiceSend);
   CheckBox(h,v+=16,0,"Automatically send Invoices created from Contracts",AutoMailsFromInvoices);
+  CheckBox(h,v+=16,0,"When creating Email, use precreated PDFs",UsePreCreatedInvoicePdf);
 
   EditField(h,v+=vs,100,"Additional Comment",Normal,InvoiceCommentStr,false,0);
   EditField(h,v+=vs,140,"Replace VAT Nr.",Normal,ReplaceVATNr,false,0);
@@ -2704,5 +2705,27 @@ begin
   MatCol(1,284,"Credit Account",0,CreditAcc,false,AccSClass);
   EndMatrix;
 
+  EndWindow;
+end;
+
+window CredManMoneyRecDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+
+  WindowBegin("Money Receivers",CredManMoneyRecDClass,CGview,-);
+  SetWRect(20,80,760,339);
+  DynamicWindow;
+  UseView(CredManMoneyRecVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  MatrixBegin(0,16,-16,-50,-,20);
+  MatCol(1,24,"Customer",0,CustCode,false,CUSClass);
+  MatCol(1,120,"Name",0,CustName,false,0);
+  MatCol(1,-160,"Amount %",0,AmountPrc,true,0);
+  MatCol(1,-80,"Amount",0,AmountVal,true,0);
+  InsertRowTest;
+  DeleteRowTest;
+  EndMatrix;
+  EditField(-90,-30,80,"Total",ViewOnly,Total,true,0);
   EndWindow;
 end;

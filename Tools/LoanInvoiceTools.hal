@@ -30,6 +30,7 @@ external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var 
 external inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var LongInt);
 external function val FindInvoicePaidAmount_OP(LongInt,LongInt);
 external inner procedure IPPastePayMode(var record IPVc);
+external inner updating procedure CreateInvoicePdfFile(record IVVc);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -719,6 +720,7 @@ begin
       IVr.OKFlag = 1;
       RecordUpdate(oldIVr,IVr,true);
       LinkCredManAndInvoice(IVr,CredManr);
+      CreateInvoicePdfFile(IVr);
     end;
   end;
 
