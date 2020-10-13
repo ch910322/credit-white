@@ -9,6 +9,7 @@ external inner function string 50 NextLegalSerNr(string,LongInt,Date,string,stri
 external updating procedure DeleteCredOffSerNr(LongInt,string);
 external updating procedure StoreCredOffSerNrIV(LongInt,string,string);
 external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
+external inner function Boolean GetAccName(string,var string,Integer);
 
 global
 function LongInt CredManVcRecordDefaults(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
@@ -566,3 +567,53 @@ begin
   return;
 end;
 
+
+global
+function LongInt CredManAccVcRecordCheck(var record CredManAccVc CMAr,record CredManAccVc CMA2r,LongInt stat,LongInt long4)
+begin
+  Longint res;
+  row CredManAccVc CMArw;
+  Integer i,rwcnt;
+  string 255 tstr;
+
+  res = 0;
+  
+  rwcnt = MatRowCnt(CMAr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(CMAr,i,CMArw);
+    if (GetAccName(CMArw.DebitAcc,tstr,60)==false) then begin
+      RecordCheckError(1120,CMArw.DebitAcc,i,"DebitAcc");
+      res = -1;
+      goto LCredManAccVcRecordCheck;
+    end;
+    if (GetAccName(CMArw.CreditAcc,tstr,60)==false) then begin
+      RecordCheckError(1120,CMArw.CreditAcc,i,"CreditAcc");
+      res = -1;
+      goto LCredManAccVcRecordCheck;
+    end;
+  end;
+  if (GetAccName(CMAr.PLCreditAcc,tstr,60)==false) then begin
+    RecordCheckError(1120,CMAr.PLCreditAcc,-1,"PLCreditAcc");
+    res = -1;
+    goto LCredManAccVcRecordCheck;
+  end;
+  if (GetAccName(CMAr.PLDebitAcc,tstr,60)==false) then begin
+    RecordCheckError(1120,CMAr.PLDebitAcc,-1,"PLDebitAcc");
+    res = -1;
+    goto LCredManAccVcRecordCheck;
+  end;
+  if (GetAccName(CMAr.ControlAcc,tstr,60)==false) then begin
+    RecordCheckError(1120,CMAr.ControlAcc,-1,"ControlAcc");
+    res = -1;
+    goto LCredManAccVcRecordCheck;
+  end;
+  if (GetAccName(CMAr.DebtorsAcc,tstr,60)==false) then begin
+    RecordCheckError(1120,CMAr.DebtorsAcc,-1,"DebtorsAcc");
+    res = -1;
+    goto LCredManAccVcRecordCheck;
+  end;
+
+LCredManAccVcRecordCheck:;
+  CredManAccVcRecordCheck = res;
+  return;
+end;
