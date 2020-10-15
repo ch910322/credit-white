@@ -62,7 +62,8 @@ enum begin
   kMonthTypeLast = 2
 end;
 
-function string 255 SetCompanyLanguage()
+global
+function string 255 CM_SetCompanyLanguage()
 begin
   record CYBlock CYb;
   string 255 oldlang,newlang;
@@ -79,11 +80,12 @@ begin
     end;
   end;
 
-  SetCompanyLanguage = oldlang;
+  CM_SetCompanyLanguage = oldlang;
   return;
 end;
 
-procedure ResetCompanyLanguage(string oldlang)
+global
+procedure CM_ResetCompanyLanguage(string oldlang)
 begin
   Integer oldlangmode;
 
@@ -178,7 +180,7 @@ begin
 
   BlockLoad(LMb);
   BlockLoad(CIb);
-  oldlang = SetCompanyLanguage;
+  oldlang = CM_SetCompanyLanguage;
 
   RecordNew(IVr);
   IVr.CustCredManNr = CredManr.SerNr;
@@ -236,7 +238,7 @@ begin
     IVrw.Spec = " ";
     MatRowPut(IVr,MatRowCnt(IVr),IVrw);
   end;
-  ResetCompanyLanguage(oldlang);
+  CM_ResetCompanyLanguage(oldlang);
 
   return;
 end;
@@ -928,42 +930,6 @@ begin
   return;
 end;
 
-global
-function string 255 SetCompanyLanguage()
-begin
-  record CYBlock CYb;
-  string 255 oldlang,newlang;
-  Integer langmode;
-
-  BlockLoad(CYb);
-  oldlang = CurrentLanguage;
-  newlang = CYb.LangCode;
-
-  if (oldlang!=newlang and nonblank(newlang)) then begin
-    langmode = SetFromString(619,newlang);
-    if (langmode>-1) then begin
-      SetLangMode(langmode,newlang,0);
-    end;
-  end;
-
-  SetCompanyLanguage = oldlang;
-  return;
-end;
-
-global
-procedure ResetCompanyLanguage(string oldlang)
-begin
-  Integer oldlangmode;
-
-  if (CurrentLanguage!=oldlang) then begin
-    oldlangmode = SetFromString(619,oldlang);
-    if (oldlangmode>-1) then begin
-      SetLangMode(oldlangmode,oldlang,0);
-    end;
-  end;
-
-  return;
-end;
 
 procedure GetItemName(string code,var string spec)
 begin
@@ -1182,14 +1148,14 @@ begin
 
   //if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
   if (CanCreateSingleAgreementInvoice(CredManr,ed)) then begin
-    oldlang = SetCompanyLanguage;
+    oldlang = CM_SetCompanyLanguage;
     if (CreateInvoiceBasedOnSchedule(CredManr,ed,IVr)==false) then begin
       BlockLoad(CMb);
       BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
       CreateInvoicesFromPlan(CredManr,CMb,CredManPayPlanr,ed,IVr,ivno);
     end;
     CreateInvoicePdfFile(IVr);
-    ResetCompanyLanguage(oldlang);
+    CM_ResetCompanyLanguage(oldlang);
   end;
 
   return;
