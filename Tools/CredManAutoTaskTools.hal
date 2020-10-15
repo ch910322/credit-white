@@ -3,6 +3,8 @@ external inner function Boolean PasteCuInAct(var record ActVc,var string);
 external inner function Boolean PasteActTypeInAct2(string,var record ActVc,var string);
 external inner procedure IVToMailMn(record RcVc);
 external updating function Boolean LoopAndGenLoanAgreementInvoice(var record RcVc,var record IVVc);
+external function string 255 CM_SetCompanyLanguage();
+external procedure CM_ResetCompanyLanguage(string);
 
 global
 updating procedure CreateTaskActivityCredMan(record CredManVc CredManr,string person,string acttype,string acttext)
@@ -202,10 +204,12 @@ begin
   Longint invfr,invto;
   record RcVc RepSpec;
   Integer i,oldcomp,ncomp;
+  string 255 oldlang;
 
   BlockLoad(CIb);
   RecordClear(RepSpec);
   ReportDefaults(RepSpec,"IVToMailVClass");
+  oldlang = CM_SetCompanyLanguage;
 
   if (GetInvoiceSequence(aIVr,invfr,invto,datefr,dateto)) then begin
     RepSpec.f2 = invfr & ":" & invto;
@@ -244,6 +248,8 @@ begin
       IVToMailMn(RepSpec);
     end;
   end;
+
+  CM_ResetCompanyLanguage(oldlang);
 
   return;
 end;
