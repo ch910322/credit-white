@@ -908,6 +908,7 @@ begin
           end; 
           if (i < pausestartmonths + InCredManr.PauseMonths) then begin
             usemonths = months - (pausestartmonths + InCredManr.PauseMonths);
+            setdelf = true;
           end;
 
           pausef = true;
@@ -921,7 +922,7 @@ begin
         end;       
       end;
 //      logtext(0,"l3 " & i & ":" & curmonth & ":" & usemonths & ":" & months & ":" & usesum & ":" & prolongstartmonths & ":" & pausestartmonths);
-      if (nonblank(inCredManr.PauseDate) and AddMonth(inCredManr.PauseDate,inCredManr.PauseMonths)<invdat) then begin
+      if (nonblank(inCredManr.PauseDate) and AddMonth(inCredManr.PauseDate,inCredManr.PauseMonths)<=invdat) then begin
         curmonth = curmonth - inCredManr.PauseMonths;
       end;
       monthtype = GetMonthType(i,months);
