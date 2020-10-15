@@ -41,6 +41,8 @@ external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlan
 external updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
 external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean,Boolean);
 external function Boolean FindCEOContact(string,var record CUVc);
+external procedure GetCustomerLoanAmounts2(var record IPVc,var integer,string,var string,var val,string,boolean,string,string,var vector Boolean,Date,Longint);
+
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -1205,6 +1207,9 @@ begin
   record IPVc IPr,oldIPr;
   row IPVc IPrw;
   record CMInvoicingBlock CIb;
+  vector Boolean invused;
+  Integer k;
+  val remsum;
 
   BlockLoad(CIb);
   IPr.TransDate = IVr.InvDate;
@@ -1214,11 +1219,16 @@ begin
   IPr.PayMode = CIb.PaymentMode;
   IPPastePayMode(IPr);
 
+
+  remsum = IVr.Sum4;
+  GetCustomerLoanAmounts2(IPr,k,IVr.Addr0,IVr.CurncyCode,remsum,IVr.CustCode,true,"","",invused,IVr.InvDate,CredManr.SerNr);
+/*
   ClearRow(IPr,IPrw,1);
   IPrw.InvoiceNr = IVr.SerNr;
   MatRowPut(IPr,0,IPrw);
-  PasteInvIn2IPr(IPr,0,IPr.TransDate,chk,false,installmentf);
 
+  PasteInvIn2IPr(IPr,0,IPr.TransDate,chk,false,installmentf);
+*/
   if (RecordStore(IPr,true)) then begin
     RecordCopy(oldIPr,IPr);
     IPr.OKFlag = 1;
