@@ -4,7 +4,7 @@ external updating procedure SplitLoanPaymentsInReceipt(record IPVc,Boolean);
 
 updating procedure TreatSingleAgreement(record CredManVc CredManr)
 begin
-  record IVVc IV3r,IVr;
+  record IVVc IV3r,IVr,oldIVr;
   record CredHistVc CredHistr;
   Boolean TrHs,TrHs2;
   record IPrsVc IPrsr;
@@ -30,7 +30,9 @@ begin
       TrHs = false;
     end else begin
       if (IVr.CustCredManNr==CredManr.SerNr and IVr.OKFlag==1) then begin
+        RecordCopy(oldIVr,IVr);
         UpdateCredHistInvoice(IVr,IV3r);
+        RecordUpdate(oldIVr,IVr,false);//no checks. we need this info to be inside 
         ResetLoop(IPrsr);
         RecordClear(IPrsr);
         TrHs2 = true;

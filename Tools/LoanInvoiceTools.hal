@@ -722,6 +722,7 @@ begin
       IVr.OKFlag = 1;
       RecordUpdate(oldIVr,IVr,true);
       LinkCredManAndInvoice(IVr,CredManr);
+      CreateInvoicePdfFile(IVr);
     end;
   end;
 
@@ -1154,7 +1155,6 @@ begin
       BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
       CreateInvoicesFromPlan(CredManr,CMb,CredManPayPlanr,ed,IVr,ivno);
     end;
-    CreateInvoicePdfFile(IVr);
     CM_ResetCompanyLanguage(oldlang);
   end;
 

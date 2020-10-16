@@ -13,6 +13,7 @@ begin
   record IVVc oldIVr;
   string 255 fname;
   
+  BlockLoad(CIb);
   if (CIb.UsePreCreatedInvoicePdf==1) then begin
     if (ExternalDocumentEnabled("InvForm")==false) then begin
       if (Ext_GetPDFInvoiceName(IVr,fname)==false) then begin

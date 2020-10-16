@@ -88,7 +88,10 @@ function val GetAmount(record CredManVc CredManr)
 begin
   val res;
 
-  res = CredManr.InvSum4 - CredManr.DepositSum - CredManr.ExtraDepositSum;
+  res = CredManr.InvSum4 - CredManr.DepositSum;
+  if (nonblank(CredManr.ExtraDepositMonths)) then begin
+    res = res - CredManr.ExtraDepositSum;
+  end; 
   
   GetAmount = res;
   return;
@@ -464,7 +467,9 @@ begin
   record CMApplicationSetBlock CMAb;
   row CredManPayPlanVc CredManPayPlanrw;
   val tsum,tint,nint;
+  record CMInvoicingBlock CIb;
   
+  BlockLoad(CIb);
   switch (type) begin
     case 0:
       AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,CredManr.InvSum4,0,acumint,calcbal,frdate,todate,-1,-1,0);
@@ -483,7 +488,11 @@ begin
         end;
         if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
           sum = usesum-CredManr.LastMonthPrinc;
-          sum = sum/(usemonths-1);
+          if (CIb.LastPrincipleWithExtraMonth==1) then begin
+            sum = sum/(usemonths);
+          end else begin
+            sum = sum/(usemonths-1);
+          end;
           if (calcbal-sum<(CredManr.LastMonthPrinc+(usemonths*0.01))) then begin//0.01 is the possible diff that can be
             sum = calcbal - CredManr.LastMonthPrinc;
           end;
@@ -505,7 +514,12 @@ begin
         tusemonths = usemonths;
         tusesum = usesum;
         if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
-          tusemonths = tusemonths - 1;
+          if (CIb.LastPrincipleWithExtraMonth==1) then begin
+            tusemonths = tusemonths;
+          end else begin
+            tusemonths = tusemonths - 1;
+          end;
+
           tusesum = usesum - CredManr.LastMonthPrinc;
         end;
         sum = FIN_PPMT(rate, tusemonths, tusesum, month+1);
@@ -819,7 +833,7 @@ begin
   months = inCredManr.InstalmentMonths;
   acumint = 0;
   calcbal = inCredManr.InvSum4;
-  usesum = inCredManr.InvSum4 - inCredManr.DepositSum;
+  usesum = GetAmount(inCredManr);
 
   if (withactuals) then begin
     AddActualsToPlan(inCredManr,CredManPayPlanr,calculatedmonths,acumint,calcbal,firstinvf,CredManSetb,months,buyoutamount,pausebal,prolongbal);
@@ -894,6 +908,7 @@ begin
           end; 
           if (i < pausestartmonths + InCredManr.PauseMonths) then begin
             usemonths = months - (pausestartmonths + InCredManr.PauseMonths);
+            setdelf = true;
           end;
 
           pausef = true;
@@ -907,7 +922,7 @@ begin
         end;       
       end;
 //      logtext(0,"l3 " & i & ":" & curmonth & ":" & usemonths & ":" & months & ":" & usesum & ":" & prolongstartmonths & ":" & pausestartmonths);
-      if (nonblank(inCredManr.PauseDate) and AddMonth(inCredManr.PauseDate,inCredManr.PauseMonths)<invdat) then begin
+      if (nonblank(inCredManr.PauseDate) and AddMonth(inCredManr.PauseDate,inCredManr.PauseMonths)<=invdat) then begin
         curmonth = curmonth - inCredManr.PauseMonths;
       end;
       monthtype = GetMonthType(i,months);
