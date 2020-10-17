@@ -42,7 +42,7 @@ external updating procedure RecreateAgreementDocument(var record AgreementDocVc,
 external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean,Boolean);
 external function Boolean FindCEOContact(string,var record CUVc);
 external procedure GetCustomerLoanAmounts2(var record IPVc,var integer,string,var string,var val,string,boolean,string,string,var vector Boolean,Date,Longint);
-
+external function string 255 CM_GetCredManTypePurchItemAccount2(record CredManVc,string,Boolean);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -1164,7 +1164,7 @@ begin
   record VIVc oldVIr;
   row VIVc VIrw;
   val ct;
-  string 255 warning;
+  string 255 warning,tstr;
 
   BlockLoad(CIb);
   RecordNew(VIr);
@@ -1179,7 +1179,9 @@ begin
   VIr.Objects =  AddObjectToObjectList(VIr.Objects,CIb.PaymentObject);
   VIr.PayVal = CredManr.InvSum4;
   ClearRow(VIr,VIrw,1);
-  VIrw.AccNumber = CIb.PaymentAccount;
+  tstr = CM_GetCredManTypePurchItemAccount2(CredManr,CIb.PaymentAccount,true);
+  VIrw.AccNumber = tstr;
+
   MatRowPut(VIr,0,VIrw);
   VIVc_PasteAccNumber(VIr,"",true,0);
   MatRowGet(VIr,0,VIrw);
