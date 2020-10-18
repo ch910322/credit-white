@@ -2,6 +2,7 @@ external procedure IPPastePayMode(var record IPVc);
 external function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var val,Boolean,var Boolean);
 //CUST-BEGIN
 external outer procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
+external outer procedure DistributeCredHistValues(var record IPVc,Integer);
 //CUST-END
 
 procedure NewIP(record RcVc RepSpec,var record IPVc IPr)
@@ -40,6 +41,7 @@ begin
   IPrw.InvoiceNr = IVr.SerNr;
   MatRowPut(IPr,rownr,IPrw);
   PasteInvIn2IPr(IPr,rownr,IPr.TransDate,chk,false,installmentf);
+  DistributeCredHistValues(IPr,rownr);
   
   return;
 end;

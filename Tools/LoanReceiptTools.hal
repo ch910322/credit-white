@@ -134,7 +134,7 @@ LFindExistingRow:;
   return;
 end;
 
-procedure AddCredHistToIP(row ORVc ORrw,var record IPVc IPr,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,var vector Boolean invused)
+procedure AddCredHistToIP(row ORVc ORrw,var record IPVc IPr,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,var vector Boolean invused,Integer rownr)
 begin
   val credsum,chk;
   Integer num;
@@ -160,7 +160,11 @@ begin
     IPVc_PasteRecVal(IPr,num);
   end else begin
 */
-    num = MatRowCnt(IPr);
+    if (rownr>-1) then begin
+      num = rownr;
+    end else begin
+      num = MatRowCnt(IPr);
+    end;
     ClearRow(IPr,IPrw,1);
     IPrw.InvoiceNr = ORrw.GroupOrdRow;
     invused[IPrw.InvoiceNr] = true;
@@ -270,7 +274,7 @@ begin
     for (j=0;j<rwcnt;j=j+1) begin
       MatRowGet(ORr,j,ORrw);
       if (remsum>0) then begin
-        AddCredHistToIP(ORrw,IPr,RecName,CurncyCode,remsum,cucode,cufnd,instr,origcomm,invused);
+        AddCredHistToIP(ORrw,IPr,RecName,CurncyCode,remsum,cucode,cufnd,instr,origcomm,invused,-1);
       end else begin
         goto LGetCustomerLoanAmounts;
       end;
@@ -590,5 +594,83 @@ begin
 //this is needed for partial buy-out. In that case we will always have only one row/one customer
   totremsum = remsum;
 
+  return;
+end;
+
+global
+procedure DistributeCredHistValues(var record IPVc IPr,Integer rownr)
+begin
+  record ItemPriorityBlock IPb;
+  record ORVc ORr;
+  row IPVc IPrw;
+  record IVVc IVr;
+  row IVVc IVrw;
+  row ORVc ORrw;
+  record CredHistVc CredHistr;
+  Boolean TrHs;
+  array record ORVc arrORr;
+  Integer i,j,rwcnt,priority;
+  val paid;
+  Boolean debugf;
+  val remsum;
+  vector Boolean invused;
+
+  BlockLoad(IPb);
+
+  debugf = false;  
+  if (rownr>=0) then begin
+    MatRowGet(IPr,rownr,IPrw);
+    if (IPrw.InvoiceNr>-1) then begin
+      IVr.SerNr = IPrw.InvoiceNr;
+      if (ReadFirstMain(IVr,1,true)) then begin
+        if (IVr.CustCredManNr>0) then begin
+          remsum = IPrw.RecVal;
+          MatRowDelete(IPr,rownr);
+          rwcnt = MatRowCnt(IVr);
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(IVr,i,IVrw);
+            if (IVrw.CredHistNr>0) then begin
+              CredHistr.SerNr = IVrw.CredHistNr;
+              if (ReadFirstMain(CredHistr,1,true)) then begin
+                priority = GetItemPriority(IPb,CredHistr.ArtCode);
+                InsertCredHistInArray(CredHistr,arrORr,priority);
+              end;
+            end;
+          end;
+          SortRecordArray(arrORr,"BuildOn");
+        //get all paid amounts for each CredHistr
+          for (i=0;i<arrORr.length;i=i+1) begin
+            ORr = arrORr[i];
+            rwcnt = MatRowCnt(ORr);
+            for (j=0;j<rwcnt;j=j+1) begin
+              MatRowGet(ORr,j,ORrw);
+              paid = GetLoanItemPaidAmount(ORrw.CUServiceHistNr,-1);
+              ORrw.Price = paid;
+              MatRowPut(ORr,j,ORrw);
+            end;
+            arrORr[i] = ORr;
+          end;
+          if (debugf) then begin
+            OutputPaymentArr(arrORr);
+          end;
+        //Insert into receipts
+          for (i=0;i<arrORr.length;i=i+1) begin
+            ORr = arrORr[i];
+            SortRows(ORr,"Spec",true);
+            rwcnt = MatRowCnt(ORr);
+           for (j=0;j<rwcnt;j=j+1) begin
+              MatRowGet(ORr,j,ORrw);
+              if (remsum>0) then begin
+                AddCredHistToIP(ORrw,IPr,IVr.Addr0,IVr.CurncyCode,remsum,IVr.CustCode,true,"","",invused,rownr);
+              end else begin
+                goto LDistributeCredHistValues;
+              end;
+            end;
+          end;
+        end;
+      end;
+    end;
+  end;
+LDistributeCredHistValues:;
   return;
 end;
