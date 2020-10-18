@@ -1,5 +1,6 @@
 remote inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
 remote inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var LongInt);
+remote procedure DistributeCredHistValues(var record IPVc,Integer);
 
 function Boolean UpdatePrepayRow(var record IPVc IPr,val addsum)
 begin
@@ -79,6 +80,7 @@ BEGIN
             end;
           end;
         end;
+        DistributeCredHistValues(IPr,rownr);
       end;
       PutWindowRecord(wn,IPr);    
     end;
