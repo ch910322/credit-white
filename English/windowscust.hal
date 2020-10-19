@@ -380,6 +380,12 @@ begin
   EditFieldTL(h,v,120,"Agreement",M4Long,Normal,0,long1,false,CredManSClass);
   EndWindow;
 
+  WindowBegin("Specify Create Agreement Test from Agreement",CredManCreateTestVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 150; v = 6; vs = 20;
+  EditFieldTL(h,v,120,"Agreement",M4Long,Normal,0,long1,false,CredManSClass);
+  EndWindow;
+
   WindowBegin("Specify Agreement Schedules",CreateCredManScheduleVClass,CGMnt,RcType);
   SetWRect(64,80,445,95);
   h = 150; v = 6; vs = 20;
@@ -2633,6 +2639,7 @@ begin
   UseView(CredManTestVc);
   vs=20; h=160; vs2=16; hm=-100;h2 = 430;
   EditField(h,v=6,-40,"Comment",Normal,Comment,false,);
+  EditField(h,v+=vs,120,"Customer",Normal,CustCode,false,CUSClass);
   EditField(h,v+=vs,120,"Type",Normal,Type,false,CredManTypeSClass);vm = v;
   EditField(h,v+=vs,90,"Date",Normal,TransDate,false,PasteCurDate);
   EditField(h,v+=vs,50,"Rate",Normal,IntRate,false,0);

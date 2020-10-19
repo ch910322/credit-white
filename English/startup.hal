@@ -60,6 +60,7 @@ begin
 
   Maintenance("Recreate Invoices with Prolong months",CredManRecreateDocsVClass,CredManRecreateDocsMn,modCredMan);
 
+  Maintenance("Create Agreement Test from Agreement",CredManCreateTestVClass,CredManCreateTestMn,modCredMan);
 
   Document("Credit Agreement Schedule",CredManScheduleRClass,CredManScheduleForm,CredManScheduleFClass,modCredMan);
   Document("B2B Loan Application",LoanAppRClass,LoanAppForm,LoanAppFClass,modCredMan);

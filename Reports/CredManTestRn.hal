@@ -3,6 +3,7 @@ external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlan
 external procedure CredManSetDatesCust(var record CredManVc,Boolean);
 external inner procedure CredManVc_PasteType(var record CredManVc);
 external procedure RecalcCredManFees(var record CredManVc);
+external procedure PasteCustInAgreementRemote(var record CredManVc,var string);
 
 procedure ShowCredManField(Integer pos,string v1,string v2,Boolean align)
 begin
@@ -26,6 +27,7 @@ begin
   Integer i,rwcnt,rwcnt2;
   val bal;
   record CredManPayPlanVc CredManPayPlanr;
+  string 255 warning;
   Boolean showf;
 
   BlockLoad(CredManSetb);
@@ -35,6 +37,9 @@ begin
   
   CredManr.TransDate = CredManTestr.TransDate;
   CredManr.Type = CredManTestr.Type;
+  CredManr.CustCode = CredManTestr.CustCode;
+  PasteCustInAgreementRemote(CredManr,warning);
+
   CredManVc_PasteType(CredManr);
   CredManr.IntRate = CredManTestr.IntRate;
   CredManr.InstalmentMonths = CredManTestr.Months;

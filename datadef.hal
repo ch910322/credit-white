@@ -1632,6 +1632,7 @@ begin
   RecordField(DepositSum,M4Val,0,0);
   RecordField(ExtraDepositSum,M4Val,0,0);
   RecordField(ExtraDepositMonths,M4Str,50,0);
+  RecordField(CustCode,M4Str,50,0);
   ArrayBegin(Math,-,1);
   ArrayField(InvDate,M4Date,0,0);
   ArrayField(Principle,M4Val,0,0);

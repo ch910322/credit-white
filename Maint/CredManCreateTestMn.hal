@@ -1,0 +1,77 @@
+//<halrule>server-only</halrule>
+external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
+external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
+external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,record CredManSetBlock,var record SMVc);
+
+
+global
+updating procedure CredManCreateTestMn(record RcVc RepSpec)
+begin
+  record CredManVc CredManr;
+  record CredManTestVc CredManTestr;
+  row CredManTestVc CredManTestrw;
+  record CredManSetBlock CredManSetb;
+  record CredManPayPlanVc CredManPayPlanr;
+  record SMVc SMr;
+  row SMVc SMrw;
+  Integer i,rwcnt;
+  val bal;
+
+
+  if (RepSpec.long1>0) then begin
+    CredManr.SerNr = RepSpec.long1;
+
+    if (ReadFirstMain(CredManr,1,true)) then begin
+      if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
+        BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+        BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+      end;
+      RecordNew(CredManTestr);
+      CredManTestr.UUID = MakeUUID;  
+      CredManTestr.TransDate = CredManr.TransDate;
+      CredManTestr.Type = CredManr.Type;
+      CredManTestr.CustCode = CredManr.CustCode;
+
+      CredManTestr.IntRate = CredManr.IntRate;
+      CredManTestr.Months = CredManr.InstalmentMonths;
+      CredManTestr.startDate = CredManr.startDate;
+      CredManTestr.PrincipleDelayMonths = CredManr.PrincipleDelayMonths;
+      CredManTestr.PrincipleDelayInterest = CredManr.PrincipleDelayInterest;
+      CredManTestr.MaxMonthlyPayment = CredManr.MaxMonthlyPayment;
+      CredManTestr.ProlongMonths = CredManr.ProlongMonths;
+      CredManTestr.ProlongDate = CredManr.ProlongDate;
+      CredManTestr.AnnualRate = CredManr.AnnualRate;
+      CredManTestr.LastMonthPrinc = CredManr.LastMonthPrinc;
+      CredManTestr.MonthlyPaymentDay = CredManr.MonthlyPaymentDay;
+      CredManTestr.PauseDate = CredManr.PauseDate;
+      CredManTestr.PauseMonths = CredManr.PauseMonths;
+      CredManTestr.InvSum4 = CredManr.InvSum4;
+      CredManTestr.PayDeal = CredManr.PayDeal;
+      CredManTestr.DepositSum = CredManr.DepositSum;
+      CredManTestr.ExtraDepositMonths = CredManr.ExtraDepositMonths;
+      CredManTestr.ExtraDepositSum = CredManr.ExtraDepositSum;
+  
+      rwcnt = MatRowCnt(SMr);
+      bal = CredManr.InvSum4;
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(SMr,i,SMrw);
+        ClearRow(CredManTestr,CredManTestrw,1);
+        CredManTestrw.InvDate = SMrw.TransDate;
+        CredManTestrw.PayDate = SMrw.DueDate;
+        CredManTestrw.FromDate = SMrw.Objects;
+        CredManTestrw.ToDate = SMrw.Comment;
+        CredManTestrw.Principle = (SMrw.DebVal - SMrw.ToRateB1);
+        CredManTestrw.Deposit = SMrw.ToRateB1;
+        bal = bal - SMrw.DebVal - SMrw.ToRateB1;
+        CredManTestrw.Balance = bal;
+        CredManTestrw.Interest = SMrw.CredVal;
+        CredManTestrw.Fees = SMrw.DebVal2;
+        CredManTestrw.Total = SMrw.CurDebVal;
+        MatRowPut(CredManTestr,MatRowCnt(CredManTestr),CredManTestrw);
+      end;
+      RecordStore(CredManTestr,true);
+    end;
+  end;
+
+  return;
+end;
