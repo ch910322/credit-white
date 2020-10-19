@@ -120,7 +120,7 @@ begin
       TrHs = false;
     end else begin
       if (CredHistr.RecordType==1 or CredHistr.RecordType==2) then begin
-        if (CredHistr.RecordType==2) then begin
+        if (CredHistr.RecordType==1) then begin
           vDates[CredHistr.TransDate] = true;
         end;
         tCredHistr.SerNr = CredHistr.PreviousNr;
