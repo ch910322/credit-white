@@ -1202,6 +1202,7 @@ begin
   return;
 end;
 
+global
 updating procedure CreatePaymentFakeReceipt(record CredManVc CredManr,record IVVc IVr)
 begin
   val chk;
@@ -1279,7 +1280,7 @@ begin
 end;
 
 global
-updating procedure CredManMakePaymentRemote(var record CredManVc CredManr,var record VIVc VIr,string invno,var val sum,Boolean receiptf)
+updating procedure CredManMakePaymentRemote(var record CredManVc CredManr,var record VIVc VIr,var record IVVc tIVr,string invno,var val sum,Boolean receiptf)
 begin
   record IVVc IVr;
   record CMOrderClassBlock OCb;
@@ -1291,11 +1292,9 @@ begin
   if (CredManr.InstalmentType!=4 and CredManr.InstalmentType!=5) then begin
     CreateSingleAgreementInvoice(CredManr,CredManr.startDate,IVr,invno);
     CheckAndCreateAutoMailFromInvoice(IVr);
+    RecordCopy(tIVr,IVr);
     
     //CredManCreditAllInvoices(CredManr);
-    if (receiptf) then begin
-      CreatePaymentFakeReceipt(CredManr,IVr);
-    end;
     CreateCredmanPurchaseInvoice(CredManr,IVr.Sum4,VIr);
     tCredManr.SerNr = CredManr.SerNr;
     if (ReadFirstMain(tCredManr,1,true)) then begin
