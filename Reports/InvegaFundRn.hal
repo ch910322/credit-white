@@ -103,6 +103,8 @@ begin
   row IVVc IVrw;
   Integer rwcnt;
   string 255 vatcode;
+  record ARPayHistVc ARPayHistr;
+  record IPVc IPr;
 
   paid = 0;
   princ = 0;
@@ -118,7 +120,9 @@ begin
       TrHs = false;
     end else begin
       if (CredHistr.RecordType==1 or CredHistr.RecordType==2) then begin
-        vDates[CredHistr.TransDate] = true;
+        if (CredHistr.RecordType==2) then begin
+          vDates[CredHistr.TransDate] = true;
+        end;
         tCredHistr.SerNr = CredHistr.PreviousNr;
         if (ReadFirstMain(tCredHistr,1,true)) then begin
           IVr.SerNr = tCredHistr.RecordNr;
@@ -126,9 +130,24 @@ begin
             rwcnt = MatRowCnt(IVr);
             for (i=0;i<rwcnt;i=i+1) begin
               MatRowGet(IVr,i,IVrw);
-              if (IVrw.CredHistNr==tCredHistr.SerNr) then begin
-                vatcode = IVrw.VATCode;
-                i = rwcnt;
+              if (IVrw.stp==kInvoiceRowTypeNormal) then begin
+                if (IVrw.CredHistNr==tCredHistr.SerNr) then begin
+                  vatcode = IVrw.VATCode;
+                  i = rwcnt;
+                end;
+              end else begin
+                if (IVrw.stp==kInvoiceRowTypePrepayment) then begin
+                  ARPayHistr.CUPNr = IVrw.CUPNr;  
+                  ARPayHistr.FileName = "IPVc";  
+                  if (ReadFirstMain(ARPayHistr,2,true)) then begin
+                    IPr.SerNr = ARPayHistr.SerNr;
+                    if (ReadFirstMain(IPr,1,true)) then begin
+                      if (DateInRange(IPr.TransDate,sd,ed)) then begin
+                        vDates[IPr.TransDate] = true;
+                      end;
+                    end;
+                  end;
+                end;        
               end;
             end;
           end;
