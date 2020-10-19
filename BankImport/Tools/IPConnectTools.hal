@@ -425,7 +425,7 @@ begin
     FindCustomerForBankImport(BTr.PayCustCode,BTr.PayRegNr1,BTr.PayVATNr,BTr.PayBankAcc,BTr.PayName,CUr);
     instr = BPI_ParseInvStr(BTr.PayReference);
     remsum = BTr.Sum;
-    BankFillIProws(IPr,CUr.Name,BTr.CurncyCode,remsum,CUr.Code,nonblank(CUr.Code),instr,BTr.PayReference,true);
+    BankFillIProws2(IPr,CUr.Name,BTr.CurncyCode,remsum,CUr.Code,nonblank(CUr.Code),instr,BTr.PayReference,true,IPr.TransDate);
     if (MatRowCnt(IPr)>0) then begin
       if (RecordInsert(IPr,true)) then begin
         if (BISb.OKIPFlag==1) then begin
