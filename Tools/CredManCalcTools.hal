@@ -352,7 +352,7 @@ begin
   return;
 end;
 
-function Integer GetMonthCount(string tstr)
+function Integer GetMonthCount(string tstr,var Integer lastmonth)
 begin
   Integer res;
   Longint pos;
@@ -360,6 +360,7 @@ begin
   
   while (GetNextSubstring(tstr,pos,",",tmp)) begin
     res = res + 1;
+    lastmonth = StringToInt(tmp);
   end;
 
   GetMonthCount = res;
@@ -369,12 +370,16 @@ end;
 procedure AddExtraDeposit(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,Integer month)
 begin
   val extradep;
-  Integer totmonths;
+  Integer totmonths,lastmonth;
   
   if (CredManr.ExtraDepositSum>0) then begin
     if (nonblank(CredManr.ExtraDepositMonths) and SetInSet(month,CredManr.ExtraDepositMonths)) then begin
-      totmonths = GetMonthCount(CredManr.ExtraDepositMonths);
-      extradep = CredManr.ExtraDepositSum/totmonths;
+      totmonths = GetMonthCount(CredManr.ExtraDepositMonths,lastmonth);
+      extradep = Round(CredManr.ExtraDepositSum/totmonths,SetRoundModeD(2));
+      if (month==lastmonth) then begin
+        extradep = extradep + (CredManr.ExtraDepositSum-(extradep*totmonths));
+      end;
+
       AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.DepositItem,"",kEventTypeCalcInstalment,extradep,0,acumint,calcbal,frdate,todate,-1,-1,0);//kEventTypeCalcDeposit>>kEventTypeCalcInstalment
     end;
   end;

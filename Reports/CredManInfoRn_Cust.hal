@@ -568,7 +568,6 @@ begin
   OutString(8,0,totoverdues,true);
   OutString(c10,0,totvat,true);
   OutString(9,0,total,true);
-  OutString(1,0,,true);
   EndFormat;
   return;
 end;
