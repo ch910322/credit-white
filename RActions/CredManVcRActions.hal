@@ -629,8 +629,13 @@ begin
     res = -1;
     goto LCredManAccVcRecordCheck;
   end;
-  if (GetAccName(CMAr.DebtorsAcc,tstr,60)==false) then begin
-    RecordCheckError(1120,CMAr.DebtorsAcc,-1,"DebtorsAcc");
+  if (GetAccName(CMAr.DebtorsAccShort,tstr,60)==false) then begin
+    RecordCheckError(1120,CMAr.DebtorsAccShort,-1,"DebtorsAccShort");
+    res = -1;
+    goto LCredManAccVcRecordCheck;
+  end;
+  if (GetAccName(CMAr.DebtorsAccLong,tstr,60)==false) then begin
+    RecordCheckError(1120,CMAr.DebtorsAccLong,-1,"DebtorsAccLong");
     res = -1;
     goto LCredManAccVcRecordCheck;
   end;
