@@ -221,6 +221,7 @@ begin
       end;
     end;
   end;
+
   TrHs = true;
   CredPayr.PreviousNr = CredHistr.SerNr;
   while (LoopKey("PreviousNr",CredPayr,1,TrHs)) begin
@@ -233,11 +234,10 @@ begin
       end;
     end;
   end;
-
   if (paysum>0) then begin
     res = DateDiff(ed,CredHistr.PayDate);
   end;
-  dueamount = paysum;
+  dueamount = dueamount + paysum;
 
   GetLateDaysInPeriod = res;
   return;
