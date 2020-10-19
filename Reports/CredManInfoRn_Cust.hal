@@ -478,6 +478,7 @@ begin
   row SMVc SMrw;
   val princ;
   Integer c10,c11;
+  val totprinc,totdep,totint,totfees,totoverdues,total,totvat;
 
   BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,withactuals,suggestedonsameday);
   PrintCredManTop(CredManr,CredManPayPlanr,CredManSetb);
@@ -545,10 +546,29 @@ begin
     OutString(c10,0,SMrw.FrRate,true);
     OutString(9,0,SMrw.CurDebVal,true);
     OutString(1,0,SMrw.CurCredVal,true);
+
+    totprinc = totprinc + princ;
+    totdep = totdep + SMrw.ToRateB1;
+    totint = totint + SMrw.CredVal;
+    totfees = totfees + SMrw.DebVal2;
+    totoverdues = totoverdues + SMrw.CredVal2;
+    totvat = totvat + SMrw.FrRate;
+    total = total + SMrw.CurDebVal;
     EndFormat;
   end;
 
+  StartFormat(1);
+  Gray_divider(0,1);
+  EndFormat;
   StartFormat(15);
+  OutString(c11,0,totdep,true);
+  OutString(5,0,totprinc,true);
+  OutString(6,0,totint,true);
+  OutString(7,0,totfees,true);
+  OutString(8,0,totoverdues,true);
+  OutString(c10,0,totvat,true);
+  OutString(9,0,total,true);
+  OutString(1,0,,true);
   EndFormat;
   return;
 end;
