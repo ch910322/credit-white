@@ -113,6 +113,9 @@ begin
     if (CredManTestrw.Total!=SMrw.CurDebVal) then begin
       showf = true;
     end;
+    if (CredManTestrw.VATVal!=SMrw.FrRate) then begin
+      showf = true;
+    end;
   end;
   if (showf) then begin
     bal = CredManr.InvSum4;
@@ -129,6 +132,7 @@ begin
       ShowCredManField(6,CredManTestrw.Deposit,SMrw.ToRateB1,true);
       ShowCredManField(7,CredManTestrw.Interest,SMrw.CredVal,true);
       ShowCredManField(8,CredManTestrw.Fees,SMrw.DebVal2,true);
+      ShowCredManField(390,CredManTestrw.VATVal,SMrw.FrRate,true);
       ShowCredManField(9,CredManTestrw.Total,SMrw.CurDebVal,true);
       ShowCredManField(480,CredManTestrw.Balance,bal,true);
       EndFormat;
@@ -160,8 +164,8 @@ begin
   SetRepCol(4,100);
   SetRepCol(5,200);
   SetRepCol(6,260);
-  SetRepCol(7,330);
-  SetRepCol(8,380);
+  SetRepCol(7,310);
+  SetRepCol(8,350);
   SetRepCol(9,430);
 
   StartFormat(15);
@@ -173,6 +177,7 @@ begin
   OutString(6,0,"Dep.",true);
   OutString(7,0,"Intr.",true);
   OutString(8,0,"Fees",true);
+  OutString(390,0,"VAT",true);
   OutString(9,0,"Total",true);
   OutString(480,0,"Bal",true);
   EndFormat;

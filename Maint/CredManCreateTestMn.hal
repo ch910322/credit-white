@@ -60,6 +60,7 @@ begin
         CredManTestrw.PayDate = SMrw.DueDate;
         CredManTestrw.FromDate = SMrw.Objects;
         CredManTestrw.ToDate = SMrw.Comment;
+        CredManTestrw.VATVal = SMrw.FrRate;
         CredManTestrw.Principle = (SMrw.DebVal - SMrw.ToRateB1);
         CredManTestrw.Deposit = SMrw.ToRateB1;
         bal = bal - SMrw.DebVal - SMrw.ToRateB1;

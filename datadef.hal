@@ -1646,6 +1646,7 @@ begin
   ArrayField(PayDate,M4Date,0,0);
   ArrayField(Balance,M4Val,0,0);
   ArrayField(Deposit,M4Val,0,0);
+  ArrayField(VATVal,M4Val,0,0);
   EndArray;
   MainKeyBegin(MainKey,0);
   KeySegment(UUID);

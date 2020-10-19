@@ -2634,7 +2634,7 @@ window CredManTestDClass:1
 begin
   real h,v,vs,v2,vs2,hm,h2,vm,vm2;
   WindowBegin("Agreement Tests",CredManTestDClass,CGview,-);
-  SetWRect(20,80,660,339);
+  SetWRect(20,80,840,339);
   Sizeable(-1,-1,0,0);
   UseView(CredManTestVc);
   vs=20; h=160; vs2=16; hm=-100;h2 = 430;
@@ -2672,7 +2672,8 @@ begin
   MatCol(1,310,"Principle",0,Principle,true,0);
   MatCol(1,380,"Interest",0,Interest,true,0);
   MatCol(1,450,"Fees",0,Fees,true,0);
-  MatCol(1,524,"Total",0,Total,true,0);
+  MatCol(1,524,"VAT",0,VATVal,true,0);
+  MatCol(1,-180,"Total",0,Total,true,0);
   MatCol(1,-90,"Balance",0,Balance,true,0);
   InsertRowTest;
   EndWindow;
