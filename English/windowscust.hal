@@ -159,7 +159,12 @@ begin
   
   if (SimplifiedSureties) then begin
     CheckBox(h2,v+=30,0,"Automatically insert Surety Legal Number",AutoSuretyOfficalNr);
+    v = v + 16;
+  end else begin
+    v = v + 30;
   end;
+  CheckBox(h2,v,0,"Show VAT Data",ShowVAT);
+  
   
   EndWindow;
 

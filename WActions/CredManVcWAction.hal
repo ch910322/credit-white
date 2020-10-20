@@ -2359,3 +2359,19 @@ begin
   end;
   return;
 end;
+
+
+global
+function Boolean CMShowVATColumn()
+begin
+  record CMApplicationSetBlock CMb;
+  Boolean res;
+  
+  BlockLoad(CMb);
+  if (CMb.ShowVAT==1) then begin
+    res = true;
+  end;
+
+  CMShowVATColumn = res;
+  return;
+end;
