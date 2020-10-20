@@ -43,3 +43,18 @@ BEGIN
   SelectWindow(wn);
   RETURN;
 END;
+
+global
+procedure CMInvoiceableContractsRClassReportDefaults(Integer wn)
+BEGIN
+  record RcVc RepSpec;
+  
+  DeselectWindow(wn,false);
+  GetWindowRecord(wn,RepSpec);
+  ReportDefaults(RepSpec,"CMInvoiceableContractsRClass");  
+  RepSpec.d1 = AddDay(CurrentDate,1);
+  PutWindowRecord(wn,RepSpec);
+  SelectWindow(wn);
+  RETURN;
+END;
+
