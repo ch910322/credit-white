@@ -1690,6 +1690,7 @@ begin
   
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
+  SourceFile("halcust\\LoanApp\\Estonian", 0);
   SourceFile("halcust\\LoanApp\\Latvian", 0);
   SourceFile("halcust\\LoanApp\\Documents", 3);
   SourceFile("halcust\\LoanApp\\Maint", 3);

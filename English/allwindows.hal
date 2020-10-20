@@ -66,7 +66,7 @@ remote function Boolean ExternalDocumentEnabled(string);
 //CUST-END
 
 window CUDClass:14
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h1,h2,h3,h4,h5,h6,l,v,vm,vm2,vs;
   string 255 label;
@@ -639,7 +639,7 @@ begin
 end;
 
 window CredManDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h2,h3,h4,t,v,vm,vs,th;
   string 255 label1,label2,label3,label4,label5;
@@ -1257,7 +1257,7 @@ begin
 end;
 
 window CredManTypeDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h2,h3,t,v,vm,vm2,vs;
 //CUST-BEGIN
@@ -1427,7 +1427,7 @@ end;
 
 
 window CustPSDClass:3
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h2,h3,v,vm,vs,vs2;
   Integer tilenr;
@@ -1580,7 +1580,7 @@ begin
 end;
 
 window CredManInfoRClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v;
   WindowBegin("Specify Credit Agreement Info",CredManInfoRClass,CGRcW,RcType);
@@ -1602,7 +1602,7 @@ end;
 
 
 window CredManTypeSClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Credit Agreement Types",CredManTypeSClass,CGslist,-);
   SetWRect(20,80,500,300);
@@ -1617,7 +1617,7 @@ begin
 end;
 
 window IPSuggestionVClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vm,vs;
   WindowBegin("Create Receipts Suggestion",IPSuggestionVClass,CGMnt,RcType);
@@ -1638,7 +1638,7 @@ begin
 end;
 
 window PipelineWClass:5
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h2,h3,h4,h5,v,vm,vs;
   
@@ -1740,7 +1740,7 @@ begin
 end;
 
 window IVLClass:8
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real pos;
   Boolean acptf;
@@ -1807,7 +1807,7 @@ end;
 
 
 window IVDClass:2
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h1,h2,h3,h4,hm,hs,t,v,v2,v3,vm,vs,width,h5;
   string 255 label;
@@ -2850,7 +2850,7 @@ end;
 
 
 window ARRClass:2
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,v3,vm,vs;
   WindowBegin("Specify #Sales Ledger#",ARRClass,CGRcW,RcType);
