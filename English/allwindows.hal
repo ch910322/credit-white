@@ -1324,6 +1324,8 @@ begin
   if (UseCredManStatus) then begin
     EditField(h,vm2=(v+=vs),150,"Pause Offset Days",Normal,PauseOffsetDays,false,0);
   end;
+  EditField(h,vm2=(v+=vs),100,"Default Item Priority",Normal,ItemPriorityCode,false,CMItemPrioritySCLass);  
+
   EditField(h2+150,v=vm-20,-40,"Minimum Overdue Fee",Normal,MinOverdueFee,false,0);
   vm = vm + 20;
   //CUST-END

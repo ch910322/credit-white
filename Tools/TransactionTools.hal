@@ -1,5 +1,5 @@
 external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
-external function Integer GetItemPriority(record ItemPriorityBlock,string);
+external function Integer GetItemPriority(Longint,string);
 
 external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
@@ -199,12 +199,10 @@ begin
   val sum,tval;
   Boolean res;
   Integer prio;
-  record ItemPriorityBlock IPb;
   record CMInvoicingBlock CIb;
 
   BlockLoad(CIb);
   if (CIb.UseTypeAccounts==1) then begin
-    BlockLoad(IPb);
 
     tval = tsum;
 
@@ -212,7 +210,7 @@ begin
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(IVr,i,IVrw);
       if (IVrw.stp==kInvoiceRowTypeNormal and IVrw.Sum>0) then begin
-        prio = GetItemPriority(IPb,IVrw.ArtCode);
+        prio = GetItemPriority(IVr.CustCredManNr,IVrw.ArtCode);
         IVrw.rowGP = prio;
         MatRowPut(tIVr,MatRowCnt(tIVr),IVrw);
       end;

@@ -17,6 +17,8 @@ begin
   Setting("Order Classes",OrderClassLClass,modCredMan);
   Setting("Order Class Colors",OrderClassColorTClass,modCredMan);
   Setting("Item Priority",ItemPriorityTClass,modCredMan);
+  Setting("Item Priority List",CMItemPriorityLClass,modCredMan);
+  
   Setting("Credit History Support",CredHistLClass,modCredMan);
   Setting("Reminders",SMSReminderLClass,modCredMan);
   Setting("Factoring Invoices",CredManFactInvoiceLClass,modCredMan);

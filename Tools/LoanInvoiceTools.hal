@@ -11,7 +11,7 @@ external procedure AddInterest(record CredManVc,record CredManPayPlanVc,record C
 external procedure AddInstalmentFixed(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,val,Date,var val,var val,Date,Date);
 forward procedure GetCredManEventList2(Longint,var record ORVc);
 external inner procedure PasteARPayInIV(record IVVc,row IVVc,Integer);
-external updating procedure FindUnpaidCredHist(record ItemPriorityBlock,record IPVc,row IPVc,var array val,Integer);
+external updating procedure FindUnpaidCredHist(record IPVc,row IPVc,var array val,Integer);
 external inner function Boolean IVVc_PasteSum(var record IVVc,Integer,var Boolean,Integer);
 external function Date GetLastInvoiceDate(record CredManVc,Date);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
@@ -1783,13 +1783,11 @@ end;
 
 updating procedure MakeFakeReceiptHist(record IVVc IVr,row IVVc IVrw)
 begin
-  record ItemPriorityBlock IPb;
   Boolean TrHs;
   row IPVc IPrw;
   array val arrCredManr;
   record IPVc IPr;
 
-  BlockLoad(IPb);
   IPr.SerNr = IVr.SerNr;
   IPr.TransDate = IVr.InvDate;
   ClearRow(IPr,IPrw,1);
@@ -1797,7 +1795,7 @@ begin
   IPrw.RecVal = IVrw.BasePrice;
   arrCredManr[IVr.CustCredManNr] = IVrw.BasePrice;
   MatRowPut(IPr,0,IPrw);
-  FindUnpaidCredHist(IPb,IPr,IPrw,arrCredManr,2);
+  FindUnpaidCredHist(IPr,IPrw,arrCredManr,2);
 
   return;
 end;

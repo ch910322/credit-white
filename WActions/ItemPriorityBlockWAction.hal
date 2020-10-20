@@ -33,3 +33,38 @@ begin
   ItemPriorityTClassAfterEditField = res;
   return;
 end;
+
+function Boolean CMItemPriorityDClassArtCodeEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record CMItemPriorityVc IPr;
+  row CMItemPriorityVc IPrw;
+  record INVc INr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,IPr);
+    if (rownr>-1) then begin
+      MatRowGet(IPr,rownr,IPrw);
+      INr.Code = IPrw.ArtCode;
+      if (ReadFirstMain(INr,1,true)) then begin
+        IPrw.Name = INr.Name;
+        MatRowPut(IPr,rownr,IPrw);
+      end;
+    end;
+    PutWindowRecord(wn,IPr);   
+  end; 
+  CMItemPriorityDClassArtCodeEFAfter = true;
+  return;
+end;
+
+global
+function Boolean CMItemPriorityDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+
+  switch (fieldname) begin
+    case "ArtCode": res = CMItemPriorityDClassArtCodeEFAfter(wn,rownr,changed!=0);
+  end;
+  
+  CMItemPriorityDClassAfterEditField = res;
+  return;
+end;
