@@ -336,7 +336,6 @@ begin
   RecordField(AutoPauseCredMan,M4Int,0,0);
   RecordField(AutoPauseCredManTime,M4Time,0,0);
   RecordField(AutoSuretyOfficalNr,M4Int,0,0);
-  RecordField(ShowVAT,M4Int,0,0);
   EndBlock;
   
   RecordAddBegin(CUVc,"CredCUVc");
@@ -1707,6 +1706,33 @@ begin
   KeySegment(CredManNr);
   EndRecord;  
   
+  RecordBegin(CredManMoneyRecVc,-,"");
+  RecordField(CredManNr,M4Long,0,0);
+  RecordField(Total,M4Val,0,0);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(CustCode,M4Code,20,CUVc);
+  ArrayField(CustName,M4Str,255,0);
+  ArrayField(AmountPrc,M4Qty,0,0);
+  ArrayField(AmountVal,M4Val,0,0);
+  EndArray;
+  MainKeyBegin(CredManNr,0);
+  KeySegment(CredManNr);
+  EndRecord;  
+  
+  BlockBegin(CMInterfaceSetBlock,-,"");
+  LoadBlockOnStartup;
+  CacheBlockInClient;
+  RecordField(ShowVAT,M4Int,0,0);
+  RecordField(ShowLoanType1,M4Int,0,0);
+  RecordField(ShowLoanType2,M4Int,0,0);
+  RecordField(ShowLoanType3,M4Int,0,0);
+  RecordField(ShowLoanType4,M4Int,0,0);
+  RecordField(ShowLoanType5,M4Int,0,0);
+  RecordField(ShowMoneyTransferDate,M4Int,0,0);
+  RecordField(DefCredManLoanType,M4Int,0,0);
+  EndBlock;
+
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Estonian", 0);

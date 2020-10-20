@@ -14,16 +14,29 @@ external outer function Boolean ShowBuyOutFee();
 procedure ShowCredManLClassWindow()
 begin
   real v,h;
+  record CMInterfaceSetBlock ISb;
+
+  BlockLoad(ISb);
   
   SetWRect(10,80,700,298);
   Sizeable(-1,-1,0,0);
   SpawnClass(CredManDClass);
   UseView(CredManVc);
-  HalPushButton(h=5,v=5,h+=100,v+=20,"CredManLClass1Btn","Loans");
-  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass2Btn","Lease");
-  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass3Btn","Mortgage");
-  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass4Btn","Factoring");
-  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass5Btn","Paymnt. Grnt.");
+  if (ISb.ShowLoanType1==1) then begin
+    HalPushButton(h=5,v=5,h+=100,v+=20,"CredManLClass1Btn","Loans");
+  end;
+  if (ISb.ShowLoanType2==1) then begin
+    HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass2Btn","Lease");
+  end;
+  if (ISb.ShowLoanType3==1) then begin
+    HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass3Btn","Mortgage");
+  end;
+  if (ISb.ShowLoanType4==1) then begin
+    HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass4Btn","Factoring");
+  end;
+  if (ISb.ShowLoanType5==1) then begin
+    HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass5Btn","Paymnt. Grnt.");
+  end;
   HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClassBtn","All");
   RecordList(4,v+=20,-21,-39);
   RlColKey(4,2,"N_o.",SerNr,false,TypeSerNr);
@@ -134,15 +147,7 @@ begin
     CheckBox(h,v+=30,0,"Automatically pause Agreements",AutoPauseCredMan);
     EditField(h,v+=20,100,"Time",Normal,AutoPauseCredManTime,false,PasteCurTime);
   end;
-
-  ButtonFrame(h2=360,v=20,150,6,"Default Loan Type");
-  RadioButton(h2,v,0,0,"Not set",DefCredManLoanType);
-  RadioButton(h2,v+=16,1,0,"Loan",DefCredManLoanType); 
-  RadioButton(h2,v+=16,2,0,"Leasing",DefCredManLoanType); 
-  RadioButton(h2,v+=16,3,0,"Mortgage",DefCredManLoanType); 
-  RadioButton(h2,v+=16,4,0,"Factoring",DefCredManLoanType); 
-  RadioButton(h2,v+=16,5,0,"Payment Grnt.",DefCredManLoanType); 
-
+  h = 360; v = 0;
   ButtonFrame(h2,v+=40,150,2,"Surety Provider by default");
   RadioButton(h2,v,0,0,"Contact",ContactPasteSpecial);
   RadioButton(h2,v+=16,1,0,"Contact Person",ContactPasteSpecial);  
@@ -162,9 +167,7 @@ begin
     v = v + 16;
   end else begin
     v = v + 30;
-  end;
-  CheckBox(h2,v,0,"Show VAT Data",ShowVAT);
-  
+  end;  
   
   EndWindow;
 
@@ -2787,5 +2790,36 @@ begin
   DeleteRowTest;
   EndMatrix;
   EditField(-90,-30,80,"Total",ViewOnly,Total,true,0);
+  EndWindow;
+end;
+
+window CMInterfaceSetTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+
+  WindowBegin("Credit Management Settings",CMInterfaceSetTClass,CGSbl,-);
+  SetBlid(CMInterfaceSetBlock);
+  SetWRect(20,80,670,298);
+  Sizeable(-1,-1,0,0);
+  h = 100;
+  vs = 20;
+  ButtonFrame(h,v=20,150,6,"Default Loan Type");
+  RadioButton(h,v,0,0,"Not set",DefCredManLoanType);
+  RadioButton(h,v+=16,1,0,"Loan",DefCredManLoanType); 
+  RadioButton(h,v+=16,2,0,"Leasing",DefCredManLoanType); 
+  RadioButton(h,v+=16,3,0,"Mortgage",DefCredManLoanType); 
+  RadioButton(h,v+=16,4,0,"Factoring",DefCredManLoanType); 
+  RadioButton(h,v+=16,5,0,"Payment Grnt.",DefCredManLoanType); 
+
+  CheckBox(h,v+=30,0,"Display Loan",ShowLoanType1);
+  CheckBox(h,v+=16,0,"Display Leasing",ShowLoanType2);
+  CheckBox(h,v+=16,0,"Display Mortgage",ShowLoanType3);
+  CheckBox(h,v+=16,0,"Display Factoring",ShowLoanType4);
+  CheckBox(h,v+=16,0,"Display Payment Grnt.",ShowLoanType5);
+
+  CheckBox(h,v+=30,0,"Show VAT Data",ShowVAT);
+  
+  
   EndWindow;
 end;

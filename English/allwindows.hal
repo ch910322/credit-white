@@ -646,11 +646,13 @@ begin
   record CredManVc CredManr;
   Integer type,n;
   Boolean statusf;
+  record CMInterfaceSetBlock ISb;
 
   if (CurWindow>0) then begin
     GetWindowRecord(CurWindow,CredManr);
     type = CredManr.LoanType;
   end;
+  BlockLoad(ISb);
 
   if (UseCredManStatus) then begin
     n = -160;
@@ -994,11 +996,22 @@ begin
   
   ButtonFrame(h3=h2+120,v=vm,100,6,"Type");
   RadioButton(h3,v,0,0,"Not set",LoanType);
-  RadioButton(h3,v+=16,1,0,"Loan",LoanType);
-  RadioButton(h3,v+=16,2,0,"Leasing",LoanType);
-  RadioButton(h3,v+=16,3,0,"Mortgage",LoanType);
-  RadioButton(h3,v+=16,4,0,"Factoring",LoanType);
-  RadioButton(h3,v+=16,5,0,"Paymnt. Grnt.",LoanType);
+  if (ISb.ShowLoanType1==1) then begin
+    RadioButton(h3,v+=16,1,0,"Loan",LoanType);
+  end;
+  if (ISb.ShowLoanType2==1) then begin
+    RadioButton(h3,v+=16,2,0,"Leasing",LoanType);
+  end;
+  if (ISb.ShowLoanType3==1) then begin
+    RadioButton(h3,v+=16,3,0,"Mortgage",LoanType);
+  end;
+  if (ISb.ShowLoanType4==1) then begin
+    RadioButton(h3,v+=16,4,0,"Factoring",LoanType);
+  end;
+  if (ISb.ShowLoanType5==1) then begin
+    RadioButton(h3,v+=16,5,0,"Paymnt. Grnt.",LoanType);
+  end;
+  EndFrame;
   
   Tile(5,290,true,"5",SuretyProvider1); 
   
@@ -1262,6 +1275,9 @@ begin
   real h,h2,h3,t,v,vm,vm2,vs;
 //CUST-BEGIN
   real h4,h5,h6;
+  record CMInterfaceSetBlock ISb;
+  
+  BlockLoad(ISb);
 //CUST-END
   WindowBegin("Credit Agreement Type",CredManTypeDClass,CGview,-);
   SetWRect(20,80,750,380);//CUST 640>>750
@@ -1344,12 +1360,27 @@ begin
 
   ButtonFrame(h3,v+=40,100,6,"Type");
   RadioButton(h3,v,0,0,"Not set",LoanType);
-  RadioButton(h3,v+=16,1,0,"Loan",LoanType);
-  RadioButton(h3,v+=16,2,0,"Leasing",LoanType);
-  RadioButton(h3,v+=16,3,0,"Mortgage",LoanType);
-  RadioButton(h3,v+=16,4,0,"Factoring",LoanType);
-  RadioButton(h3,v+=16,5,0,"Paymnt. Grnt.",LoanType);
-
+  v = v + 16;
+  if (ISb.ShowLoanType1==1) then begin
+    RadioButton(h3,v,1,0,"Loan",LoanType);
+  end;
+  v = v + 16;
+  if (ISb.ShowLoanType2==1) then begin
+    RadioButton(h3,v,2,0,"Leasing",LoanType);
+  end;
+  v = v + 16;
+  if (ISb.ShowLoanType3==1) then begin
+    RadioButton(h3,v,3,0,"Mortgage",LoanType);
+  end;
+  v = v + 16;
+  if (ISb.ShowLoanType4==1) then begin
+    RadioButton(h3,v,4,0,"Factoring",LoanType);
+  end;
+  v = v + 16;
+  if (ISb.ShowLoanType5==1) then begin
+    RadioButton(h3,v,5,0,"Paymnt. Grnt.",LoanType);
+  end;
+  EndFrame;
   ButtonFrame(h2,v+=40,270,2,"Interest according to Money Transfer Date");
   RadioButton(h2,v,0,0,"No",RealInterestFlag);
   RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
