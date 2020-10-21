@@ -720,9 +720,10 @@ begin
     if (RecordInsert(IVr,true)) then begin
       RecordCopy(oldIVr,IVr);
       IVr.OKFlag = 1;
-      RecordUpdate(oldIVr,IVr,true);
       LinkCredManAndInvoice(IVr,CredManr);
-      CreateInvoicePdfFile(IVr);
+      if (RecordUpdate(oldIVr,IVr,true)==0) then begin
+        CreateInvoicePdfFile(IVr);
+      end;
     end;
   end;
 
