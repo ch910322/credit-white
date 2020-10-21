@@ -14,52 +14,54 @@ begin
   string 255 fname;
   
   BlockLoad(CIb);
-  if (CIb.UsePreCreatedInvoicePdf==1) then begin
-    if (ExternalDocumentEnabled("InvForm")==false) then begin
-      if (Ext_GetPDFInvoiceName(IVr,fname)==false) then begin
-        fname = USetStr(1808) & IVr.SerNr & ".pdf";
-      end;
-      SetDocumentFilename(fname);
-      if (blank(docname)) then begin
-        docname = "InvForm";
-        switch (IVr.InvType) begin
-          case kInvoiceTypeCash: docname = "CashInvForm";
-          case kInvoiceTypeCashInvoiceReceiptPRT: docname = "CashInvRecPRTForm";
-          case kInvoiceTypeCredit: docname = "CredInvForm";
-          case kInvoiceTypeInterest: docname = "IIInvForm";
-          case kInvoiceTypeCreditSpecialSales: docname = "CredInvForm";
-        end;
-        if ((IVr.InvType==kInvoiceTypeNormal or IVr.InvType==kInvoiceTypeNormalSpecialSales) or (IVr.InvType==kInvoiceTypeDownpayment)) then begin
-          if (nonblank(IVr.PRCode)) then begin    
-            docname = "ProjInvForm";
-          end;
-        end;
-      end;
-      SetMedia(mtPdf);
-      PrintDocument(IVr,docname,false);
-      if (FileExists(fname)) then begin
-        RecordLinkFile(fname,0,IVr,CurrentCompany);
-        RecordCopy(oldIVr,IVr);
-        IVr.Prntdf = 1;
-        RecordUpdate(oldIVr,IVr,false);
-      end;
-      SetDocumentFilename("");
-      Delete_File(fname);
-    end else begin
-      begin
-        area farea;
-        record RcVc fRepSpec;
-
+  if (ReadFirstMain(IVr,1,true)) then begin
+    if (CIb.UsePreCreatedInvoicePdf==1) then begin
+      if (ExternalDocumentEnabled("InvForm")==false) then begin
         if (Ext_GetPDFInvoiceName(IVr,fname)==false) then begin
           fname = USetStr(1808) & IVr.SerNr & ".pdf";
         end;
-        fRepSpec.flags[10] = IVr.InvType;
-        PrintEBSDocument("InvForm",fname,fRepSpec,IVr.SerNr,IVr.LangCode,farea);
-        RecordLinkFile(fname,0,IVr,CurrentCompany);
+        SetDocumentFilename(fname);
+        if (blank(docname)) then begin
+          docname = "InvForm";
+          switch (IVr.InvType) begin
+            case kInvoiceTypeCash: docname = "CashInvForm";
+            case kInvoiceTypeCashInvoiceReceiptPRT: docname = "CashInvRecPRTForm";
+            case kInvoiceTypeCredit: docname = "CredInvForm";
+            case kInvoiceTypeInterest: docname = "IIInvForm";
+            case kInvoiceTypeCreditSpecialSales: docname = "CredInvForm";
+          end;
+          if ((IVr.InvType==kInvoiceTypeNormal or IVr.InvType==kInvoiceTypeNormalSpecialSales) or (IVr.InvType==kInvoiceTypeDownpayment)) then begin
+            if (nonblank(IVr.PRCode)) then begin    
+              docname = "ProjInvForm";
+            end;
+          end;
+        end;
+        SetMedia(mtPdf);
+        PrintDocument(IVr,docname,false);
+        if (FileExists(fname)) then begin
+          RecordLinkFile(fname,0,IVr,CurrentCompany);
+          RecordCopy(oldIVr,IVr);
+          IVr.Prntdf = 1;
+          RecordUpdate(oldIVr,IVr,false);
+        end;
+        SetDocumentFilename("");
         Delete_File(fname);
-        RecordCopy(oldIVr,IVr);
-        IVr.Prntdf = 1;
-        RecordUpdate(oldIVr,IVr,false);
+      end else begin
+        begin
+          area farea;
+          record RcVc fRepSpec;
+
+          if (Ext_GetPDFInvoiceName(IVr,fname)==false) then begin
+            fname = USetStr(1808) & IVr.SerNr & ".pdf";
+          end;
+          fRepSpec.flags[10] = IVr.InvType;
+          PrintEBSDocument("InvForm",fname,fRepSpec,IVr.SerNr,IVr.LangCode,farea);
+          RecordLinkFile(fname,0,IVr,CurrentCompany);
+          Delete_File(fname);
+          RecordCopy(oldIVr,IVr);
+          IVr.Prntdf = 1;
+          RecordUpdate(oldIVr,IVr,false);
+        end;
       end;
     end;
   end;
