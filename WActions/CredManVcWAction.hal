@@ -2069,11 +2069,11 @@ global
 function LongInt CredManVcRecordDefaultsClient(LongInt wn,var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
 begin
   LongInt res;
-  record CMApplicationSetBlock CMAb;
+  record CMInterfaceSetBlock ISb;
   
-  BlockLoad(CMAb);
+  BlockLoad(ISb);
   if (CredManr.LoanType==0) then begin
-    CredManr.LoanType = CMAb.DefCredManLoanType;
+    CredManr.LoanType = ISb.DefCredManLoanType;
     RerunWindowDef(wn);
   end;
   
@@ -2357,5 +2357,21 @@ begin
     GetCredManMoneyReceiverRecord(CredManr,MRr);
     nwn = OpenWindow("CredManMoneyRecDClass",1,0,"","",MRr);
   end;
+  return;
+end;
+
+
+global
+function Boolean CMShowVATColumn()
+begin
+  record CMInterfaceSetBlock ISb;
+  Boolean res;
+  
+  BlockLoad(ISb);
+  if (ISb.ShowVAT==1) then begin
+    res = true;
+  end;
+
+  CMShowVATColumn = res;
   return;
 end;

@@ -1,7 +1,7 @@
 event startup
 begin
 
-  SetLangMode(LangEnglish,"ENG",0);
+  SetLangMode(LangEstonian,"EST",2);
 
 /* modCredMan */  
   Register("B2B Loan Applications","B2B Loan Applications",B2BLoanApplicationVc,modCredMan);
@@ -17,9 +17,6 @@ begin
   Setting("Order Classes",OrderClassLClass,modCredMan);
   Setting("Order Class Colors",OrderClassColorTClass,modCredMan);
   Setting("Item Priority",ItemPriorityTClass,modCredMan);
-  Setting("Item Priority List",CMItemPriorityLClass,modCredMan);
-  Setting("Agreement Interface Settings",CMInterfaceSetTClass,modCredMan);
-  
   Setting("Credit History Support",CredHistLClass,modCredMan);
   Setting("Reminders",SMSReminderLClass,modCredMan);
   Setting("Factoring Invoices",CredManFactInvoiceLClass,modCredMan);

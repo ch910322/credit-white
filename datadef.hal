@@ -825,6 +825,7 @@ begin
   RecordField(BuyoutFeeFixed,M4Val,0,0);
   RecordField(BuyoutFeePrc,M4Qty,0,0);
   RecordField(BuyoutFeeMonths,M4Long,0,0);
+  RecordField(ItemPriorityCode,M4Code,20,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -921,8 +922,25 @@ begin
   ArrayBegin(Math,IVSerRowType,1);
   ArrayField(ArtCode,M4Code,20,INVc);
   ArrayField(Priority,M4Int,0,0);
+  ArrayField(Name,M4Str,200,0);
   EndArray;
   EndBlock;
+
+  RecordBegin(CMItemPriorityVc,-,"");
+  RecordField(Code,M4Code,20,0);
+  RecordField(Comment,M4Str,200,0);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(ArtCode,M4Code,20,INVc);
+  ArrayField(Priority,M4Int,0,0);
+  ArrayField(Name,M4Str,200,0);
+  EndArray;
+  MainKeyBegin(Code,0);
+  KeySegment(Code);
+  KeyBegin(Comment);
+  KeySegment(Comment);
+  KeySegment(Code);
+  EndRecord;
 
   RecordAddBegin(CustPSVc,"CredCustPSVc");
   RecordField(B2BApps,M4Int,0,0);
@@ -1397,6 +1415,7 @@ begin
   RecordField(UseTypeAccounts,M4Int,0,0);
   RecordField(UsePreCreatedInvoicePdf,M4Int,0,0);
   RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
+  RecordField(ItemPriorityCode,M4Code,20,0);
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
@@ -1687,8 +1706,36 @@ begin
   KeySegment(CredManNr);
   EndRecord;  
   
+  RecordBegin(CredManMoneyRecVc,-,"");
+  RecordField(CredManNr,M4Long,0,0);
+  RecordField(Total,M4Val,0,0);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(CustCode,M4Code,20,CUVc);
+  ArrayField(CustName,M4Str,255,0);
+  ArrayField(AmountPrc,M4Qty,0,0);
+  ArrayField(AmountVal,M4Val,0,0);
+  EndArray;
+  MainKeyBegin(CredManNr,0);
+  KeySegment(CredManNr);
+  EndRecord;  
+  
+  BlockBegin(CMInterfaceSetBlock,-,"");
+  LoadBlockOnStartup;
+  CacheBlockInClient;
+  RecordField(ShowVAT,M4Int,0,0);
+  RecordField(ShowLoanType1,M4Int,0,0);
+  RecordField(ShowLoanType2,M4Int,0,0);
+  RecordField(ShowLoanType3,M4Int,0,0);
+  RecordField(ShowLoanType4,M4Int,0,0);
+  RecordField(ShowLoanType5,M4Int,0,0);
+  RecordField(ShowMoneyTransferDate,M4Int,0,0);
+  RecordField(DefCredManLoanType,M4Int,0,0);
+  EndBlock;
+
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
+  SourceFile("halcust\\LoanApp\\Estonian", 0);
   SourceFile("halcust\\LoanApp\\Latvian", 0);
   SourceFile("halcust\\LoanApp\\Documents", 3);
   SourceFile("halcust\\LoanApp\\Maint", 3);

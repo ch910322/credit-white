@@ -12,6 +12,7 @@ external inner function LongInt DateDiff(Date,Date);
 external procedure TestCredManInvoicesFromPlan(record CredManVc,record CredManSetBlock,record CredManPayPlanVc,Date,var array record IVVc);
 external procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 external procedure TestInvoiceBasedOnSchedule(record CredManVc,record CredManSchedVc,Date,var array record IVVc);
+external function Boolean CMShowVATColumn();
 
 procedure PrintLeft(string col1str,string col1val,string col2str,string col2val)
 begin
@@ -505,7 +506,9 @@ begin
   OutString(6,0,USetStr(200093),true);
   OutString(7,0,USetStr(200094),true);
   OutString(8,0,USetStr(200095),true);
-  OutString(c10,0,USetStr(200098),true);
+  if (CMShowVATColumn) then begin
+    OutString(c10,0,USetStr(200098),true);
+  end;
   OutString(9,0,USetStr(200096),true);
   OutString(1,0,USetStr(200097),true);
   EndFormat;
@@ -543,7 +546,9 @@ begin
     OutString(6,0,SMrw.CredVal,true);
     OutString(7,0,SMrw.DebVal2,true);
     OutString(8,0,SMrw.CredVal2,true);
-    OutString(c10,0,SMrw.FrRate,true);
+    if (CMShowVATColumn) then begin
+      OutString(c10,0,SMrw.FrRate,true);
+    end;
     OutString(9,0,SMrw.CurDebVal,true);
     OutString(1,0,SMrw.CurCredVal,true);
 
@@ -566,7 +571,9 @@ begin
   OutString(6,0,totint,true);
   OutString(7,0,totfees,true);
   OutString(8,0,totoverdues,true);
-  OutString(c10,0,totvat,true);
+  if (CMShowVATColumn) then begin
+    OutString(c10,0,totvat,true);
+  end;
   OutString(9,0,total,true);
   EndFormat;
   return;

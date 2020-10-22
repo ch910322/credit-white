@@ -66,7 +66,7 @@ remote function Boolean ExternalDocumentEnabled(string);
 //CUST-END
 
 window CUDClass:14
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h1,h2,h3,h4,h5,h6,l,v,vm,vm2,vs;
   string 255 label;
@@ -639,18 +639,20 @@ begin
 end;
 
 window CredManDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h2,h3,h4,t,v,vm,vs,th;
   string 255 label1,label2,label3,label4,label5;
   record CredManVc CredManr;
   Integer type,n;
   Boolean statusf;
+  record CMInterfaceSetBlock ISb;
 
   if (CurWindow>0) then begin
     GetWindowRecord(CurWindow,CredManr);
     type = CredManr.LoanType;
   end;
+  BlockLoad(ISb);
 
   if (UseCredManStatus) then begin
     n = -160;
@@ -994,11 +996,22 @@ begin
   
   ButtonFrame(h3=h2+120,v=vm,100,6,"Type");
   RadioButton(h3,v,0,0,"Not set",LoanType);
-  RadioButton(h3,v+=16,1,0,"Loan",LoanType);
-  RadioButton(h3,v+=16,2,0,"Leasing",LoanType);
-  RadioButton(h3,v+=16,3,0,"Mortgage",LoanType);
-  RadioButton(h3,v+=16,4,0,"Factoring",LoanType);
-  RadioButton(h3,v+=16,5,0,"Paymnt. Grnt.",LoanType);
+  if (ISb.ShowLoanType1==1) then begin
+    RadioButton(h3,v+=16,1,0,"Loan",LoanType);
+  end;
+  if (ISb.ShowLoanType2==1) then begin
+    RadioButton(h3,v+=16,2,0,"Leasing",LoanType);
+  end;
+  if (ISb.ShowLoanType3==1) then begin
+    RadioButton(h3,v+=16,3,0,"Mortgage",LoanType);
+  end;
+  if (ISb.ShowLoanType4==1) then begin
+    RadioButton(h3,v+=16,4,0,"Factoring",LoanType);
+  end;
+  if (ISb.ShowLoanType5==1) then begin
+    RadioButton(h3,v+=16,5,0,"Paymnt. Grnt.",LoanType);
+  end;
+  EndFrame;
   
   Tile(5,290,true,"5",SuretyProvider1); 
   
@@ -1257,11 +1270,14 @@ begin
 end;
 
 window CredManTypeDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h2,h3,t,v,vm,vm2,vs;
 //CUST-BEGIN
   real h4,h5,h6;
+  record CMInterfaceSetBlock ISb;
+  
+  BlockLoad(ISb);
 //CUST-END
   WindowBegin("Credit Agreement Type",CredManTypeDClass,CGview,-);
   SetWRect(20,80,750,380);//CUST 640>>750
@@ -1324,6 +1340,8 @@ begin
   if (UseCredManStatus) then begin
     EditField(h,vm2=(v+=vs),150,"Pause Offset Days",Normal,PauseOffsetDays,false,0);
   end;
+  EditField(h,vm2=(v+=vs),100,"Default Item Priority",Normal,ItemPriorityCode,false,CMItemPrioritySCLass);  
+
   EditField(h2+150,v=vm-20,-40,"Minimum Overdue Fee",Normal,MinOverdueFee,false,0);
   vm = vm + 20;
   //CUST-END
@@ -1342,12 +1360,27 @@ begin
 
   ButtonFrame(h3,v+=40,100,6,"Type");
   RadioButton(h3,v,0,0,"Not set",LoanType);
-  RadioButton(h3,v+=16,1,0,"Loan",LoanType);
-  RadioButton(h3,v+=16,2,0,"Leasing",LoanType);
-  RadioButton(h3,v+=16,3,0,"Mortgage",LoanType);
-  RadioButton(h3,v+=16,4,0,"Factoring",LoanType);
-  RadioButton(h3,v+=16,5,0,"Paymnt. Grnt.",LoanType);
-
+  v = v + 16;
+  if (ISb.ShowLoanType1==1) then begin
+    RadioButton(h3,v,1,0,"Loan",LoanType);
+  end;
+  v = v + 16;
+  if (ISb.ShowLoanType2==1) then begin
+    RadioButton(h3,v,2,0,"Leasing",LoanType);
+  end;
+  v = v + 16;
+  if (ISb.ShowLoanType3==1) then begin
+    RadioButton(h3,v,3,0,"Mortgage",LoanType);
+  end;
+  v = v + 16;
+  if (ISb.ShowLoanType4==1) then begin
+    RadioButton(h3,v,4,0,"Factoring",LoanType);
+  end;
+  v = v + 16;
+  if (ISb.ShowLoanType5==1) then begin
+    RadioButton(h3,v,5,0,"Paymnt. Grnt.",LoanType);
+  end;
+  EndFrame;
   ButtonFrame(h2,v+=40,270,2,"Interest according to Money Transfer Date");
   RadioButton(h2,v,0,0,"No",RealInterestFlag);
   RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
@@ -1427,7 +1460,7 @@ end;
 
 
 window CustPSDClass:3
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h2,h3,v,vm,vs,vs2;
   Integer tilenr;
@@ -1580,7 +1613,7 @@ begin
 end;
 
 window CredManInfoRClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v;
   WindowBegin("Specify Credit Agreement Info",CredManInfoRClass,CGRcW,RcType);
@@ -1602,7 +1635,7 @@ end;
 
 
 window CredManTypeSClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Credit Agreement Types",CredManTypeSClass,CGslist,-);
   SetWRect(20,80,500,300);
@@ -1617,7 +1650,7 @@ begin
 end;
 
 window IPSuggestionVClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vm,vs;
   WindowBegin("Create Receipts Suggestion",IPSuggestionVClass,CGMnt,RcType);
@@ -1638,7 +1671,7 @@ begin
 end;
 
 window PipelineWClass:5
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h2,h3,h4,h5,v,vm,vs;
   
@@ -1740,7 +1773,7 @@ begin
 end;
 
 window IVLClass:8
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real pos;
   Boolean acptf;
@@ -1807,7 +1840,7 @@ end;
 
 
 window IVDClass:2
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h1,h2,h3,h4,hm,hs,t,v,v2,v3,vm,vs,width,h5;
   string 255 label;
@@ -2850,7 +2883,7 @@ end;
 
 
 window ARRClass:2
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,v3,vm,vs;
   WindowBegin("Specify #Sales Ledger#",ARRClass,CGRcW,RcType);
