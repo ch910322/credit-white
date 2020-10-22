@@ -188,10 +188,8 @@ begin
   row CredManPayPlanVc CredManPayPlanrw;
   Integer i,rwcnt;
   record CredManSetBlock CMb;
-  Date td3;
+  Date td3,lastinv;
   Boolean res;
-  
-
 
   if (CredManr.PauseMonths>0) then begin
     td3 = AddMonth(td,months);
@@ -212,15 +210,20 @@ begin
           end;
         end;
       end else begin
-        if (nonblank(CredManr.PauseDate)) then begin
-          if (CredManr.PauseDate<=CredManPayPlanrw.TransDate) then begin
-            res = false;
-          end;
+        if (lastinv<CredManPayPlanrw.TransDate) then begin
+          lastinv = CredManPayPlanrw.TransDate;
         end;
       end;
       i = 0;
     end;
   end;
+
+  if (td>lastinv and nonblank(CredManr.PauseDate)) then begin
+    if (AddMonth(CredManr.PauseDate,CredManr.PauseMonths)>=lastinv) then begin
+      res = false;
+    end;
+  end;
+
 
   if (td<CredManr.FirstInvDate) then begin
     res = false;
