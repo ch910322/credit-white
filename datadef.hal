@@ -1024,6 +1024,7 @@ begin
   RecordField(SentFlag,M4Int,0,0);
   RecordField(InvDate,M4Date,0,0);//Actually due date
   RecordField(ReminderNr,M4Long,0,0);
+  RecordField(InvoiceList,M4Str,255,0);
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(SentFlag);
@@ -1037,6 +1038,14 @@ begin
   KeySegment(ReminderNr);
   KeySegment(InvoiceNr);
   KeySegment(SerNr);
+
+  SubsetKeyBegin2(ReminderInvoiceList);
+  StoreInBaseKey;
+  AppendFieldToKeyName(InvoiceList);
+  KeySegment(ReminderNr);
+  KeySegment(SerNr);
+ 
+  
   EndRecord;
 
   RecordBegin(CredManFactVc,-,"");

@@ -4,6 +4,7 @@ external procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 external inner function Boolean PasteCuInAct(var record ActVc,var string);
 external inner function Boolean PasteActTypeInAct2(string,var record ActVc,var string);
 external updating procedure Cust_SetReminderStatus(record SMSReminderQueueVc,Integer);
+external inner function string 255 CredManOwnBankAccount(Longint);
 
 enum begin
   kMaxCheckDays = 5
@@ -57,6 +58,8 @@ begin
     switch (token) begin
       case "CustName":
         res = RepSpec.searchstr;
+      case "AmountList":
+        res = RepSpec.f4;
       case "InvAmount":
         res = RepSpec.vals0;
       case "InvDate":
@@ -221,9 +224,8 @@ begin
   return;
 end;
 
-function Boolean DoSendSMSReminder(record SMSReminderVc SMSReminder,record IVVc IVr,Longint queuenr)
+function Boolean DoSendSMSReminder(record SMSReminderVc SMSReminder,record RcVc RepSpec,string custcode,Longint queuenr)
 begin
-  record RcVc RepSpec;
   area a;
   string 255 text,tstr,phoneno;
   Integer i,lcnt;
@@ -231,7 +233,7 @@ begin
   record ARVc ARr;
   Boolean res;
   
-  CUr.Code = IVr.CustCode;
+  CUr.Code = custcode;
   if (ReadFirstMain(CUr,1,true)) then begin
     if (CUr.NoLetterPosting!=0) then begin
       goto LSendSMSReminder;
@@ -242,15 +244,6 @@ begin
       goto LSendSMSReminder;
     end;
     res = true;
-    ARr.InvoiceNr = IVr.SerNr;
-    ReadFirstMain(ARr,1,true);
-    RepSpec.searchstr = CUr.Name;
-    RepSpec.vals0 = IVr.Sum4;
-    RepSpec.vals1 = ARr.RVal;
-    RepSpec.long1 = IVr.SerNr;
-    RepSpec.long2 = IVr.CustCredManNr;
-    RepSpec.d1 = IVr.InvDate;
-    RepSpec.vals2 = GetTotalPayableAmount(IVr.CustCredManNr);
     ParseTextField(a,SMSReminder,RepSpec,"SMSReminderVcReplaceToken");
 
     lcnt = CountLinesInArea(a);
@@ -272,9 +265,8 @@ LSendSMSReminder:;
 end;
 
 global
-updating function Boolean DoSendEmailReminder(record SMSReminderVc SMSReminder,record IVVc IVr)
+updating function Boolean DoSendEmailReminder(record SMSReminderVc SMSReminder,record RcVc RepSpec,string custcode)
 begin
-  record RcVc RepSpec;
   area a;
   string 255 text,tstr,email;
   Integer i;
@@ -286,7 +278,7 @@ begin
   record ARVc ARr;
   Boolean res;
   
-  CUr.Code = IVr.CustCode;
+  CUr.Code = custcode;
   if (ReadFirstMain(CUr,1,true)) then begin
     if (CUr.NoLetterPosting!=0) then begin
       goto LSendSMSReminder;
@@ -307,15 +299,6 @@ begin
     MatRowPut(emqrp,MatRowCnt(emqrp),emarw);
     emqrp.Header = SMSReminder.Subject;
 
-    ARr.InvoiceNr = IVr.SerNr;
-    ReadFirstMain(ARr,1,true);
-    RepSpec.searchstr = CUr.Name;
-    RepSpec.vals0 = IVr.Sum4;
-    RepSpec.vals1 = ARr.RVal;
-    RepSpec.long1 = IVr.SerNr;
-    RepSpec.long2 = IVr.CustCredManNr;
-    RepSpec.d1 = IVr.InvDate;
-    RepSpec.vals2 = GetTotalPayableAmount(IVr.CustCredManNr);
     ParseTextField(a,SMSReminder,RepSpec,"SMSReminderVcReplaceToken");
 
     l = GetAreaLength(a);
@@ -425,11 +408,23 @@ global
 updating procedure Cust_SendReminder(record SMSReminderQueueVc SRQr,record SMSReminderVc SMSReminder,record IVVc IVr)
 begin
   Boolean sentf;
+  record ARVc ARr;
+  record RcVc RepSpec;
+
+  ARr.InvoiceNr = IVr.SerNr;
+  ReadFirstMain(ARr,1,true);
+  RepSpec.searchstr = IVr.Addr0;
+  RepSpec.vals0 = IVr.Sum4;
+  RepSpec.vals1 = ARr.RVal;
+  RepSpec.long1 = IVr.SerNr;
+  RepSpec.long2 = IVr.CustCredManNr;
+  RepSpec.d1 = IVr.InvDate;
+  RepSpec.vals2 = GetTotalPayableAmount(IVr.CustCredManNr);
 
   if (SMSReminder.ReminderType==0) then begin
-    sentf = DoSendSMSReminder(SMSReminder,IVr,SRQr.SerNr);
+    sentf = DoSendSMSReminder(SMSReminder,RepSpec,IVr.CustCode,SRQr.SerNr);
   end else begin    
-    sentf = DoSendEmailReminder(SMSReminder,IVr);
+    sentf = DoSendEmailReminder(SMSReminder,RepSpec,IVr.CustCode);
   end;
   if (sentf) then begin
     Cust_SetReminderStatus(SRQr,1);
@@ -445,6 +440,8 @@ updating procedure Cust_SendReminder2(record SMSReminderVc SMSReminder,record IV
 begin
   record SMSReminderQueueVc SRQr;
   Boolean sentf;
+  record ARVc ARr;
+  record RcVc RepSpec;
 
   RecordNew(SRQr);
   SRQr.SerNr = NextSerNr("SMSReminderQueueVc",CurrentDate,-1,false,"");
@@ -454,10 +451,20 @@ begin
   SRQr.SentFlag = 1;
   RecordInsert(SRQr,true);
 
+  ARr.InvoiceNr = IVr.SerNr;
+  ReadFirstMain(ARr,1,true);
+  RepSpec.searchstr = IVr.Addr0;
+  RepSpec.vals0 = IVr.Sum4;
+  RepSpec.vals1 = ARr.RVal;
+  RepSpec.long1 = IVr.SerNr;
+  RepSpec.long2 = IVr.CustCredManNr;
+  RepSpec.d1 = IVr.InvDate;
+  RepSpec.vals2 = GetTotalPayableAmount(IVr.CustCredManNr);
+
   if (SMSReminder.ReminderType==0) then begin
-    sentf = DoSendSMSReminder(SMSReminder,IVr,SRQr.SerNr);
+    sentf = DoSendSMSReminder(SMSReminder,RepSpec,IVr.CustCode,SRQr.SerNr);
   end else begin
-    sentf = DoSendEmailReminder(SMSReminder,IVr);
+    sentf = DoSendEmailReminder(SMSReminder,RepSpec,IVr.CustCode);
   end;
 
   if (!sentf) then begin
@@ -465,6 +472,54 @@ begin
     RecordStore(SRQr,true);
     CreateFailedReminderActivity(SMSReminder,IVr.CustCode);
   end;
+  return;
+end;
+
+global
+updating procedure Cust_SendReminder3(record ORVc ORr,record SMSReminderVc SMSReminder)
+begin
+  string 255 list,qList,qnr;
+  Integer i,rwcnt;
+  row ORVc ORrw;
+  record SMSReminderQueueVc SRQr;
+  Boolean sentf;
+  Longint pos;
+  record ARVc ARr;
+  record RcVc RepSpec;
+
+  rwcnt = MatRowCnt(ORr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(ORr,i,ORrw);
+    if (i>0) then begin
+      list = list & chr(10);
+    end;
+    list = list & ORrw.Price & " " & ORrw.ShipNote;
+  end;
+
+  RecordNew(SRQr);
+  SRQr.SerNr = NextSerNr("SMSReminderQueueVc",CurrentDate,-1,false,"");
+  SRQr.InvoiceList = ORr.Addr1;
+  SRQr.InvDate = CurrentDate;
+  SRQr.ReminderNr = SMSReminder.SerNr;
+  SRQr.SentFlag = 1;
+  RecordInsert(SRQr,true);
+    
+  RepSpec.f4 = list;
+  RepSpec.searchstr = ORr.Addr0;
+
+ 
+  if (SMSReminder.ReminderType==0) then begin
+    sentf = DoSendSMSReminder(SMSReminder,RepSpec,ORr.CustCode,SRQr.SerNr);
+  end else begin
+    sentf = DoSendEmailReminder(SMSReminder,RepSpec,ORr.CustCode);
+  end;
+ 
+  if (!sentf) then begin
+    SRQr.SentFlag = 3;
+    RecordStore(SRQr,true);
+    CreateFailedReminderActivity(SMSReminder,ORr.CustCode);
+  end;
+
   return;
 end;
 
@@ -477,6 +532,12 @@ begin
   SRQr.ReminderNr = remnr;
   if (ReadFirstKey("ReminderInvoice",SRQr,2,true)) then begin
     res = true;
+  end else begin
+    ResetLoop(SRQr);
+    SRQr.ReminderNr = remnr;
+    if (ReadFirstKey("ReminderInvoiceList:" & ivnr,SRQr,1,true)) then begin
+      res = true;
+    end;
   end;
 
   ReminderAlreadySent = res;
@@ -496,14 +557,61 @@ begin
   return;
 end;
 
-procedure FindAndSendInvoiceReminders(record SMSReminderVc SMSReminder)
+procedure AddInvoiceToReminderArr(record IVVc IVr,var array record ORVc arrORr)
+begin
+  Integer i,rwcnt,rownum,num;
+  record ARVc ARr;
+  row ORVc ORrw;
+  record ORVc ORr;
+  string 255 bankacc;
+
+  for (i=0;i<arrORr.length;i=i+1) begin
+    ORr = arrORr[i];
+    if (ORr.CustCode==IVr.CustCode) then begin
+      num = i;   
+      goto LAddInvoiceToReminderArr;
+    end;
+  end;
+  num = arrORr.length;
+  ORr.CustCode = IVr.CustCode;
+  ORr.Addr0 = IVr.Addr0;
+LAddInvoiceToReminderArr:;
+
+  ARr.InvoiceNr = IVr.SerNr;
+  ReadFirstMain(ARr,1,true);
+  bankacc = CredManOwnBankAccount(IVr.CustCredManNr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(ORr,i,ORrw);
+    if (ORrw.ShipNote==bankacc) then begin
+      rownum = i;
+      goto LAddInvoiceToReminderArrRow;
+    end;
+  end;
+  ClearRow(ORr,ORrw,1);
+  ORrw.ShipNote = bankacc;
+LAddInvoiceToReminderArrRow:;
+  
+  if (nonblank(ORr.Addr1)) then begin
+    ORr.Addr1 = ORr.Addr1 & ",";
+  end;
+  ORr.Addr1 = ORr.Addr1 & IVr.SerNr;
+  ORrw.Price = ORrw.Price + ARr.RVal;
+  MatRowPut(ORr,rownum,ORrw);
+  arrORr[num] = ORr;
+
+  return;
+end;
+
+procedure FindAndSendInvoiceReminders(record SMSReminderVc SMSReminder,var vector Boolean vCust)
 begin
   record SMSReminderQueueVc SRQr;
   record IVVc IVr;
   Boolean TrHs,testf;
   record ARVc ARr;
-  Integer latedays;
+  Integer latedays,i;
   Date td,ed;
+  array record ORVc arrORr;
+  record ORVc ORr;
   
   td = AddDay(CurrentDate,-SMSReminder.Days);
   switch (SMSReminder.Type) begin
@@ -522,6 +630,9 @@ begin
               testf = false;
             end;
             if (SMSReminder.MinAmount>0 and SkipCustomerBalance(IVr.CustCredManNr,SMSReminder.MinAmount)) then begin
+              testf = false;
+            end;
+            if (vCust[IVr.CustCode]) then begin
               testf = false;
             end;
             if (testf) then begin
@@ -555,11 +666,18 @@ begin
             end;
             if (testf) then begin
               if (ReminderAlreadySent(IVr.SerNr,SMSReminder.SerNr)==false) then begin
-                queued.Cust_SendReminder2(SMSReminder,IVr);
+                //queued.Cust_SendReminder2(SMSReminder,IVr);
+                AddInvoiceToReminderArr(IVr,arrORr);
               end;
             end;
           end;
         end;
+      end;
+      for (i=0;i<arrORr.length;i=i+1) begin
+        ORr = arrORr[i];
+        vCust[ORr.CustCode] = true;
+      logtext(0,"reminder6 " & ORr.CustCode);
+        queued.Cust_SendReminder3(ORr,SMSReminder);
       end;
   end;
 
@@ -571,6 +689,7 @@ procedure CheckSMSRemindersCompany()
 begin
   Boolean TrHs;
   record SMSReminderVc SMSReminder;
+  vector Boolean vCust;
   
   TrHs = true;
   SMSReminder.ActiveFlag = 1;
@@ -579,7 +698,7 @@ begin
       TrHs = false;
     end else begin
       if (ShouldTrigerSMSReminder(SMSReminder)) then begin
-        FindAndSendInvoiceReminders(SMSReminder);
+        FindAndSendInvoiceReminders(SMSReminder,vCust);
       end;
     end;
   end;
