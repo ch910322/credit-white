@@ -641,14 +641,15 @@ begin
 
   WindowBegin("Reminder Queues",SMSReminderQueueLClass,CGmList,-);
   Sizeable(-1,-1,0,0);
-  SetWRect(64,80,600,298);
+  SetWRect(64,80,740,298);
   UseView(SMSReminderQueueVc);
   SpawnClass(SMSReminderQueueDClass);
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
   RlCol   (101,101,"Inv. Date",InvDate,false);
   RlCol   (201,201,"Invoice Nr.",InvoiceNr,false);
-  RlCol   (271,271,"Reminder",ReminderNr,false);
+  RlCol   (321,321,"Invoice List",InvoiceList,false);
+  RlCol   (440,440,"Reminder",ReminderNr,false);
   RlColKeyTL(-30,-30,"Sent",M4Mark,SentFlag,false,SentFlag);
   EndWindow;
 
