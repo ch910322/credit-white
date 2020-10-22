@@ -1471,6 +1471,7 @@ begin
 
   RecordAddBegin(IPVc,"IPVc_FIN");
   ArrayField(CredHistNr,M4Long,0,0);
+  ArrayField(CredHistItem,M4Code,20,0);
   EndRecordAdd;
 
   RecordBegin(CMPropertyVc,-,"");

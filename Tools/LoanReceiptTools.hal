@@ -236,6 +236,7 @@ begin
     IPrw.PayDate = IPr.TransDate;
     IPrw.PayDate = IPr.TransDate;
     IPrw.CredHistNr = ORrw.CUServiceHistNr;
+    IPrw.CredHistItem = ORrw.ArtCode;
     MatRowPut(IPr,num,IPrw);      
     IPVc_PasteRecVal(IPr,num);
 //  end;
@@ -361,7 +362,6 @@ begin
   array record ORVc arrORr;
   Longint histnr,credmannr;
   
-  logtext(0,"FindUnpaidCredHist " & IPrw.CredHistNr);
   if (IPrw.CredHistNr>0) then begin
     CredHistr.SerNr = IPrw.CredHistNr;
     if (ReadFirstMain(CredHistr,1,true)) then begin
@@ -720,3 +720,4 @@ begin
 LDistributeCredHistValues:;
   return;
 end;
+
