@@ -165,10 +165,16 @@ begin
     end else begin
       num = MatRowCnt(IPr);
     end;
+
+    logtext(0,num & ":" & credsum);
     ClearRow(IPr,IPrw,1);
     IPrw.InvoiceNr = ORrw.GroupOrdRow;
     invused[IPrw.InvoiceNr] = true;
-    MatRowPut(IPr,num,IPrw);
+    if (rownr>-1) then begin
+      MatRowInsert(IPr,num,IPrw);
+    end else begin
+      MatRowPut(IPr,num,IPrw);
+    end;
     PasteInvIn2IPr(IPr,num,IPr.TransDate,chk,false,installmentf);
     MatRowGet(IPr,num,IPrw);
     IPrw.CustName = RecName;
@@ -186,7 +192,7 @@ begin
     IPrw.PayDate = IPr.TransDate;
     IPrw.PayDate = IPr.TransDate;
     IPrw.CredHistNr = ORrw.CUServiceHistNr;
-    MatRowPut(IPr,num,IPrw);
+    MatRowPut(IPr,num,IPrw);      
     IPVc_PasteRecVal(IPr,num);
 //  end;
   remsum = remsum - credsum;
@@ -314,6 +320,7 @@ begin
   array record ORVc arrORr;
   Longint histnr,credmannr;
   
+  logtext(0,"FindUnpaidCredHist " & IPrw.CredHistNr);
   if (IPrw.CredHistNr>0) then begin
     CredHistr.SerNr = IPrw.CredHistNr;
     if (ReadFirstMain(CredHistr,1,true)) then begin
@@ -328,6 +335,7 @@ begin
         TrHs = false;
       end else begin
         priority = GetItemPriority(IPb,CredHistr.ArtCode);
+  logtext(0,"FindUnpaidCredHist2 " & priority & ":" & CredHistr.ArtCode);
         InsertCredHistInArray(CredHistr,arrORr,priority);
       end;
     end;
@@ -617,7 +625,7 @@ begin
 
   BlockLoad(IPb);
 
-  debugf = false;  
+  debugf = true;  
   if (rownr>=0) then begin
     MatRowGet(IPr,rownr,IPrw);
     if (IPrw.InvoiceNr>-1) then begin
@@ -625,7 +633,14 @@ begin
       if (ReadFirstMain(IVr,1,true)) then begin
         if (IVr.CustCredManNr>0) then begin
           remsum = IPrw.RecVal;
-          MatRowDelete(IPr,rownr);
+          rwcnt = MatRowCnt(IPr);
+          for (i=rwcnt-1;i>=0;i=i-1) begin
+            MatRowGet(IPr,i,IPrw);
+            if (IPrw.InvoiceNr==IVr.SerNr) then begin
+              MatRowDelete(IPr,i);
+            end;
+          end;
+          //MatRowDelete(IPr,rownr);
           rwcnt = MatRowCnt(IVr);
           for (i=0;i<rwcnt;i=i+1) begin
             MatRowGet(IVr,i,IVrw);
@@ -658,7 +673,7 @@ begin
             ORr = arrORr[i];
             SortRows(ORr,"Spec",true);
             rwcnt = MatRowCnt(ORr);
-           for (j=0;j<rwcnt;j=j+1) begin
+            for (j=0;j<rwcnt;j=j+1) begin
               MatRowGet(ORr,j,ORrw);
               if (remsum>0) then begin
                 AddCredHistToIP(ORrw,IPr,IVr.Addr0,IVr.CurncyCode,remsum,IVr.CustCode,true,"","",invused,rownr);
