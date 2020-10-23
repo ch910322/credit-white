@@ -248,6 +248,7 @@ begin
   SString(200268,"Interest exceeds Max Monthly Payment");
   SString(200269,"Amount is different than specified in Credit Agreement");
 
+  SString(200270,"Schedule Type");
 
 
   StrSetAdd(584);
