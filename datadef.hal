@@ -1741,6 +1741,7 @@ begin
   RecordField(ShowLoanType5,M4Int,0,0);
   RecordField(ShowMoneyTransferDate,M4Int,0,0);
   RecordField(DefCredManLoanType,M4Int,0,0);
+  RecordField(ShowLoanType6,M4Int,0,0);
   EndBlock;
 
   SourceFile("halcust\\LoanApp\\English", 0);

@@ -305,6 +305,9 @@ begin
   if (ISb.ShowLoanType5==1) then begin
     SetText(5,"Payment Guarantee");
   end;
+  if (ISb.ShowLoanType6==1) then begin
+    SetText(6,"Balloon");
+  end;
 //  SetText(6,"Linear with Delay");
 //  SetText(7,"Annuity with Delay");
   EndSet;

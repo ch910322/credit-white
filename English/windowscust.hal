@@ -10,6 +10,7 @@ external outer function Boolean HasB2BCreateOffer();
 external outer function Boolean UseCredManStatus();
 external outer function Boolean SimplifiedSureties();
 external outer function Boolean ShowBuyOutFee();
+external outer function Boolean HasBalloonLoanType();
 
 procedure ShowCredManLClassWindow()
 begin
@@ -36,6 +37,9 @@ begin
   end;
   if (ISb.ShowLoanType5==1) then begin
     HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass5Btn","Paymnt. Grnt.");
+  end;
+  if (ISb.ShowLoanType6==1) then begin
+    HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass6Btn","Balloon");
   end;
   HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClassBtn","All");
   RecordList(4,v+=20,-21,-39);
@@ -2503,6 +2507,14 @@ begin
   EndWindow;
 end;
 
+window CredMan7LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Balloon Agreements",CredMan7LClass,CGmlist,-);
+  ShowCredManLClassWindow;
+  EndWindow;
+end;
+
 window CredManLClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
@@ -2806,19 +2818,25 @@ begin
   Sizeable(-1,-1,0,0);
   h = 100;
   vs = 20;
-  ButtonFrame(h,v=20,150,6,"Default Loan Type");
+  ButtonFrame(h,v=20,150,7,"Default Loan Type");
   RadioButton(h,v,0,0,"Not set",DefCredManLoanType);
   RadioButton(h,v+=16,1,0,"Loan",DefCredManLoanType); 
   RadioButton(h,v+=16,2,0,"Leasing",DefCredManLoanType); 
   RadioButton(h,v+=16,3,0,"Mortgage",DefCredManLoanType); 
   RadioButton(h,v+=16,4,0,"Factoring",DefCredManLoanType); 
   RadioButton(h,v+=16,5,0,"Payment Grnt.",DefCredManLoanType); 
+  if (HasBalloonLoanType) then begin
+    RadioButton(h,v+=16,6,0,"Balloon",DefCredManLoanType); 
+  end;
 
   CheckBox(h,v+=30,0,"Display Loan",ShowLoanType1);
   CheckBox(h,v+=16,0,"Display Leasing",ShowLoanType2);
   CheckBox(h,v+=16,0,"Display Mortgage",ShowLoanType3);
   CheckBox(h,v+=16,0,"Display Factoring",ShowLoanType4);
   CheckBox(h,v+=16,0,"Display Payment Grnt.",ShowLoanType5);
+  if (HasBalloonLoanType) then begin
+    CheckBox(h,v+=16,0,"Display Balloon",ShowLoanType6);
+  end;
 
   CheckBox(h,v+=30,0,"Show VAT Data",ShowVAT);
   

@@ -1024,6 +1024,15 @@ begin
           AddFactoringInvoices(inCredManr,CredManPayPlanr,CredManSetb,CurrentDate,acumint,calcbal,frdat,todat)
         case 5://Payment guarantee
 
+        case 6://Balloon
+          AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype,invdat,acumint,calcbal,frdat,todat,-1);
+          if (i==months-1) then begin
+            int_frdat = inCredManr.startDate;
+            int_todat = inCredManr.endDate;
+            AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype,int_invdat,acumint,calcbal,int_frdat,int_todat,-1,false);
+            AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,0,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths)
+          end;
+          AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
       end;
       AddExtraDeposit(inCredManr,CredManPayPlanr,CredManSetb,invdat,acumint,calcbal,frdat,todat,i+1);
       //if (i==0) then begin

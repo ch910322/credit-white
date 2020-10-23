@@ -1011,6 +1011,9 @@ begin
   if (ISb.ShowLoanType5==1) then begin
     RadioButton(h3,v+=16,5,0,"Paymnt. Grnt.",LoanType);
   end;
+  if (ISb.ShowLoanType6==1) then begin
+    RadioButton(h3,v+=16,6,0,"Balloon",LoanType);
+  end;
   EndFrame;
   
   Tile(5,290,true,"5",SuretyProvider1); 
@@ -1379,6 +1382,10 @@ begin
   v = v + 16;
   if (ISb.ShowLoanType5==1) then begin
     RadioButton(h3,v,5,0,"Paymnt. Grnt.",LoanType);
+  end;
+  v = v + 16;
+  if (ISb.ShowLoanType6==1) then begin
+    RadioButton(h3,v,6,0,"Balloon",LoanType);
   end;
   EndFrame;
   ButtonFrame(h2,v+=40,270,2,"Interest according to Money Transfer Date");

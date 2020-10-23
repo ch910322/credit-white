@@ -2032,6 +2032,17 @@ begin
   return;
 end;
 
+global
+procedure CredManLClass6Btn()
+begin
+  record CredManVc CredManr;
+  
+  CloseWindow(CurWindow);
+  OpenWindow("CredMan7LClass",0,0,"6","",CredManr);
+
+  return;
+end;
+
 
 global
 function Boolean InvLegalInvSerieSClassOnOpenWindow(Integer wn)
