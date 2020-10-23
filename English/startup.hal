@@ -1,5 +1,8 @@
 event startup
 begin
+  record CMInterfaceSetBlock ISb;
+
+  BlockLoad(ISb);
 
   SetLangMode(LangEnglish,"ENG",0);
 
@@ -286,12 +289,22 @@ begin
 
   SetBegin(2001);
   SetText(-1,"-");
-  SetText(0,"Annuity");
-  SetText(1,"Linear");
+  if (ISb.ShowLoanType1==1) then begin
+    SetText(0,"Annuity");
+  end;
+  if (ISb.ShowLoanType2==1) then begin
+    SetText(1,"Linear");
+  end;
 //  SetText(2,"Linear with Service Fee");
-  SetText(3,"Bullet Loan");
-  SetText(4,"Factoring");
-  SetText(5,"Payment Guarantee");
+  if (ISb.ShowLoanType3==1) then begin
+    SetText(3,"Bullet Loan");
+  end;
+  if (ISb.ShowLoanType4==1) then begin
+    SetText(4,"Factoring");
+  end;
+  if (ISb.ShowLoanType5==1) then begin
+    SetText(5,"Payment Guarantee");
+  end;
 //  SetText(6,"Linear with Delay");
 //  SetText(7,"Annuity with Delay");
   EndSet;
