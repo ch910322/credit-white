@@ -570,17 +570,28 @@ begin
   return;
 end;
 
-procedure GetSuretyValues3(record CredManVc CredManr,Integer num,var string name,var string phone,var string mobile,var string email,var string id,var string addr0,var string addr1,var string addr2,var string addr3,var string addr4,var string value,var string signer,var string td)
+procedure GetSuretyValues3(record CredManVc CredManr,Integer num,var string name,var string phone,var string mobile,var string email,var string id,var string addr0,var string addr1,var string addr2,var string addr3,var string addr4,var string saddr0,var string saddr1,var string saddr2,var string saddr3,var string saddr4,var string value,var string signer,var string td)
 begin
-  record CUVc CUr;
+  record CUVc CUr,SCUr;
+  string 255 signercode;
   
   name = GetFieldValueByName(CredManr,"Surety" & num & "Name",-1);
   email = GetFieldValueByName(CredManr,"Surety" & num & "eMail",-1);
   phone = GetFieldValueByName(CredManr,"Surety" & num & "Phone",-1);
   mobile = GetFieldValueByName(CredManr,"Surety" & num & "Mobile",-1);
-  id = GetFieldValueByName(CredManr,"Surety" & num & "ID",-1);
-  value = GetFieldValueByName(CredManr,"Surety" & num & "Value",-1);
-  signer = GetFieldValueByName(CredManr,"Surety" & num & "Signer",-1);
+  //id = GetFieldValueByName(CredManr,"Surety" & num & "ID",-1);
+  value = GetFieldValueByName(CredManr,"Surety" & num & "Amount",-1);
+  signercode = GetFieldValueByName(CredManr,"Surety" & num & "Signer",-1);
+  SCUr.Code = signercode;
+  if (ReadFirstMain(SCUr,1,true)) then begin
+    signer = SCUr.Name;
+    id = SCUr.RegNr1;
+    saddr0 = SCUr.InvAddr0;
+    saddr1 = SCUr.InvAddr1;
+    saddr2 = SCUr.InvAddr2;
+    saddr3 = SCUr.InvAddr3;
+    saddr4 = SCUr.InvAddr4;
+  end;
   td = GetFieldValueByName(CredManr,"Surety" & num & "Date",-1);
   if (blank(td)) then begin
     td = CredManr.TransDate;
@@ -636,6 +647,7 @@ begin
   val calcfees,fixfees;
   transaction Longint gSuretyNumber;
   record UserVc Userr;
+  string 255 saddr0,saddr1,saddr2,saddr3,saddr4;
 
   Ext_CommonDocumentFields(vVals);
 
@@ -664,7 +676,7 @@ begin
     vVals["F_CONTACT3ID"] = id;
     Ext_OutAddress(vVals,"F_CONTACT3ADRESS",name,addr0,addr1,addr2,addr3,addr4);
   end else begin
-    GetSuretyValues3(CredManr,gSuretyNumber,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,value,signer,td);
+    GetSuretyValues3(CredManr,gSuretyNumber,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,saddr0,saddr1,saddr2,saddr3,saddr4,value,signer,td);
     vVals["F_CONTACTNAME"] = name;
     vVals["F_CONTACTPHONE"] = phone;
     vVals["F_CONTACTMOBILE"] = mobile;
@@ -674,6 +686,7 @@ begin
     vVals["F_CONTACTSIGNER"] = signer;
     vVals["F_CONTACTDATE"] = td;
     Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
+    Ext_OutAddress(vVals,"F_CONTACTSIGNERADRESS",name,saddr0,saddr1,saddr2,saddr3,saddr4);
   end;
   
   CUr.Code = CredManr.CustCode;
@@ -686,6 +699,8 @@ begin
   vVals["F_TOTSUM"] = CredManr.InvSum4;
   ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
   vVals["F_TOTSUMINTEXT"] = tstr;
+  vVals["F_OVERDUEPRC"] = CredManr.OverduePercentage;
+
 
   RecordCLear(CUr);
   if (FindCEOContact(CredManr.CustCode,CUr)) then begin

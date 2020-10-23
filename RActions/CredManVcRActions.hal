@@ -129,6 +129,8 @@ BEGIN
   row CredManPayPlanVc CredManPayPlanrw;
   LongInt i,rwcnt;
   record CredManSetBlock CredManSetb;
+  string 255 code;
+  record CMApplicationSetBlock CMb;
 
   res = 0;
 
@@ -244,6 +246,17 @@ BEGIN
       end;
     end;
   end;
+
+  BlockLoad(CMb);
+  if (CMb.AutoSuretyOfficalNr==1) then begin
+    for (i=1;i<7;i=i+1) begin
+      code = GetFieldValueByName(CredManr,"SuretyProvider" & i,-1);
+      if (nonblank(code)) then begin
+        SetFieldValueByName(CredManr,"Surety" & i & "OfficialSerNr",CMb.AutoSuretySerie & i,-1);
+      end;
+    end;
+  end;
+  
 
   res = inner.CredManVcRecordCheck(CredManr,CredMan2r,stat,long4);
   

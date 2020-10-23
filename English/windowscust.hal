@@ -168,7 +168,9 @@ begin
   RadioButton(h2,v+=16,1,0,"Actual",DaysInMonth); 
   
   if (SimplifiedSureties) then begin
-    CheckBox(h2,v+=30,0,"Automatically insert Surety Legal Number",AutoSuretyOfficalNr);
+    EditField(h2,v+=30,50,"",Normal,AutoSuretySerie,false,0);
+    StaticText(h2+60,v+13,"Surety Legal No. Serie",false);
+    CheckBox(h2,v+=20,0,"Automatically insert Surety Legal Number",AutoSuretyOfficalNr);
     v = v + 16;
   end else begin
     v = v + 30;
