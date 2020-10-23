@@ -289,16 +289,10 @@ begin
 
   SetBegin(2001);
   SetText(-1,"-");
-  if (ISb.ShowLoanType1==1) then begin
-    SetText(0,"Annuity");
-  end;
-  if (ISb.ShowLoanType2==1) then begin
-    SetText(1,"Linear");
-  end;
+  SetText(0,"Annuity");
+  SetText(1,"Linear");
 //  SetText(2,"Linear with Service Fee");
-  if (ISb.ShowLoanType3==1) then begin
-    SetText(3,"Bullet Loan");
-  end;
+  SetText(3,"Bullet Loan");
   if (ISb.ShowLoanType4==1) then begin
     SetText(4,"Factoring");
   end;
