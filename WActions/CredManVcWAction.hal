@@ -250,6 +250,7 @@ begin
         CredManr.PrincipleDelayInterest = CredManr.IntRate;
       end;
       Credmanr.LoanType = CMTr.LoanType;
+      Credmanr.LastPrincipleWithExtraMonth = CMTr.LastPrincipleWithExtraMonth;
       CredManr.RealInterestFlag = CMTr.RealInterestFlag;
       CredManr.BuyoutFeeFixed = CMTr.BuyoutFeeFixed;
       CredManr.BuyoutFeePrc = CMTr.BuyoutFeePrc;

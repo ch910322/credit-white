@@ -472,9 +472,7 @@ begin
   record CMApplicationSetBlock CMAb;
   row CredManPayPlanVc CredManPayPlanrw;
   val tsum,tint,nint;
-  record CMInvoicingBlock CIb;
-  
-  BlockLoad(CIb);
+
   switch (type) begin
     case 0:
       AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,CredManr.InvSum4,0,acumint,calcbal,frdate,todate,-1,-1,0);
@@ -493,7 +491,7 @@ begin
         end;
         if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
           sum = usesum-CredManr.LastMonthPrinc;
-          if (CIb.LastPrincipleWithExtraMonth==1) then begin
+          if (CredManr.LastPrincipleWithExtraMonth==1) then begin
             sum = sum/(usemonths);
           end else begin
             sum = sum/(usemonths-1);
@@ -519,7 +517,7 @@ begin
         tusemonths = usemonths;
         tusesum = usesum;
         if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
-          if (CIb.LastPrincipleWithExtraMonth==1) then begin
+          if (CredManr.LastPrincipleWithExtraMonth==1) then begin
             tusemonths = tusemonths;
           end else begin
             tusemonths = tusemonths - 1;

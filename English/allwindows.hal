@@ -975,6 +975,7 @@ begin
   EditField(h2,v+=vs,-40,"Pause Months",ViewOnly,PauseMonths,false,0);
   EditField(h2,v+=vs,-40,"Prolong Date",ViewOnly,ProlongDate,false,0);
   EditField(h2,v+=vs,-40,"Prolong Months",ViewOnly,ProlongMonths,false,0);
+  CheckBox(h2,v+=20,0,"Last Principle Value adds last Calculated value",LastPrincipleWithExtraMonth);
   vm = v+40;
 //CUST-END
   ButtonFrame(h2,v=vm,150,2,"Late Interest Based On");
@@ -1275,7 +1276,7 @@ end;
 window CredManTypeDClass:1
   wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  real h,h2,h3,t,v,vm,vm2,vs;
+  real h,h2,h3,t,v,vm,vm2,vs,vm3;
 //CUST-BEGIN
   real h4,h5,h6;
   record CMInterfaceSetBlock ISb;
@@ -1344,6 +1345,7 @@ begin
     EditField(h,vm2=(v+=vs),150,"Pause Offset Days",Normal,PauseOffsetDays,false,0);
   end;
   EditField(h,vm2=(v+=vs),100,"Default Item Priority",Normal,ItemPriorityCode,false,CMItemPrioritySCLass);  
+  CheckBox(h,v+=16,0,"Last Principle Value adds last Calculated value",LastPrincipleWithExtraMonth);
 
   EditField(h2+150,v=vm-20,-40,"Minimum Overdue Fee",Normal,MinOverdueFee,false,0);
   vm = vm + 20;
@@ -1363,29 +1365,27 @@ begin
 
   ButtonFrame(h3,v+=40,100,6,"Type");
   RadioButton(h3,v,0,0,"Not set",LoanType);
-  v = v + 16;
+  vm3 = v;
   if (ISb.ShowLoanType1==1) then begin
-    RadioButton(h3,v,1,0,"Loan",LoanType);
+    RadioButton(h3,v+=16,1,0,"Loan",LoanType);
   end;
-  v = v + 16;
   if (ISb.ShowLoanType2==1) then begin
-    RadioButton(h3,v,2,0,"Leasing",LoanType);
+    RadioButton(h3,v+=16,2,0,"Leasing",LoanType);
   end;
-  v = v + 16;
   if (ISb.ShowLoanType3==1) then begin
-    RadioButton(h3,v,3,0,"Mortgage",LoanType);
+    RadioButton(h3,v+=16,3,0,"Mortgage",LoanType);
   end;
-  v = v + 16;
   if (ISb.ShowLoanType4==1) then begin
-    RadioButton(h3,v,4,0,"Factoring",LoanType);
+    RadioButton(h3,v+=16,4,0,"Factoring",LoanType);
   end;
-  v = v + 16;
   if (ISb.ShowLoanType5==1) then begin
-    RadioButton(h3,v,5,0,"Paymnt. Grnt.",LoanType);
+    RadioButton(h3,v+=16,5,0,"Paymnt. Grnt.",LoanType);
   end;
-  v = v + 16;
   if (ISb.ShowLoanType6==1) then begin
-    RadioButton(h3,v,6,0,"Balloon",LoanType);
+    RadioButton(h3,v+=16,6,0,"Balloon",LoanType);
+  end;
+  if (vm3+(3*16)>v) then begin
+    v = vm3;
   end;
   EndFrame;
   ButtonFrame(h2,v+=40,270,2,"Interest according to Money Transfer Date");

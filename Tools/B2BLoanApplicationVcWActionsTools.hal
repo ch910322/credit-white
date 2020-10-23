@@ -322,6 +322,7 @@ begin
       CredManr.Classifications = CMTr.Classifications;
       CredManr.OverdueRateType = CMTr.OverdueRateType;
       Credmanr.LoanType = CMTr.LoanType;
+      Credmanr.LastPrincipleWithExtraMonth = CMTr.LastPrincipleWithExtraMonth;
       CredManr.RealInterestFlag = CMTr.RealInterestFlag;
       CredManr.BuyoutFeeFixed = CMTr.BuyoutFeeFixed;
       CredManr.BuyoutFeePrc = CMTr.BuyoutFeePrc;

@@ -664,6 +664,7 @@ begin
   RecordField(BOE4HasSurety,M4Int,0,0);
 
   RecordField(BuyoutFeeMonths,M4Long,0,0);
+  RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -826,6 +827,7 @@ begin
   RecordField(BuyoutFeePrc,M4Qty,0,0);
   RecordField(BuyoutFeeMonths,M4Long,0,0);
   RecordField(ItemPriorityCode,M4Code,20,0);
+  RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
