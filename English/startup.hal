@@ -11,6 +11,7 @@ begin
   Register("Agreement Schedules","Agreement Schedules",CredManSchedVc,modCredMan);
   Register("Properties","Properties",CMPropertyVc,modCredMan);
   Register("Agreement Tests","Agreement Tests",CredManTestVc,modCredMan);
+  Register("Agreement Changes","Agreement Changes",CredManChangeVc,modCredMan);
  
   Setting("Number Series - B2B Loan Applications",B2BLoanAppSerTClass,modCredMan);
   Setting("Credit Management Settings",CMApplicationSetTClass,modCredMan);
@@ -44,7 +45,6 @@ begin
   Setting("Leasing Agreements",CredMan3LClass,modCredMan);
   Setting("Invega Fund Report Settings",InvegaReportTClass,modCredMan);
   Setting("Agreement Type Accounts",CredManAccLClass,modCredMan);
-
   
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);

@@ -1747,6 +1747,26 @@ begin
   RecordField(ShowLoanType6,M4Int,0,0);
   EndBlock;
 
+  RecordBegin(CredManChangeVc,-,"");
+  RecordField(SerNr,M4Long,0,0);
+  RecordField(CredManNr,M4Long,0,0);
+  RecordField(TransDate,M4Date,0,0);
+  RecordField(OKFlag,M4Int,0,0);
+  RecordField(ProlongMonths,M4Qty,0,0);
+  RecordField(PauseMonths,M4Long,0,0);
+  RecordField(IntRate,M4Rate,0,0);
+  RecordField(AnnualRate,M4Int,0,0);
+  RecordField(OverduePercentage,M4Qty,0,0);
+  RecordField(MonthlyPaymentDay,M4Long,0,0);
+  MainKeyBegin(SerNr,0);
+  KeySegment(SerNr);
+  KeyBegin(CredManDate);
+  KeySegment(CredManNr);
+  KeySegment(TransDate);
+  KeySegment(SerNr);
+  
+  EndRecord;  
+
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Estonian", 0);
