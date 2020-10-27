@@ -54,11 +54,32 @@ global
 updating function LongInt CredManChangeVcRecordCheck(var record CredManChangeVc Changer,record CredManChangeVc Change2r,LongInt stat,LongInt long4)
 BEGIN
   LongInt res;
+  record CredManVc CredManr;
  
   res = 0;
   if (Changer.PauseMonths>0 or Changer.ProlongMonths>0) then begin
     if (Changer.TransDate!=Change2r.TransDate) then begin
       RecordCheckError(28615,"",-1,"TransDate");
+      res = -1;
+      goto LCredManChangeVcRecordCheck;
+    end;
+  end;
+  if (Changer.SerNr==-1) then begin
+    Changer.SerNr = NextSerNr("CredManChangeVc",Changer.TransDate,-1,false,"");
+  end;
+  if (blank(Changer.TransDate)) then begin
+    RecordCheckError(1058,"",-1,"TransDate");
+    res = -1;
+    goto LCredManChangeVcRecordCheck;
+  end;
+  if (Changer.CredManNr<0) then begin
+    RecordCheckError(1058,"",-1,"CredManNr");
+    res = -1;
+    goto LCredManChangeVcRecordCheck;
+  end else begin
+    CredManr.SerNr = Changer.CredManNr;
+    if (ReadFirstMain(CredManr,1,true)==false) then begin
+      RecordCheckError(31402,"",-1,"CredManNr");
       res = -1;
       goto LCredManChangeVcRecordCheck;
     end;
