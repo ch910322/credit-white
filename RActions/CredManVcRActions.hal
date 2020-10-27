@@ -11,6 +11,7 @@ external updating procedure StoreCredOffSerNrIV(LongInt,string,string);
 external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
 external inner function Boolean GetAccName(string,var string,Integer);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
+external function Boolean CheckCredManSchedule();
 
 global
 function LongInt CredManVcRecordDefaults(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
@@ -301,15 +302,17 @@ BEGIN
     end;
   end;
 
-  if (CredManr.OKFlag==1 and CredMan2r.OKFlag==0) then begin
-    if (UserCanAction("AllowDifferentCredManSched",false)==false) then begin
-      if (ActualScheduleIsDifferent(CredManr)) then begin
-        RecordCheckError(200272,"",-1,"SerNr");
-        res = -1;
-        goto LCredManVcRecordCheck;
+  if (CheckCredManSchedule) then begin
+    if (CredManr.OKFlag==1 and CredMan2r.OKFlag==0) then begin
+      if (UserCanAction("AllowDifferentCredManSched",false)==false) then begin
+        if (ActualScheduleIsDifferent(CredManr)) then begin
+          RecordCheckError(200272,"",-1,"SerNr");
+          res = -1;
+          goto LCredManVcRecordCheck;
+        end;
       end;
-    end;
-  end;  
+    end;  
+  end;
 
   res = inner.CredManVcRecordCheck(CredManr,CredMan2r,stat,long4);
   
