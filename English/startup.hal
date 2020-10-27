@@ -64,6 +64,7 @@ begin
   Maintenance("Fix Credit History",CredManRedoCredHistVClass,CredManRedoCredHistMn,modCredMan);
   Maintenance("Generate Agreement Schedules",CreateCredManScheduleVClass,CreateCredManScheduleMn,modCredMan);
   Maintenance("Create Mails from Schedules",SendScheduleEmailsVClass,SendScheduleEmailsMn,modCredMan);
+  Maintenance("Generate Agreement Changes",CreateCredManChangeVClass,CreateCredManChangeMn,modCredMan);
 
   Maintenance("Recreate Invoices with Prolong months",CredManRecreateDocsVClass,CredManRecreateDocsMn,modCredMan);
 
@@ -249,6 +250,7 @@ begin
   SString(200269,"Amount is different than specified in Credit Agreement");
 
   SString(200270,"Schedule Type");
+  SString(200271,"Can't update becauce there is an Invoice already created");
 
 
   StrSetAdd(584);
