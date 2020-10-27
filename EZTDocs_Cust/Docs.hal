@@ -50,6 +50,7 @@ external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,reco
 external function string 255 GetCredManNr(Longint);
 external inner function string 255 StrReplace(string,string,string);
 external function val GetCustomerOpenAmount(string,record IVVc);
+external function Integer GetProlongMonths(record CredManVc);
 
 procedure GetCredManCustContact(record CredManVc CredManr,var string contactid,var string contactname)
 begin
@@ -263,7 +264,7 @@ begin
   vVals["F_RATE"] = tstr;
   GetFullCurncyRateText(false,tstr,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2);  
   vVals["F_BASERATE"] = tstr;
-  vVals["F_PERIODLENGTH"] = ValToString(CredManr.InstalmentMonths + CredManr.ProlongMonths,M4Val,"",".",1);
+  vVals["F_PERIODLENGTH"] = ValToString(CredManr.InstalmentMonths + GetProlongMonths(CredManr),M4Val,"",".",1);
   vVals["F_RANTASATS"] = CredManr.IntRate;
   if (blank(IVr.ShipAddr0)) then begin
     tstr = IVr.Addr0;

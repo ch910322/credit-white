@@ -25,6 +25,7 @@ external outer function val GetMonthlyPaymentAmount(record CredManVc,Integer);
 external outer procedure PrintDocumentSigner();
 external function roundmode SetRoundModeD(Integer);
 external outer procedure FindFirstContactPerson(record CUVc,var record CUVc);
+external outer function Integer GetProlongMonths(record CredManVc);
 
 global
 function string 255 CredManOwnBankAccount(Longint credmannr)
@@ -444,7 +445,7 @@ begin
   OUTFORMFIELD("F_RATE",tstr);
   GetFullCurncyRateText(false,tstr,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2);  
   OUTFORMFIELD("F_BASERATE",tstr);
-  OUTFORMFIELD("F_PERIODLENGTH",ValToString(CredManr.InstalmentMonths + CredManr.ProlongMonths,M4Val,"",".",1));
+  OUTFORMFIELD("F_PERIODLENGTH",ValToString(CredManr.InstalmentMonths + GetProlongMonths(CredManr),M4Val,"",".",1));
   OUTFORMFIELD("F_RANTASATS",CredManr.IntRate);
   if (blank(IVr.ShipAddr0)) then begin
     tstr = IVr.Addr0;

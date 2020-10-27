@@ -699,15 +699,8 @@ begin
     if (ProlongInProgress(CredManr)) then begin
       MessageBox(200233,"");
     end else begin
-      if (nonblank(CredManr.PauseDate)) then begin
-        td = CredManr.PauseDate;
-      end else begin
-        td = GetPauseCredManNextDate(CredManr);
-      end;
-      if (CredManr.PauseMonths>0) then begin
-        RepSpec.vals0 = CredManr.PauseMonths;
-      end;
-      RepSpec.vals1 = CredManr.ProlongMonths;
+      td = GetPauseCredManNextDate(CredManr);
+      //RepSpec.vals1 = CredManr.ProlongMonths;
       RepSpec.d1 = td;
       RepSpec.flags[1] = 1;
       OpenWindow("PauseCredManWClass",0,wn,"","",RepSpec);
@@ -897,7 +890,7 @@ begin
 
   return;
 end;
-
+/*
 //this allows to edit a field value in hal and use PutWindowRecord and not get "The record has changed" message
 //it was needed for TerminateCredManDsm. I combined it with "SetWindowState"
 global
@@ -915,7 +908,7 @@ begin
   CredManVcRecordProtectFields = res;
   return;
 end;
-
+*/
 
 global
 procedure CredManInfoBuyOutDbl(string dblstr,string l,Integer currepwn)

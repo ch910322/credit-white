@@ -457,8 +457,8 @@ begin
   RecordField(BankName,M4Str,100,0);
   RecordField(BankAccount,M4Str,100,0);
   RecordField(MonthlyPaymentDay,M4Long,0,0);
-  RecordField(PauseDate,M4Date,0,0);
-  RecordField(PauseMonths,M4Long,0,0);
+  RecordField(xPauseDate,M4Date,0,0);
+  RecordField(xPauseMonths,M4Long,0,0);
   RecordField(MoneyTransferDate,M4Date,0,0);
 
   RecordField(SuretyProvider1,M4Str,200,0);
@@ -540,8 +540,8 @@ begin
   RecordField(VersionNo,M4Long,0,0);
   RecordField(Classifications,M4UStr,255,0);
   RecordField(LoanApplication,M4Long,0,0);
-  RecordField(ProlongMonths,M4Qty,0,0);
-  RecordField(ProlongDate,M4Date,0,0);//For now the same as pause date
+  RecordField(xProlongMonths,M4Qty,0,0);
+  RecordField(xProlongDate,M4Date,0,0);//For now the same as pause date
   RecordField(AnnualRate,M4Int,0,0);
   ChangeField(IntRate,M4Rate,0,0);
   ChangeField(PrincipleDelayInterest,M4Rate,0,0);

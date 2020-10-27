@@ -38,13 +38,13 @@ begin
       CredManTestr.PrincipleDelayMonths = CredManr.PrincipleDelayMonths;
       CredManTestr.PrincipleDelayInterest = CredManr.PrincipleDelayInterest;
       CredManTestr.MaxMonthlyPayment = CredManr.MaxMonthlyPayment;
-      CredManTestr.ProlongMonths = CredManr.ProlongMonths;
-      CredManTestr.ProlongDate = CredManr.ProlongDate;
+      //CredManTestr.ProlongMonths = CredManr.ProlongMonths;
+      //CredManTestr.ProlongDate = CredManr.ProlongDate;
       CredManTestr.AnnualRate = CredManr.AnnualRate;
       CredManTestr.LastMonthPrinc = CredManr.LastMonthPrinc;
       CredManTestr.MonthlyPaymentDay = CredManr.MonthlyPaymentDay;
-      CredManTestr.PauseDate = CredManr.PauseDate;
-      CredManTestr.PauseMonths = CredManr.PauseMonths;
+      //CredManTestr.PauseDate = CredManr.PauseDate;
+      //CredManTestr.PauseMonths = CredManr.PauseMonths;//need to figure this out
       CredManTestr.InvSum4 = CredManr.InvSum4;
       CredManTestr.PayDeal = CredManr.PayDeal;
       CredManTestr.DepositSum = CredManr.DepositSum;

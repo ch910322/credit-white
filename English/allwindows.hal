@@ -971,10 +971,6 @@ begin
   EditField(h2,v=vm-20,-40,"Bank Code",Normal,BankCode,false,BankSClass);
   EditField(h2,v+=vs,-40,"Bank Name",Normal,BankName,false,0);
   EditField(h2,v+=vs,-40,"Bank Account",Normal,BankAccount,false,BankAccountSClass);
-  EditField(h2,v+=vs,-40,"Pause Date",ViewOnly,PauseDate,false,0);
-  EditField(h2,v+=vs,-40,"Pause Months",ViewOnly,PauseMonths,false,0);
-  EditField(h2,v+=vs,-40,"Prolong Date",ViewOnly,ProlongDate,false,0);
-  EditField(h2,v+=vs,-40,"Prolong Months",ViewOnly,ProlongMonths,false,0);
   CheckBox(h2,v+=20,0,"Last Principle Value adds last Calculated value",LastPrincipleWithExtraMonth);
   vm = v+40;
 //CUST-END

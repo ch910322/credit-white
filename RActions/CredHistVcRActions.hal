@@ -18,6 +18,63 @@ begin
   return;
 end; 
 
+global
+updating procedure CreatePauseRecord(Longint sernr,Date td,Integer months,Integer okflag)
+begin
+  record CredManChangeVc Changer;
+  
+  RecordNew(Changer);
+  Changer.SerNr = NextSerNr("CredManChangeVc",td,-1,false,"");
+  Changer.TransDate = td;
+  Changer.PauseMonths = months;
+  Changer.OKFlag = okflag;
+  Changer.CredManNr = sernr;
+  RecordStore(Changer,true);
+
+  return;
+end;
+
+global
+updating procedure CreateProlongRecord(Longint sernr,Date td,Integer months,Integer okflag)
+begin
+  record CredManChangeVc Changer;
+  
+  RecordNew(Changer);
+  Changer.SerNr = NextSerNr("CredManChangeVc",td,-1,false,"");
+  Changer.TransDate = td;
+  Changer.ProlongMonths = months;
+  Changer.OKFlag = okflag;
+  Changer.CredManNr = sernr;
+  RecordStore(Changer,true);
+
+  return;
+end;
+
+global
+function Integer GetProlongMonths(record CredManVc CredManr)
+begin
+  record CredManChangeVc Changer;
+  Boolean TrHs;
+  Integer res;
+  
+  Changer.CredManNr = CredManr.SerNr;
+  TrHs = true;
+  while (LoopKey("CredManDate",Changer,1,TrHs)) begin
+    if (CredManr.SerNr!=Changer.CredManNr) then begin
+      TrHs = false;
+    end else begin
+      if (Changer.OKFlag==1) then begin
+        if (Changer.ProlongMonths>0) then begin
+          res = res + Changer.ProlongMonths;
+        end;
+      end;
+    end;
+  end;
+
+  GetProlongMonths = res;
+  return;
+end;
+
 updating procedure FinishProlongSession(Longint sernr)
 begin
   record ProlongSessionVc PSr,oldPSr;
@@ -30,17 +87,21 @@ begin
     if (PSr.ProlongWhenPaid==1) then begin
       CredManr.SerNr = sernr;
       if (ReadFirstMain(CredManr,1,true)) then begin
-        RecordCopy(oldCredManr,CredManr);
-        CredManr.PauseDate = PSr.PauseDate;
-        CredManr.ProlongDate = PSr.ProlongDate;
-        CredManr.PauseMonths = PSr.PauseMonths;
-        CredManr.ProlongMonths = PSr.ProlongMonths;
+        //RecordCopy(oldCredManr,CredManr);
+        if (PSr.PauseMonths>0) then begin
+          CreatePauseRecord(CredManr.SerNr,PSr.PauseDate,PSr.PauseMonths,1);
+        end;
+        if (PSr.ProlongMonths>0) then begin
+          CreatePauseRecord(CredManr.SerNr,PSr.ProlongDate,PSr.ProlongMonths,1);
+        end;
+        /*
         CredManSetDatesCust(CredManr,false);
         if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
           if (PSr.RecalcSchedule == 1) then begin
             RecreateAgreementSchedule2(CredManr,true);
           end;
         end;
+        */
       end;
     end;
     RecordCopy(oldPSr,PSr);

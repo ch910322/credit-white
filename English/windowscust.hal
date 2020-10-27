@@ -2855,15 +2855,15 @@ begin
   SpawnClass(CredManChangeDClass);
   UseView(CredManChangeVc);
   RecordList(4,17,-21,-39);
-  RlColKey(4,4,"SerNr",SerNr,false,SerNr);
+  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
   RlCol(70,70,"Agr. No.",CredManNr,false);
   RlCol(146,146,"Date",TransDate,false);
-  RlCol(222,222,"Prol. Date",ProlongDate,false);
-  RlCol(300,300,"Pause Date",PauseDate,false);
+  RlCol(222,222,"Prol. Months",ProlongMonths,false);
+  RlCol(300,300,"Pause Months",PauseMonths,false);
   RlCol(-180,-180,"Rate",IntRate,false);
   RlCol(-130,-130,"Ovrd. Prc.",OverduePercentage,false);
   RlCol(-90,-90,"Pmt Day",MonthlyPaymentDay,false);
-  RlColTL(-50,-50,"OK",M4Mark,OKFlag,false);
+  RlColTL(-30,-30,"OK",M4Mark,OKFlag,false);
   SearchField("Search");
   EndWindow;
 end;
@@ -2872,16 +2872,15 @@ window CredManChangeDClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm,h2;
-  h2 = 230;
+  h2 = 260;
   WindowBegin("Agreement Change",CredManChangeDClass,CGview,-);
   SetWRect(20,80,600,339);
-  Sizeable(-1,-1,0,0);
   UseView(CredManChangeVc);
-  vs=20; h=120; vs2=16; hm=-100;
+  vs=20; h=150; vs2=16; hm=-100;
   EditField(h,v=6,100,"SerNr",Normal,SerNr,false,);
   Checkbox(h2,v,0,"Approved",OKFlag);
-  EditField(h,v+=vs,100,"Agreement No.",Normal,CredManNr,false,0);
-  EditField(h,v+=vs,100,"Date",Normal,TransDate,false,0);
+  EditField(h,v+=vs,100,"Agreement No.",Normal,CredManNr,false,CredManSClass);
+  EditField(h,v+=vs,100,"Date",Normal,TransDate,false,PasteCurDate);
   EditField(h,v+=vs,100,"Prolong Months",Normal,ProlongMonths,false,0);
   EditField(h,v+=vs,100,"Pause Months",Normal,PauseMonths,false,0);
   EditField(h,v+=vs,100,"Rate",Normal,IntRate,false,0);
