@@ -10,6 +10,7 @@ external updating procedure DeleteCredOffSerNr(LongInt,string);
 external updating procedure StoreCredOffSerNrIV(LongInt,string,string);
 external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
 external inner function Boolean GetAccName(string,var string,Integer);
+external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 
 global
 function LongInt CredManVcRecordDefaults(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
@@ -111,6 +112,49 @@ begin
   end;
   
   GetFactoringTotalAgreementWorth = res;
+  return;
+end;
+
+function Boolean ActualScheduleIsDifferent(record CredManVc CredManr)
+begin
+  Boolean res;
+  record CredManPayPlanVc CredManPayPlanr;
+  LongInt i,rwcnt;
+  record CredManSetBlock CredManSetb;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  record SMVc SMr;
+  row SMVc SMrw;
+
+
+  CSr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CSr,1,true)) then begin
+    BlockLoad(CredManSetb);
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,false);
+    BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+    rwcnt = MatRowCnt(SMr);
+    if (rwcnt!=MatRowCnt(CSr)) then begin
+      res = true;
+    end else begin
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(SMr,i,SMrw);
+        MatRowGet(CSr,i,CSrw);
+        if (CSrw.InvDate != SMrw.TransDate) then begin res = true; end;
+        if (CSrw.PayDate != SMrw.DueDate) then begin res = true; end;
+        //if (CSrw.FromDate != SMrw.Objects) then begin res = true; end;
+        //if (CSrw.ToDate != SMrw.Comment) then begin res = true; end;
+        if (CSrw.Principle != (SMrw.DebVal - SMrw.ToRateB1)) then begin res = true; end;
+        if (CSrw.Deposit != SMrw.ToRateB1) then begin res = true; end;
+        if (CSrw.Interest != SMrw.CredVal) then begin res = true; end;
+        if (CSrw.Fees != SMrw.DebVal2) then begin res = true; end;
+        if (res) then begin
+          i = rwcnt;
+        end;
+      end;
+    end;
+  end;
+
+  ActualScheduleIsDifferent = res;
   return;
 end;
 
@@ -256,7 +300,16 @@ BEGIN
       end;
     end;
   end;
-  
+
+  if (CredManr.OKFlag==1 and CredMan2r.OKFlag==0) then begin
+    if (UserCanAction("AllowDifferentCredManSched",false)==false) then begin
+      if (ActualScheduleIsDifferent(CredManr)) then begin
+        RecordCheckError(200272,"",-1,"SerNr");
+        res = -1;
+        goto LCredManVcRecordCheck;
+      end;
+    end;
+  end;  
 
   res = inner.CredManVcRecordCheck(CredManr,CredMan2r,stat,long4);
   
