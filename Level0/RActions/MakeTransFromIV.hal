@@ -598,9 +598,9 @@ LkInvoiceTypeCash:;
       AddEuroCurncyTrRow(gTRp,ftxt,cuobj,"",tstr,rs,false,dc1,TotSum,
                          IVp.CurncyCode,frrate,torate1,torate2,baserate1,baserate2,sum4,nilv,-1,NegativeAmountsOnIVTrans(IVp.InvType,rs),taccnumber);
     case kInvoiceTypeCreditSpecialSales: 
-      goto LkInvoiceTypeCredit;
+      goto LkInvoiceTypeCredit_A;
     case kInvoiceTypeCredit:      
-      LkInvoiceTypeCredit:;
+      LkInvoiceTypeCredit_A:;
       sernr = IVp.CredInv;
       if (sernr==-1) then begin sernr = IVp.SerNr; end;
       if (IVp.DiscSum!=0) then begin
@@ -1068,9 +1068,9 @@ what is it for ?
             end;
             switch (IVp.InvType) begin
               case kInvoiceTypeCreditSpecialSales: 
-                goto LkInvoiceTypeCredit;
+                goto LkInvoiceTypeCredit_B;
               case kInvoiceTypeCredit:
-LkInvoiceTypeCredit:;
+LkInvoiceTypeCredit_B:;
                 SalesVATAcc = VATCbrw.CredSalesVATAcc;
                 if (blank(SalesVATAcc)) then begin SalesVATAcc = VATCbrw.SalesVATAcc; end;
               otherwise
@@ -1250,6 +1250,7 @@ LkInvoiceTypeCredit:;
   //    goto LMakeTransFromIV;
   //  end;    
   //end;
+
   rwcnt = MatRowCnt(IVp);
   for (i=0; i<rwcnt; i=i+1) begin
     errstrno = AddIVCostRow(gTRp,IVp,ORr.OrderType,i,cuobj,frrate,torate1,torate2,baserate1,baserate2,dc1,dc2,true,tstr,TotSum);
