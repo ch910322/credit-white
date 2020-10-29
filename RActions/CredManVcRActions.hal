@@ -221,7 +221,7 @@ BEGIN
     res = -1;
     goto LCredManVcRecordCheck;
   end;
-
+/*
   if (CredManr.InstalmentType==6) then begin
     if (CredManr.PrincipleDelayMonths<=0) then begin
       RecordCheckError(1058,"",-1,"PrincipleDelayMonths");
@@ -234,6 +234,7 @@ BEGIN
       goto LCredManVcRecordCheck;
     end;
   end;
+*/
   if (CredManr.MaxMonthlyPayment>0) then begin
     if (CredManr.MaxMonthlyPayment<GetMonthlyPaymentAmount(CredManr,6)) then begin
       RecordCheckError(200105,"",-1,"MaxMonthlyPayment");
