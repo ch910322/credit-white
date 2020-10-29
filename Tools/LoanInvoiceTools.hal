@@ -205,7 +205,7 @@ begin
 
   IVr.CredFromDate = fromdate;
   IVr.CredToDate = todate;
-  if (CredManr.startDate==invdate) then begin
+  if (invdate<CredManr.FirstInvDate and blank(fromdate)) then begin//First invoice language
     IVr.LangCode = CredManr.LangCode2;
   end else begin
     IVr.LangCode = CredManr.LangCode;
