@@ -839,6 +839,10 @@ begin
   KeyBegin(ActComment);
   KeySegment(Comment);
   KeySegment(Code);
+  KeyBegin(PMCode);
+  KeySegment(PMCode);
+  KeySegment(Code);
+  
   EndRecordAdd;
 
 //RecordType - Invoice or payment
