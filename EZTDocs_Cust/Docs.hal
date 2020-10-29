@@ -586,16 +586,13 @@ begin
   CredManr.ClientContact = signername;
   CredManr.CustCode = GetFieldValueByName(CredManr,"SuretyProvider" & num,-1);
   if (GetCredManCustContactRecord(CredManr,SCUr)) then begin
-    SCUr.Code = signercode;
-    if (ReadFirstMain(SCUr,1,true)) then begin
-      signer = SCUr.Name;
-      id = SCUr.RegNr1;
-      saddr0 = SCUr.InvAddr0;
-      saddr1 = SCUr.InvAddr1;
-      saddr2 = SCUr.InvAddr2;
-      saddr3 = SCUr.InvAddr3;
-      saddr4 = SCUr.InvAddr4;
-    end;
+    signer = SCUr.Name;
+    id = SCUr.RegNr1;
+    saddr0 = SCUr.InvAddr0;
+    saddr1 = SCUr.InvAddr1;
+    saddr2 = SCUr.InvAddr2;
+    saddr3 = SCUr.InvAddr3;
+    saddr4 = SCUr.InvAddr4;
   end;
   td = GetFieldValueByName(CredManr,"Surety" & num & "Date",-1);
   if (blank(td)) then begin
