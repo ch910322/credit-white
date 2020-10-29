@@ -231,6 +231,50 @@ begin
 return;
 end;
 
+global
+function Boolean CredManPMCodeMathes(string pmcode,Longint ivnr)
+begin
+  Boolean res;
+  record IVVc IVr;
+  record CredManVc CredManr;
+  record CredManTypeVc CMTr;
+  record BankImportSetBlock BIb;
+
+  res = true;
+  BlockLoad(BIb);
+  if (BIb.CheckCredManPMCode==1) then begin
+    IVr.SerNr = ivnr;
+    if (ReadFirstMain(IVr,1,true)) then begin
+      if (IVr.CustCredManNr>0) then begin
+        CredManr.SerNr = IVr.CustCredManNr;
+        if (ReadFirstMain(CredManr,1,true)) then begin
+          CMTr.Code = CredManr.Type;
+          if (ReadFirstMain(CMTr,1,true)) then begin
+            if (nonblank(CMTr.PMCode) and pmcode!=CMTr.PMCode) then begin
+              res = false;
+            end;
+          end;
+        end;
+      end;
+    end;
+  end;
+  
+  CredManPMCodeMathes = res;
+  return;
+end;
+
+function Boolean ShouldAddInvoiceToIP(record IPVc IPr,record ARVc ARr,Date untildate,val remsum)
+begin
+  Boolean res;
+
+  if (remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate) and CredManPMCodeMathes(IPr.PayMode,ARr.InvoiceNr)) then begin
+    res = true;
+  end;
+
+  ShouldAddInvoiceToIP = res;
+  return;
+end;
+
 global 
 procedure BankFillIProws2(var record IPVc IPr,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,Boolean allf,Date untildate)
 begin
@@ -265,7 +309,7 @@ begin
 			if(ARr.CustCode!=cucode)then begin TrHs = false; end;
 									
 			if(TrHs)then begin
-				if(remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate))then begin
+				if(ShouldAddInvoiceToIP(IPr,ARr,untildate,remsum))then begin
 					
 					primsearch = false;
 					if(BISb.DefSearchInv==0)then begin
@@ -338,7 +382,7 @@ begin
 		while(loopkey("CustCode",ARr,1,TrHs))begin
 			if(ARr.CustCode!=cucode)then begin TrHs = false; end;
 			if(TrHs)then begin
-				if(remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate))then begin
+				if(ShouldAddInvoiceToIP(IPr,ARr,untildate,remsum))then begin
 					primsearch = false;
 					if(BISb.DefSearchInv==1)then begin
 						primsearch = setinset(ARr.InvoiceNr,instr);
@@ -423,7 +467,7 @@ begin
 				if(invused[ARr.InvoiceNr]==true)then begin testf = false; end;
 							
 				if(testf)then begin
-					if(remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate))then begin
+					if(ShouldAddInvoiceToIP(IPr,ARr,untildate,remsum))then begin
 						clearrow(IPr,IPrw,1);
 						IPrw.InvoiceNr = ARr.InvoiceNr;
 						matrowput(IPr,k,IPrw);
@@ -471,7 +515,7 @@ begin
 		ARr.CustCode = "";
 		while(loopkey("CustCode",ARr,1,TrHs))begin												
 			if(TrHs)then begin
-				if(remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate))then begin
+				if(ShouldAddInvoiceToIP(IPr,ARr,untildate,remsum))then begin
 					primsearch = false;
 					if(BISb.DefSearchInv==0)then begin
 						primsearch = setinset(ARr.InvoiceNr,instr);
@@ -542,7 +586,7 @@ begin
 		ARr.CustCode = "";
 		while(loopkey("CustCode",ARr,1,TrHs))begin												
 			if(TrHs)then begin
-				if(remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate))then begin
+				if(ShouldAddInvoiceToIP(IPr,ARr,untildate,remsum))then begin
 					primsearch = false;
 					if(BISb.DefSearchInv==1)then begin
 						primsearch = setinset(ARr.InvoiceNr,instr);

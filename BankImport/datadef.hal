@@ -16,6 +16,7 @@ begin
 		RecordField(DefVEPayModeLUM,M4Code,5,0);
 		RecordField(DefVEPayModeSIA,M4Code,5,0);
 		RecordField(OKIPFlag,M4Int,0,0);
+    RecordField(CheckCredManPMCode,M4Int,0,0);
 	EndBlock;
 	
 
