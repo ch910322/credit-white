@@ -608,7 +608,7 @@ begin
   UseView(SMSReminderVc);
   EditField(h,v,80,"Ser. No.",Normal,SerNr,false,0);
   CheckBox(h2-50,v,0,"Active",ActiveFlag);
-  EditField(h,v+=vs,250,"Comment",Normal,Comment,false,0);
+  EditField(h,v+=vs,180,"Comment",Normal,Comment,false,0);
   EditField(h,v+=vs,100,"Reminder Type",Normal,ReminderType,false,SetSClass);
   EditField(h2,v,70,"Type",Normal,Type,false,SetSClass);
   EditField(h,v+=vs,100,"Days",Normal,Days,false,0);
@@ -641,6 +641,8 @@ begin
   
 
   EditField(h2=420,v=10,-20,"Email Subject",Normal,Subject,false,0);
+  EditField(h2=420,v+=vs,-20,"Standard Text",Normal,StdText,false,LTxtSClass);
+  
   StaticText(h2,v+=30,"Text",false);
   TextField(h2,v+=10,-20,190,Message,0);
 

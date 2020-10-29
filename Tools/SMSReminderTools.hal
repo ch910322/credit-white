@@ -10,9 +10,7 @@ enum begin
   kMaxCheckDays = 5
 end;
 
-
-global
-function string 255 SMSReminderVcReplaceToken(record SMSReminderVc SMSReminder,record RcVc RepSpec,string token)
+function string 255 GetReminderTextToken(record RcVc RepSpec,string token)
 begin
   string 255 res;
   record CYBlock CYb;
@@ -20,6 +18,7 @@ begin
   record CredManVc CMr;
   Longint pos;
   string 255 recname,field;
+ 
 
   if (InString(token,".")) then begin
     GetNextSubString(token,pos,".",recname);
@@ -70,6 +69,39 @@ begin
         res = RepSpec.vals2;
     end;
   end;
+
+  GetReminderTextToken = res;
+  return;
+end;
+
+global
+function string 255 SMSReminderLTxtVcReplaceToken(record LTxtVc LTxtr,record RcVc RepSpec,string token)
+begin
+  string 255 res;
+
+  res = GetReminderTextToken(RepSpec,token);
+
+  SMSReminderLTxtVcReplaceToken = res;
+  return;
+end;
+
+global
+function string 255 SMSReminderEQueueVcReplaceToken(record EMailQueVc emqrp,record RcVc RepSpec,string token)
+begin
+  string 255 res;
+
+  res = GetReminderTextToken(RepSpec,token);
+
+  SMSReminderEQueueVcReplaceToken = res;
+  return;
+end;
+
+global
+function string 255 SMSReminderVcReplaceToken(record SMSReminderVc SMSReminder,record RcVc RepSpec,string token)
+begin
+  string 255 res;
+
+  res = GetReminderTextToken(RepSpec,token);
 
   SMSReminderVcReplaceToken = res;
   return;
@@ -276,7 +308,9 @@ begin
   row EMailQueVc emarw;
   record CYBlock CYb;
   record ARVc ARr;
+  record LTxtVc LTxtr;
   Boolean res;
+  Boolean foundf;
   
   CUr.Code = custcode;
   if (ReadFirstMain(CUr,1,true)) then begin
@@ -299,7 +333,18 @@ begin
     MatRowPut(emqrp,MatRowCnt(emqrp),emarw);
     emqrp.Header = SMSReminder.Subject;
 
-    ParseTextField(a,SMSReminder,RepSpec,"SMSReminderVcReplaceToken");
+    if (nonblank(SMSReminder.StdText)) then begin
+      LTxtr.Code = SMSReminder.StdText;
+      if (ReadFirstMain(LTxtr,1,true)) then begin
+        foundf = true;
+        if (LTxtr.HtmlFlag==0) then begin
+          ParseTextField(a,LTxtr,RepSpec,"SMSReminderLTxtVcReplaceToken");
+        end;
+      end;
+    end;
+    if (foundf==false) then begin
+      ParseTextField(a,SMSReminder,RepSpec,"SMSReminderVcReplaceToken");
+    end;
 
     l = GetAreaLength(a);
     pos = 0;
@@ -322,7 +367,13 @@ begin
     emqrp.QueDate = CurrentDate;
     emqrp.QueTime = CurrentTime;
 
-    if (RecordInsert(emqrp,false)==false) then begin
+    if (RecordInsert(emqrp,false)) then begin
+      if (foundf) then begin
+        CopyRecordLinks(LTxtr,emqrp);
+        if (LTxtr.HtmlFlag==1) then begin
+          ParseHtmlField(emqrp,RepSpec,"SMSReminderEQueueVcReplaceToken");
+        end;
+      end;
     end;
   end;
 
