@@ -766,7 +766,7 @@ begin
   return;
 end;
 
-function Boolean GetNextSurety(record BOESuretyVc BSr,var Integer num)
+function Boolean GetNextSurety(record BOESuretyVc BSr,var record CUVc CUr,var Integer num)
 begin
   Boolean res;
   string 255 code;
@@ -774,6 +774,8 @@ begin
   num = num + 1;
   code = GetFieldValueByName(BSr,"SuretyProvider" & num,-1);
   if (nonblank(code)) then begin
+    CUr.Code = code;
+    if (ReadFirstMain(CUr,1,true)) then begin end;
     res = true;
   end;
 
@@ -785,7 +787,7 @@ global
 procedure ExternalPrintVekselisForm(record CredManVc CredManr,var vector string vVals)
 begin
   string 255 name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,signer,value,td;
-  record CUVc CUr,tCUr;
+  record CUVc CUr,tCUr,SCUr;
   string 255 tstr;
   record CYBlock CYb;
   transaction Longint gBOENumber;
@@ -807,9 +809,11 @@ begin
     BSr.CredManNr = CredManr.SerNr;
     BSr.BOENum = gBOENumber;
     if (ReadFirstMain(BSr,2,true)) then begin
-      while (GetNextSurety(BSr,num)) begin
+      while (GetNextSurety(BSr,SCUr,num)) begin
         M4PadString(num,3,"0",true,strnum);
         vVals["ROW_" & strnum & "_F_BOESURNAME"] = GetFieldValueByName(BSr,"Surety" & num & "Name",-1);
+        vVals["ROW_" & strnum & "_F_BOESURID"] = SCUr.RegNr1;
+        Ext_OutAddress(vVals,"ROW_" & strnum & "_F_BOESURADDRESS",SCUr.Name,SCUr.InvAddr0,SCUr.InvAddr1,SCUr.InvAddr2,SCUr.InvAddr3,SCUr.InvAddr4);
         vVals["ROW_" & strnum & "_F_BOESURPHONE"] = GetFieldValueByName(BSr,"Surety" & num & "Phone",-1);
         vVals["ROW_" & strnum & "_F_BOESUREMAIL"] = GetFieldValueByName(BSr,"Surety" & num & "eMail",-1);
         vVals["ROW_" & strnum & "_F_BOESURVALUE"] = GetFieldValueByName(BSr,"Surety" & num & "Value",-1);
