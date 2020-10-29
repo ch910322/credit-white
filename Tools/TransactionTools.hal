@@ -278,6 +278,8 @@ begin
 
   BlockLoad(CIb);
   if (CIb.UseTypeAccounts==1) then begin
+    shortval = 0;
+    longval = 0;
     GetPrincipleParts(CredManr,shortval,longval);
     CM_GetTransactionDebtorsAcc(CredManr,shortacc,longacc);
   end;
