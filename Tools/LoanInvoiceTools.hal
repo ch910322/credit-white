@@ -671,6 +671,20 @@ begin
   return;
 end;
 
+function Boolean PMCodeMatches(string pmcode,Longint ipnr)
+begin
+  Boolean res;
+  record IPVc IPr;
+
+  IPr.SerNr = ipnr;
+  if (ReadFirstMain(IPr,1,true)) then begin
+    res = (pmcode==IPr.PayMode);
+  end;
+
+  PMCodeMatches = res;
+  return;
+end;
+
 global
 procedure CM_AddPrepayments(var record IVVc IVr,record CMInvoicingBlock CIb)
 begin
@@ -681,27 +695,39 @@ begin
   record IVVc IV2r;
   string 255 warning;
   Boolean chsum;
+  record CredManVc CredManr;
+  record CredManTypeVc CMTr;
+  string 255 pmcode;
   
   if (CIb.AddPrepayments) then begin
     remval = IVr.Sum4;
     TrHs = true;
     ARPayr.CustCode = IVr.CustCode;
+    CredManr.SerNr = IVr.CustCredManNr;
+    if (ReadFirstMain(CredManr,1,true)) then begin
+      CMTr.Code = CredManr.Type;
+      if (ReadFirstMain(CMTr,1,true)) then begin
+        pmcode = CMTr.PMCode;
+      end;
+    end;
     while (LoopKey("CustCode",ARPayr,1,TrHs) and remval>0) begin
       if (ARPayr.CustCode!=IVr.CustCode) then begin
         TrHs = false;
       end else begin
         if (ARPayr.PayDate<=IVr.TransDate) then begin
-          ClearRow(IVr,IVrw,kInvoiceRowTypePrepayment);
-          IVrw.Spec = USetStr(1288);
-          IVrw.CUPNr = ARPayr.CUPNr;
-          PasteARPayInIV(IVr,IVrw,-1);
-          MatRowInsert(IVr,0,IVrw);
-          if IVVc_PasteSum(IVr,0,chsum,1) then begin 
-            if (chsum) then begin
-              IVDchsum(IVr,0);
-            end;
-          end;  
-          remval = remval - IVrw.BasePrice;
+          if (blank(pmcode) or PMCodeMatches(pmcode,ARPayr.IPNr)) then begin
+            ClearRow(IVr,IVrw,kInvoiceRowTypePrepayment);
+            IVrw.Spec = USetStr(1288);
+            IVrw.CUPNr = ARPayr.CUPNr;
+            PasteARPayInIV(IVr,IVrw,-1);
+            MatRowInsert(IVr,0,IVrw);
+            if IVVc_PasteSum(IVr,0,chsum,1) then begin 
+              if (chsum) then begin
+                IVDchsum(IVr,0);
+              end;
+            end;  
+            remval = remval - IVrw.BasePrice;
+          end;
         end;
       end;
     end;

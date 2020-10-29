@@ -35,7 +35,7 @@ external function Boolean AcceptanceStatusColumnTest(string);
 external function Boolean HasLimitedAccess();
 external function Boolean UseTaxTemplatesforTaxCalc();
 external function Boolean HasVarieties();
-external function Boolean HasPayLinkTransactions();
+remote function Boolean HasPayLinkTransactions();
 external function Boolean HasTREO();
 external function Boolean HasApprovals();
 external function Boolean HasCategories();
