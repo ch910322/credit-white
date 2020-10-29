@@ -5,7 +5,7 @@ external procedure ExternalPrintCredManForm(record CredManVc,var vector string);
 external procedure ExternalPrintCredManScheduleForm(record CredManVc,var vector string);
 external procedure ExternalPrintVekselisForm(record CredManVc,var vector string);
 external procedure ExternalPrintSuretyAgreementForm(record CredManVc,var vector string);
-external inner function string 255 CredManOwnBankAccount(Longint);
+external inner function string 255 CredManOwnBankAccount(Longint,var string,var string,var string);
 external inner procedure FindVATCodeRow(string,record VATCodeBlock,var row VATCodeBlock);
 external inner function string 255 StrReplace(string,string,string);
 external function val GetCredManItemValue(record IVVc,string,Boolean);
@@ -102,6 +102,20 @@ begin
     vVals["F_INVOICESIGNERCODE"] = Userr.Code;
   end;
 
+  return;
+end;
+
+global
+procedure ExtPrintOwnBankDetails(var vector string vVals,Longint credmannr)
+begin
+  string 255 bankacc,bankname,bankbic,bankcode;
+
+  bankacc = CredManOwnBankAccount(credmannr,bankname,bankbic,bankcode);
+  vVals["F_CUSTOWNBANKACC"] = bankacc;
+  vVals["F_CUSTOWNBANKNAME"] = bankname;
+  vVals["F_CUSTOWNBANKBIC"] = bankbic;
+  vVals["F_CUSTOWNBANKIDCODE"] = bankcode;
+ 
   return;
 end;
 
@@ -229,7 +243,7 @@ begin
 
   Ext_PrintInvoiceSigner(vVals);
 
-  vVals["F_CUSTOWNBANKACC"] = CredManOwnBankAccount(IVr.CustCredManNr);
+  ExtPrintOwnBankDetails(vVals,IVr.CustCredManNr);
 
   del = ":";
   BlockLoad(CIb);

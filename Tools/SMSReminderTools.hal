@@ -4,7 +4,7 @@ external procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 external inner function Boolean PasteCuInAct(var record ActVc,var string);
 external inner function Boolean PasteActTypeInAct2(string,var record ActVc,var string);
 external updating procedure Cust_SetReminderStatus(record SMSReminderQueueVc,Integer);
-external inner function string 255 CredManOwnBankAccount(Longint);
+external inner function string 255 CredManOwnBankAccount(Longint,var string,var string,var string);
 
 enum begin
   kMaxCheckDays = 5
@@ -614,7 +614,7 @@ begin
   record ARVc ARr;
   row ORVc ORrw;
   record ORVc ORr;
-  string 255 bankacc;
+  string 255 bankacc,bankname,bankbic,bankcode;
 
   for (i=0;i<arrORr.length;i=i+1) begin
     ORr = arrORr[i];
@@ -630,7 +630,7 @@ LAddInvoiceToReminderArr:;
 
   ARr.InvoiceNr = IVr.SerNr;
   ReadFirstMain(ARr,1,true);
-  bankacc = CredManOwnBankAccount(IVr.CustCredManNr);
+  bankacc = CredManOwnBankAccount(IVr.CustCredManNr,bankname,bankbic,bankcode);
   rwcnt = MatRowCnt(ORr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(ORr,i,ORrw);

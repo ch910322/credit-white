@@ -1324,35 +1324,32 @@ begin
   end else begin
     EditField(h2,v,82,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
   end;
-
-  vm2 = v;
-  ButtonFrame(h2,v+=60,82,3,"Days in Month");
-  RadioButton(h2,v,0,0,"Default",DaysInMonth);
-  RadioButton(h2,v+=16,1,0,"30",DaysInMonth);
-  RadioButton(h2,v+=16,2,0,"Actual",DaysInMonth); 
-
-  v=vm2+vs;
+  EditField(h,v+=vs,40,"Payment Mode",Normal,PMCode,false,PMSClass);
   if (UseBuyOutMonths==false) then begin
     EditField(h2,v,82,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
   end;
   
-  h2 = 330;
-  h2 = h2 + 110;
-  CheckBox(h2,v,0,"Closed",Closed);
+  h2 = 440;
   EditField(h,v+=vs,150,"Classifications",Normal,Classifications,false,CredManClassSClass);
-  CheckBox(h2,v,0,"Annual Rate",AnnualRate);
-  EditField(h,vm2=(v+=vs),150,"Bank Account",Normal,OwnBankAccount,false,0);
+//  EditField(h,v+=vs,150,"Bank Account",Normal,OwnBankAccount,false,0);
 
 
   if (UseCredManStatus) then begin
-    EditField(h,vm2=(v+=vs),150,"Pause Offset Days",Normal,PauseOffsetDays,false,0);
+    EditField(h,v+=vs,150,"Pause Offset Days",Normal,PauseOffsetDays,false,0);
   end;
-  EditField(h,vm2=(v+=vs),100,"Default Item Priority",Normal,ItemPriorityCode,false,CMItemPrioritySCLass);  
+  EditField(h,v+=vs,100,"Default Item Priority",Normal,ItemPriorityCode,false,CMItemPrioritySCLass);  
   CheckBox(h,v+=16,0,"Last Principle Value adds last Calculated value",LastPrincipleWithExtraMonth);
-
+  CheckBox(h,v+=16,0,"Annual Rate",AnnualRate);
+  CheckBox(h,v+=16,0,"Closed",Closed);
+  vm2 = v;
   EditField(h2+150,v=vm-20,-40,"Minimum Overdue Fee",Normal,MinOverdueFee,false,0);
   vm = vm + 20;
+  ButtonFrame(h2,v=vm,270,2,"Interest according to Money Transfer Date");
+  RadioButton(h2,v,0,0,"No",RealInterestFlag);
+  RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
+
   //CUST-END
+  vm = v+40;
   ButtonFrame(h2,v=vm,150,2,"Late Interest Based On");
   RadioButton(h2,v,0,0,"Due Date",LateRateOption);
   RadioButton(h2,v+=16,1,0,"Trans. Date",LateRateOption);
@@ -1361,12 +1358,17 @@ begin
   RadioButton(h2,v,1,0,"Running Principle",ChargeMethod);
   RadioButton(h2,v+=16,0,0,"Initial Principle",ChargeMethod);
 
+  ButtonFrame(h2,v+=40,82,3,"Days in Month");
+  RadioButton(h2,v,0,0,"Default",DaysInMonth);
+  RadioButton(h2,v+=16,1,0,"30",DaysInMonth);
+  RadioButton(h2,v+=16,2,0,"Actual",DaysInMonth); 
+
   ButtonFrame(h3=h2+170,v=vm,80,3,"Overdue Rate");
   RadioButton(h3,v,0,0,"Default",OverdueRateType);
   RadioButton(h3,v+=16,1,0,"Daily",OverdueRateType);
   RadioButton(h3,v+=16,2,0,"Monthly",OverdueRateType);
 
-  ButtonFrame(h3,v+=40,100,6,"Type");
+  ButtonFrame(h3,v+=40,100,1,"Type");
   RadioButton(h3,v,0,0,"Not set",LoanType);
   vm3 = v;
   if (ISb.ShowLoanType1==1) then begin
@@ -1391,13 +1393,11 @@ begin
     v = vm3;
   end;
   EndFrame;
-  ButtonFrame(h2,v+=40,270,2,"Interest according to Money Transfer Date");
-  RadioButton(h2,v,0,0,"No",RealInterestFlag);
-  RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
-
+/*
   if (v>vm2) then begin
     vm2 = v;
   end;
+*/
 //CUST-END
 /*
   ButtonFrame(h=50,vm=(v+=45),140,2,"Default Interest Type");

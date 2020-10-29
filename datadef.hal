@@ -829,7 +829,7 @@ begin
   RecordField(BuyoutFeeMonths,M4Long,0,0);
   RecordField(ItemPriorityCode,M4Code,20,0);
   RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
-
+  RecordField(PMCode,M4Code,20,0);
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
   ChangeMatrixField(vRebate,M4Rate,0,0);
