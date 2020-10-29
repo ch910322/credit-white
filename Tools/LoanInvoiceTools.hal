@@ -1175,9 +1175,6 @@ begin
   row SMVc SMrw;
 
   rate = CredManr.BuyoutFeePrc;
-  if (CredManr.AnnualRate==1) then begin
-    rate = rate/12;
-  end;
   res = (CredManr.InvSum4 - CredManr.DepositSum) *(rate/100);
   res = res + CredManr.BuyoutFeeFixed;
 
