@@ -2868,6 +2868,28 @@ begin
   EndWindow;
 end;
 
+window CredManChange2LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Changes",CredManChange2LClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManChangeDClass);
+  UseView(CredManChangeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Ser. No.",SerNr,false,CredSerNr);
+  RlCol(70,70,"Agr. No.",CredManNr,false);
+  RlCol(146,146,"Date",TransDate,false);
+  RlCol(222,222,"Prol. Months",ProlongMonths,false);
+  RlCol(300,300,"Pause Months",PauseMonths,false);
+  RlCol(-180,-180,"Rate",IntRate,false);
+  RlCol(-130,-130,"Ovrd. Prc.",OverduePercentage,false);
+  RlCol(-90,-90,"Pmt Day",MonthlyPaymentDay,false);
+  RlColTL(-30,-30,"OK",M4Mark,OKFlag,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
 window CredManChangeDClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin

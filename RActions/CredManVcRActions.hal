@@ -606,14 +606,32 @@ BEGIN
   return;
 END;
 
-updating
-procedure RemoveCredManSchedule(Longint sernr)
+updating procedure RemoveCredManSchedule(Longint sernr)
 begin
   record CredManSchedVc CSr;
 
   CSr.CredManNr = sernr;
   if (ReadFirstMain(CSr,1,true)) then begin
     RecordRemove(CSr);
+  end;
+
+  return;
+end;
+
+updating procedure RemoveCredManChanges(Longint sernr)
+begin
+  record CredManChangeVc Changer;
+  Boolean TrHs;
+
+  TrHs = true;
+  Changer.CredManNr = sernr;
+  while (LoopKey("CredManDate",Changer,1,TrHs)) begin
+    if (Changer.CredManNr!=sernr) then begin
+      TrHs = false;
+    end else begin
+      RecordDelete(Changer);
+      StepBack(Changer);
+    end;
   end;
 
   return;
@@ -628,6 +646,7 @@ begin
   
   ClearAgreementDocRecords(CredManr.SerNr,0);
   RemoveCredManSchedule(CredManr.SerNr);
+  RemoveCredManChanges(CredManr.SerNr);
   if (nonblank(CredManr.OfficialSerNr)) then begin
     DeleteCredOffSerNr(CredManr.SerNr,"CredManVc");
   end;

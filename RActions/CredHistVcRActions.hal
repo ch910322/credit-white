@@ -51,6 +51,60 @@ begin
 end;
 
 global
+updating procedure ApprovePauseRecord(Longint sernr,Date td,Date nd,Integer months)
+begin
+  record CredManChangeVc Changer,oldChanger;
+  Boolean TrHs;
+
+  TrHs = true;
+  Changer.CredManNr = sernr;
+  Changer.TransDate = td;
+  while (LoopKey("CredManDate",Changer,2,TrHs)) begin
+    if (Changer.CredManNr!=sernr or Changer.TransDate!=td) then begin
+      TrHs = false;
+    end else begin
+      if (Changer.PauseMonths==months) then begin
+        RecordCopy(oldChanger,Changer);
+        Changer.OKFlag = 1;
+        if (nonblank(nd) and Changer.TransDate<nd) then begin
+          Changer.TransDate = nd;
+        end;
+        RecordUpdate(oldChanger,Changer,false);
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+global
+updating procedure ApproveProlongRecord(Longint sernr,Date td,Date nd,Integer months)
+begin
+  record CredManChangeVc Changer,oldChanger;
+  Boolean TrHs;
+
+  TrHs = true;
+  Changer.CredManNr = sernr;
+  Changer.TransDate = td;
+  while (LoopKey("CredManDate",Changer,2,TrHs)) begin
+    if (Changer.CredManNr!=sernr or Changer.TransDate!=td) then begin
+      TrHs = false;
+    end else begin
+      if (Changer.ProlongMonths==months) then begin
+        RecordCopy(oldChanger,Changer);
+        Changer.OKFlag = 1;
+        if (nonblank(nd) and Changer.TransDate<nd) then begin
+          Changer.TransDate = nd;
+        end;
+        RecordUpdate(oldChanger,Changer,false);
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+global
 function Integer GetProlongMonths(record CredManVc CredManr)
 begin
   record CredManChangeVc Changer;
@@ -75,11 +129,36 @@ begin
   return;
 end;
 
-updating procedure FinishProlongSession(Longint sernr)
+function Date GetInvoicePaidDate(Longint histnr)
+begin
+  record CredHistVc CredHistr;
+  Boolean TrHs;
+  Date res;
+  
+  TrHs = true;
+  CredHistr.PreviousNr = histnr;
+  while (LoopKey("PreviousNr",CredHistr,1,TrHs)) begin
+    if (CredHistr.PreviousNr!=histnr) then begin
+      TrHs = false;
+    end else begin
+      if (CredHistr.RecordType!=0) then begin
+        if (CredHistr.TransDate>res) then begin
+          res = CredHistr.TransDate;
+        end;
+      end;
+    end;
+  end;
+
+  GetInvoicePaidDate = res;
+  return;
+end;
+
+updating procedure FinishProlongSession(Longint sernr,Longint histnr)
 begin
   record ProlongSessionVc PSr,oldPSr;
   record CredManVc CredManr,oldCredManr;
   record AgreementDocVc ADr;
+  Date ndate;
   
   PSr.CredManNr = sernr;
   PSr.PaidFlag = 0;
@@ -87,21 +166,20 @@ begin
     if (PSr.ProlongWhenPaid==1) then begin
       CredManr.SerNr = sernr;
       if (ReadFirstMain(CredManr,1,true)) then begin
-        //RecordCopy(oldCredManr,CredManr);
+        ndate = GetInvoicePaidDate(histnr);
+        RecordCopy(oldCredManr,CredManr);
         if (PSr.PauseMonths>0) then begin
-          CreatePauseRecord(CredManr.SerNr,PSr.PauseDate,PSr.PauseMonths,1);
+          ApprovePauseRecord(CredManr.SerNr,PSr.PauseDate,ndate,PSr.PauseMonths);
         end;
         if (PSr.ProlongMonths>0) then begin
-          CreatePauseRecord(CredManr.SerNr,PSr.ProlongDate,PSr.ProlongMonths,1);
+          ApproveProlongRecord(CredManr.SerNr,PSr.ProlongDate,ndate,PSr.ProlongMonths);
         end;
-        /*
         CredManSetDatesCust(CredManr,false);
         if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
-          if (PSr.RecalcSchedule == 1) then begin
+          if (PSr.RecalcSchedule==1) then begin
             RecreateAgreementSchedule2(CredManr,true);
           end;
         end;
-        */
       end;
     end;
     RecordCopy(oldPSr,PSr);
@@ -201,7 +279,7 @@ begin
   
   if (CredHistr.PaidFlag==1 and CredHist2r.PaidFlag==0) then begin
     if (CredHist2r.ChargeType==14) then begin//prolong session
-      FinishProlongSession(CredHist2r.CredManNr);
+      FinishProlongSession(CredHistr.CredManNr,CredHistr.SerNr);
     end;
     CredManr.SerNr = CredHistr.CredManNr;
     if (ReadFirstMain(CredManr,1,true)) then begin

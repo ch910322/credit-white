@@ -1764,6 +1764,10 @@ begin
   KeySegment(CredManNr);
   KeySegment(TransDate);
   KeySegment(SerNr);
+  SubsetKeyBegin2(CredSerNr);
+  StoreInBaseKey;
+  AppendFieldToKeyName(CredManNr);
+  KeySegment(SerNr);
   
   EndRecord;  
 

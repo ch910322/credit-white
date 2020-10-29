@@ -363,7 +363,7 @@ begin
         if (months>0) then begin
           CreatePauseRecord(CredManr.SerNr,td,months,1);
         end;
-        if (prolongmonths>=0) then begin
+        if (prolongmonths>0) then begin
           CreateProlongRecord(CredManr.SerNr,td,prolongmonths,1);
         end;
         CredManSetDatesCust(CredManr,false);
@@ -379,6 +379,13 @@ begin
         end;
         */
         setf = true;
+      end else begin
+        if (months>0) then begin
+          CreatePauseRecord(CredManr.SerNr,td,months,0);//not approved
+        end;
+        if (prolongmonths>0) then begin
+          CreateProlongRecord(CredManr.SerNr,td,prolongmonths,0);//not approved
+        end;
       end;
       res = true;      
     end;
@@ -1615,5 +1622,20 @@ begin
     end;
   end;
 
+  return;
+end;
+
+global
+function Boolean HasCredManChanges(record CredManVc CredManr)
+begin
+  record CredManChangeVc Changer;
+  Boolean res;
+
+  Changer.CredManNr = CredManr.SerNr;
+  if (ReadFirstKey("CredManDate",Changer,1,true)) then begin
+    res = true;
+  end;
+
+  HasCredManChanges = res;
   return;
 end;

@@ -1816,6 +1816,19 @@ begin
 end;
 
 global
+procedure CredManDClassOpenChanges()
+begin
+  record CredManChangeVc Changer; 
+  Integer wn;
+  record CredManVc CredManr; 
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  OpenWindow("CredManChange2LClass",1,0,CredManr.SerNr,"",Changer);
+  return;
+end;
+
+global
 updating procedure CredManDClassBOESurety()
 begin
   record CredManVc CredManr;

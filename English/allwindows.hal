@@ -63,6 +63,8 @@ external outer function Boolean HideLeasingSeller();
 external outer function Boolean HideLoanPledges();
 external outer function Boolean HasMoneyReceivers();
 remote function Boolean ExternalDocumentEnabled(string);
+remote outer function Boolean HasCredManChanges(record CredManVc);
+
 //CUST-END
 
 window CUDClass:14
@@ -673,9 +675,14 @@ begin
 //CUST-BEGIN
   EditField(h+90,v,50,"",ViewOnly,VersionNo,false,0);
   EditField(h2,v,150,"Legal No.",Normal,OfficialSerNr,false,CredLegalNrSerNrSClass);
+  if (HasCredManChanges(CredManr)) then begin
+    ColourPushButton(h3,v+3,h3+100,v+23,"CredManDClassOpenChanges","Agr. Changes",kButtonColourGreen);
+  end else begin
+    HalPushButton(h3,v+3,h3+100,v+23,"CredManDClassOpenChanges","Agr. Changes");    
+  end;
 //CUST-END
   EditField(h,v+=vs,82,"Type",Normal,Type,false,CredManTypeSClass);
-  EditField(h2,v,n,"Interest",Normal,InstalmentType,false,SetSClass);
+  EditField(h2,v,150,"Interest",Normal,InstalmentType,false,SetSClass);
   EditField(h,v+=vs,82, "Customer",Normal,CustCode,false,CUSClass);
   EnterSkip(InvSum4);
   EditField(h2,v,n,"Name",Normal,Addr0,false,0);
