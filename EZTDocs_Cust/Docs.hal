@@ -809,16 +809,17 @@ begin
 
     BSr.CredManNr = CredManr.SerNr;
     BSr.BOENum = gBOENumber;
-    while (GetNextSurety(BSr,num)) begin
-      M4PadString(num,3,"0",true,strnum);
-      vVals["ROW_" & strnum & "_F_BOESURNAME"] = GetFieldValueByName(BSr,"Surety" & num & "Name",-1);
-      vVals["ROW_" & strnum & "_F_BOESURPHONE"] = GetFieldValueByName(BSr,"Surety" & num & "Phone",-1);
-      vVals["ROW_" & strnum & "_F_BOESUREMAIL"] = GetFieldValueByName(BSr,"Surety" & num & "eMail",-1);
-      vVals["ROW_" & strnum & "_F_BOESURVALUE"] = GetFieldValueByName(BSr,"Surety" & num & "Value",-1);
-      vVals["ROW_" & strnum & "_F_BOESURSIGNER"] = GetFieldValueByName(BSr,"Surety" & num & "Singer",-1);
-      vVals["ROW_" & strnum & "_F_BOESURDATE"] = GetFieldValueByName(BSr,"Surety" & num & "Date",-1);
+    if (ReadFirstMain(BSr,1,true)) then begin
+      while (GetNextSurety(BSr,num)) begin
+        M4PadString(num,3,"0",true,strnum);
+        vVals["ROW_" & strnum & "_F_BOESURNAME"] = GetFieldValueByName(BSr,"Surety" & num & "Name",-1);
+        vVals["ROW_" & strnum & "_F_BOESURPHONE"] = GetFieldValueByName(BSr,"Surety" & num & "Phone",-1);
+        vVals["ROW_" & strnum & "_F_BOESUREMAIL"] = GetFieldValueByName(BSr,"Surety" & num & "eMail",-1);
+        vVals["ROW_" & strnum & "_F_BOESURVALUE"] = GetFieldValueByName(BSr,"Surety" & num & "Value",-1);
+        vVals["ROW_" & strnum & "_F_BOESURSIGNER"] = GetFieldValueByName(BSr,"Surety" & num & "Singer",-1);
+        vVals["ROW_" & strnum & "_F_BOESURDATE"] = GetFieldValueByName(BSr,"Surety" & num & "Date",-1);
+      end;
     end;
-
   end else begin
     GetSuretyValues2(CredManr,1,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
     vVals["F_CONTACTNAME"] = name;
