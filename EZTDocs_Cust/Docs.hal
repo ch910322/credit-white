@@ -809,7 +809,7 @@ begin
 
     BSr.CredManNr = CredManr.SerNr;
     BSr.BOENum = gBOENumber;
-    if (ReadFirstMain(BSr,1,true)) then begin
+    if (ReadFirstMain(BSr,2,true)) then begin
       while (GetNextSurety(BSr,num)) begin
         M4PadString(num,3,"0",true,strnum);
         vVals["ROW_" & strnum & "_F_BOESURNAME"] = GetFieldValueByName(BSr,"Surety" & num & "Name",-1);
