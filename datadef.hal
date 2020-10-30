@@ -1049,7 +1049,7 @@ begin
 
   SubsetKeyBegin2(ReminderInvoiceList);
   StoreInBaseKey;
-  AppendFieldToKeyName(InvoiceList);
+  AppendListFieldToKeyName(InvoiceList);
   KeySegment(ReminderNr);
   KeySegment(SerNr);
  

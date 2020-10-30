@@ -549,6 +549,7 @@ begin
 
   RecordNew(SRQr);
   SRQr.SerNr = NextSerNr("SMSReminderQueueVc",CurrentDate,-1,false,"");
+
   SRQr.InvoiceList = ORr.Addr1;
   SRQr.InvDate = CurrentDate;
   SRQr.ReminderNr = SMSReminder.SerNr;
@@ -564,7 +565,7 @@ begin
   end else begin
     sentf = DoSendEmailReminder(SMSReminder,RepSpec,ORr.CustCode);
   end;
- 
+
   if (!sentf) then begin
     SRQr.SentFlag = 3;
     RecordStore(SRQr,true);
@@ -624,6 +625,7 @@ begin
     end;
   end;
   num = arrORr.length;
+  RecordClear(ORr);
   ORr.CustCode = IVr.CustCode;
   ORr.Addr0 = IVr.Addr0;
 LAddInvoiceToReminderArr:;
@@ -738,7 +740,7 @@ begin
             if (SetInSet(ARr.InvoiceNr,ORr.Addr1)==false) then begin
               IVr.SerNr = ARr.InvoiceNr;
               if (ReadFirstMain(IVr,1,true)) begin
-                AddInvoiceToReminderArr(IVr,arrORr);
+               AddInvoiceToReminderArr(IVr,arrORr);
               end;
             end;
           end;

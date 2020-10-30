@@ -1,7 +1,7 @@
 remote procedure GetScheduleTotals(record CredManSchedVc,var val,var val,var val,var val,var val,var Date,var Date);
 
 global
-updating function LongInt CredManSchedVcRecordCheckClient(Integer wn,var record CredManSchedVc CSr,record CredManSchedVc CS2r,LongInt stat,LongInt long4)
+updating function LongInt CredManSchedVcRecordCheckClient(Longint wn,var record CredManSchedVc CSr,record CredManSchedVc CS2r,LongInt stat,LongInt long4)
 begin
   Longint res;
   record RcVc RepSpec;
