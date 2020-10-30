@@ -337,6 +337,7 @@ begin
   RecordField(AutoPauseCredManTime,M4Time,0,0);
   RecordField(AutoSuretyOfficalNr,M4Int,0,0);
   RecordField(AutoSuretySerie,M4Str,10,0);
+  RecordField(CityAgreementClassType,M4Code,20,0);
   EndBlock;
   
   RecordAddBegin(CUVc,"CredCUVc");
@@ -666,6 +667,7 @@ begin
 
   RecordField(BuyoutFeeMonths,M4Long,0,0);
   RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
+  RecordField(DaysInMonth,M4Int,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -830,6 +832,16 @@ begin
   RecordField(ItemPriorityCode,M4Code,20,0);
   RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
   RecordField(PMCode,M4Code,20,0);
+
+  RecordField(VekselisShortCEO1,M4Int,0,0);
+  RecordField(VekselisShortCEO2,M4Int,0,0);
+  RecordField(VekselisShortSurety,M4Int,0,0);
+  RecordField(VekselisShortUs,M4Int,0,0);
+  RecordField(VekselisShortLangCode,M4Code,10,0);
+
+  RecordField(VekselisShortMonths,M4Long,0,0);
+  RecordField(VekselisExtraMonths,M4Long,0,0);
+
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
   ChangeMatrixField(vRebate,M4Rate,0,0);
@@ -1324,6 +1336,14 @@ begin
   RecordBegin(CredManClassVc,-,"");
   RecordField(Code,M4Code,20,0);
   RecordField(Comment,M4Str,250,0);
+  RecordField(Type,M4Code,20,0);
+  MainKeyBegin(Code,0);
+  KeySegment(Code);
+  EndRecord;
+
+  RecordBegin(CredManClassTypeVc,-,"");
+  RecordField(Code,M4Code,20,0);
+  RecordField(Comment,M4Str,250,0);
   MainKeyBegin(Code,0);
   KeySegment(Code);
   EndRecord;
@@ -1750,6 +1770,8 @@ begin
   RecordField(ShowMoneyTransferDate,M4Int,0,0);
   RecordField(DefCredManLoanType,M4Int,0,0);
   RecordField(ShowLoanType6,M4Int,0,0);
+  RecordField(ShowRealInterestFlag,M4Int,0,0);
+  RecordField(UseCredManDaysInMonth,M4Int,0,0);
   EndBlock;
 
   RecordBegin(CredManChangeVc,-,"");

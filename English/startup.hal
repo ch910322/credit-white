@@ -37,6 +37,7 @@ begin
   Setting("Automatic Order Classes",CMOrderClassTClass,modCredMan);
   Setting("Receipt Entry",ReceiptEntryWClass,modSL);
   Setting("Agreement Classifications",CredManClassLClass,modCredMan);
+  Setting("Agreement Classification Types",CredManClassTypeLClass,modCredMan);
   Setting("Prolong Sessions",ProlongSessionLClass,modCredMan);
   Setting("Legal Record Numbers",CredLegalInvNrTClass,modCredMan);
   Setting("Property Types",CMPropertyTypeLClass,modCredMan);

@@ -51,6 +51,7 @@ external function string 255 GetCredManNr(Longint);
 external inner function string 255 StrReplace(string,string,string);
 external function val GetCustomerOpenAmount(string,record IVVc);
 external function Integer GetProlongMonths(record CredManVc);
+external function string 255 DateInWords(Date,string);
 
 procedure GetCredManCustContact(record CredManVc CredManr,var string contactid,var string contactname)
 begin
@@ -571,7 +572,7 @@ begin
   return;
 end;
 
-procedure GetSuretyValues3(record CredManVc CredManr,Integer num,var string name,var string phone,var string mobile,var string email,var string id,var string addr0,var string addr1,var string addr2,var string addr3,var string addr4,var string saddr0,var string saddr1,var string saddr2,var string saddr3,var string saddr4,var string value,var string signer,var string td)
+procedure GetSuretyValues3(record CredManVc CredManr,Integer num,var string name,var string phone,var string mobile,var string email,var string id,var string addr0,var string addr1,var string addr2,var string addr3,var string addr4,var string saddr0,var string saddr1,var string saddr2,var string saddr3,var string saddr4,var string value,var string signer,var string td,var string idcard,var string iddate)
 begin
   record CUVc CUr,SCUr;
   string 255 signercode,signername;
@@ -583,13 +584,27 @@ begin
   //id = GetFieldValueByName(CredManr,"Surety" & num & "ID",-1);
   value = GetFieldValueByName(CredManr,"Surety" & num & "Amount",-1);
   signername = GetFieldValueByName(CredManr,"Surety" & num & "Signer",-1);
-  CredManr.ClientContact = signername;
-  CredManr.CustCode = GetFieldValueByName(CredManr,"SuretyProvider" & num,-1);
-  if (GetCredManCustContactRecord(CredManr,SCUr)) then begin
-    SCUr.Code = signercode;
+  if (nonblank(signername)) then begin
+    CredManr.ClientContact = signername;
+    CredManr.CustCode = GetFieldValueByName(CredManr,"SuretyProvider" & num,-1);
+    if (GetCredManCustContactRecord(CredManr,SCUr)) then begin
+      signer = SCUr.Name;
+      id = SCUr.RegNr1;
+      idcard = SCUr.UserStr1;
+      iddate = SCUr.UserStr2;
+      saddr0 = SCUr.InvAddr0;
+      saddr1 = SCUr.InvAddr1;
+      saddr2 = SCUr.InvAddr2;
+      saddr3 = SCUr.InvAddr3;
+      saddr4 = SCUr.InvAddr4;
+    end;
+  end else begin
+    SCUr.Code = GetFieldValueByName(CredManr,"SuretyProvider" & num,-1);
     if (ReadFirstMain(SCUr,1,true)) then begin
       signer = SCUr.Name;
       id = SCUr.RegNr1;
+      idcard = SCUr.UserStr1;
+      iddate = SCUr.UserStr2;
       saddr0 = SCUr.InvAddr0;
       saddr1 = SCUr.InvAddr1;
       saddr2 = SCUr.InvAddr2;
@@ -608,6 +623,8 @@ begin
     addr2 = CUr.InvAddr2;
     addr3 = CUr.InvAddr3;
     addr4 = CUr.InvAddr4;
+    mobile = CUr.Mobile;
+    email = CUr.eMail;
   end else begin
     addr0 = ""; addr1 = ""; addr2 = ""; addr3 = ""; addr4 = ""; 
   end;
@@ -642,6 +659,30 @@ begin
   return;
 end;
 
+function string 255 GetCredManCity(record CredManVc CredManr)
+begin
+  string 255 res,tstr;
+  record CredManClassVc Classr;
+  record CMApplicationSetBlock CMb;
+  Longint pos;
+
+  BlockLoad(CMb);
+  if (nonblank(CMb.CityAgreementClassType)) then begin
+    while (GetNextSubString(CredManr.Classifications,pos,",",tstr)) begin
+      Classr.Code = tstr;
+      if (ReadFirstMain(Classr,1,true)) then begin
+        if (Classr.Type==CMb.CityAgreementClassType) then begin
+          res = Classr.Comment;
+          goto LGetCredManCity;
+        end;
+      end;
+    end;
+  end;
+LGetCredManCity:;
+  GetCredManCity = res;
+  return;
+end;
+
 /*real surety agreement*/
 global
 procedure ExternalPrintSuretyAgreementForm(record CredManVc CredManr,var vector string vVals)
@@ -652,7 +693,7 @@ begin
   val calcfees,fixfees;
   transaction Longint gSuretyNumber;
   record UserVc Userr;
-  string 255 saddr0,saddr1,saddr2,saddr3,saddr4;
+  string 255 saddr0,saddr1,saddr2,saddr3,saddr4,idcard,iddate;
 
   Ext_CommonDocumentFields(vVals);
 
@@ -681,7 +722,7 @@ begin
     vVals["F_CONTACT3ID"] = id;
     Ext_OutAddress(vVals,"F_CONTACT3ADRESS",name,addr0,addr1,addr2,addr3,addr4);
   end else begin
-    GetSuretyValues3(CredManr,gSuretyNumber,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,saddr0,saddr1,saddr2,saddr3,saddr4,value,signer,td);
+    GetSuretyValues3(CredManr,gSuretyNumber,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,saddr0,saddr1,saddr2,saddr3,saddr4,value,signer,td,idcard,iddate);
     vVals["F_CONTACTNAME"] = name;
     vVals["F_CONTACTPHONE"] = phone;
     vVals["F_CONTACTMOBILE"] = mobile;
@@ -690,6 +731,8 @@ begin
     vVals["F_CONTACTVALUE"] = value;
     vVals["F_CONTACTSIGNER"] = signer;
     vVals["F_CONTACTDATE"] = td;
+    vVals["F_CONTACTIDCARD"] = idcard;
+    vVals["F_CONTACTIDCARDDATE"] = iddate;
     Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
     Ext_OutAddress(vVals,"F_CONTACTSIGNERADRESS",name,saddr0,saddr1,saddr2,saddr3,saddr4);
   end;
@@ -724,6 +767,7 @@ begin
 
   Ext_PrintDocumentSigner(vVals);
   vVals["F_CREDHALFSUM"] = (CredManr.InvSum4/2);
+  vVals["F_CREDCUSTCITY"] = GetCredManCity(CredManr);
   ValToText((CredManr.InvSum4/2),M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
   vVals["F_CREDHALFSUMTEXT"] = tstr;
 
@@ -769,7 +813,7 @@ begin
   return;
 end;
 
-function Boolean GetNextSurety(record BOESuretyVc BSr,var Integer num)
+function Boolean GetNextSurety(record BOESuretyVc BSr,var record CUVc CUr,var Integer num)
 begin
   Boolean res;
   string 255 code;
@@ -777,6 +821,8 @@ begin
   num = num + 1;
   code = GetFieldValueByName(BSr,"SuretyProvider" & num,-1);
   if (nonblank(code)) then begin
+    CUr.Code = code;
+    if (ReadFirstMain(CUr,1,true)) then begin end;
     res = true;
   end;
 
@@ -788,13 +834,16 @@ global
 procedure ExternalPrintVekselisForm(record CredManVc CredManr,var vector string vVals)
 begin
   string 255 name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,signer,value,td;
-  record CUVc CUr,tCUr;
+  record CUVc CUr,tCUr,SCUr;
   string 255 tstr;
   record CYBlock CYb;
   transaction Longint gBOENumber;
   record BOESuretyVc BSr;
   Integer num;
   string 255 strnum;
+  record CredManTypeVc CMTr;
+  Date enddate;
+
 
   Ext_CommonDocumentFields(vVals);
 
@@ -809,16 +858,19 @@ begin
 
     BSr.CredManNr = CredManr.SerNr;
     BSr.BOENum = gBOENumber;
-    while (GetNextSurety(BSr,num)) begin
-      M4PadString(num,3,"0",true,strnum);
-      vVals["ROW_" & strnum & "_F_BOESURNAME"] = GetFieldValueByName(BSr,"Surety" & num & "Name",-1);
-      vVals["ROW_" & strnum & "_F_BOESURPHONE"] = GetFieldValueByName(BSr,"Surety" & num & "Phone",-1);
-      vVals["ROW_" & strnum & "_F_BOESUREMAIL"] = GetFieldValueByName(BSr,"Surety" & num & "eMail",-1);
-      vVals["ROW_" & strnum & "_F_BOESURVALUE"] = GetFieldValueByName(BSr,"Surety" & num & "Value",-1);
-      vVals["ROW_" & strnum & "_F_BOESURSIGNER"] = GetFieldValueByName(BSr,"Surety" & num & "Singer",-1);
-      vVals["ROW_" & strnum & "_F_BOESURDATE"] = GetFieldValueByName(BSr,"Surety" & num & "Date",-1);
+    if (ReadFirstMain(BSr,2,true)) then begin
+      while (GetNextSurety(BSr,SCUr,num)) begin
+        M4PadString(num,3,"0",true,strnum);
+        vVals["ROW_" & strnum & "_F_BOESURNAME"] = GetFieldValueByName(BSr,"Surety" & num & "Name",-1);
+        vVals["ROW_" & strnum & "_F_BOESURID"] = SCUr.RegNr1;
+        Ext_OutAddress(vVals,"ROW_" & strnum & "_F_BOESURADDRESS",SCUr.Name,SCUr.InvAddr0,SCUr.InvAddr1,SCUr.InvAddr2,SCUr.InvAddr3,SCUr.InvAddr4);
+        vVals["ROW_" & strnum & "_F_BOESURPHONE"] = GetFieldValueByName(BSr,"Surety" & num & "Phone",-1);
+        vVals["ROW_" & strnum & "_F_BOESUREMAIL"] = GetFieldValueByName(BSr,"Surety" & num & "eMail",-1);
+        vVals["ROW_" & strnum & "_F_BOESURVALUE"] = GetFieldValueByName(BSr,"Surety" & num & "Value",-1);
+        vVals["ROW_" & strnum & "_F_BOESURSIGNER"] = GetFieldValueByName(BSr,"Surety" & num & "Singer",-1);
+        vVals["ROW_" & strnum & "_F_BOESURDATE"] = GetFieldValueByName(BSr,"Surety" & num & "Date",-1);
+      end;
     end;
-
   end else begin
     GetSuretyValues2(CredManr,1,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
     vVals["F_CONTACTNAME"] = name;
@@ -895,6 +947,19 @@ begin
   end else begin
     vVals["F_ANNUALRATE"] = Round(CredManr.IntRate*12,SetRoundModeD(2)) & " %";
   end;
+  
+  CMTr.Code = CredManr.Type;
+  if (ReadFirstMain(CMTr,1,true)) then begin end;
+  
+  enddate = CredManr.startDate;
+  enddate = AddMonth(enddate,CredManr.InstalmentMonths);
+  if (CMTr.VekselisExtraMonths>-1) then begin
+    enddate = AddMonth(enddate,CMTr.VekselisExtraMonths);
+  end;
+
+  tstr = DateInWords(enddate,CredManr.LangCode);
+  vVals["F_ENDDATE2"] = enddate;
+  vVals["F_ENDDATE2INWORDS"] = tstr;
 
   Ext_PrintDocumentSigner(vVals);
 

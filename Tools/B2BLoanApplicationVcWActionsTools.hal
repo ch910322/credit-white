@@ -327,6 +327,7 @@ begin
       CredManr.BuyoutFeeFixed = CMTr.BuyoutFeeFixed;
       CredManr.BuyoutFeePrc = CMTr.BuyoutFeePrc;
       CredManr.BuyoutFeeMonths = CMTr.BuyoutFeeMonths;
+      CredManr.DaysInMonth = CMTr.DaysInMonth;
     end else begin  
       CredManr.PayDeal = CUr.PayDeal;
     end;

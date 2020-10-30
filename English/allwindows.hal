@@ -64,6 +64,7 @@ external outer function Boolean HideLoanPledges();
 external outer function Boolean HasMoneyReceivers();
 remote function Boolean ExternalDocumentEnabled(string);
 remote outer function Boolean HasCredManChanges(record CredManVc);
+external outer function Boolean HasBillOfExchangeShort();
 
 //CUST-END
 
@@ -985,9 +986,18 @@ begin
   RadioButton(h2,v,0,0,"Due Date",LateRateOption);
   RadioButton(h2,v+=16,1,0,"Trans. Date",LateRateOption);
 
-  ButtonFrame(h2,v+=40,150,2,"Int. based on Money Trans.");
-  RadioButton(h2,v,0,0,"No",RealInterestFlag);
-  RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
+  if (ISb.ShowRealInterestFlag) then begin
+    ButtonFrame(h2,v+=40,150,2,"Int. based on Money Trans.");
+    RadioButton(h2,v,0,0,"No",RealInterestFlag);
+    RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
+  end;
+  if (ISb.UseCredManDaysInMonth) then begin
+    ButtonFrame(h2,v+=40,82,3,"Days in Month");
+    RadioButton(h2,v,0,0,"Default",DaysInMonth);
+    RadioButton(h2,v+=16,1,0,"30",DaysInMonth);
+    RadioButton(h2,v+=16,2,0,"Actual",DaysInMonth); 
+  end;
+
 
   ButtonFrame(h2=h2+170,v=vm,80,3,"Overdue Rate");
   RadioButton(h2,v,0,0,"Default",OverdueRateType);
@@ -1283,6 +1293,7 @@ begin
 //CUST-BEGIN
   real h4,h5,h6;
   record CMInterfaceSetBlock ISb;
+  string 255 tstr;
   
   BlockLoad(ISb);
 //CUST-END
@@ -1428,7 +1439,7 @@ begin
 //CUST-BEGIN
   Tile(2,400,false,"2",CredManCEO1);
   v = 6;
-  h = 30;h2 = 150; h3 = 300; h4 = 400; h5 = 500; h6 = 620;
+  h = 30;h2 = 170; h3 = 300; h4 = 400; h5 = 500; h6 = 620;
   StaticText(h,v+13,"Credit Agreement",false);
   CheckBox(h2,v,0,"CEO not Surety",CredManCEO1);
   CheckBox(h3,v,0,"CEO Surety",CredManCEO2);
@@ -1452,18 +1463,32 @@ begin
   CheckBox(h5,v,0,"Us",ScheduleUs);
   EditField(h6,v,40,"Language",Normal,ScheduleLangCode,false,LangSClass);
 
+  if (HasBillOfExchangeShort) then begin
+    v = v + vs;
+    StaticText(h,v+13,"Bill of Exchange - short",false);
+    CheckBox(h2,v,0,"CEO not Surety",VekselisShortCEO1);
+    CheckBox(h3,v,0,"CEO Surety",VekselisShortCEO2);
+    CheckBox(h4,v,0,"Surety",VekselisShortSurety);
+    CheckBox(h5,v,0,"Us",VekselisShortUs);
+    EditField(h6,v,40,"Language",Normal,VekselisShortLangCode,false,LangSClass);
+    tstr = " - long";
+  end;
   v = v + vs;
-  StaticText(h,v+13,"Bill of Exchange",false);
+  StaticText(h,v+13,"Bill of Exchange"  & tstr,false);
   CheckBox(h2,v,0,"CEO not Surety",VekselisCEO1);
   CheckBox(h3,v,0,"CEO Surety",VekselisCEO2);
   CheckBox(h4,v,0,"Surety",VekselisSurety);
   CheckBox(h5,v,0,"Us",VekselisUs);
   EditField(h6,v,40,"Language",Normal,VekselisLangCode,false,LangSClass);
 
-  EditField(h2,v+=40,40,"Language",Normal,LangCode,false,LangSClass);
-  EditField(h2,v+=vs,40,"First Invoice Language",Normal,LangCode2,false,LangSClass);
-  EditField(h2,v+=vs,40,"Overdue Language",Normal,OverdueLangCode,false,LangSClass);
+  EditField(h2,v+=40,60,"Language",Normal,LangCode,false,LangSClass);
+  EditField(h2,v+=vs,60,"First Invoice Language",Normal,LangCode2,false,LangSClass);
+  EditField(h2,v+=vs,60,"Overdue Language",Normal,OverdueLangCode,false,LangSClass);
 
+  if (HasBillOfExchangeShort) then begin
+    EditField(h2,v+=vs,40,"BoE Months Separator",Normal,VekselisShortMonths,false,0);
+    EditField(h2,v+=vs,40,"BoE Extra Months",Normal,VekselisExtraMonths,false,0);
+  end;
 //CUST-END
   EndWindow;
 end;

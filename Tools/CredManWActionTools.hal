@@ -748,7 +748,11 @@ begin
       case 2: 
         flag1 = CMTr.ScheduleCEO1==1; flag2 = CMTr.ScheduleCEO2==1; flag3 = CMTr.ScheduleSurety==1;
       case 6: 
-        flag1 = CMTr.VekselisCEO1==1; flag2 = CMTr.VekselisCEO2==1; flag3 = CMTr.VekselisSurety==1;
+        if (CMTr.VekselisShortMonths>0 and CredManr.InstalmentMonths<CMTr.VekselisShortMonths) then begin
+          flag1 = CMTr.VekselisShortCEO1==1; flag2 = CMTr.VekselisShortCEO2==1; flag3 = CMTr.VekselisShortSurety==1;
+        end else begin
+          flag1 = CMTr.VekselisCEO1==1; flag2 = CMTr.VekselisCEO2==1; flag3 = CMTr.VekselisSurety==1;
+        end;
     end;
   end;
 

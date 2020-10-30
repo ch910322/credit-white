@@ -122,12 +122,20 @@ function Integer GetDaysInMonth(record CMApplicationSetBlock CMb,record CredManV
 begin
   record CredManTypeVc CMTr;
   Integer res;
+  record CMInterfaceSetBlock ISb;
 
   res = -1;
-  CMTr.Code = CredManr.Type;
-  if (ReadFirstMain(CMTr,1,true)) then begin
-    if (CMTr.DaysInMonth>0) then begin
+  if (ISb.UseCredManDaysInMonth==1) then begin
+    if (CredManr.DaysInMonth>0) then begin
       res = CMTr.DaysInMonth-1;
+    end;
+  end;
+  if (res==-1) then begin
+    CMTr.Code = CredManr.Type;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      if (CMTr.DaysInMonth>0) then begin
+        res = CMTr.DaysInMonth-1;
+      end;
     end;
   end;
 
