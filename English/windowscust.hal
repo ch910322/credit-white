@@ -2843,6 +2843,8 @@ begin
   end;
 
   CheckBox(h,v+=30,0,"Show VAT Data",ShowVAT);
+  CheckBox(h,v+=vs,0,"Show 'Int. based on Money Transfer'",ShowRealInterestFlag);
+  CheckBox(h,v+=vs,0,"Use Days In Month in Agreement",UseCredManDaysInMonth);
   
   
   EndWindow;

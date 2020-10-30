@@ -986,9 +986,18 @@ begin
   RadioButton(h2,v,0,0,"Due Date",LateRateOption);
   RadioButton(h2,v+=16,1,0,"Trans. Date",LateRateOption);
 
-  ButtonFrame(h2,v+=40,150,2,"Int. based on Money Trans.");
-  RadioButton(h2,v,0,0,"No",RealInterestFlag);
-  RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
+  if (ISb.ShowRealInterestFlag) then begin
+    ButtonFrame(h2,v+=40,150,2,"Int. based on Money Trans.");
+    RadioButton(h2,v,0,0,"No",RealInterestFlag);
+    RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
+  end;
+  if (ISb.UseCredManDaysInMonth) then begin
+    ButtonFrame(h2,v+=40,82,3,"Days in Month");
+    RadioButton(h2,v,0,0,"Default",DaysInMonth);
+    RadioButton(h2,v+=16,1,0,"30",DaysInMonth);
+    RadioButton(h2,v+=16,2,0,"Actual",DaysInMonth); 
+  end;
+
 
   ButtonFrame(h2=h2+170,v=vm,80,3,"Overdue Rate");
   RadioButton(h2,v,0,0,"Default",OverdueRateType);

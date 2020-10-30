@@ -666,6 +666,7 @@ begin
 
   RecordField(BuyoutFeeMonths,M4Long,0,0);
   RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
+  RecordField(DaysInMonth,M4Int,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -1760,6 +1761,8 @@ begin
   RecordField(ShowMoneyTransferDate,M4Int,0,0);
   RecordField(DefCredManLoanType,M4Int,0,0);
   RecordField(ShowLoanType6,M4Int,0,0);
+  RecordField(ShowRealInterestFlag,M4Int,0,0);
+  RecordField(UseCredManDaysInMonth,M4Int,0,0);
   EndBlock;
 
   RecordBegin(CredManChangeVc,-,"");
