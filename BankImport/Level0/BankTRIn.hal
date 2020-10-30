@@ -864,6 +864,7 @@ begin
       case "CBVI": RepSpec.flags[20] = kReceiptBankSEBLithuania;
       case "UNLA": RepSpec.flags[20] = kReceiptBankSEBLithuania;
       case "EEUH": RepSpec.flags[20] = kReceiptBankSEBLithuania;
+      case "LHVB": RepSpec.flags[20] = kReceiptBankSEBLithuania;
     end;
   end;
 //CUST-END
