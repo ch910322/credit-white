@@ -51,6 +51,7 @@ external function string 255 GetCredManNr(Longint);
 external inner function string 255 StrReplace(string,string,string);
 external function val GetCustomerOpenAmount(string,record IVVc);
 external function Integer GetProlongMonths(record CredManVc);
+external function string 255 DateInWords(Date,string);
 
 procedure GetCredManCustContact(record CredManVc CredManr,var string contactid,var string contactname)
 begin
@@ -794,6 +795,9 @@ begin
   record BOESuretyVc BSr;
   Integer num;
   string 255 strnum;
+  record CredManTypeVc CMTr;
+  Date enddate;
+
 
   Ext_CommonDocumentFields(vVals);
 
@@ -897,6 +901,19 @@ begin
   end else begin
     vVals["F_ANNUALRATE"] = Round(CredManr.IntRate*12,SetRoundModeD(2)) & " %";
   end;
+  
+  CMTr.Code = CredManr.Type;
+  if (ReadFirstMain(CMTr,1,true)) then begin end;
+  
+  enddate = CredManr.startDate;
+  enddate = AddMonth(enddate,CredManr.InstalmentMonths);
+  if (CMTr.VekselisExtraMonths>-1) then begin
+    enddate = AddMonth(enddate,CMTr.VekselisExtraMonths);
+  end;
+
+  tstr = DateInWords(enddate,CredManr.LangCode);
+  vVals["F_ENDDATE2"] = enddate;
+  vVals["F_ENDDATE2INWORDS"] = tstr;
 
   Ext_PrintDocumentSigner(vVals);
 

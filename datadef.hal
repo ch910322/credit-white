@@ -830,6 +830,16 @@ begin
   RecordField(ItemPriorityCode,M4Code,20,0);
   RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
   RecordField(PMCode,M4Code,20,0);
+
+  RecordField(VekselisShortCEO1,M4Int,0,0);
+  RecordField(VekselisShortCEO2,M4Int,0,0);
+  RecordField(VekselisShortSurety,M4Int,0,0);
+  RecordField(VekselisShortUs,M4Int,0,0);
+  RecordField(VekselisShortLangCode,M4Code,10,0);
+
+  RecordField(VekselisShortMonths,M4Long,0,0);
+  RecordField(VekselisExtraMonths,M4Long,0,0);
+
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
   ChangeMatrixField(vRebate,M4Rate,0,0);
