@@ -3,6 +3,8 @@ external inner function LongInt DateDiff(Date,Date);
 external inner function roundmode SetRoundModeD(Integer);
 external inner function LongInt MonthDiff(Date,Date);
 external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string,Boolean,Boolean);
+external inner function val AbsoluteVal(val);
+external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 
 enum begin
   kEventTypeNone = 0,
@@ -288,7 +290,7 @@ begin
   
   if (nonblank(frdate)) then begin
     sendmonthtypef = monthtypef;
-    if (CredManr.ChargeMethod==1 and overridef==false) then begin
+    if (CredManr.ChargeMethod==1 and overridef==false and sendmonthtypef!=kMonthTypeFirst) then begin
       sendmonthtypef = kMonthTypeLast;
     end;
     AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.IntRate,sendmonthtypef,frdate,todate,calcbal,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
@@ -473,7 +475,7 @@ begin
   return;
 end;
 
-procedure AddInstalment(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Integer type,Integer monthtypef,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,Integer month,val usesum,Integer usemonths)
+procedure AddInstalment(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Integer type,Integer monthtypef,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,Integer month,val usesum,Integer usemonths,val extra_diff)
 begin
   val sum,curpayment,rate,tusesum;
   Integer months,tusemonths;
@@ -540,6 +542,9 @@ begin
           //get monthly sum
           //substract interest
           tsum = FIN_PMT(rate, tusemonths, tusesum);
+          if (extra_diff!=0) then begin
+            tsum = tsum - FIN_PMT(rate, tusemonths, extra_diff);
+          end;
           MatRowGet(CredManPayPlanr,MatRowCnt(CredManPayPlanr)-1,CredManPayPlanrw);
           tint = CredManPayPlanrw.Sum;
           if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
@@ -872,6 +877,48 @@ begin
   return;
 end;
 
+function Boolean TotalsDifferTooMuch(val v1,val v2,var val diff)
+begin
+  Boolean res;
+  
+  diff = v1-v2;
+  if (AbsoluteVal(diff)>0.5) then begin
+    res = true;
+    diff = diff - (diff*0.1);
+  end else begin
+    diff = 0;
+  end;
+
+  TotalsDifferTooMuch = res;
+  return;
+end;
+
+function Boolean ShouldRecalculateAnnuitySchedule(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,var val diff)
+begin
+  record CredManSetBlock CredManSetb;
+  record SMVc SMr;
+  row SMVc lastSMrw,lastSM2rw;
+  Boolean res;
+  Integer rwcnt;
+  record CMApplicationSetBlock CMb;
+  
+  BlockLoad(CMb);
+  if (GetDaysInMonth(CMb,CredManr)) then begin
+    BlockLoad(CredManSetb);
+    BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+    rwcnt = MatRowCnt(SMr);
+    MatRowGet(SMr,rwcnt-1,lastSMrw);
+    MatRowGet(SMr,rwcnt-2,lastSM2rw);
+    if (blank(lastSM2rw.ExtraComment)) then begin
+      if (TotalsDifferTooMuch(lastSM2rw.ToRateB2,lastSMrw.ToRateB2,diff)) then begin//funny name :)
+        res = true;
+      end;
+    end;
+  end;
+  ShouldRecalculateAnnuitySchedule = res;
+  return;
+end;
+
 procedure LoadAgreementChangesMonthly(record CredManVc CredManr,Date invdat)
 begin
   Date sd,ed;
@@ -974,7 +1021,6 @@ begin
   return;
 end;
 
-
 global
 procedure BuildCredManPayPlanCust(record CredManVc inCredManr,var record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb,Boolean withactuals,Boolean suggestedonsameday)
 begin
@@ -989,6 +1035,7 @@ begin
   record CMInvoicingBlock CIb;
   Boolean waspausedf,ispausedf;
   Date pausefrom,pauseuntil;
+  val annuity_diff;
 
 /*should we calculate VAT here?
   if CredManr.VATSum > 0 and nonblank(CredManr.VATAddMonths) then begin
@@ -996,11 +1043,15 @@ begin
   end;
 */
   BlockLoad(CIb);
-
+LCalcSchedule:;
   months = inCredManr.InstalmentMonths;
   acumint = 0;
   calcbal = inCredManr.InvSum4;
   usesum = GetAmount(inCredManr);
+  buyoutamount = 0;
+  pausebal = 0;
+  waspausedf = false; pausefrom = ""; pauseuntil = ""; pausemonths = 0; pausestartmonths = 0;
+  prolongf = false; prolongstartmonths = 0;prolongbal = 0;
 
   if (withactuals) then begin
     AddActualsToPlan(inCredManr,CredManPayPlanr,calculatedmonths,acumint,calcbal,firstinvf,CredManSetb,months,buyoutamount,pausebal,prolongbal);
@@ -1071,7 +1122,7 @@ begin
           AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype2,invdat,acumint,calcbal,frdat,todat,-1);
           if (curmonth>=inCredManr.PrincipleDelayMonths and ispausedf==false) then begin
             AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,calcbal,int_frdat,int_todat,-1,false);
-            AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,2,monthtype,invdat,acumint,calcbal,frdat,todat,sendcurmonth,usesum,usemonths);
+            AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,2,monthtype,invdat,acumint,calcbal,frdat,todat,sendcurmonth,usesum,usemonths,annuity_diff);
           end else begin
             if (ispausedf) then begin
               AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,calcbal,int_frdat,int_todat,-1,false);
@@ -1088,7 +1139,7 @@ begin
           AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype2,invdat,acumint,calcbal,frdat,todat,-1);
           if (curmonth>=inCredManr.PrincipleDelayMonths and ispausedf==false) then begin
             AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype2,int_invdat,acumint,calcbal,int_frdat,int_todat,-1,false);
-            AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,1,monthtype,invdat,acumint,calcbal,frdat,todat,sendcurmonth,usesum,usemonths);
+            AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,1,monthtype,invdat,acumint,calcbal,frdat,todat,sendcurmonth,usesum,usemonths,0);
           end else begin
             if (ispausedf) then begin
               AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype2,int_invdat,acumint,calcbal,int_frdat,int_todat,-1,false);
@@ -1101,7 +1152,7 @@ begin
           AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype,invdat,acumint,calcbal,frdat,todat,-1);
           AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype,int_invdat,acumint,calcbal,int_frdat,int_todat,-1,false);
           if (i==months-1) then begin
-            AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,0,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths)
+            AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,0,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths,0)
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
         case 4://Factoring
@@ -1114,7 +1165,7 @@ begin
             int_frdat = inCredManr.startDate;
             int_todat = inCredManr.endDate;
             AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype,int_invdat,acumint,calcbal,int_frdat,int_todat,-1,false);
-            AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,0,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths)
+            AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,0,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths,0)
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
       end;
@@ -1122,6 +1173,13 @@ begin
       //if (i==0) then begin
       //  AddDeposit(inCredManr,CredManPayPlanr,CredManSetb,invdat,acumint,calcbal,frdat,todat);
       //end;
+    end;
+  end;
+
+  if (inCredManr.InstalmentType==0 and annuity_diff==0) then begin//annuity
+    if (ShouldRecalculateAnnuitySchedule(inCredManr,CredManPayPlanr,annuity_diff)) then begin
+      RecordClear(CredManPayPlanr);
+      goto LCalcSchedule;
     end;
   end;
 
@@ -1157,7 +1215,7 @@ begin
   end;
   if (BitAnd(type,8)) then begin
     bal = inCredManr.InvSum4-inCredManr.DepositSum;
-    AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,1,kMonthTypeRegular,td,acumint,bal,"","",1,inCredManr.InvSum4-inCredManr.DepositSum,inCredManr.InstalmentMonths);//first month
+    AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,1,kMonthTypeRegular,td,acumint,bal,"","",1,inCredManr.InvSum4-inCredManr.DepositSum,inCredManr.InstalmentMonths,0);//first month
     if (inCredManr.MaxMonthlyPayment>0) then begin
       tmp = GetMonthlyPaymentAmount(inCredManr,6);
       MatRowGet(CredManPayPlanr,MatRowCnt(CredManPayPlanr)-1,CredManPayPlanrw);
