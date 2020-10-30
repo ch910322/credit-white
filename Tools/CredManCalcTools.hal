@@ -903,7 +903,7 @@ begin
   record CMApplicationSetBlock CMb;
   
   BlockLoad(CMb);
-  if (GetDaysInMonth(CMb,CredManr)) then begin
+  if (GetDaysInMonth(CMb,CredManr)==1) then begin
     BlockLoad(CredManSetb);
     BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
     rwcnt = MatRowCnt(SMr);
@@ -1052,6 +1052,7 @@ LCalcSchedule:;
   pausebal = 0;
   waspausedf = false; pausefrom = ""; pauseuntil = ""; pausemonths = 0; pausestartmonths = 0;
   prolongf = false; prolongstartmonths = 0;prolongbal = 0;
+  calculatedmonths = 0;
 
   if (withactuals) then begin
     AddActualsToPlan(inCredManr,CredManPayPlanr,calculatedmonths,acumint,calcbal,firstinvf,CredManSetb,months,buyoutamount,pausebal,prolongbal);
@@ -1065,6 +1066,7 @@ LCalcSchedule:;
   delaymonths = inCredManr.PrincipleDelayMonths;
   usemonths = usemonths - delaymonths;
   basemonths = usemonths;
+  substractmonths = delaymonths;
 //logtext(0,"start dev");
 
   LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths);
