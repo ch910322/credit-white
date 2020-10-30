@@ -143,6 +143,7 @@ begin
   EditField(h,v+=vs,100,"Schudule Text",Normal,ScheduleText,false,LTxtSClass);
   EditField(h,v+=vs,100,"Mailing List",Normal,MailingList,false,PersColSClass);
   EditField(h,v+=vs,100,"Mailing List 2",Normal,MailingList2,false,PersColSClass);
+  EditField(h,v+=vs,100,"City Classification Type",Normal,CityAgreementClassType,false,CredManClassTypeSClass);
   EditField(h,v+=30,100,"Document Signer",Normal,DocumentSigner,false,UserSClass);
   EditField(h,v+=vs,100,"Signer's Job Description",Normal,DocumentSignerPosition,false,0);
   EditField(h,v+=30,100,"Invoice Signer",Normal,InvoiceSigner,false,UserSClass);
@@ -1841,6 +1842,50 @@ begin
   WindowBegin("Agreement Classification",CredManClassDClass,CGview,-);
   SetWRect(20,80,400,239);
   UseView(CredManClassVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,100,"Code",Normal,Code,false,);
+  EditField(h,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  EditField(h,v+=vs,140,"Type",Normal,Type,false,CredManClassTypeSClass);
+  EndWindow;
+end;
+
+window CredManClassTypeLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Classification Types",CredManClassTypeLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManClassTypeDClass);
+  UseView(CredManClassTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CredManClassTypeSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Paste Agreement Classification Type",CredManClassTypeSClass,CGslist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManClassTypeDClass);
+  UseView(CredManClassTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CredManClassTypeDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Agreement Classification Type",CredManClassTypeDClass,CGview,-);
+  SetWRect(20,80,400,239);
+  UseView(CredManClassTypeVc);
   vs=20; h=120; vs2=16; hm=-100;
   EditField(h,v=6,100,"Code",Normal,Code,false,);
   EditField(h,v+=vs,-40,"Comment",Normal,Comment,false,0);
