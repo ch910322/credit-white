@@ -1,17 +1,13 @@
 event startup
 begin
-  record CMInterfaceSetBlock ISb;
 
-  BlockLoad(ISb);
-
-  SetLangMode(LangEnglish,"ENG",0);
+  SetLangMode(LangEstonian,"EST",2);
 
 /* modCredMan */  
   Register("B2B Loan Applications","B2B Loan Applications",B2BLoanApplicationVc,modCredMan);
   Register("Agreement Schedules","Agreement Schedules",CredManSchedVc,modCredMan);
   Register("Properties","Properties",CMPropertyVc,modCredMan);
   Register("Agreement Tests","Agreement Tests",CredManTestVc,modCredMan);
-  Register("Agreement Changes","Agreement Changes",CredManChangeVc,modCredMan);
  
   Setting("Number Series - B2B Loan Applications",B2BLoanAppSerTClass,modCredMan);
   Setting("Credit Management Settings",CMApplicationSetTClass,modCredMan);
@@ -21,9 +17,6 @@ begin
   Setting("Order Classes",OrderClassLClass,modCredMan);
   Setting("Order Class Colors",OrderClassColorTClass,modCredMan);
   Setting("Item Priority",ItemPriorityTClass,modCredMan);
-  Setting("Item Priority List",CMItemPriorityLClass,modCredMan);
-  Setting("Agreement Interface Settings",CMInterfaceSetTClass,modCredMan);
-  
   Setting("Credit History Support",CredHistLClass,modCredMan);
   Setting("Reminders",SMSReminderLClass,modCredMan);
   Setting("Factoring Invoices",CredManFactInvoiceLClass,modCredMan);
@@ -37,7 +30,6 @@ begin
   Setting("Automatic Order Classes",CMOrderClassTClass,modCredMan);
   Setting("Receipt Entry",ReceiptEntryWClass,modSL);
   Setting("Agreement Classifications",CredManClassLClass,modCredMan);
-  Setting("Agreement Classification Types",CredManClassTypeLClass,modCredMan);
   Setting("Prolong Sessions",ProlongSessionLClass,modCredMan);
   Setting("Legal Record Numbers",CredLegalInvNrTClass,modCredMan);
   Setting("Property Types",CMPropertyTypeLClass,modCredMan);
@@ -46,6 +38,7 @@ begin
   Setting("Leasing Agreements",CredMan3LClass,modCredMan);
   Setting("Invega Fund Report Settings",InvegaReportTClass,modCredMan);
   Setting("Agreement Type Accounts",CredManAccLClass,modCredMan);
+
   
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
@@ -65,7 +58,6 @@ begin
   Maintenance("Fix Credit History",CredManRedoCredHistVClass,CredManRedoCredHistMn,modCredMan);
   Maintenance("Generate Agreement Schedules",CreateCredManScheduleVClass,CreateCredManScheduleMn,modCredMan);
   Maintenance("Create Mails from Schedules",SendScheduleEmailsVClass,SendScheduleEmailsMn,modCredMan);
-  Maintenance("Generate Agreement Changes",CreateCredManChangeVClass,CreateCredManChangeMn,modCredMan);
 
   Maintenance("Recreate Invoices with Prolong months",CredManRecreateDocsVClass,CredManRecreateDocsMn,modCredMan);
 
@@ -251,8 +243,6 @@ begin
   SString(200269,"Amount is different than specified in Credit Agreement");
 
   SString(200270,"Schedule Type");
-  SString(200271,"Can't update becauce there is an Invoice already created");
-  SString(200272,"Agreement schedule is not matching with Fixed schedule");
 
 
   StrSetAdd(584);
@@ -274,7 +264,6 @@ begin
   StrSetText(ReceiptBankTRDiffAmounts,"Allow saving Receipt with different Total than Bank Transaction");
   StrSetText(CredManChangeTransferDate,"Allow changing Money Transfer Date");
   StrSetText(CredManChangeInvoicedMonths,"Allow changing Credit Agreement Months when invoiced");
-  StrSetText(AllowDifferentCredManSched,"Allow OKing Credit Agreement with different Agreement Schedule");
   EndStrSet;
 
   SetBegin(2000);
@@ -299,15 +288,8 @@ begin
   SetText(1,"Linear");
 //  SetText(2,"Linear with Service Fee");
   SetText(3,"Bullet Loan");
-  if (ISb.ShowLoanType4==1) then begin
-    SetText(4,"Factoring");
-  end;
-  if (ISb.ShowLoanType5==1) then begin
-    SetText(5,"Payment Guarantee");
-  end;
-  if (ISb.ShowLoanType6==1) then begin
-    SetText(6,"Balloon");
-  end;
+  SetText(4,"Factoring");
+  SetText(5,"Payment Guarantee");
 //  SetText(6,"Linear with Delay");
 //  SetText(7,"Annuity with Delay");
   EndSet;

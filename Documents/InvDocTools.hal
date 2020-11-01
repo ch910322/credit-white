@@ -1,11 +1,24 @@
 //<halrule>server-only</halrule>
-external inner function string 255 CredManOwnBankAccount(Longint);
+external inner function string 255 CredManOwnBankAccount(Longint,var string,var string,var string);
+
+global
+procedure PrintOwnBankDetails(Longint credmannr)
+begin
+  string 255 bankacc,bankname,bankbic,bankcode;
+
+  bankacc = CredManOwnBankAccount(credmannr,bankname,bankbic,bankcode);
+  OUTFORMFIELD("F_CUSTOWNBANKACC",bankacc);
+  OUTFORMFIELD("F_CUSTOWNBANKNAME",bankname);
+  OUTFORMFIELD("F_CUSTOWNBANKBIC",bankbic);
+  OUTFORMFIELD("F_CUSTOWNBANKIDCODE",bankcode);
+ 
+  return;
+end;
 
 global
 procedure DoInvFormCustomizedFields(record IVVc IVr,record DocVc Docr,record SysFormatBlock SFb,record RoundBlock RoundRec,record LangNrVc LangNrr,Boolean negamountf)
 begin
-
-  OUTFORMFIELD("F_CUSTOWNBANKACC",CredManOwnBankAccount(IVr.CustCredManNr));
+  PrintOwnBankDetails(IVr.CustCredManNr);
 
   return;
 end;

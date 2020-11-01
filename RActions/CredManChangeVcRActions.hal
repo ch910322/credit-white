@@ -1,0 +1,112 @@
+//<halrule>server-only</halrule>
+external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
+
+global
+function LongInt CredManChangeVcRecordDuplicate(var record CredManChangeVc Changer,record CredManChangeVc Change2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  record BaseCurBlock BCb;
+  record CredManSetBlock CMb;
+  val t;
+
+  BlockLoad(BCb);
+  BlockLoad(CMb);
+  Changer.SerNr = -1;
+  
+
+  CredManChangeVcRecordDuplicate = res;
+  return;
+END;
+
+function Boolean PeriodAlreadyInvoiced(Longint sernr,Date td)
+begin
+  record CredManPayPlanVc CredManPayPlanr;
+  row CredManPayPlanVc CredManPayPlanrw;
+  Integer i,rwcnt;
+  record CredManSetBlock CMb;
+  Date td3,lastinv;
+  Boolean res;
+  record CredManVc CredManr;
+  
+  CredManr.SerNr = sernr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    BlockLoad(CMb);
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
+    rwcnt = MatRowCnt(CredManPayPlanr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
+      if (CredManPayPlanrw.PlanType>=5) then begin
+        if (td<=CredManPayPlanrw.TransDate) then begin
+          res = true;
+          i = rwcnt;
+        end else begin
+          i = rwcnt;
+        end;
+      end;
+    end;
+  end;
+
+  PeriodAlreadyInvoiced = res;
+  return;
+end;
+
+global
+updating function LongInt CredManChangeVcRecordCheck(var record CredManChangeVc Changer,record CredManChangeVc Change2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  record CredManVc CredManr;
+ 
+  res = 0;
+  if (Changer.PauseMonths>0 or Changer.ProlongMonths>0) then begin
+    if (Changer.TransDate!=Change2r.TransDate) then begin
+      RecordCheckError(28615,"",-1,"TransDate");
+      res = -1;
+      goto LCredManChangeVcRecordCheck;
+    end;
+  end;
+  if (Changer.SerNr==-1) then begin
+    Changer.SerNr = NextSerNr("CredManChangeVc",Changer.TransDate,-1,false,"");
+  end;
+  if (blank(Changer.TransDate)) then begin
+    RecordCheckError(1058,"",-1,"TransDate");
+    res = -1;
+    goto LCredManChangeVcRecordCheck;
+  end;
+  if (Changer.CredManNr<0) then begin
+    RecordCheckError(1058,"",-1,"CredManNr");
+    res = -1;
+    goto LCredManChangeVcRecordCheck;
+  end else begin
+    CredManr.SerNr = Changer.CredManNr;
+    if (ReadFirstMain(CredManr,1,true)==false) then begin
+      RecordCheckError(31402,"",-1,"CredManNr");
+      res = -1;
+      goto LCredManChangeVcRecordCheck;
+    end;
+  end;
+  if (Changer.IntRate!=Change2r.IntRate or Changer.MonthlyPaymentDay!=Change2r.MonthlyPaymentDay) then begin
+    if (PeriodAlreadyInvoiced(Changer.CredManNr,Changer.TransDate)) then begin
+      RecordCheckError(200271,"",-1,"TransDate");
+      res = -1;
+      goto LCredManChangeVcRecordCheck;
+    end;
+  end;
+
+LCredManChangeVcRecordCheck:;
+  CredManChangeVcRecordCheck = res;
+  return;
+END;
+
+global
+function LongInt CredManChangeVcRecordRemoveTest(var record CredManChangeVc Changer,record CredManChangeVc Change2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+
+  res = 1;
+  if (Changer.OKFlag!=0) then begin
+    res = 0;
+  end;
+  
+  CredManChangeVcRecordRemoveTest = res;
+  return;
+END;

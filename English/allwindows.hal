@@ -35,7 +35,7 @@ external function Boolean AcceptanceStatusColumnTest(string);
 external function Boolean HasLimitedAccess();
 external function Boolean UseTaxTemplatesforTaxCalc();
 external function Boolean HasVarieties();
-external function Boolean HasPayLinkTransactions();
+remote function Boolean HasPayLinkTransactions();
 external function Boolean HasTREO();
 external function Boolean HasApprovals();
 external function Boolean HasCategories();
@@ -63,10 +63,13 @@ external outer function Boolean HideLeasingSeller();
 external outer function Boolean HideLoanPledges();
 external outer function Boolean HasMoneyReceivers();
 remote function Boolean ExternalDocumentEnabled(string);
+remote outer function Boolean HasCredManChanges(record CredManVc);
+external outer function Boolean HasBillOfExchangeShort();
+
 //CUST-END
 
 window CUDClass:14
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h1,h2,h3,h4,h5,h6,l,v,vm,vm2,vs;
   string 255 label;
@@ -639,18 +642,20 @@ begin
 end;
 
 window CredManDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h2,h3,h4,t,v,vm,vs,th;
   string 255 label1,label2,label3,label4,label5;
   record CredManVc CredManr;
   Integer type,n;
   Boolean statusf;
+  record CMInterfaceSetBlock ISb;
 
   if (CurWindow>0) then begin
     GetWindowRecord(CurWindow,CredManr);
     type = CredManr.LoanType;
   end;
+  BlockLoad(ISb);
 
   if (UseCredManStatus) then begin
     n = -160;
@@ -671,9 +676,14 @@ begin
 //CUST-BEGIN
   EditField(h+90,v,50,"",ViewOnly,VersionNo,false,0);
   EditField(h2,v,150,"Legal No.",Normal,OfficialSerNr,false,CredLegalNrSerNrSClass);
+  if (HasCredManChanges(CredManr)) then begin
+    ColourPushButton(h3,v+3,h3+100,v+23,"CredManDClassOpenChanges","Agr. Changes",kButtonColourGreen);
+  end else begin
+    HalPushButton(h3,v+3,h3+100,v+23,"CredManDClassOpenChanges","Agr. Changes");    
+  end;
 //CUST-END
   EditField(h,v+=vs,82,"Type",Normal,Type,false,CredManTypeSClass);
-  EditField(h2,v,n,"Interest",Normal,InstalmentType,false,SetSClass);
+  EditField(h2,v,150,"Interest",Normal,InstalmentType,false,SetSClass);
   EditField(h,v+=vs,82, "Customer",Normal,CustCode,false,CUSClass);
   EnterSkip(InvSum4);
   EditField(h2,v,n,"Name",Normal,Addr0,false,0);
@@ -969,19 +979,25 @@ begin
   EditField(h2,v=vm-20,-40,"Bank Code",Normal,BankCode,false,BankSClass);
   EditField(h2,v+=vs,-40,"Bank Name",Normal,BankName,false,0);
   EditField(h2,v+=vs,-40,"Bank Account",Normal,BankAccount,false,BankAccountSClass);
-  EditField(h2,v+=vs,-40,"Pause Date",ViewOnly,PauseDate,false,0);
-  EditField(h2,v+=vs,-40,"Pause Months",ViewOnly,PauseMonths,false,0);
-  EditField(h2,v+=vs,-40,"Prolong Date",ViewOnly,ProlongDate,false,0);
-  EditField(h2,v+=vs,-40,"Prolong Months",ViewOnly,ProlongMonths,false,0);
+  CheckBox(h2,v+=20,0,"Last Principle Value adds last Calculated value",LastPrincipleWithExtraMonth);
   vm = v+40;
 //CUST-END
   ButtonFrame(h2,v=vm,150,2,"Late Interest Based On");
   RadioButton(h2,v,0,0,"Due Date",LateRateOption);
   RadioButton(h2,v+=16,1,0,"Trans. Date",LateRateOption);
 
-  ButtonFrame(h2,v+=40,150,2,"Int. based on Money Trans.");
-  RadioButton(h2,v,0,0,"No",RealInterestFlag);
-  RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
+  if (ISb.ShowRealInterestFlag) then begin
+    ButtonFrame(h2,v+=40,150,2,"Int. based on Money Trans.");
+    RadioButton(h2,v,0,0,"No",RealInterestFlag);
+    RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
+  end;
+  if (ISb.UseCredManDaysInMonth) then begin
+    ButtonFrame(h2,v+=40,82,3,"Days in Month");
+    RadioButton(h2,v,0,0,"Default",DaysInMonth);
+    RadioButton(h2,v+=16,1,0,"30",DaysInMonth);
+    RadioButton(h2,v+=16,2,0,"Actual",DaysInMonth); 
+  end;
+
 
   ButtonFrame(h2=h2+170,v=vm,80,3,"Overdue Rate");
   RadioButton(h2,v,0,0,"Default",OverdueRateType);
@@ -994,11 +1010,25 @@ begin
   
   ButtonFrame(h3=h2+120,v=vm,100,6,"Type");
   RadioButton(h3,v,0,0,"Not set",LoanType);
-  RadioButton(h3,v+=16,1,0,"Loan",LoanType);
-  RadioButton(h3,v+=16,2,0,"Leasing",LoanType);
-  RadioButton(h3,v+=16,3,0,"Mortgage",LoanType);
-  RadioButton(h3,v+=16,4,0,"Factoring",LoanType);
-  RadioButton(h3,v+=16,5,0,"Paymnt. Grnt.",LoanType);
+  if (ISb.ShowLoanType1==1) then begin
+    RadioButton(h3,v+=16,1,0,"Loan",LoanType);
+  end;
+  if (ISb.ShowLoanType2==1) then begin
+    RadioButton(h3,v+=16,2,0,"Leasing",LoanType);
+  end;
+  if (ISb.ShowLoanType3==1) then begin
+    RadioButton(h3,v+=16,3,0,"Mortgage",LoanType);
+  end;
+  if (ISb.ShowLoanType4==1) then begin
+    RadioButton(h3,v+=16,4,0,"Factoring",LoanType);
+  end;
+  if (ISb.ShowLoanType5==1) then begin
+    RadioButton(h3,v+=16,5,0,"Paymnt. Grnt.",LoanType);
+  end;
+  if (ISb.ShowLoanType6==1) then begin
+    RadioButton(h3,v+=16,6,0,"Balloon",LoanType);
+  end;
+  EndFrame;
   
   Tile(5,290,true,"5",SuretyProvider1); 
   
@@ -1257,11 +1287,15 @@ begin
 end;
 
 window CredManTypeDClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  real h,h2,h3,t,v,vm,vm2,vs;
+  real h,h2,h3,t,v,vm,vm2,vs,vm3;
 //CUST-BEGIN
   real h4,h5,h6;
+  record CMInterfaceSetBlock ISb;
+  string 255 tstr;
+  
+  BlockLoad(ISb);
 //CUST-END
   WindowBegin("Credit Agreement Type",CredManTypeDClass,CGview,-);
   SetWRect(20,80,750,380);//CUST 640>>750
@@ -1301,32 +1335,32 @@ begin
   end else begin
     EditField(h2,v,82,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
   end;
-
-  vm2 = v;
-  ButtonFrame(h2,v+=60,82,3,"Days in Month");
-  RadioButton(h2,v,0,0,"Default",DaysInMonth);
-  RadioButton(h2,v+=16,1,0,"30",DaysInMonth);
-  RadioButton(h2,v+=16,2,0,"Actual",DaysInMonth); 
-
-  v=vm2+vs;
+  EditField(h,v+=vs,40,"Payment Mode",Normal,PMCode,false,PMSClass);
   if (UseBuyOutMonths==false) then begin
     EditField(h2,v,82,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
   end;
   
-  h2 = 330;
-  h2 = h2 + 110;
-  CheckBox(h2,v,0,"Closed",Closed);
+  h2 = 440;
   EditField(h,v+=vs,150,"Classifications",Normal,Classifications,false,CredManClassSClass);
-  CheckBox(h2,v,0,"Annual Rate",AnnualRate);
-  EditField(h,vm2=(v+=vs),150,"Bank Account",Normal,OwnBankAccount,false,0);
+//  EditField(h,v+=vs,150,"Bank Account",Normal,OwnBankAccount,false,0);
 
 
   if (UseCredManStatus) then begin
-    EditField(h,vm2=(v+=vs),150,"Pause Offset Days",Normal,PauseOffsetDays,false,0);
+    EditField(h,v+=vs,150,"Pause Offset Days",Normal,PauseOffsetDays,false,0);
   end;
+  EditField(h,v+=vs,100,"Default Item Priority",Normal,ItemPriorityCode,false,CMItemPrioritySCLass);  
+  CheckBox(h,v+=16,0,"Last Principle Value adds last Calculated value",LastPrincipleWithExtraMonth);
+  CheckBox(h,v+=16,0,"Annual Rate",AnnualRate);
+  CheckBox(h,v+=16,0,"Closed",Closed);
+  vm2 = v;
   EditField(h2+150,v=vm-20,-40,"Minimum Overdue Fee",Normal,MinOverdueFee,false,0);
   vm = vm + 20;
+  ButtonFrame(h2,v=vm,270,2,"Interest according to Money Transfer Date");
+  RadioButton(h2,v,0,0,"No",RealInterestFlag);
+  RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
+
   //CUST-END
+  vm = v+40;
   ButtonFrame(h2,v=vm,150,2,"Late Interest Based On");
   RadioButton(h2,v,0,0,"Due Date",LateRateOption);
   RadioButton(h2,v+=16,1,0,"Trans. Date",LateRateOption);
@@ -1335,26 +1369,46 @@ begin
   RadioButton(h2,v,1,0,"Running Principle",ChargeMethod);
   RadioButton(h2,v+=16,0,0,"Initial Principle",ChargeMethod);
 
+  ButtonFrame(h2,v+=40,82,3,"Days in Month");
+  RadioButton(h2,v,0,0,"Default",DaysInMonth);
+  RadioButton(h2,v+=16,1,0,"30",DaysInMonth);
+  RadioButton(h2,v+=16,2,0,"Actual",DaysInMonth); 
+
   ButtonFrame(h3=h2+170,v=vm,80,3,"Overdue Rate");
   RadioButton(h3,v,0,0,"Default",OverdueRateType);
   RadioButton(h3,v+=16,1,0,"Daily",OverdueRateType);
   RadioButton(h3,v+=16,2,0,"Monthly",OverdueRateType);
 
-  ButtonFrame(h3,v+=40,100,6,"Type");
+  ButtonFrame(h3,v+=40,100,1,"Type");
   RadioButton(h3,v,0,0,"Not set",LoanType);
-  RadioButton(h3,v+=16,1,0,"Loan",LoanType);
-  RadioButton(h3,v+=16,2,0,"Leasing",LoanType);
-  RadioButton(h3,v+=16,3,0,"Mortgage",LoanType);
-  RadioButton(h3,v+=16,4,0,"Factoring",LoanType);
-  RadioButton(h3,v+=16,5,0,"Paymnt. Grnt.",LoanType);
-
-  ButtonFrame(h2,v+=40,270,2,"Interest according to Money Transfer Date");
-  RadioButton(h2,v,0,0,"No",RealInterestFlag);
-  RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
-
+  vm3 = v;
+  if (ISb.ShowLoanType1==1) then begin
+    RadioButton(h3,v+=16,1,0,"Loan",LoanType);
+  end;
+  if (ISb.ShowLoanType2==1) then begin
+    RadioButton(h3,v+=16,2,0,"Leasing",LoanType);
+  end;
+  if (ISb.ShowLoanType3==1) then begin
+    RadioButton(h3,v+=16,3,0,"Mortgage",LoanType);
+  end;
+  if (ISb.ShowLoanType4==1) then begin
+    RadioButton(h3,v+=16,4,0,"Factoring",LoanType);
+  end;
+  if (ISb.ShowLoanType5==1) then begin
+    RadioButton(h3,v+=16,5,0,"Paymnt. Grnt.",LoanType);
+  end;
+  if (ISb.ShowLoanType6==1) then begin
+    RadioButton(h3,v+=16,6,0,"Balloon",LoanType);
+  end;
+  if (vm3+(3*16)>v) then begin
+    v = vm3;
+  end;
+  EndFrame;
+/*
   if (v>vm2) then begin
     vm2 = v;
   end;
+*/
 //CUST-END
 /*
   ButtonFrame(h=50,vm=(v+=45),140,2,"Default Interest Type");
@@ -1385,7 +1439,7 @@ begin
 //CUST-BEGIN
   Tile(2,400,false,"2",CredManCEO1);
   v = 6;
-  h = 30;h2 = 150; h3 = 300; h4 = 400; h5 = 500; h6 = 620;
+  h = 30;h2 = 170; h3 = 300; h4 = 400; h5 = 500; h6 = 620;
   StaticText(h,v+13,"Credit Agreement",false);
   CheckBox(h2,v,0,"CEO not Surety",CredManCEO1);
   CheckBox(h3,v,0,"CEO Surety",CredManCEO2);
@@ -1409,25 +1463,39 @@ begin
   CheckBox(h5,v,0,"Us",ScheduleUs);
   EditField(h6,v,40,"Language",Normal,ScheduleLangCode,false,LangSClass);
 
+  if (HasBillOfExchangeShort) then begin
+    v = v + vs;
+    StaticText(h,v+13,"Bill of Exchange - short",false);
+    CheckBox(h2,v,0,"CEO not Surety",VekselisShortCEO1);
+    CheckBox(h3,v,0,"CEO Surety",VekselisShortCEO2);
+    CheckBox(h4,v,0,"Surety",VekselisShortSurety);
+    CheckBox(h5,v,0,"Us",VekselisShortUs);
+    EditField(h6,v,40,"Language",Normal,VekselisShortLangCode,false,LangSClass);
+    tstr = " - long";
+  end;
   v = v + vs;
-  StaticText(h,v+13,"Bill of Exchange",false);
+  StaticText(h,v+13,"Bill of Exchange"  & tstr,false);
   CheckBox(h2,v,0,"CEO not Surety",VekselisCEO1);
   CheckBox(h3,v,0,"CEO Surety",VekselisCEO2);
   CheckBox(h4,v,0,"Surety",VekselisSurety);
   CheckBox(h5,v,0,"Us",VekselisUs);
   EditField(h6,v,40,"Language",Normal,VekselisLangCode,false,LangSClass);
 
-  EditField(h2,v+=40,40,"Language",Normal,LangCode,false,LangSClass);
-  EditField(h2,v+=vs,40,"First Invoice Language",Normal,LangCode2,false,LangSClass);
-  EditField(h2,v+=vs,40,"Overdue Language",Normal,OverdueLangCode,false,LangSClass);
+  EditField(h2,v+=40,60,"Language",Normal,LangCode,false,LangSClass);
+  EditField(h2,v+=vs,60,"First Invoice Language",Normal,LangCode2,false,LangSClass);
+  EditField(h2,v+=vs,60,"Overdue Language",Normal,OverdueLangCode,false,LangSClass);
 
+  if (HasBillOfExchangeShort) then begin
+    EditField(h2,v+=vs,40,"BoE Months Separator",Normal,VekselisShortMonths,false,0);
+    EditField(h2,v+=vs,40,"BoE Extra Months",Normal,VekselisExtraMonths,false,0);
+  end;
 //CUST-END
   EndWindow;
 end;
 
 
 window CustPSDClass:3
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h2,h3,v,vm,vs,vs2;
   Integer tilenr;
@@ -1580,7 +1648,7 @@ begin
 end;
 
 window CredManInfoRClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v;
   WindowBegin("Specify Credit Agreement Info",CredManInfoRClass,CGRcW,RcType);
@@ -1602,7 +1670,7 @@ end;
 
 
 window CredManTypeSClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Credit Agreement Types",CredManTypeSClass,CGslist,-);
   SetWRect(20,80,500,300);
@@ -1617,7 +1685,7 @@ begin
 end;
 
 window IPSuggestionVClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vm,vs;
   WindowBegin("Create Receipts Suggestion",IPSuggestionVClass,CGMnt,RcType);
@@ -1638,7 +1706,7 @@ begin
 end;
 
 window PipelineWClass:5
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h2,h3,h4,h5,v,vm,vs;
   
@@ -1740,7 +1808,7 @@ begin
 end;
 
 window IVLClass:8
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real pos;
   Boolean acptf;
@@ -1807,7 +1875,7 @@ end;
 
 
 window IVDClass:2
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,h1,h2,h3,h4,hm,hs,t,v,v2,v3,vm,vs,width,h5;
   string 255 label;
@@ -2850,7 +2918,7 @@ end;
 
 
 window ARRClass:2
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,v3,vm,vs;
   WindowBegin("Specify #Sales Ledger#",ARRClass,CGRcW,RcType);

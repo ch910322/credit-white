@@ -3,7 +3,7 @@ external procedure BankFillIProws2(var record IPVc,string,var string,var val,str
 external procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
 external procedure BankFillOProws(var record OPVc,string,string,var val,string,boolean,string,string);
 external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
-external function Integer GetItemPriority(record ItemPriorityBlock,string);
+external function Integer GetItemPriority(Longint,string);
 external procedure InsertCredHistInArray(record CredHistVc,array record ORVc,Integer);
 external function val GetLoanItemPaidAmount(Longint,Longint);
 external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var val,Boolean,var Boolean);
@@ -425,7 +425,7 @@ begin
     FindCustomerForBankImport(BTr.PayCustCode,BTr.PayRegNr1,BTr.PayVATNr,BTr.PayBankAcc,BTr.PayName,CUr);
     instr = BPI_ParseInvStr(BTr.PayReference);
     remsum = BTr.Sum;
-    BankFillIProws(IPr,CUr.Name,BTr.CurncyCode,remsum,CUr.Code,nonblank(CUr.Code),instr,BTr.PayReference,true);
+    BankFillIProws2(IPr,CUr.Name,BTr.CurncyCode,remsum,CUr.Code,nonblank(CUr.Code),instr,BTr.PayReference,true,IPr.TransDate);
     if (MatRowCnt(IPr)>0) then begin
       if (RecordInsert(IPr,true)) then begin
         if (BISb.OKIPFlag==1) then begin
@@ -674,7 +674,6 @@ begin
   record CredHistVc CredHistr;
   Integer priority;
   array record ORVc arrORr;
-  record ItemPriorityBlock IPb;
   Integer i,j,rwcnt;
   val remsum,paid,recval;
   record ORVc ORr;
@@ -689,7 +688,6 @@ begin
   row IPVc IPrw;
   val sum;
 
-  BlockLoad(IPb);
   currow = rownr + 1;
   MatRowGet(IPDr,rownr,IPDrw);
   
@@ -717,7 +715,7 @@ begin
     if (CredHistr.RecordNr!=IPDrw.InvoiceNr or CredHistr.RecordType!=0) then begin
       TrHs = false;
     end else begin
-      priority = GetItemPriority(IPb,CredHistr.ArtCode);
+      priority = GetItemPriority(CredHistr.CredManNr,CredHistr.ArtCode);
       InsertCredHistInArray(CredHistr,arrORr,priority);
     end;
   end;

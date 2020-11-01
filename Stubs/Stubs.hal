@@ -43,3 +43,11 @@ begin
   return;
 end;
 
+global
+function Boolean CheckCredManSchedule()
+begin
+  
+  CheckCredManSchedule = false;
+  return;
+end;
+

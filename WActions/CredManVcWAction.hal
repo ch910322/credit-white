@@ -16,7 +16,7 @@ remote procedure GetFactoringRecord(record CredManVc,var record CredManFactVc);
 remote procedure GetPayGrntRecord(record CredManVc,var record CredManPmtGrntVc);
 remote procedure PrepareAgreementDocSigningSession(record AgreementDocVc,var string,var Integer);
 remote function Boolean GetAgreementDoc(record CredManVc,Integer,var record AgreementDocVc);
-remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc,string,var val,Boolean);
+remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc,var record IVVc,string,var val,Boolean);
 remote function Boolean GetAgreementDoc2(Longint,string,Integer,var record AgreementDocVc);
 remote updating procedure CredManPartialBuyoutDo(Date,val,Longint);
 remote function Date GetPauseCredManNextDate(record CredManVc);
@@ -45,6 +45,7 @@ remote procedure PasteBOESignerInCredMan(var record CredManVc,string,Integer);
 remote procedure PasteSuretyInBOESurety(var record BOESuretyVc,string,Integer);
 remote procedure InsertBOESuretySignerName(var record BOESuretyVc,Integer);
 remote updating procedure GetCredManMoneyReceiverRecord(record CredManVc,var record CredManMoneyRecVc);
+remote updating procedure CreatePaymentFakeReceipt(record CredManVc,record IVVc);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -249,10 +250,12 @@ begin
         CredManr.PrincipleDelayInterest = CredManr.IntRate;
       end;
       Credmanr.LoanType = CMTr.LoanType;
+      Credmanr.LastPrincipleWithExtraMonth = CMTr.LastPrincipleWithExtraMonth;
       CredManr.RealInterestFlag = CMTr.RealInterestFlag;
       CredManr.BuyoutFeeFixed = CMTr.BuyoutFeeFixed;
       CredManr.BuyoutFeePrc = CMTr.BuyoutFeePrc;
       CredManr.BuyoutFeeMonths = CMTr.BuyoutFeeMonths;
+      CredManr.DaysInMonth = CMTr.DaysInMonth;
     end;
     RecalcCredManFees(CredManr);
     PutWindowRecord(wn,CredManr); 
@@ -697,15 +700,8 @@ begin
     if (ProlongInProgress(CredManr)) then begin
       MessageBox(200233,"");
     end else begin
-      if (nonblank(CredManr.PauseDate)) then begin
-        td = CredManr.PauseDate;
-      end else begin
-        td = GetPauseCredManNextDate(CredManr);
-      end;
-      if (CredManr.PauseMonths>0) then begin
-        RepSpec.vals0 = CredManr.PauseMonths;
-      end;
-      RepSpec.vals1 = CredManr.ProlongMonths;
+      td = GetPauseCredManNextDate(CredManr);
+      //RepSpec.vals1 = CredManr.ProlongMonths;
       RepSpec.d1 = td;
       RepSpec.flags[1] = 1;
       OpenWindow("PauseCredManWClass",0,wn,"","",RepSpec);
@@ -895,7 +891,7 @@ begin
 
   return;
 end;
-
+/*
 //this allows to edit a field value in hal and use PutWindowRecord and not get "The record has changed" message
 //it was needed for TerminateCredManDsm. I combined it with "SetWindowState"
 global
@@ -913,7 +909,7 @@ begin
   CredManVcRecordProtectFields = res;
   return;
 end;
-
+*/
 
 global
 procedure CredManInfoBuyOutDbl(string dblstr,string l,Integer currepwn)
@@ -1517,6 +1513,7 @@ begin
   record VIVc VIr;
   record CMInvoicingBlock CIb;
   record RcVc RepSpec;
+  record IVVc IVr;
   val sum;
     
   wn = CurWindow;
@@ -1528,10 +1525,14 @@ begin
       RepSpec.ArtMode = 1;
       nwn = OpenWindow("CredManInvNoWClass",0,wn,"","",RepSpec);
     end else begin
-      CredManMakePaymentRemote(CredManr,VIr,"",sum,true);
+      CredManMakePaymentRemote(CredManr,VIr,IVr,"",sum,true);
       PutWindowRecord(wn,CredManr);
       WindowDoOK(wn,0);
+      CloseWindow(wn);
+      CreatePaymentFakeReceipt(CredManr,IVr);
       CM_CreatePaymentOrder(CredManr,VIr,sum);
+      ReadFirstMain(CredManr,1,true);
+      OpenWindow("CredManDClass",1,0,"","",CredManr);
       if (VIr.SerNr>0) then begin
         OpenWindow("VIDClass",0,0,"","",VIr);
       end;
@@ -1551,6 +1552,7 @@ begin
   record VIVc VIr;
   record CMInvoicingBlock CIb;
   record RcVc RepSpec;
+  record IVVc IVr;
   val sum;
     
   wn = CurWindow;
@@ -1564,7 +1566,7 @@ begin
       RepSpec.flags[10] = 1;
       nwn = OpenWindow("CredManInvNoWClass",0,wn,"","",RepSpec);
     end else begin
-      CredManMakePaymentRemote(CredManr,VIr,"",sum,false);
+      CredManMakePaymentRemote(CredManr,VIr,IVr,"",sum,false);
       PutWindowRecord(wn,CredManr);
       WindowDoOK(wn,0);
       if (VIr.SerNr>0) then begin
@@ -1585,6 +1587,7 @@ begin
   record RcVc RepSpec;
   Integer wn,mwn,twn;
   record VIVc VIr;
+  record IVVc IVr;
   val sum;
   
   wn = CurWindow;
@@ -1596,10 +1599,16 @@ begin
   if (RepSpec.ArtMode==0) then begin
     CreateCredManInvoiceDo(CredManr,RepSpec.f1,mwn);
   end else begin
-    CredManMakePaymentRemote(CredManr,VIr,RepSpec.f1,sum,RepSpec.flags[10]==0);
+    CredManMakePaymentRemote(CredManr,VIr,IVr,RepSpec.f1,sum,RepSpec.flags[10]==0);
     PutWindowRecord(mwn,CredManr);
     WindowDoOK(mwn,0);
+    CloseWindow(mwn);
+    if (RepSpec.flags[10]==1) then begin
+      CreatePaymentFakeReceipt(CredManr,IVr);
+    end;
     CM_CreatePaymentOrder(CredManr,VIr,sum);
+    ReadFirstMain(CredManr,1,true);
+    OpenWindow("CredManDClass",1,0,"","",CredManr);
     if (VIr.SerNr>0) then begin
       twn = OpenWindow("VIDClass",0,0,"","",VIr);
     end;
@@ -1804,6 +1813,19 @@ begin
     PutWindowString(nwn,"type",CredManr.LoanType);
     RerunWindowDef(nwn);
   end;
+  return;
+end;
+
+global
+procedure CredManDClassOpenChanges()
+begin
+  record CredManChangeVc Changer; 
+  Integer wn;
+  record CredManVc CredManr; 
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  OpenWindow("CredManChange2LClass",1,0,CredManr.SerNr,"",Changer);
   return;
 end;
 
@@ -2018,6 +2040,17 @@ begin
   return;
 end;
 
+global
+procedure CredManLClass6Btn()
+begin
+  record CredManVc CredManr;
+  
+  CloseWindow(CurWindow);
+  OpenWindow("CredMan7LClass",0,0,"6","",CredManr);
+
+  return;
+end;
+
 
 global
 function Boolean InvLegalInvSerieSClassOnOpenWindow(Integer wn)
@@ -2055,11 +2088,11 @@ global
 function LongInt CredManVcRecordDefaultsClient(LongInt wn,var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
 begin
   LongInt res;
-  record CMApplicationSetBlock CMAb;
+  record CMInterfaceSetBlock ISb;
   
-  BlockLoad(CMAb);
+  BlockLoad(ISb);
   if (CredManr.LoanType==0) then begin
-    CredManr.LoanType = CMAb.DefCredManLoanType;
+    CredManr.LoanType = ISb.DefCredManLoanType;
     RerunWindowDef(wn);
   end;
   
@@ -2343,5 +2376,21 @@ begin
     GetCredManMoneyReceiverRecord(CredManr,MRr);
     nwn = OpenWindow("CredManMoneyRecDClass",1,0,"","",MRr);
   end;
+  return;
+end;
+
+
+global
+function Boolean CMShowVATColumn()
+begin
+  record CMInterfaceSetBlock ISb;
+  Boolean res;
+  
+  BlockLoad(ISb);
+  if (ISb.ShowVAT==1) then begin
+    res = true;
+  end;
+
+  CMShowVATColumn = res;
   return;
 end;

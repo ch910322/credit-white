@@ -1,0 +1,22 @@
+external updating procedure CreatePauseRecord(Longint,Date,Integer,Integer);
+external updating procedure CreateProlongRecord(Longint,Date,Integer,Integer);
+
+global
+updating procedure CreateCredManChangeMn(record RcVc RepSpec)
+begin
+  record CredManSchedVc CSr;
+  record CredManVc CredManr;
+  
+  while (LoopMain(CredManr,1,true)) begin
+    //if (CredManr.OKFlag==1 and CredManr.endDate>CurrentDate) then begin
+      if (nonblank(CredManr.xPauseDate) and CredManr.xPauseMonths>0) then begin
+        CreatePauseRecord(CredManr.SerNr,CredManr.xPauseDate,CredManr.xPauseMonths,1);
+      end;
+      if (nonblank(CredManr.xProlongDate) and CredManr.xProlongMonths>0) then begin
+        CreateProlongRecord(CredManr.SerNr,CredManr.xProlongDate,CredManr.xProlongMonths,1);
+      end;
+    //end;
+  end;
+
+  return;
+end;

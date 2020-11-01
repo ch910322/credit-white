@@ -43,6 +43,9 @@ external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,B
 external function Boolean FindCEOContact(string,var record CUVc);
 external procedure GetCustomerLoanAmounts2(var record IPVc,var integer,string,var string,var val,string,boolean,string,string,var vector Boolean,Date,Longint);
 external function string 255 CM_GetCredManTypePurchItemAccount2(record CredManVc,string,Boolean);
+external updating procedure CreatePauseRecord(Longint,Date,Integer,Integer);
+external updating procedure CreateProlongRecord(Longint,Date,Integer,Integer);
+external function Integer GetProlongMonths(record CredManVc);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -124,7 +127,7 @@ procedure CredManSetDatesCust(var record CredManVc CredManr,Boolean allf)
 begin
   record CredManSetBlock CredManSetb;
   Date startd,finv,fint,tsd;
-  Integer invday;
+  Integer invday,prolongmonths;
   
   invday = CredManr.MonthlyPaymentDay;
   if (invday<1) then begin
@@ -147,15 +150,12 @@ begin
   CredManUpdate(CredManr,-1,"");
   CredManSumup(CredManr);
   CredManr.endDate = AddMonth(CredManr.FirstInvDate,CredManr.InstalmentMonths - 1);
-/*
-  if (nonblank(CredManr.PauseDate)) then begin
-    CredManr.endDate = AddMonth(CredManr.endDate,CredManr.PauseMonths);
+  prolongmonths = GetProlongMonths(CredManr);
+  if (prolongmonths>0) then begin
+    CredManr.endDate = AddMonth(CredManr.endDate,prolongmonths);
   end;
-*/
-  if (nonblank(CredManr.ProlongDate)) then begin
-    CredManr.endDate = AddMonth(CredManr.endDate,CredManr.ProlongMonths);
-  end;
-  
+
+
   return;
 end;
 
@@ -182,20 +182,44 @@ begin
   return;
 end;
 
+function Boolean CredManIsPausedOnDate(record CredManVc CredManr,Date td)
+begin
+  Date sd,ed;
+  record CredManChangeVc Changer;
+  Boolean TrHs;
+  Boolean res;
+  
+  Changer.CredManNr = CredManr.SerNr;
+  Changer.TransDate = CredManr.FirstInvDate;
+  TrHs = true;
+  while (LoopKey("CredManDate",Changer,2,TrHs)) begin
+    if (CredManr.SerNr!=Changer.CredManNr or Changer.TransDate>td) then begin
+      TrHs = false;
+    end else begin
+      if (Changer.OKFlag==1) then begin
+        if (Changer.PauseMonths>0) then begin
+          ed = AddMonth(Changer.TransDate,Changer.PauseMonths);
+          if (DateInRange(td,Changer.TransDate,ed)) then begin
+            res = true;
+            TrHs = false;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  CredManIsPausedOnDate = res;
+  return;
+end;
+
 function Boolean CanPauseAgreement(record CredManVc CredManr,Date td,val months)
 begin
   record CredManPayPlanVc CredManPayPlanr;
   row CredManPayPlanVc CredManPayPlanrw;
   Integer i,rwcnt;
   record CredManSetBlock CMb;
-  Date td3;
+  Date td3,lastinv;
   Boolean res;
-  
-
-
-  if (CredManr.PauseMonths>0) then begin
-    td3 = AddMonth(td,months);
-  end;
 
   res = true;
   BlockLoad(CMb);
@@ -206,20 +230,17 @@ begin
     if (CredManPayPlanrw.PlanType>=5) then begin
       if (td<=CredManPayPlanrw.TransDate) then begin
         res = false;
-        if (nonblank(td3)) then begin
-          if (td3>=CredManPayPlanrw.TransDate and td==CredManr.PauseDate) then begin
-            res = true;
-          end;
-        end;
       end else begin
-        if (nonblank(CredManr.PauseDate)) then begin
-          if (CredManr.PauseDate<=CredManPayPlanrw.TransDate) then begin
-            res = false;
-          end;
+        if (lastinv<CredManPayPlanrw.TransDate) then begin
+          lastinv = CredManPayPlanrw.TransDate;
         end;
       end;
       i = 0;
     end;
+  end;
+
+  if (CredManIsPausedOnDate(CredManr,td)) then begin
+    res = false;
   end;
 
   if (td<CredManr.FirstInvDate) then begin
@@ -339,11 +360,11 @@ begin
         CreateProlongInvoice(CredManr,IVr);
       end;
       if (RepSpec.flags[3]==0) then begin
-        CredManr.PauseDate = td;
-        CredManr.PauseMonths = months;
-        if (prolongmonths>=0) then begin
-          CredManr.ProlongDate = td;
-          CredManr.ProlongMonths = prolongmonths;
+        if (months>0) then begin
+          CreatePauseRecord(CredManr.SerNr,td,months,1);
+        end;
+        if (prolongmonths>0) then begin
+          CreateProlongRecord(CredManr.SerNr,td,prolongmonths,1);
         end;
         CredManSetDatesCust(CredManr,false);
         /*
@@ -358,6 +379,13 @@ begin
         end;
         */
         setf = true;
+      end else begin
+        if (months>0) then begin
+          CreatePauseRecord(CredManr.SerNr,td,months,0);//not approved
+        end;
+        if (prolongmonths>0) then begin
+          CreateProlongRecord(CredManr.SerNr,td,prolongmonths,0);//not approved
+        end;
       end;
       res = true;      
     end;
@@ -377,19 +405,15 @@ begin
   Date res;
   record CredManSetBlock CMb;
   
-  if (nonblank(CredManr.PauseDate)) then begin
-    res = CredManr.PauseDate;
-  end else begin
-    BlockLoad(CMb);
-    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
-    rwcnt = MatRowCnt(CredManPayPlanr);
-    res = CredManr.FirstInvDate;
-    for (i=0;i<rwcnt;i=i+1) begin
-      MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
-      if (CredManPayPlanrw.PlanType<5) then begin
-        i = rwcnt;
-        res = CredManPayPlanrw.TransDate;
-      end;
+  BlockLoad(CMb);
+  BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
+  rwcnt = MatRowCnt(CredManPayPlanr);
+  res = CredManr.FirstInvDate;
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
+    if (CredManPayPlanrw.PlanType<5) then begin
+      i = rwcnt;
+      res = CredManPayPlanrw.TransDate;
     end;
   end;
 
@@ -724,7 +748,11 @@ begin
       case 2: 
         flag1 = CMTr.ScheduleCEO1==1; flag2 = CMTr.ScheduleCEO2==1; flag3 = CMTr.ScheduleSurety==1;
       case 6: 
-        flag1 = CMTr.VekselisCEO1==1; flag2 = CMTr.VekselisCEO2==1; flag3 = CMTr.VekselisSurety==1;
+        if (CMTr.VekselisShortMonths>0 and CredManr.InstalmentMonths<CMTr.VekselisShortMonths) then begin
+          flag1 = CMTr.VekselisShortCEO1==1; flag2 = CMTr.VekselisShortCEO2==1; flag3 = CMTr.VekselisShortSurety==1;
+        end else begin
+          flag1 = CMTr.VekselisCEO1==1; flag2 = CMTr.VekselisCEO2==1; flag3 = CMTr.VekselisSurety==1;
+        end;
     end;
   end;
 
@@ -1202,6 +1230,7 @@ begin
   return;
 end;
 
+global
 updating procedure CreatePaymentFakeReceipt(record CredManVc CredManr,record IVVc IVr)
 begin
   val chk;
@@ -1279,7 +1308,7 @@ begin
 end;
 
 global
-updating procedure CredManMakePaymentRemote(var record CredManVc CredManr,var record VIVc VIr,string invno,var val sum,Boolean receiptf)
+updating procedure CredManMakePaymentRemote(var record CredManVc CredManr,var record VIVc VIr,var record IVVc tIVr,string invno,var val sum,Boolean receiptf)
 begin
   record IVVc IVr;
   record CMOrderClassBlock OCb;
@@ -1291,11 +1320,9 @@ begin
   if (CredManr.InstalmentType!=4 and CredManr.InstalmentType!=5) then begin
     CreateSingleAgreementInvoice(CredManr,CredManr.startDate,IVr,invno);
     CheckAndCreateAutoMailFromInvoice(IVr);
+    RecordCopy(tIVr,IVr);
     
     //CredManCreditAllInvoices(CredManr);
-    if (receiptf) then begin
-      CreatePaymentFakeReceipt(CredManr,IVr);
-    end;
     CreateCredmanPurchaseInvoice(CredManr,IVr.Sum4,VIr);
     tCredManr.SerNr = CredManr.SerNr;
     if (ReadFirstMain(tCredManr,1,true)) then begin
@@ -1599,5 +1626,20 @@ begin
     end;
   end;
 
+  return;
+end;
+
+global
+function Boolean HasCredManChanges(record CredManVc CredManr)
+begin
+  record CredManChangeVc Changer;
+  Boolean res;
+
+  Changer.CredManNr = CredManr.SerNr;
+  if (ReadFirstKey("CredManDate",Changer,1,true)) then begin
+    res = true;
+  end;
+
+  HasCredManChanges = res;
   return;
 end;

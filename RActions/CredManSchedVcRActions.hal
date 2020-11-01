@@ -1,5 +1,58 @@
-//<halrule>server-only</halrule>
-external procedure GetScheduleTotals(record CredManSchedVc,var val,var val,var val,var val,var val,var Date,var Date);
+remote procedure GetScheduleTotals(record CredManSchedVc,var val,var val,var val,var val,var val,var Date,var Date);
+
+global
+updating function LongInt CredManSchedVcRecordCheckClient(Longint wn,var record CredManSchedVc CSr,record CredManSchedVc CS2r,LongInt stat,LongInt long4)
+begin
+  Longint res;
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  val princ,interest,fees,total,vat;
+  Date sd,ed;
+  Integer i,rwcnt;
+  Date lasted;
+  Boolean periodf;
+  row CredManSchedVc CSrw;
+  
+  res = 0;
+
+  GetScheduleTotals(CSr,princ,interest,fees,total,vat,sd,ed);
+  CredManr.SerNr = CSr.CredManNr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    if (princ!=CredManr.InvSum4) then begin
+      res = -1;
+      RecordCheckError(200261,"",MatRowCnt(CSr)-1,"Principle");
+      goto LCredManSchedVcRecordCheckClient;
+    end;
+  end;
+
+  rwcnt = MatRowCnt(CSr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(CSr,i,CSrw);
+    if (nonblank(CSrw.FromDate)) then begin
+      periodf = true;
+    end;
+    if (periodf) then begin
+      if (nonblank(lasted)) then begin
+        if (lasted!=AddDay(CSrw.FromDate,-1)) then begin
+          res = -1;
+          RecordCheckError(200263,"",i,"FromDate");
+          goto LCredManSchedVcRecordCheckClient;
+        end;
+      end;
+    end;
+    lasted = CSrw.ToDate;
+  end;
+
+  if (GetWindowString(wn,"RecalcMessage")=="true") then begin
+    OpenWindow("RecalcInterestWClass",1,wn,"","",RepSpec);
+    res = -1;
+  end;
+
+LCredManSchedVcRecordCheckClient:;
+  CredManSchedVcRecordCheckClient = res;
+  return;
+end;
+
 
 global
 updating function LongInt CredManSchedVcRecordCheck(var record CredManSchedVc CSr,record CredManSchedVc CS2r,LongInt stat,LongInt long4)
@@ -14,7 +67,7 @@ begin
   row CredManSchedVc CSrw;
 
   res = 0;
-
+/*
   GetScheduleTotals(CSr,princ,interest,fees,total,vat,sd,ed);
   CredManr.SerNr = CSr.CredManNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
@@ -42,7 +95,7 @@ begin
     end;
     lasted = CSrw.ToDate;
   end;
-
+*/
 LCredManSchedVcRecordCheck:;
   CredManSchedVcRecordCheck = res;
   return;

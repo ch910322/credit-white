@@ -12,6 +12,7 @@ external inner function LongInt DateDiff(Date,Date);
 external procedure TestCredManInvoicesFromPlan(record CredManVc,record CredManSetBlock,record CredManPayPlanVc,Date,var array record IVVc);
 external procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 external procedure TestInvoiceBasedOnSchedule(record CredManVc,record CredManSchedVc,Date,var array record IVVc);
+external function Boolean CMShowVATColumn();
 
 procedure PrintLeft(string col1str,string col1val,string col2str,string col2val)
 begin
@@ -213,7 +214,7 @@ begin
 
   CalcCredManSums(CredManr,CredManPayPlanr,CredManSetb,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,d,v,cursuginst,l);
 
-  PrintLeft(USetStr(17317),CredManr.SerNr,USetStr(17310),StringFromSet(368,CredManr.InstalmentType));
+  PrintLeft(USetStr(17317),CredManr.SerNr,USetStr(200270),StringFromSet(2001,CredManr.InstalmentType));
   PrintLeft2("Customer",CredManr.CustCode,CredManr.Addr0,USetStr(17315),CredManr.startDate);
   PrintLeft(USetStr(17309),CredManr.Type,"Interest From Date",CredManr.FirstIntDate);
   PrintLeft(USetStr(17313),CredManr.InvSum4,"First Invoice Date",CredManr.FirstInvDate);
@@ -291,6 +292,7 @@ begin
     SMrw.Objects = fromdate;
     SMrw.Comment = todate;
     SMrw.FrRate = IVr.Sum3;
+    SMrw.ToRateB2 = IVr.Sum2;
     SMrw.ToRateB1 = deposit;
     if (MatRowCnt(FMr)>0) then begin
       PackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
@@ -478,6 +480,7 @@ begin
   row SMVc SMrw;
   val princ;
   Integer c10,c11;
+  val totprinc,totdep,totint,totfees,totoverdues,total,totvat;
 
   BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,withactuals,suggestedonsameday);
   PrintCredManTop(CredManr,CredManPayPlanr,CredManSetb);
@@ -504,7 +507,9 @@ begin
   OutString(6,0,USetStr(200093),true);
   OutString(7,0,USetStr(200094),true);
   OutString(8,0,USetStr(200095),true);
-  OutString(c10,0,USetStr(200098),true);
+  if (CMShowVATColumn) then begin
+    OutString(c10,0,USetStr(200098),true);
+  end;
   OutString(9,0,USetStr(200096),true);
   OutString(1,0,USetStr(200097),true);
   EndFormat;
@@ -542,13 +547,35 @@ begin
     OutString(6,0,SMrw.CredVal,true);
     OutString(7,0,SMrw.DebVal2,true);
     OutString(8,0,SMrw.CredVal2,true);
-    OutString(c10,0,SMrw.FrRate,true);
+    if (CMShowVATColumn) then begin
+      OutString(c10,0,SMrw.FrRate,true);
+    end;
     OutString(9,0,SMrw.CurDebVal,true);
     OutString(1,0,SMrw.CurCredVal,true);
+
+    totprinc = totprinc + princ;
+    totdep = totdep + SMrw.ToRateB1;
+    totint = totint + SMrw.CredVal;
+    totfees = totfees + SMrw.DebVal2;
+    totoverdues = totoverdues + SMrw.CredVal2;
+    totvat = totvat + SMrw.FrRate;
+    total = total + SMrw.CurDebVal;
     EndFormat;
   end;
 
+  StartFormat(1);
+  Gray_divider(0,1);
+  EndFormat;
   StartFormat(15);
+  OutString(c11,0,totdep,true);
+  OutString(5,0,totprinc,true);
+  OutString(6,0,totint,true);
+  OutString(7,0,totfees,true);
+  OutString(8,0,totoverdues,true);
+  if (CMShowVATColumn) then begin
+    OutString(c10,0,totvat,true);
+  end;
+  OutString(9,0,total,true);
   EndFormat;
   return;
 end;

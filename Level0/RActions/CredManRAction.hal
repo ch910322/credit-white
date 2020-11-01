@@ -15,8 +15,8 @@ external function Boolean SerNrTestCredManVc(LongInt,Date,var Boolean);
 external function Integer CashSerNumberTest(string,val,string,LongInt,var Boolean);
 external procedure AddCredManTypeMatrix(var record CredManVc,record CredManTypeVc);
 external function val GetIntRate(string,Date);
-external outer function string 255 CM_GetTransactionDebtorsAcc(record CredManVc,string);
 external outer function string 255 CM_GetTransactionControlAcc(record CredManVc,string);
+external outer procedure AddCMTransactionDebtorsAccounts(record CredManVc,var string,var string,var val,var val);
 
 
 global
@@ -116,6 +116,11 @@ BEGIN
   val rs,totsum;
   string 10 controlacc,aracc;
   Boolean invfound;
+//CUST-BEGIN
+  val shortval,longval;
+  string 255 shortacc,longacc;
+  Boolean addf;
+//CUST-END
 
   res = 1085;
   BlockLoad(TRGenRec);
@@ -197,7 +202,12 @@ BEGIN
     ftxt = "" & CredManr.IVNr & " " & CredManr.Addr0;
   end;
 //CUST-BEGIN
-  aracc = CM_GetTransactionDebtorsAcc(CredManr,aracc);
+  AddCMTransactionDebtorsAccounts(CredManr,shortacc,longacc,shortval,longval);
+  if (nonblank(shortacc) and shortval>0) then begin
+    rs = shortval;
+    aracc = shortacc;
+  end;
+LAddAccount:;
 //CUST-END
   Accr.AccNumber = aracc;
   if (ReadFirstMain(Accr,1,true)==false) then begin
@@ -214,6 +224,14 @@ BEGIN
   end;
   if (CheckTTRPerRow("CredManVc",aracc,otxt,dc2,taccnumber,1)) then begin end;
   AddEuroCurncyTrRow(gTRp,aracc,otxt,"",ftxt,rs,false,dc2,totsum,Accr.Curncy,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2,v,blankval,-1,false,taccnumber);
+//CUST-BEGIN
+  if (addf==false and nonblank(longacc) and longval>0) then begin
+    rs = longval;
+    aracc = longacc;
+    addf = true;
+    goto LAddAccount;
+  end;
+//CUST-END
   TRSumup(gTRp,t);
   AddTransAutoTransRows(gTRp);
   res = 0;

@@ -16,23 +16,68 @@ external procedure AddLateFees(record CredManVc,record CredManSetBlock,var recor
 external procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
 external procedure SetupOverdueLangCode(var record IVVc,string);
 external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
+external function Boolean CredManPMCodeMathes(string,Longint);
 
 
 /*Invoicing tools*/
+function Boolean GetItemPriorityRecord(Longint credmannr,var record CMItemPriorityVc IPr)
+begin
+  record CredManVc CredManr;
+  record CredManTypeVc CMTr;
+  Boolean res;
+  string 255 code;
+  record CMInvoicingBlock CIb;
+
+  CredManr.SerNr = credmannr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    CMTr.Code = CredManr.Type;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      code = CMTr.ItemPriorityCode;
+    end;
+  end;
+  if (blank(code)) then begin
+    BlockLoad(CIb);
+    code = CIb.ItemPriorityCode;
+  end;
+  if (nonblank(code)) then begin
+    IPr.Code = code;
+    if (ReadFirstMain(IPr,1,true)) then begin
+      res = true;
+    end;
+  end;
+
+  GetItemPriorityRecord = res;
+  return;
+end;
+
 global
-function Integer GetItemPriority(record ItemPriorityBlock IPb,string item)
+function Integer GetItemPriority(Longint credmannr,string item)
 begin
   Integer i,rwcnt;
+  record ItemPriorityBlock IPb;
   row ItemPriorityBlock IPbrw;
+  record CMItemPriorityVc IPr;
+  row CMItemPriorityVc IPrw;
   Integer res;
 
   res = 9999;
-  rwcnt = MatRowCnt(IPb);
-  for (i=0;i<rwcnt;i=i+1) begin
-    MatRowGet(IPb,i,IPbrw);
-    if (item==IPbrw.ArtCode) then begin
-      res = IPbrw.Priority;
-      i = rwcnt;
+  if (GetItemPriorityRecord(credmannr,IPr)) then begin
+    rwcnt = MatRowCnt(IPr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(IPr,i,IPrw);
+      if (item==IPrw.ArtCode) then begin
+        res = IPrw.Priority;
+        i = rwcnt;
+      end;
+    end;
+  end else begin
+    rwcnt = MatRowCnt(IPb);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(IPb,i,IPbrw);
+      if (item==IPbrw.ArtCode) then begin
+        res = IPbrw.Priority;
+        i = rwcnt;
+      end;
     end;
   end;
 
@@ -165,10 +210,16 @@ begin
     end else begin
       num = MatRowCnt(IPr);
     end;
+
+    logtext(0,num & ":" & credsum);
     ClearRow(IPr,IPrw,1);
     IPrw.InvoiceNr = ORrw.GroupOrdRow;
     invused[IPrw.InvoiceNr] = true;
-    MatRowPut(IPr,num,IPrw);
+    if (rownr>-1) then begin
+      MatRowInsert(IPr,num,IPrw);
+    end else begin
+      MatRowPut(IPr,num,IPrw);
+    end;
     PasteInvIn2IPr(IPr,num,IPr.TransDate,chk,false,installmentf);
     MatRowGet(IPr,num,IPrw);
     IPrw.CustName = RecName;
@@ -186,7 +237,8 @@ begin
     IPrw.PayDate = IPr.TransDate;
     IPrw.PayDate = IPr.TransDate;
     IPrw.CredHistNr = ORrw.CUServiceHistNr;
-    MatRowPut(IPr,num,IPrw);
+    IPrw.CredHistItem = ORrw.ArtCode;
+    MatRowPut(IPr,num,IPrw);      
     IPVc_PasteRecVal(IPr,num);
 //  end;
   remsum = remsum - credsum;
@@ -218,7 +270,6 @@ end;
 global
 procedure GetCustomerLoanAmounts2(var record IPVc IPr,var integer k,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,var vector Boolean invused,Date untildate,Longint credmannr)
 begin
-  record ItemPriorityBlock IPb;
   record ORVc ORr;
   row ORVc ORrw;
   record CredHistVc CredHistr;
@@ -227,8 +278,6 @@ begin
   Integer i,j,rwcnt,priority;
   val paid;
   Boolean debugf;
-
-  BlockLoad(IPb);
 
   debugf = false;
 
@@ -242,8 +291,10 @@ begin
     end else begin
       if (credmannr==-1 or credmannr==CredHistr.CredManNr) then begin
         if (CredHistr.RecordType==0 and (blank(untildate) or CredHistr.TransDate<=untildate)) then begin
-          priority = GetItemPriority(IPb,CredHistr.ArtCode);
-          InsertCredHistInArray(CredHistr,arrORr,priority);
+          if (CredManPMCodeMathes(IPr.PayMode,CredHistr.RecordNr)) then begin
+            priority = GetItemPriority(CredHistr.CredManNr,CredHistr.ArtCode);
+            InsertCredHistInArray(CredHistr,arrORr,priority);
+          end;
         end;
       end;
     end;
@@ -303,7 +354,7 @@ end;
 3. sort in priority and make payments history records
 */
 global
-updating procedure FindUnpaidCredHist(record ItemPriorityBlock IPb,record IPVc IPr,row IPVc IPrw,var array val arrCredManr,Integer rectype)
+updating procedure FindUnpaidCredHist(record IPVc IPr,row IPVc IPrw,var array val arrCredManr,Integer rectype)
 begin
   record CredHistVc CredHistr;
   Boolean TrHs;
@@ -327,7 +378,7 @@ begin
       if (CredHistr.RecordNr!=IPrw.InvoiceNr or CredHistr.RecordType!=0) then begin
         TrHs = false;
       end else begin
-        priority = GetItemPriority(IPb,CredHistr.ArtCode);
+        priority = GetItemPriority(CredHistr.CredManNr,CredHistr.ArtCode);
         InsertCredHistInArray(CredHistr,arrORr,priority);
       end;
     end;
@@ -383,15 +434,12 @@ end;
 global
 updating procedure SplitLoanPaymentsInReceipt(record IPVc IPr,Boolean okf)
 begin
-  record ItemPriorityBlock IPb;
   Boolean TrHs;
   Integer i,rwcnt;
   row IPVc IPrw;
   record IVVc IVr;
   array val arrCredManr;
   record CredHistVc CredHistr;
-
-  BlockLoad(IPb);
 
   rwcnt = MatRowCnt(IPr);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -408,7 +456,7 @@ begin
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(IPr,i,IPrw);
       if (IPrw.InvoiceNr>-1) then begin
-        FindUnpaidCredHist(IPb,IPr,IPrw,arrCredManr,1);
+        FindUnpaidCredHist(IPr,IPrw,arrCredManr,1);
       end;
     end;
   end else begin
@@ -458,12 +506,9 @@ end;
 global
 procedure UndoLoanPaymentsInReceipt(record IPVc IPr)
 begin
-  record ItemPriorityBlock IPb;
   Boolean TrHs;
   Integer i,rwcnt;
   row IPVc IPrw;
-
-  BlockLoad(IPb);
 
   rwcnt = MatRowCnt(IPr);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -600,7 +645,6 @@ end;
 global
 procedure DistributeCredHistValues(var record IPVc IPr,Integer rownr)
 begin
-  record ItemPriorityBlock IPb;
   record ORVc ORr;
   row IPVc IPrw;
   record IVVc IVr;
@@ -615,8 +659,6 @@ begin
   val remsum;
   vector Boolean invused;
 
-  BlockLoad(IPb);
-
   debugf = false;  
   if (rownr>=0) then begin
     MatRowGet(IPr,rownr,IPrw);
@@ -625,14 +667,21 @@ begin
       if (ReadFirstMain(IVr,1,true)) then begin
         if (IVr.CustCredManNr>0) then begin
           remsum = IPrw.RecVal;
-          MatRowDelete(IPr,rownr);
+          rwcnt = MatRowCnt(IPr);
+          for (i=rwcnt-1;i>=0;i=i-1) begin
+            MatRowGet(IPr,i,IPrw);
+            if (IPrw.InvoiceNr==IVr.SerNr) then begin
+              MatRowDelete(IPr,i);
+            end;
+          end;
+          //MatRowDelete(IPr,rownr);
           rwcnt = MatRowCnt(IVr);
           for (i=0;i<rwcnt;i=i+1) begin
             MatRowGet(IVr,i,IVrw);
             if (IVrw.CredHistNr>0) then begin
               CredHistr.SerNr = IVrw.CredHistNr;
               if (ReadFirstMain(CredHistr,1,true)) then begin
-                priority = GetItemPriority(IPb,CredHistr.ArtCode);
+                priority = GetItemPriority(CredHistr.CredManNr,CredHistr.ArtCode);
                 InsertCredHistInArray(CredHistr,arrORr,priority);
               end;
             end;
@@ -658,7 +707,7 @@ begin
             ORr = arrORr[i];
             SortRows(ORr,"Spec",true);
             rwcnt = MatRowCnt(ORr);
-           for (j=0;j<rwcnt;j=j+1) begin
+            for (j=0;j<rwcnt;j=j+1) begin
               MatRowGet(ORr,j,ORrw);
               if (remsum>0) then begin
                 AddCredHistToIP(ORrw,IPr,IVr.Addr0,IVr.CurncyCode,remsum,IVr.CustCode,true,"","",invused,rownr);
@@ -674,3 +723,4 @@ begin
 LDistributeCredHistValues:;
   return;
 end;
+

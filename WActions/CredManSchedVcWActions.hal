@@ -260,21 +260,6 @@ begin
   return;
 end;
 
-global
-function Boolean CredManSchedDClassOnOKWindow(Integer wn)
-begin
-  Boolean res;
-  record RcVc RepSpec;
-  
-  res = true;
-  if (GetWindowString(wn,"RecalcMessage")=="true") then begin
-    OpenWindow("RecalcInterestWClass",1,wn,"","",RepSpec);
-    res = false;
-  end;
-
-  CredManSchedDClassOnOKWindow = res;
-  return;
-end;
 
 global
 procedure CredManSchedRecalcInterestDsm()

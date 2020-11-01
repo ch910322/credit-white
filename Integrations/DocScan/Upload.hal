@@ -3,6 +3,8 @@ external inner procedure ReadWebUploadArgs(var string,var string,var string);
 external inner procedure GetWebUploadSessionVars(string,var string,var string,var string);
 external procedure FinishDocFileUpload(string,string,string,string);
 external updating procedure FinishLandingFileUpload(string,string,string,string);
+external updating procedure FinishLoanAppFileUpload(string,string,string,string);
+external procedure LoadLoanSession(var vector string);
 
 
 function Boolean UploadFilePart(string sess,var Integer err)
@@ -67,6 +69,7 @@ end;
 procedure HandleFileUploadFinish(string sess)
 begin
   string 255 path,filename,id,tag;
+  vector string 255 vSess;
 
   GetWebUploadSessionVars(sess,filename,id,tag);
 
@@ -77,6 +80,9 @@ begin
       FinishDocFileUpload(sess,filename,id,tag);
     case "landing":
       qupdating.FinishLandingFileUpload(sess,filename,id,tag);
+    case "loan_app":
+      LoadLoanSession(vSess);
+      qupdating.FinishLoanAppFileUpload(sess,filename,vSess["WebLoanNr"],tag);
   end;
 
   path = "tmp/" & tag & "/" & sess;
@@ -92,6 +98,7 @@ begin
   Boolean res;
   string 255 tag,filename,id;
   Boolean initf;
+  vector string 255 vSess;
   
   if (nonblank(sess)) then begin
     GetWebUploadSessionVars(sess,filename,id,tag);
@@ -105,6 +112,11 @@ begin
       res = nonblank(CurrentCust);
     case "landing":
       res = true;
+    case "loan_app":
+      LoadLoanSession(vSess);
+      if (nonblank(vSess["WebLoanNr"])) then begin
+        res = true;
+      end;
   end;
 
   FileCanBeUploaded = res;

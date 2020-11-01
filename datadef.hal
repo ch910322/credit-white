@@ -336,6 +336,8 @@ begin
   RecordField(AutoPauseCredMan,M4Int,0,0);
   RecordField(AutoPauseCredManTime,M4Time,0,0);
   RecordField(AutoSuretyOfficalNr,M4Int,0,0);
+  RecordField(AutoSuretySerie,M4Str,10,0);
+  RecordField(CityAgreementClassType,M4Code,20,0);
   EndBlock;
   
   RecordAddBegin(CUVc,"CredCUVc");
@@ -456,8 +458,8 @@ begin
   RecordField(BankName,M4Str,100,0);
   RecordField(BankAccount,M4Str,100,0);
   RecordField(MonthlyPaymentDay,M4Long,0,0);
-  RecordField(PauseDate,M4Date,0,0);
-  RecordField(PauseMonths,M4Long,0,0);
+  RecordField(xPauseDate,M4Date,0,0);
+  RecordField(xPauseMonths,M4Long,0,0);
   RecordField(MoneyTransferDate,M4Date,0,0);
 
   RecordField(SuretyProvider1,M4Str,200,0);
@@ -539,8 +541,8 @@ begin
   RecordField(VersionNo,M4Long,0,0);
   RecordField(Classifications,M4UStr,255,0);
   RecordField(LoanApplication,M4Long,0,0);
-  RecordField(ProlongMonths,M4Qty,0,0);
-  RecordField(ProlongDate,M4Date,0,0);//For now the same as pause date
+  RecordField(xProlongMonths,M4Qty,0,0);
+  RecordField(xProlongDate,M4Date,0,0);//For now the same as pause date
   RecordField(AnnualRate,M4Int,0,0);
   ChangeField(IntRate,M4Rate,0,0);
   ChangeField(PrincipleDelayInterest,M4Rate,0,0);
@@ -664,6 +666,8 @@ begin
   RecordField(BOE4HasSurety,M4Int,0,0);
 
   RecordField(BuyoutFeeMonths,M4Long,0,0);
+  RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
+  RecordField(DaysInMonth,M4Int,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -825,6 +829,18 @@ begin
   RecordField(BuyoutFeeFixed,M4Val,0,0);
   RecordField(BuyoutFeePrc,M4Qty,0,0);
   RecordField(BuyoutFeeMonths,M4Long,0,0);
+  RecordField(ItemPriorityCode,M4Code,20,0);
+  RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
+  RecordField(PMCode,M4Code,20,0);
+
+  RecordField(VekselisShortCEO1,M4Int,0,0);
+  RecordField(VekselisShortCEO2,M4Int,0,0);
+  RecordField(VekselisShortSurety,M4Int,0,0);
+  RecordField(VekselisShortUs,M4Int,0,0);
+  RecordField(VekselisShortLangCode,M4Code,10,0);
+
+  RecordField(VekselisShortMonths,M4Long,0,0);
+  RecordField(VekselisExtraMonths,M4Long,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -835,6 +851,10 @@ begin
   KeyBegin(ActComment);
   KeySegment(Comment);
   KeySegment(Code);
+  KeyBegin(PMCode);
+  KeySegment(PMCode);
+  KeySegment(Code);
+  
   EndRecordAdd;
 
 //RecordType - Invoice or payment
@@ -921,8 +941,25 @@ begin
   ArrayBegin(Math,IVSerRowType,1);
   ArrayField(ArtCode,M4Code,20,INVc);
   ArrayField(Priority,M4Int,0,0);
+  ArrayField(Name,M4Str,200,0);
   EndArray;
   EndBlock;
+
+  RecordBegin(CMItemPriorityVc,-,"");
+  RecordField(Code,M4Code,20,0);
+  RecordField(Comment,M4Str,200,0);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(ArtCode,M4Code,20,INVc);
+  ArrayField(Priority,M4Int,0,0);
+  ArrayField(Name,M4Str,200,0);
+  EndArray;
+  MainKeyBegin(Code,0);
+  KeySegment(Code);
+  KeyBegin(Comment);
+  KeySegment(Comment);
+  KeySegment(Code);
+  EndRecord;
 
   RecordAddBegin(CustPSVc,"CredCustPSVc");
   RecordField(B2BApps,M4Int,0,0);
@@ -993,6 +1030,7 @@ begin
   RecordField(ActPerson,M4Code,20,0);
   RecordField(ActType,M4Code,20,0);
   RecordField(ActText,M4Str,255,0);
+  RecordField(StdText,M4Code,10,0);
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(ActiveFlag);
@@ -1006,6 +1044,7 @@ begin
   RecordField(SentFlag,M4Int,0,0);
   RecordField(InvDate,M4Date,0,0);//Actually due date
   RecordField(ReminderNr,M4Long,0,0);
+  RecordField(InvoiceList,M4Str,255,0);
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(SentFlag);
@@ -1019,6 +1058,14 @@ begin
   KeySegment(ReminderNr);
   KeySegment(InvoiceNr);
   KeySegment(SerNr);
+
+  SubsetKeyBegin2(ReminderInvoiceList);
+  StoreInBaseKey;
+  AppendListFieldToKeyName(InvoiceList);
+  KeySegment(ReminderNr);
+  KeySegment(SerNr);
+ 
+  
   EndRecord;
 
   RecordBegin(CredManFactVc,-,"");
@@ -1289,6 +1336,14 @@ begin
   RecordBegin(CredManClassVc,-,"");
   RecordField(Code,M4Code,20,0);
   RecordField(Comment,M4Str,250,0);
+  RecordField(Type,M4Code,20,0);
+  MainKeyBegin(Code,0);
+  KeySegment(Code);
+  EndRecord;
+
+  RecordBegin(CredManClassTypeVc,-,"");
+  RecordField(Code,M4Code,20,0);
+  RecordField(Comment,M4Str,250,0);
   MainKeyBegin(Code,0);
   KeySegment(Code);
   EndRecord;
@@ -1397,6 +1452,7 @@ begin
   RecordField(UseTypeAccounts,M4Int,0,0);
   RecordField(UsePreCreatedInvoicePdf,M4Int,0,0);
   RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
+  RecordField(ItemPriorityCode,M4Code,20,0);
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
@@ -1452,6 +1508,7 @@ begin
 
   RecordAddBegin(IPVc,"IPVc_FIN");
   ArrayField(CredHistNr,M4Long,0,0);
+  ArrayField(CredHistItem,M4Code,20,0);
   EndRecordAdd;
 
   RecordBegin(CMPropertyVc,-,"");
@@ -1632,6 +1689,7 @@ begin
   RecordField(DepositSum,M4Val,0,0);
   RecordField(ExtraDepositSum,M4Val,0,0);
   RecordField(ExtraDepositMonths,M4Str,50,0);
+  RecordField(CustCode,M4Str,50,0);
   ArrayBegin(Math,-,1);
   ArrayField(InvDate,M4Date,0,0);
   ArrayField(Principle,M4Val,0,0);
@@ -1645,6 +1703,7 @@ begin
   ArrayField(PayDate,M4Date,0,0);
   ArrayField(Balance,M4Val,0,0);
   ArrayField(Deposit,M4Val,0,0);
+  ArrayField(VATVal,M4Val,0,0);
   EndArray;
   MainKeyBegin(MainKey,0);
   KeySegment(UUID);
@@ -1660,7 +1719,8 @@ begin
   RecordField(PLCreditAcc,M4Code,20,AccVc);
   RecordField(PLDebitAcc,M4Code,20,AccVc);
   RecordField(ControlAcc,M4Code,20,AccVc);
-  RecordField(DebtorsAcc,M4Code,20,AccVc);
+  RecordField(DebtorsAccShort,M4Code,20,AccVc);
+  RecordField(DebtorsAccLong,M4Code,20,AccVc);
   ArrayBegin(Math,-,1);
   ArrayField(ArtCode,M4Code,20,INVc);
   ArrayField(CreditAcc,M4Code,20,AccVc);
@@ -1684,8 +1744,63 @@ begin
   KeySegment(CredManNr);
   EndRecord;  
   
+  RecordBegin(CredManMoneyRecVc,-,"");
+  RecordField(CredManNr,M4Long,0,0);
+  RecordField(Total,M4Val,0,0);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(CustCode,M4Code,20,CUVc);
+  ArrayField(CustName,M4Str,255,0);
+  ArrayField(AmountPrc,M4Qty,0,0);
+  ArrayField(AmountVal,M4Val,0,0);
+  EndArray;
+  MainKeyBegin(CredManNr,0);
+  KeySegment(CredManNr);
+  EndRecord;  
+  
+  BlockBegin(CMInterfaceSetBlock,-,"");
+  LoadBlockOnStartup;
+  CacheBlockInClient;
+  RecordField(ShowVAT,M4Int,0,0);
+  RecordField(ShowLoanType1,M4Int,0,0);
+  RecordField(ShowLoanType2,M4Int,0,0);
+  RecordField(ShowLoanType3,M4Int,0,0);
+  RecordField(ShowLoanType4,M4Int,0,0);
+  RecordField(ShowLoanType5,M4Int,0,0);
+  RecordField(ShowMoneyTransferDate,M4Int,0,0);
+  RecordField(DefCredManLoanType,M4Int,0,0);
+  RecordField(ShowLoanType6,M4Int,0,0);
+  RecordField(ShowRealInterestFlag,M4Int,0,0);
+  RecordField(UseCredManDaysInMonth,M4Int,0,0);
+  EndBlock;
+
+  RecordBegin(CredManChangeVc,-,"");
+  RecordField(SerNr,M4Long,0,0);
+  RecordField(CredManNr,M4Long,0,0);
+  RecordField(TransDate,M4Date,0,0);
+  RecordField(OKFlag,M4Int,0,0);
+  RecordField(ProlongMonths,M4Qty,0,0);
+  RecordField(PauseMonths,M4Long,0,0);
+  RecordField(IntRate,M4Rate,0,0);
+  RecordField(AnnualRate,M4Int,0,0);
+  RecordField(OverduePercentage,M4Qty,0,0);
+  RecordField(MonthlyPaymentDay,M4Long,0,0);
+  MainKeyBegin(SerNr,0);
+  KeySegment(SerNr);
+  KeyBegin(CredManDate);
+  KeySegment(CredManNr);
+  KeySegment(TransDate);
+  KeySegment(SerNr);
+  SubsetKeyBegin2(CredSerNr);
+  StoreInBaseKey;
+  AppendFieldToKeyName(CredManNr);
+  KeySegment(SerNr);
+  
+  EndRecord;  
+
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
+  SourceFile("halcust\\LoanApp\\Estonian", 0);
   SourceFile("halcust\\LoanApp\\Latvian", 0);
   SourceFile("halcust\\LoanApp\\Documents", 3);
   SourceFile("halcust\\LoanApp\\Maint", 3);

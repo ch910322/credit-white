@@ -1,0 +1,93 @@
+//<halrule>server-only</halrule>
+external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
+
+function Boolean CheckSingleCMForInvoice(record CredManVc CredManr,Date td,var Date ndate)
+begin
+  Boolean res;
+  record CredManPayPlanVc CredManPayPlanr;
+  row CredManPayPlanVc CredManPayPlanrw;
+  LongInt i,rwcnt;
+  record CredManSetBlock CMb;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+
+  ndate = "";
+  CSr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CSr,1,true)) then begin
+    rwcnt = MatRowCnt(CSr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(CSr,i,CSrw);
+      if (CSrw.InvDate<=td and CSrw.Invoiced==0) then begin
+        if (CSrw.InvDate!=td) then begin
+          res = true;
+          ndate = CSrw.InvDate;
+          i = rwcnt;
+        end;
+      end;
+    end;
+  end else begin
+    BlockLoad(CMb);
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
+    rwcnt = MatRowCnt(CredManPayPlanr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
+      if (CredManPayPlanrw.PlanType<=4 and CredManPayPlanrw.TransDate<=td and nonblank(CredManPayPlanrw.TransDate)) then begin
+        if (td!=CredManPayPlanrw.TransDate) then begin
+          res = true;
+          ndate = CredManPayPlanrw.TransDate;
+          i = rwcnt;
+        end;
+      end;
+    end;
+  end;
+
+  CheckSingleCMForInvoice = res;
+  return;
+end;
+
+global
+procedure CMInvoiceableContractsRn(record RcVc RepSpec)
+begin
+  Integer rw;
+  Boolean res,TrHs,testf;
+  record CredManVc CredManr;
+  record IVVc IVr;
+  Date ndate;
+  
+  rw = 1;
+  StartReportJob("Invoiceable Contracts");
+  Header(rw,"Date: " & RepSpec.d1,1);rw = rw + 1;
+
+  EndHeader;
+
+  StartFormat(15);
+  OutString(0,0,"Agreement No.",false);
+  OutString(80,0,"Invoice Date",false);
+  EndFormat;
+  StartFormat(1);
+  Gray_divider(0,1);
+  EndFormat;
+
+  
+  TrHs = true;
+  CredManr.OKFlag = 1;
+  while (LoopKey("OKFlag",CredManr,1,TrHs)) begin
+    if (CredManr.OKFlag!=1) then begin
+      TrHs = false;
+    end else begin
+      testf = true;
+      if (testf) then begin
+        if (CheckSingleCMForInvoice(CredManr,RepSpec.d1,ndate)) then begin
+          StartFormat(15);
+          OutString(0,"DblCredManVc",CredManr.SerNr,false);
+          OutString(80,0,ndate,false);
+          EndFormat;
+        end;
+      end;
+    end;
+  end;
+
+  EndJob;
+
+  return;
+end;

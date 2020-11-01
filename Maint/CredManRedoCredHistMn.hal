@@ -2,13 +2,37 @@
 external updating procedure UpdateCredHistInvoice(var record IVVc,record IVVc);
 external updating procedure SplitLoanPaymentsInReceipt(record IPVc,Boolean);
 
+function Longint GetCredHistNrWithItem(Longint ivnr,string item)
+begin
+  Boolean TrHs;
+  Longint res;
+  record CredHistVc CredHistr;
+
+  TrHs = true;
+  CredHistr.RecordNr = ivnr;
+  CredHistr.RecordType = 0;
+  while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+    if (CredHistr.RecordNr!=ivnr or CredHistr.RecordType!=0) then begin
+      TrHs = false;
+    end else begin
+      if (item==CredHistr.ArtCode) then begin
+        res = CredHistr.SerNr;
+        TrHs = false;
+      end;
+    end;
+  end;
+
+  GetCredHistNrWithItem = res;
+  return;
+end;
+
 updating procedure TreatSingleAgreement(record CredManVc CredManr)
 begin
   record IVVc IV3r,IVr,oldIVr;
   record CredHistVc CredHistr;
   Boolean TrHs,TrHs2;
   record IPrsVc IPrsr;
-  record IPVc IPr;
+  record IPVc IPr,oldIPr;
   row IPVc IPrw;
   Integer i,rwcnt;
 
@@ -44,7 +68,23 @@ begin
           end else begin
             IPr.SerNr = IPrsr.TransNr;
             if (ReadFirstMain(IPr,1,true)) then begin
+              RecordCopy(oldIPr,IPr);
               rwcnt = MatRowCnt(IPr);
+              for (i=0;i<rwcnt;i=i+1) begin
+                MatRowGet(IPr,i,IPrw);
+                if (IPrw.InvoiceNr==IVr.SerNr) then begin
+                  if (IPrw.CredHistNr>0) then begin
+                    if (nonblank(IPrw.CredHistItem)) then begin
+                      IPrw.CredHistNr = GetCredHistNrWithItem(IVr.SerNr,IPrw.CredHistItem);
+                    end else begin
+                      IPrw.CredHistNr = -1;
+                    end;
+                    MatRowPut(IPr,i,IPrw);
+                  end;
+                end;
+              end;
+              RecordUpdate(oldIPr,IPr,false);
+
               for (i=rwcnt-1;i>=0;i=i-1) begin
                 MatRowGet(IPr,i,IPrw);
                 if (IPrw.InvoiceNr!=IVr.SerNr) then begin

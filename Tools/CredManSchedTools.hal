@@ -37,6 +37,10 @@ begin
               monthtype = 1;
             end;
           end;
+          if (CredManr.InstalmentType==0 and invdate>CredManr.FirstInvDate) then begin
+            monthtype = 2;
+          end;
+
           if (CredManr.ChargeMethod==1) then begin
             monthtype = 2;
           end;

@@ -10,20 +10,37 @@ external outer function Boolean HasB2BCreateOffer();
 external outer function Boolean UseCredManStatus();
 external outer function Boolean SimplifiedSureties();
 external outer function Boolean ShowBuyOutFee();
+external outer function Boolean HasBalloonLoanType();
 
 procedure ShowCredManLClassWindow()
 begin
   real v,h;
+  record CMInterfaceSetBlock ISb;
+
+  BlockLoad(ISb);
   
   SetWRect(10,80,700,298);
   Sizeable(-1,-1,0,0);
   SpawnClass(CredManDClass);
   UseView(CredManVc);
-  HalPushButton(h=5,v=5,h+=100,v+=20,"CredManLClass1Btn","Loans");
-  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass2Btn","Lease");
-  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass3Btn","Mortgage");
-  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass4Btn","Factoring");
-  HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass5Btn","Paymnt. Grnt.");
+  if (ISb.ShowLoanType1==1) then begin
+    HalPushButton(h=5,v=5,h+=100,v+=20,"CredManLClass1Btn","Loans");
+  end;
+  if (ISb.ShowLoanType2==1) then begin
+    HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass2Btn","Lease");
+  end;
+  if (ISb.ShowLoanType3==1) then begin
+    HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass3Btn","Mortgage");
+  end;
+  if (ISb.ShowLoanType4==1) then begin
+    HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass4Btn","Factoring");
+  end;
+  if (ISb.ShowLoanType5==1) then begin
+    HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass5Btn","Paymnt. Grnt.");
+  end;
+  if (ISb.ShowLoanType6==1) then begin
+    HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass6Btn","Balloon");
+  end;
   HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClassBtn","All");
   RecordList(4,v+=20,-21,-39);
   RlColKey(4,2,"N_o.",SerNr,false,TypeSerNr);
@@ -126,6 +143,7 @@ begin
   EditField(h,v+=vs,100,"Schudule Text",Normal,ScheduleText,false,LTxtSClass);
   EditField(h,v+=vs,100,"Mailing List",Normal,MailingList,false,PersColSClass);
   EditField(h,v+=vs,100,"Mailing List 2",Normal,MailingList2,false,PersColSClass);
+  EditField(h,v+=vs,100,"City Classification Type",Normal,CityAgreementClassType,false,CredManClassTypeSClass);
   EditField(h,v+=30,100,"Document Signer",Normal,DocumentSigner,false,UserSClass);
   EditField(h,v+=vs,100,"Signer's Job Description",Normal,DocumentSignerPosition,false,0);
   EditField(h,v+=30,100,"Invoice Signer",Normal,InvoiceSigner,false,UserSClass);
@@ -134,15 +152,8 @@ begin
     CheckBox(h,v+=30,0,"Automatically pause Agreements",AutoPauseCredMan);
     EditField(h,v+=20,100,"Time",Normal,AutoPauseCredManTime,false,PasteCurTime);
   end;
-
-  ButtonFrame(h2=360,v=20,150,6,"Default Loan Type");
-  RadioButton(h2,v,0,0,"Not set",DefCredManLoanType);
-  RadioButton(h2,v+=16,1,0,"Loan",DefCredManLoanType); 
-  RadioButton(h2,v+=16,2,0,"Leasing",DefCredManLoanType); 
-  RadioButton(h2,v+=16,3,0,"Mortgage",DefCredManLoanType); 
-  RadioButton(h2,v+=16,4,0,"Factoring",DefCredManLoanType); 
-  RadioButton(h2,v+=16,5,0,"Payment Grnt.",DefCredManLoanType); 
-
+  h = 360; v = 0;
+  h2 = 380;
   ButtonFrame(h2,v+=40,150,2,"Surety Provider by default");
   RadioButton(h2,v,0,0,"Contact",ContactPasteSpecial);
   RadioButton(h2,v+=16,1,0,"Contact Person",ContactPasteSpecial);  
@@ -158,8 +169,13 @@ begin
   RadioButton(h2,v+=16,1,0,"Actual",DaysInMonth); 
   
   if (SimplifiedSureties) then begin
-    CheckBox(h2,v+=30,0,"Automatically insert Surety Legal Number",AutoSuretyOfficalNr);
-  end;
+    EditField(h2,v+=30,50,"",Normal,AutoSuretySerie,false,0);
+    StaticText(h2+60,v+13,"Surety Legal No. Serie",false);
+    CheckBox(h2,v+=20,0,"Automatically insert Surety Legal Number",AutoSuretyOfficalNr);
+    v = v + 16;
+  end else begin
+    v = v + 30;
+  end;  
   
   EndWindow;
 
@@ -380,6 +396,12 @@ begin
   EditFieldTL(h,v,120,"Agreement",M4Long,Normal,0,long1,false,CredManSClass);
   EndWindow;
 
+  WindowBegin("Specify Create Agreement Test from Agreement",CredManCreateTestVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 150; v = 6; vs = 20;
+  EditFieldTL(h,v,120,"Agreement",M4Long,Normal,0,long1,false,CredManSClass);
+  EndWindow;
+
   WindowBegin("Specify Agreement Schedules",CreateCredManScheduleVClass,CGMnt,RcType);
   SetWRect(64,80,445,95);
   h = 150; v = 6; vs = 20;
@@ -537,6 +559,38 @@ begin
   EndMatrix;
   EndWindow;
 
+  WindowBegin("Item Priorities",CMItemPriorityLClass,CGmList,-);
+  Sizeable(-1,-1,0,0);
+  SetWRect(64,80,600,298);
+  SpawnClass(CMItemPriorityDClass);
+  UseView(CMItemPriorityVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlColKey(101,101,"Comment",Comment,false,Comment);
+  EndWindow;
+
+  WindowBegin("Item Priorities",CMItemPrioritySClass,CGsList,-);
+  Sizeable(-1,-1,0,0);
+  SetWRect(64,80,600,298);
+  SpawnClass(CMItemPriorityDClass);
+  UseView(CMItemPriorityVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlColKey(101,101,"Comment",Comment,false,Comment);
+  EndWindow;
+
+  WindowBegin("Item Priority",CMItemPriorityDClass,CGView,-);
+  SetWRect(80,80,400,280);
+  UseView(CMItemPriorityVc);
+  EditField(h,v=6,120,"Code",Normal,Code,false,0);
+  EditField(h,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  MatrixBegin(10,v+=40,-30,-10,-,99);
+  MatCol(1,25,"Item",0,ArtCode,false,INSClass);
+  MatCol(1,100,"Name",0,Name,false,0);
+  MatCol(1,-50,"Priority",0,Priority,false,0);
+  EndMatrix;
+  EndWindow;
+
   WindowBegin("Reminders",SMSReminderLClass,CGmList,-);
   Sizeable(-1,-1,0,0);
   SetWRect(64,80,600,298);
@@ -555,7 +609,7 @@ begin
   UseView(SMSReminderVc);
   EditField(h,v,80,"Ser. No.",Normal,SerNr,false,0);
   CheckBox(h2-50,v,0,"Active",ActiveFlag);
-  EditField(h,v+=vs,250,"Comment",Normal,Comment,false,0);
+  EditField(h,v+=vs,180,"Comment",Normal,Comment,false,0);
   EditField(h,v+=vs,100,"Reminder Type",Normal,ReminderType,false,SetSClass);
   EditField(h2,v,70,"Type",Normal,Type,false,SetSClass);
   EditField(h,v+=vs,100,"Days",Normal,Days,false,0);
@@ -588,6 +642,8 @@ begin
   
 
   EditField(h2=420,v=10,-20,"Email Subject",Normal,Subject,false,0);
+  EditField(h2=420,v+=vs,-20,"Standard Text",Normal,StdText,false,LTxtSClass);
+  
   StaticText(h2,v+=30,"Text",false);
   TextField(h2,v+=10,-20,190,Message,0);
 
@@ -595,14 +651,15 @@ begin
 
   WindowBegin("Reminder Queues",SMSReminderQueueLClass,CGmList,-);
   Sizeable(-1,-1,0,0);
-  SetWRect(64,80,600,298);
+  SetWRect(64,80,740,298);
   UseView(SMSReminderQueueVc);
   SpawnClass(SMSReminderQueueDClass);
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
   RlCol   (101,101,"Inv. Date",InvDate,false);
   RlCol   (201,201,"Invoice Nr.",InvoiceNr,false);
-  RlCol   (271,271,"Reminder",ReminderNr,false);
+  RlCol   (321,321,"Invoice List",InvoiceList,false);
+  RlCol   (440,440,"Reminder",ReminderNr,false);
   RlColKeyTL(-30,-30,"Sent",M4Mark,SentFlag,false,SentFlag);
   EndWindow;
 
@@ -1711,6 +1768,17 @@ begin
   EndWindow;
 end;
 
+window CMInvoiceableContractsRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm,vs;
+  WindowBegin("Specify Late to be invoiced Contracts",CMInvoiceableContractsRClass,CGRcW,RcType);
+  SetWRect(20,80,420,310);
+  vs = 20;
+  EditFieldTL(h=140,v=6,150,"On Date", M4Date,Normal,41,d1,false,PasteCurDate);
+  EndWindow;
+end;
+
 window ReceiptEntryWClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
@@ -1774,6 +1842,50 @@ begin
   WindowBegin("Agreement Classification",CredManClassDClass,CGview,-);
   SetWRect(20,80,400,239);
   UseView(CredManClassVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  EditField(h,v=6,100,"Code",Normal,Code,false,);
+  EditField(h,v+=vs,-40,"Comment",Normal,Comment,false,0);
+  EditField(h,v+=vs,140,"Type",Normal,Type,false,CredManClassTypeSClass);
+  EndWindow;
+end;
+
+window CredManClassTypeLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Classification Types",CredManClassTypeLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManClassTypeDClass);
+  UseView(CredManClassTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CredManClassTypeSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Paste Agreement Classification Type",CredManClassTypeSClass,CGslist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManClassTypeDClass);
+  UseView(CredManClassTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlCol(134,134,"Comment",Comment,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CredManClassTypeDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Agreement Classification Type",CredManClassTypeDClass,CGview,-);
+  SetWRect(20,80,400,239);
+  UseView(CredManClassTypeVc);
   vs=20; h=120; vs2=16; hm=-100;
   EditField(h,v=6,100,"Code",Normal,Code,false,);
   EditField(h,v+=vs,-40,"Comment",Normal,Comment,false,0);
@@ -1885,7 +1997,7 @@ begin
   CheckBox(h,v+=20,0,"Automatically send issued Invoices",AutoInvoiceSend);
   CheckBox(h,v+=16,0,"Automatically send Invoices created from Contracts",AutoMailsFromInvoices);
   CheckBox(h,v+=16,0,"When creating Email, use precreated PDFs",UsePreCreatedInvoicePdf);
-  CheckBox(h,v+=16,0,"Last Principle Value adds last Calculated value",LastPrincipleWithExtraMonth);
+//  CheckBox(h,v+=16,0,"Last Principle Value adds last Calculated value",LastPrincipleWithExtraMonth);
   
 
   EditField(h,v+=vs,100,"Additional Comment",Normal,InvoiceCommentStr,false,0);
@@ -1893,6 +2005,7 @@ begin
   EditField(h+200,v,140,"with",Normal,ReplaceVATNrWith,false,0);
   EditField(h,v+=vs,100,"Prolong Item",Normal,ProlongItem,false,INSClass);  
   EditField(h,v+=vs,100,"Premature Term. Item",Normal,BuyOutItem,false,INSClass);  
+  EditField(h,v+=vs,100,"Default Item Priority",Normal,ItemPriorityCode,false,CMItemPrioritySCLass);  
 
   EditField(h,v+=vs,100,"Period Delimiter",Normal,PeriodDelimiter,false,0);  
   
@@ -2443,6 +2556,14 @@ begin
   EndWindow;
 end;
 
+window CredMan7LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Balloon Agreements",CredMan7LClass,CGmlist,-);
+  ShowCredManLClassWindow;
+  EndWindow;
+end;
+
 window CredManLClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
@@ -2628,11 +2749,12 @@ window CredManTestDClass:1
 begin
   real h,v,vs,v2,vs2,hm,h2,vm,vm2;
   WindowBegin("Agreement Tests",CredManTestDClass,CGview,-);
-  SetWRect(20,80,660,339);
+  SetWRect(20,80,840,339);
   Sizeable(-1,-1,0,0);
   UseView(CredManTestVc);
   vs=20; h=160; vs2=16; hm=-100;h2 = 430;
   EditField(h,v=6,-40,"Comment",Normal,Comment,false,);
+  EditField(h,v+=vs,120,"Customer",Normal,CustCode,false,CUSClass);
   EditField(h,v+=vs,120,"Type",Normal,Type,false,CredManTypeSClass);vm = v;
   EditField(h,v+=vs,90,"Date",Normal,TransDate,false,PasteCurDate);
   EditField(h,v+=vs,50,"Rate",Normal,IntRate,false,0);
@@ -2665,7 +2787,8 @@ begin
   MatCol(1,310,"Principle",0,Principle,true,0);
   MatCol(1,380,"Interest",0,Interest,true,0);
   MatCol(1,450,"Fees",0,Fees,true,0);
-  MatCol(1,524,"Total",0,Total,true,0);
+  MatCol(1,524,"VAT",0,VATVal,true,0);
+  MatCol(1,-180,"Total",0,Total,true,0);
   MatCol(1,-90,"Balance",0,Balance,true,0);
   InsertRowTest;
   EndWindow;
@@ -2699,7 +2822,8 @@ begin
   EditField(h,v+=vs,100,"P/L Debit Account",Normal,PLDebitAcc,false,AccSClass);
   EditField(h,v+=vs,100,"P/L Credit Account",Normal,PLCreditAcc,false,AccSClass);
   EditField(h,v+=vs,100,"Control Account",Normal,ControlAcc,false,AccSClass);
-  EditField(h,v+=vs,100,"Debtors Account",Normal,DebtorsAcc,false,AccSClass);
+  EditField(h,v+=vs,100,"Debtors Account - short",Normal,DebtorsAccShort,false,AccSClass);
+  EditField(h,v+=vs,100,"Debtors Account - long",Normal,DebtorsAccLong,false,AccSClass);
 
   MatrixBegin(4,v=v+40,-32,-3,-,99);
   MatCol(1,24,"Item",0,ArtCode,false,INSClass);
@@ -2729,5 +2853,110 @@ begin
   DeleteRowTest;
   EndMatrix;
   EditField(-90,-30,80,"Total",ViewOnly,Total,true,0);
+  EndWindow;
+end;
+
+window CMInterfaceSetTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+
+  WindowBegin("Credit Management Settings",CMInterfaceSetTClass,CGSbl,-);
+  SetBlid(CMInterfaceSetBlock);
+  SetWRect(20,80,670,298);
+  Sizeable(-1,-1,0,0);
+  h = 100;
+  vs = 20;
+  ButtonFrame(h,v=20,150,7,"Default Loan Type");
+  RadioButton(h,v,0,0,"Not set",DefCredManLoanType);
+  RadioButton(h,v+=16,1,0,"Loan",DefCredManLoanType); 
+  RadioButton(h,v+=16,2,0,"Leasing",DefCredManLoanType); 
+  RadioButton(h,v+=16,3,0,"Mortgage",DefCredManLoanType); 
+  RadioButton(h,v+=16,4,0,"Factoring",DefCredManLoanType); 
+  RadioButton(h,v+=16,5,0,"Payment Grnt.",DefCredManLoanType); 
+  if (HasBalloonLoanType) then begin
+    RadioButton(h,v+=16,6,0,"Balloon",DefCredManLoanType); 
+  end;
+
+  CheckBox(h,v+=30,0,"Display Loan",ShowLoanType1);
+  CheckBox(h,v+=16,0,"Display Leasing",ShowLoanType2);
+  CheckBox(h,v+=16,0,"Display Mortgage",ShowLoanType3);
+  CheckBox(h,v+=16,0,"Display Factoring",ShowLoanType4);
+  CheckBox(h,v+=16,0,"Display Payment Grnt.",ShowLoanType5);
+  if (HasBalloonLoanType) then begin
+    CheckBox(h,v+=16,0,"Display Balloon",ShowLoanType6);
+  end;
+
+  CheckBox(h,v+=30,0,"Show VAT Data",ShowVAT);
+  CheckBox(h,v+=vs,0,"Show 'Int. based on Money Transfer'",ShowRealInterestFlag);
+  CheckBox(h,v+=vs,0,"Use Days In Month in Agreement",UseCredManDaysInMonth);
+  
+  
+  EndWindow;
+end;
+
+window CredManChangeLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Changes",CredManChangeLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManChangeDClass);
+  UseView(CredManChangeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
+  RlCol(70,70,"Agr. No.",CredManNr,false);
+  RlCol(146,146,"Date",TransDate,false);
+  RlCol(222,222,"Prol. Months",ProlongMonths,false);
+  RlCol(300,300,"Pause Months",PauseMonths,false);
+  RlCol(-180,-180,"Rate",IntRate,false);
+  RlCol(-130,-130,"Ovrd. Prc.",OverduePercentage,false);
+  RlCol(-90,-90,"Pmt Day",MonthlyPaymentDay,false);
+  RlColTL(-30,-30,"OK",M4Mark,OKFlag,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CredManChange2LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Agreement Changes",CredManChange2LClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManChangeDClass);
+  UseView(CredManChangeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Ser. No.",SerNr,false,CredSerNr);
+  RlCol(70,70,"Agr. No.",CredManNr,false);
+  RlCol(146,146,"Date",TransDate,false);
+  RlCol(222,222,"Prol. Months",ProlongMonths,false);
+  RlCol(300,300,"Pause Months",PauseMonths,false);
+  RlCol(-180,-180,"Rate",IntRate,false);
+  RlCol(-130,-130,"Ovrd. Prc.",OverduePercentage,false);
+  RlCol(-90,-90,"Pmt Day",MonthlyPaymentDay,false);
+  RlColTL(-30,-30,"OK",M4Mark,OKFlag,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window CredManChangeDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm,h2;
+  h2 = 260;
+  WindowBegin("Agreement Change",CredManChangeDClass,CGview,-);
+  SetWRect(20,80,600,339);
+  UseView(CredManChangeVc);
+  vs=20; h=150; vs2=16; hm=-100;
+  EditField(h,v=6,100,"SerNr",Normal,SerNr,false,);
+  Checkbox(h2,v,0,"Approved",OKFlag);
+  EditField(h,v+=vs,100,"Agreement No.",Normal,CredManNr,false,CredManSClass);
+  EditField(h,v+=vs,100,"Date",Normal,TransDate,false,PasteCurDate);
+  EditField(h,v+=vs,100,"Prolong Months",Normal,ProlongMonths,false,0);
+  EditField(h,v+=vs,100,"Pause Months",Normal,PauseMonths,false,0);
+  EditField(h,v+=vs,100,"Rate",Normal,IntRate,false,0);
+  Checkbox(h2,v,0,"Annual Rate",AnnualRate);
+  EditField(h,v+=vs,100,"Overdue Percentage",Normal,OverduePercentage,false,0);
+  EditField(h,v+=vs,100,"Monthly Payment Day",Normal,MonthlyPaymentDay,false,0);
   EndWindow;
 end;
