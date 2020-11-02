@@ -215,6 +215,27 @@ begin
 
   SString(200270,"Schedule Type");
 
+/*CreditAgreementsRn*/
+  SString(200280,"Credit Agreements");
+  SString(200281,"Nr");
+  SString(200282,"Agr. Type");
+  SString(200285,"Nepatvirtintos");
+  SString(200286,"Be OK");
+  SString(200287,"Baigtos");
+  SString(200288,"Pirkėjas");
+  SString(200289,"Įmonės kd.");
+  SString(200290,"Pavadinimas");
+  SString(200291,"Pradžios data");
+  SString(200292,"Pabaigos data");
+  SString(200293,"Viso suma");
+  SString(200294,"El. paštas");
+  SString(200295,"Užstato suma");
+  SString(200296,"Užstato %");
+  SString(200297,"Mėnesiai");
+  SString(200298,"Palūkanų %");
+  SString(200299,"Mėnesiniai įnašai");
+  SString(200300,"Balansų vertė");
+  SString(200301,"Buy-out");
 
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");
