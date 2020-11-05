@@ -206,6 +206,12 @@ BEGIN
   if (nonblank(shortacc) and shortval>0) then begin
     rs = shortval;
     aracc = shortacc;
+  end else begin
+    if (nonblank(longacc) and longval>0) then begin
+      rs = longval;
+      aracc = longacc;
+      addf = true;
+    end;
   end;
 LAddAccount:;
 //CUST-END
