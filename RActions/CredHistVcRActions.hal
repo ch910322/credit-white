@@ -19,7 +19,7 @@ begin
 end; 
 
 global
-updating procedure CreatePauseRecord(Longint sernr,Date td,Integer months,Integer okflag)
+updating procedure CreatePauseRecord(Longint sernr,Date td,val months,val months2,Integer okflag)
 begin
   record CredManChangeVc Changer;
   
@@ -27,12 +27,30 @@ begin
   Changer.SerNr = NextSerNr("CredManChangeVc",td,-1,false,"");
   Changer.TransDate = td;
   Changer.PauseMonths = months;
+  Changer.ProlongMonths = months2;
   Changer.OKFlag = okflag;
   Changer.CredManNr = sernr;
   RecordStore(Changer,true);
 
   return;
 end;
+
+global
+updating procedure CreateRateChangeRecord(Longint sernr,Date td,val rate,Integer okflag)
+begin
+  record CredManChangeVc Changer;
+  
+  RecordNew(Changer);
+  Changer.SerNr = NextSerNr("CredManChangeVc",td,-1,false,"");
+  Changer.TransDate = td;
+  Changer.IntRate = rate;
+  Changer.OKFlag = okflag;
+  Changer.CredManNr = sernr;
+  RecordStore(Changer,true);
+
+  return;
+end;
+
 
 global
 updating procedure CreateProlongRecord(Longint sernr,Date td,Integer months,Integer okflag)
@@ -51,7 +69,7 @@ begin
 end;
 
 global
-updating procedure ApprovePauseRecord(Longint sernr,Date td,Date nd,Integer months)
+updating procedure ApprovePauseRecord(Longint sernr,Date td,Date nd,val months,val months2)
 begin
   record CredManChangeVc Changer,oldChanger;
   Boolean TrHs;
@@ -63,7 +81,7 @@ begin
     if (Changer.CredManNr!=sernr or Changer.TransDate!=td) then begin
       TrHs = false;
     end else begin
-      if (Changer.PauseMonths==months) then begin
+      if (Changer.PauseMonths==months and Changer.ProlongMonths==months2) then begin
         RecordCopy(oldChanger,Changer);
         Changer.OKFlag = 1;
         if (nonblank(nd) and Changer.TransDate<nd) then begin
@@ -76,9 +94,10 @@ begin
 
   return;
 end;
+
 
 global
-updating procedure ApproveProlongRecord(Longint sernr,Date td,Date nd,Integer months)
+updating procedure ApproveRateRecord(Longint sernr,Date td,Date nd,val rate)
 begin
   record CredManChangeVc Changer,oldChanger;
   Boolean TrHs;
@@ -90,7 +109,7 @@ begin
     if (Changer.CredManNr!=sernr or Changer.TransDate!=td) then begin
       TrHs = false;
     end else begin
-      if (Changer.ProlongMonths==months) then begin
+      if (Changer.IntRate==rate) then begin
         RecordCopy(oldChanger,Changer);
         Changer.OKFlag = 1;
         if (nonblank(nd) and Changer.TransDate<nd) then begin
@@ -103,6 +122,7 @@ begin
 
   return;
 end;
+
 
 global
 function Integer GetProlongMonths(record CredManVc CredManr)
@@ -168,11 +188,11 @@ begin
       if (ReadFirstMain(CredManr,1,true)) then begin
         ndate = GetInvoicePaidDate(histnr);
         RecordCopy(oldCredManr,CredManr);
-        if (PSr.PauseMonths>0) then begin
-          ApprovePauseRecord(CredManr.SerNr,PSr.PauseDate,ndate,PSr.PauseMonths);
+        if (PSr.PauseMonths>0 or PSr.ProlongMonths>0) then begin
+          ApprovePauseRecord(CredManr.SerNr,PSr.PauseDate,ndate,PSr.PauseMonths,PSr.ProlongMonths);
         end;
-        if (PSr.ProlongMonths>0) then begin
-          ApproveProlongRecord(CredManr.SerNr,PSr.ProlongDate,ndate,PSr.ProlongMonths);
+        if (PSr.IntRate>0) then begin
+          ApproveRateRecord(CredManr.SerNr,PSr.PauseDate,ndate,PSr.IntRate);
         end;
         CredManSetDatesCust(CredManr,false);
         if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin

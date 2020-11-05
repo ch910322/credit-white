@@ -1498,6 +1498,7 @@ begin
   RecordField(PaidFlag,M4Int,0,0);
   RecordField(CredManNr,M4Long,0,0);
   RecordField(RecalcSchedule,M4Int,0,0);
+  RecordField(IntRate,M4Rate,0,0);
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(CredManPaid);
@@ -1780,7 +1781,7 @@ begin
   RecordField(TransDate,M4Date,0,0);
   RecordField(OKFlag,M4Int,0,0);
   RecordField(ProlongMonths,M4Qty,0,0);
-  RecordField(PauseMonths,M4Long,0,0);
+  RecordField(PauseMonths,M4Qty,0,0);
   RecordField(IntRate,M4Rate,0,0);
   RecordField(AnnualRate,M4Int,0,0);
   RecordField(OverduePercentage,M4Qty,0,0);

@@ -43,9 +43,10 @@ external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,B
 external function Boolean FindCEOContact(string,var record CUVc);
 external procedure GetCustomerLoanAmounts2(var record IPVc,var integer,string,var string,var val,string,boolean,string,string,var vector Boolean,Date,Longint);
 external function string 255 CM_GetCredManTypePurchItemAccount2(record CredManVc,string,Boolean);
-external updating procedure CreatePauseRecord(Longint,Date,Integer,Integer);
-external updating procedure CreateProlongRecord(Longint,Date,Integer,Integer);
+external updating procedure CreatePauseRecord(Longint,Date,val,val,Integer);
+external updating procedure CreateProlongRecord(Longint,Date,val,Integer);
 external function Integer GetProlongMonths(record CredManVc);
+external updating procedure CreateRateChangeRecord(Longint,Date,val,Integer);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -325,7 +326,7 @@ begin
   return;
 end;
 
-updating procedure CreateProlongSession(record CredManVc CredManr,Date td,val months,val prolongmonths,Integer prolongf,Integer recalcshedf)
+updating procedure CreateProlongSession(record CredManVc CredManr,Date td,val months,val prolongmonths,Integer prolongf,Integer recalcshedf,val rate)
 begin
   record ProlongSessionVc PSr;
 
@@ -337,6 +338,7 @@ begin
   PSr.PauseDate = td;
   PSr.ProlongDate = td;
   PSr.PauseMonths = months;
+  PSr.IntRate = rate;
   PSr.ProlongMonths = prolongmonths;
   PSr.ProlongWhenPaid = prolongf;
   PSr.RecalcSchedule = recalcshedf;
@@ -350,21 +352,30 @@ global
 updating procedure DoPauseCredMan(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res,var Boolean setf,record RcVc RepSpec,var record IVVc IVr)
 begin
   record AgreementDocVc ADr;
+  val tmonths,tprolongmonths;
   res = false;
 
 //  if (nonblank(td)) then begin
     //RecordCopy(oldCredManr,CredManr);
+    tprolongmonths = prolongmonths;
+    tmonths = months;
+    if (tprolongmonths==0) then begin
+      tprolongmonths = blankval;
+    end;
+    if (tmonths==0) then begin
+      tmonths = blankval;
+    end;
     if (CanPauseAgreement(CredManr,td,months)) then begin
       if (RepSpec.flags[2]==1) then begin
-        CreateProlongSession(CredManr,td,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1]);
+        CreateProlongSession(CredManr,td,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1],RepSpec.vals3);
         CreateProlongInvoice(CredManr,IVr);
       end;
       if (RepSpec.flags[3]==0) then begin
-        if (months>0) then begin
-          CreatePauseRecord(CredManr.SerNr,td,months,1);
+        if (tmonths>0 or tprolongmonths>0) then begin
+          CreatePauseRecord(CredManr.SerNr,td,tmonths,tprolongmonths,1);
         end;
-        if (prolongmonths>0) then begin
-          CreateProlongRecord(CredManr.SerNr,td,prolongmonths,1);
+        if (RepSpec.vals3>0) then begin
+          CreateRateChangeRecord(CredManr.SerNr,td,RepSpec.vals3,1);
         end;
         CredManSetDatesCust(CredManr,false);
         /*
@@ -380,11 +391,11 @@ begin
         */
         setf = true;
       end else begin
-        if (months>0) then begin
-          CreatePauseRecord(CredManr.SerNr,td,months,0);//not approved
+        if (tmonths>0 or tprolongmonths>0) then begin
+          CreatePauseRecord(CredManr.SerNr,td,tmonths,tprolongmonths,0);
         end;
-        if (prolongmonths>0) then begin
-          CreateProlongRecord(CredManr.SerNr,td,prolongmonths,0);//not approved
+        if (RepSpec.vals3>0) then begin
+          CreateRateChangeRecord(CredManr.SerNr,td,RepSpec.vals3,0);
         end;
       end;
       res = true;      
