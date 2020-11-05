@@ -232,7 +232,7 @@ return;
 end;
 
 global
-function Boolean CredManPMCodeMathes(string pmcode,Longint ivnr)
+function Boolean CredManPMCodeMatches(string pmcode,Longint ivnr,Boolean skipf)
 begin
   Boolean res;
   record IVVc IVr;
@@ -242,18 +242,19 @@ begin
 
   res = true;
   BlockLoad(BIb);
-  if (BIb.CheckCredManPMCode==1) then begin
-    IVr.SerNr = ivnr;
+  if (BIb.CheckCredManPMCode==1 or skipf) then begin
     CMTr.PMCode = pmcode;
     if (ReadFirstKey("PMCode",CMTr,1,true)) then begin//check that we have such agreement types with pm code, otherwise we can use it.
+      IVr.SerNr = ivnr;
       if (ReadFirstMain(IVr,1,true)) then begin
         if (IVr.CustCredManNr>0) then begin
+          res = false;
           CredManr.SerNr = IVr.CustCredManNr;
           if (ReadFirstMain(CredManr,1,true)) then begin
             CMTr.Code = CredManr.Type;
             if (ReadFirstMain(CMTr,1,true)) then begin
-              if (pmcode!=CMTr.PMCode) then begin
-                res = false;
+              if (pmcode==CMTr.PMCode) then begin
+                res = true;
               end;
             end;
           end;
@@ -262,15 +263,43 @@ begin
     end;
   end;
 
-  CredManPMCodeMathes = res;
+  CredManPMCodeMatches = res;
   return;
 end;
+
+global
+function Boolean CredManPMCodeMatches2(string pmcode,record CredManVc CredManr,Boolean skipf)
+begin
+  Boolean res;
+  record IVVc IVr;
+  record CredManTypeVc CMTr;
+  record BankImportSetBlock BIb;
+
+  res = true;
+  BlockLoad(BIb);
+  if (BIb.CheckCredManPMCode==1 or skipf) then begin
+    CMTr.PMCode = pmcode;
+    if (ReadFirstKey("PMCode",CMTr,1,true)) then begin//check that we have such agreement types with pm code, otherwise we can use it.
+      res = false;
+      CMTr.Code = CredManr.Type;
+      if (ReadFirstMain(CMTr,1,true)) then begin
+        if (pmcode==CMTr.PMCode) then begin
+          res = true;
+        end;
+      end;
+    end;
+  end;
+
+  CredManPMCodeMatches2 = res;
+  return;
+end;
+
 
 function Boolean ShouldAddInvoiceToIP(record IPVc IPr,record ARVc ARr,Date untildate,val remsum)
 begin
   Boolean res;
 
-  if (remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate) and CredManPMCodeMathes(IPr.PayMode,ARr.InvoiceNr)) then begin
+  if (remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate) and CredManPMCodeMatches(IPr.PayMode,ARr.InvoiceNr,false)) then begin
     res = true;
   end;
 

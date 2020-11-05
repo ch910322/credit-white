@@ -31,6 +31,7 @@ external inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var L
 external function val FindInvoicePaidAmount_OP(LongInt,LongInt);
 external inner procedure IPPastePayMode(var record IPVc);
 external inner updating procedure CreateInvoicePdfFile(record IVVc);
+external function Boolean CredManPMCodeMatches2(string,record CredManVc,Boolean);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -671,14 +672,25 @@ begin
   return;
 end;
 
-function Boolean PMCodeMatches(string pmcode,Longint ipnr)
+function Boolean PMCodeMatches(record CredManVc CredManr,Longint cupnr)
 begin
   Boolean res;
   record IPVc IPr;
+  record ARPayHistVc ARPayHistr;
 
-  IPr.SerNr = ipnr;
-  if (ReadFirstMain(IPr,1,true)) then begin
-    res = (pmcode==IPr.PayMode);
+  ARPayHistr.CUPNr = cupnr;
+  ARPayHistr.FileName = "IPVc";
+  if (ReadFirstKey("MainKey",ARPayHistr,2,true)) then begin
+    IPr.SerNr = ARPayHistr.SerNr;
+    if (ReadFirstMain(IPr,1,true)) then begin
+      if (CredManPMCodeMatches2(IPr.PayMode,CredManr,true)) then begin
+        res = true;
+      end;
+    end else begin
+      res = true;
+    end;
+  end else begin
+    res = true;
   end;
 
   PMCodeMatches = res;
@@ -686,7 +698,7 @@ begin
 end;
 
 global
-procedure CM_AddPrepayments(var record IVVc IVr,record CMInvoicingBlock CIb)
+procedure CM_AddPrepayments(var record IVVc IVr,record CredManVc CredManr,record CMInvoicingBlock CIb)
 begin
   record ARPayVc ARPayr;
   val remval;
@@ -695,27 +707,17 @@ begin
   record IVVc IV2r;
   string 255 warning;
   Boolean chsum;
-  record CredManVc CredManr;
-  record CredManTypeVc CMTr;
-  string 255 pmcode;
   
   if (CIb.AddPrepayments) then begin
     remval = IVr.Sum4;
     TrHs = true;
     ARPayr.CustCode = IVr.CustCode;
-    CredManr.SerNr = IVr.CustCredManNr;
-    if (ReadFirstMain(CredManr,1,true)) then begin
-      CMTr.Code = CredManr.Type;
-      if (ReadFirstMain(CMTr,1,true)) then begin
-        pmcode = CMTr.PMCode;
-      end;
-    end;
     while (LoopKey("CustCode",ARPayr,1,TrHs) and remval>0) begin
       if (ARPayr.CustCode!=IVr.CustCode) then begin
         TrHs = false;
       end else begin
         if (ARPayr.PayDate<=IVr.TransDate) then begin
-          if (blank(pmcode) or PMCodeMatches(pmcode,ARPayr.IPNr)) then begin
+          if (PMCodeMatches(CredManr,ARPayr.CUPNr)) then begin
             ClearRow(IVr,IVrw,kInvoiceRowTypePrepayment);
             IVrw.Spec = USetStr(1288);
             IVrw.CUPNr = ARPayr.CUPNr;
@@ -853,7 +855,7 @@ begin
               AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
               StoreLoanInvoice(oIVr,CredManr);
           end;
-          CM_AddPrepayments(IVr,CIb);
+          CM_AddPrepayments(IVr,CredManr,CIb);
           if (IVr.SerNr>-1) then begin
             CheckAndAddHiddenPrinciple(IVr,CIb);
             StoreLoanInvoice(IVr,CredManr);
@@ -894,7 +896,7 @@ begin
         SetupOverdueLangCode(IVr,CredManr.Type);
         StoreLoanInvoice(oIVr,CredManr);
     end;
-    CM_AddPrepayments(IVr,CIb);
+    CM_AddPrepayments(IVr,CredManr,CIb);
     if (IVr.SerNr>-1) then begin
       CheckAndAddHiddenPrinciple(IVr,CIb);
       StoreLoanInvoice(IVr,CredManr);
@@ -1027,7 +1029,7 @@ begin
   end;
   
   if (updf) then begin
-    CM_AddPrepayments(IVr,CIb);
+    CM_AddPrepayments(IVr,CredManr,CIb);
   end;
   CheckAndAddHiddenPrinciple(IVr,CIb);
 
@@ -1405,7 +1407,7 @@ begin
   sum = sum + CredManr.StdProlongFee;
   GetItemName(CIb.ProlongItem,spec);
   SetupInvoiceRowAndAdd(IVr,CIb.ProlongItem,spec,1,sum,blankval,14,-1);
-  CM_AddPrepayments(IVr,CIb);
+  CM_AddPrepayments(IVr,CredManr,CIb);
 
   StoreLoanInvoice(IVr,CredManr);
   if (IVr.SerNr>0) then begin
@@ -1434,7 +1436,7 @@ begin
     SetupLoanInvoice(CredManr,CMb,IVr,RepSpec.d1,"","",true,false,"",1);
     GetItemName(RepSpec.f1,spec);
     SetupInvoiceRowAndAdd(IVr,RepSpec.f1,spec,1,RepSpec.vals0,blankval,15,-1);
-    CM_AddPrepayments(IVr,CIb);
+    CM_AddPrepayments(IVr,CredManr,CIb);
 
     StoreLoanInvoice(IVr,CredManr);
   end;
@@ -1455,7 +1457,7 @@ begin
     BlockLoad(CIb);
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,CurrentDate,IVr);
-    CM_AddPrepayments(IVr,CIb);
+    CM_AddPrepayments(IVr,CredManr,CIb);
     if (IVr.SerNr>-1) then begin
       if (IVr.Sum4>0) then begin
         if (RecordInsert(IVr,true)) then begin
