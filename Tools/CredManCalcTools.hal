@@ -543,7 +543,8 @@ begin
           //substract interest
           tsum = FIN_PMT(rate, tusemonths, tusesum);
           if (extra_diff!=0) then begin
-            tsum = tsum - FIN_PMT(rate, tusemonths, extra_diff);
+            //logtext(0,"dd " & extra_diff & ":" & (extra_diff/(tusemonths)));
+            tsum = tsum - (extra_diff/(tusemonths));//FIN_PMT(rate, tusemonths-1, extra_diff);//FIN_PMT(rate, tusemonths, extra_diff);
           end;
           MatRowGet(CredManPayPlanr,MatRowCnt(CredManPayPlanr)-1,CredManPayPlanrw);
           tint = CredManPayPlanrw.Sum;
@@ -877,23 +878,40 @@ begin
   return;
 end;
 
-function Boolean TotalsDifferTooMuch(val v1,val v2,var val diff)
+function Boolean TotalsDifferTooMuch(val v1,val v2,var val diff,record CredManVc CredManr,Integer usemonths)
 begin
   Boolean res;
-  
+  val rate,ndiff,mdiff,tdiff,origdiff;
+  Integer i;
+
+  origdiff = diff;
+
   diff = v1-v2;
-  if (AbsoluteVal(diff)>0.5) then begin
+  if (AbsoluteVal(diff)>1) then begin
     res = true;
-    diff = diff - (diff*0.1);
+    rate = CredManr.IntRate;
+    if (CredManr.AnnualRate==1) then begin
+      rate = rate/12;
+    end;
+    rate = rate/100;
+    mdiff = diff/(usemonths);
+    ndiff = mdiff - (mdiff/(1+rate));
+    tdiff = ndiff;
+    for (i=0;i<usemonths;i=i+1) begin
+      tdiff = tdiff + ((i+1)*ndiff);
+    end;
+
+    diff = diff - tdiff;//(diff*0.31855);//(ndiff*usemonths);//(diff*0.31855);// - (diff*0.1);// - (diff*0.1);//0.42
   end else begin
     diff = 0;
   end;
+  diff = origdiff + diff;
 
   TotalsDifferTooMuch = res;
   return;
 end;
 
-function Boolean ShouldRecalculateAnnuitySchedule(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,var val diff)
+function Boolean ShouldRecalculateAnnuitySchedule(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,Integer usemonths,var val diff)
 begin
   record CredManSetBlock CredManSetb;
   record SMVc SMr;
@@ -910,7 +928,7 @@ begin
     MatRowGet(SMr,rwcnt-1,lastSMrw);
     MatRowGet(SMr,rwcnt-2,lastSM2rw);
     if (blank(lastSM2rw.ExtraComment)) then begin
-      if (TotalsDifferTooMuch(lastSM2rw.ToRateB2,lastSMrw.ToRateB2,diff)) then begin//funny name :)
+      if (TotalsDifferTooMuch(lastSM2rw.ToRateB2,lastSMrw.ToRateB2,diff,CredManr,usemonths)) then begin//funny name :)
         res = true;
       end;
     end;
@@ -1036,6 +1054,7 @@ begin
   Boolean waspausedf,ispausedf;
   Date pausefrom,pauseuntil;
   val annuity_diff;
+  Integer tries;
 
 /*should we calculate VAT here?
   if CredManr.VATSum > 0 and nonblank(CredManr.VATAddMonths) then begin
@@ -1178,9 +1197,10 @@ LCalcSchedule:;
     end;
   end;
 
-  if (inCredManr.InstalmentType==0 and annuity_diff==0) then begin//annuity
-    if (ShouldRecalculateAnnuitySchedule(inCredManr,CredManPayPlanr,annuity_diff)) then begin
+  if (inCredManr.InstalmentType==0 and tries<5) then begin//annuity
+    if (ShouldRecalculateAnnuitySchedule(inCredManr,CredManPayPlanr,usemonths,annuity_diff)) then begin
       RecordClear(CredManPayPlanr);
+      tries = tries + 1;
       goto LCalcSchedule;
     end;
   end;
