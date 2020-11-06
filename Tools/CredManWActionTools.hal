@@ -171,7 +171,12 @@ begin
       case 1: res = CMTr.CredManLangCode;
       case 2: res = CMTr.ScheduleLangCode;
       case 3: res = CMTr.SuretyLangCode;
-      case 4: res = CMTr.VekselisLangCode;
+      case 4: 
+        if (CMTr.VekselisShortMonths>0 and CredManr.InstalmentMonths<CMTr.VekselisShortMonths) then begin
+          res = CMTr.VekselisShortLangCode;
+        end else begin
+          res = CMTr.VekselisLangCode;
+        end;
     end;
   end;
 
