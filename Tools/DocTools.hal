@@ -76,7 +76,9 @@ begin
   end else begin
     sernr = IVr.SerNr;
   end;
-
+  if (right(Mailr.Header,1)!=" ") then begin
+    Mailr.Header = Mailr.Header & " ";
+  end;
   Mailr.Header = Mailr.Header & sernr;
 
   Ext_CreateInvoiceHeader = true;
