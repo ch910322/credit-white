@@ -407,7 +407,10 @@ begin
   h = 150; v = 6; vs = 20;
   EndWindow;
 
-
+  WindowBegin("Specify Agreement Changes",CreateCredManChangeVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 150; v = 6; vs = 20;
+  EndWindow;
 
   WindowBegin("Additional Bank Accounts",CUBankAccDClass,CGView,-);
   SetWRect(20,80,400,250);
