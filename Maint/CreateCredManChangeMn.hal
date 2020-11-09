@@ -1,4 +1,4 @@
-external updating procedure CreatePauseRecord(Longint,Date,val,val,Integer);
+external updating procedure CreatePauseRecord(Longint,Date,val,val,val,Integer);
 external updating procedure CreateProlongRecord(Longint,Date,val,Integer);
 
 global
@@ -11,9 +11,9 @@ begin
     //if (CredManr.OKFlag==1 and CredManr.endDate>CurrentDate) then begin
       if (nonblank(CredManr.xPauseDate) and CredManr.xPauseMonths>0) then begin
         if (CredManr.xProlongDate==CredManr.xPauseDate) then begin
-          CreatePauseRecord(CredManr.SerNr,CredManr.xPauseDate,CredManr.xPauseMonths,CredManr.xProlongMonths,1);
+          CreatePauseRecord(CredManr.SerNr,CredManr.xPauseDate,CredManr.xPauseMonths,CredManr.xProlongMonths,blankval,1);
         end else begin
-          CreatePauseRecord(CredManr.SerNr,CredManr.xPauseDate,CredManr.xPauseMonths,blankval,1);
+          CreatePauseRecord(CredManr.SerNr,CredManr.xPauseDate,CredManr.xPauseMonths,blankval,blankval,1);
         end;
       end;
       if (nonblank(CredManr.xProlongDate) and CredManr.xProlongMonths>0 and CredManr.xProlongDate!=CredManr.xPauseDate) then begin

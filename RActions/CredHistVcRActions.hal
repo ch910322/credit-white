@@ -19,7 +19,7 @@ begin
 end; 
 
 global
-updating procedure CreatePauseRecord(Longint sernr,Date td,val months,val months2,Integer okflag)
+updating procedure CreatePauseRecord(Longint sernr,Date td,val months,val months2,val rate,Integer okflag)
 begin
   record CredManChangeVc Changer;
   
@@ -28,6 +28,7 @@ begin
   Changer.TransDate = td;
   Changer.PauseMonths = months;
   Changer.ProlongMonths = months2;
+  Changer.IntRate = rate;
   Changer.OKFlag = okflag;
   Changer.CredManNr = sernr;
   RecordStore(Changer,true);
@@ -191,9 +192,11 @@ begin
         if (PSr.PauseMonths>0 or PSr.ProlongMonths>0) then begin
           ApprovePauseRecord(CredManr.SerNr,PSr.PauseDate,ndate,PSr.PauseMonths,PSr.ProlongMonths);
         end;
+        /*
         if (PSr.IntRate>0) then begin
           ApproveRateRecord(CredManr.SerNr,PSr.PauseDate,ndate,PSr.IntRate);
         end;
+        */
         CredManSetDatesCust(CredManr,false);
         if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
           if (PSr.RecalcSchedule==1) then begin

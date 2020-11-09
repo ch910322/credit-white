@@ -43,7 +43,7 @@ external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,B
 external function Boolean FindCEOContact(string,var record CUVc);
 external procedure GetCustomerLoanAmounts2(var record IPVc,var integer,string,var string,var val,string,boolean,string,string,var vector Boolean,Date,Longint);
 external function string 255 CM_GetCredManTypePurchItemAccount2(record CredManVc,string,Boolean);
-external updating procedure CreatePauseRecord(Longint,Date,val,val,Integer);
+external updating procedure CreatePauseRecord(Longint,Date,val,val,val,Integer);
 external updating procedure CreateProlongRecord(Longint,Date,val,Integer);
 external function Integer GetProlongMonths(record CredManVc);
 external updating procedure CreateRateChangeRecord(Longint,Date,val,Integer);
@@ -357,7 +357,7 @@ global
 updating procedure DoPauseCredMan(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res,var Boolean setf,record RcVc RepSpec,var record IVVc IVr)
 begin
   record AgreementDocVc ADr;
-  val tmonths,tprolongmonths;
+  val tmonths,tprolongmonths,rate;
   res = false;
 
 //  if (nonblank(td)) then begin
@@ -366,6 +366,9 @@ begin
     tmonths = months;
     if (tprolongmonths==0) then begin
       tprolongmonths = blankval;
+    end;
+    if (RepSpec.vals3>0) then begin
+      rate = RepSpec.vals3;
     end;
     if (tmonths==0) then begin
       tmonths = blankval;
@@ -377,7 +380,7 @@ begin
       end;
       if (RepSpec.flags[3]==0) then begin
         if (tmonths>0 or tprolongmonths>0) then begin
-          CreatePauseRecord(CredManr.SerNr,td,tmonths,tprolongmonths,1);
+          CreatePauseRecord(CredManr.SerNr,td,tmonths,tprolongmonths,rate,1);
         end;
         if (RepSpec.vals3>0) then begin
           CreateRateChangeRecord(CredManr.SerNr,td,RepSpec.vals3,1);
@@ -397,7 +400,7 @@ begin
         setf = true;
       end else begin
         if (tmonths>0 or tprolongmonths>0) then begin
-          CreatePauseRecord(CredManr.SerNr,td,tmonths,tprolongmonths,0);
+          CreatePauseRecord(CredManr.SerNr,td,tmonths,tprolongmonths,rate,0);
         end;
         if (RepSpec.vals3>0) then begin
           CreateRateChangeRecord(CredManr.SerNr,td,RepSpec.vals3,0);
