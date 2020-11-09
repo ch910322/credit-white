@@ -244,6 +244,7 @@ begin
   return;
 end;
 
+global
 procedure SetupInvoiceRowAndAdd(var record IVVc IVr,string item,string itemname,val quant,val price,val reb,Integer chargetype,Longint factinv)
 begin
   row IVVc IVrw;

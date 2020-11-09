@@ -47,6 +47,14 @@ external updating procedure CreatePauseRecord(Longint,Date,val,val,val,Integer);
 external updating procedure CreateProlongRecord(Longint,Date,val,Integer);
 external function Integer GetProlongMonths(record CredManVc);
 external updating procedure CreateRateChangeRecord(Longint,Date,val,Integer);
+external function Date GetLastInvoiceDate(record CredManVc,Date);
+external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string,Boolean,Boolean);
+external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var record IVVc,Date,Date,Date,Boolean,Boolean,string,Integer);
+external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val,array string);
+external procedure SetupOverdueLangCode(var record IVVc,string);
+external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
+external procedure CM_AddPrepayments(var record IVVc,record CredManVc,record CMInvoicingBlock);
+external procedure SetupInvoiceRowAndAdd(var record IVVc,string,string,val,val,val,Integer,Longint);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -1385,6 +1393,17 @@ begin
   return;
 end;
 
+procedure GetItemName(string code,var string spec)
+begin
+  record INVc INr;
+
+  INr.Code = code;
+  ReadFirstMain(INr,1,true);
+  spec = INr.Name;
+
+  return;
+end;
+
 global
 updating procedure CredManPartialBuyoutDo(Date td,val buyoutval,Longint sernr)
 begin
@@ -1396,6 +1415,20 @@ begin
   record BaseCurBlock BCb;
   record AgreementDocVc ADr;
   Boolean updf;
+  record IVVc IVr;
+  Integer k;
+  vector Boolean invused;
+  record CMInvoicingBlock CIb;
+  record CredManSetBlock CMb;
+  Integer latedays;
+  val lateamount;
+  Date invdate,sd;
+  val remsum;
+  record IPVc IPr;
+  row IPVc IPrw;
+  Integer i,rwcnt;
+  array string 255 lateformula;
+  string 255 spec;
 
   CredManr.SerNr = sernr;
   if (ReadFirstMain(CredManr,1,true)) then begin
@@ -1407,7 +1440,7 @@ begin
     if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
       updf = true;
     end;
-
+/*
     BlockLoad(BCb);
     SMr.RegDate = td;
     SMr.Sign = GetDefaultPayMode;
@@ -1422,6 +1455,44 @@ begin
       CreateCredHist(-1,11,CredManr.CustCode,tval,4,"",td,CredManr.SerNr,td,histnr,"","",1,CredManr.SerNr,tval,-1,tval);
       UpdateCredHistBalancePartialBuyout(CredManr.SerNr,histnr);
     end;
+*/
+
+    latedays = 0;
+    lateamount = 0;
+    invdate = td;
+    sd = GetLastInvoiceDate(CredManr,invdate);
+    GetCredManOverdueInvoices(CredManr,CMb,invdate,sd,latedays,lateamount,lateformula,true,false);
+    if (latedays>0 or lateamount>0) then begin
+      //Setup always new invoice
+      SetupLoanInvoice(CredManr,CMb,IVr,invdate,sd,invdate,true,false,"",2);
+      AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
+      SetupOverdueLangCode(IVr,CredManr.Type);
+      StoreLoanInvoice(IVr,CredManr);
+    end;
+
+    remsum = buyoutval;
+    GetCustomerLoanAmounts2(IPr,k,CredManr.Addr0,CredManr.CurncyCode,remsum,CredManr.CustCode,true,"","",invused,td,CredManr.SerNr);
+    
+    rwcnt = MatRowCnt(IPr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(IPr,i,IPrw);
+      if (IPrw.InvoiceNr>0) then begin
+        tval = tval + IPrw.RecVal;
+      end;
+    end;
+
+    //create a new invoice and creata receipt
+    BlockLoad(CMb);
+    BlockLoad(CIb);
+    SetupLoanInvoice(CredManr,CMb,IVr,CurrentDate,"","",true,false,"",1);
+    GetItemName(CMb.InstalmentItem,spec);
+    SetupInvoiceRowAndAdd(IVr,CMb.InstalmentItem,spec,1,buyoutval-tval,blankval,1,-1);
+    CM_AddPrepayments(IVr,CredManr,CIb);
+    StoreLoanInvoice(IVr,CredManr);
+
+    IVr.Sum4 = buyoutval;//a little hack for this to work
+    CreatePaymentFakeReceipt(CredManr,IVr);
+
     if (updf) then begin
       ADr.RecordType = 0;
       ADr.RecordNr = CredManr.SerNr;
