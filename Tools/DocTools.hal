@@ -51,7 +51,7 @@ begin
 end;
 
 global
-function Boolean Ext_CreateInvoiceHeader(record IVVc IVr,row MailTextVc MTrw,var record MailVc Mailr)
+function Boolean Ext_CreateInvoiceHeader(record IVVc IVr,row MailTextVc MTrw,record IVMailBlock IVMailr,var record MailVc Mailr)
 begin
   string 255 sernr;
 
