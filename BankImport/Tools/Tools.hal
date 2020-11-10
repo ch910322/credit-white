@@ -239,26 +239,34 @@ begin
   record CredManVc CredManr;
   record CredManTypeVc CMTr;
   record BankImportSetBlock BIb;
+  string 255 credmanpmcode;
 
   res = true;
   BlockLoad(BIb);
   if (BIb.CheckCredManPMCode==1 or skipf) then begin
-    CMTr.PMCode = pmcode;
-    if (ReadFirstKey("PMCode",CMTr,1,true)) then begin//check that we have such agreement types with pm code, otherwise we can use it.
-      IVr.SerNr = ivnr;
-      if (ReadFirstMain(IVr,1,true)) then begin
-        if (IVr.CustCredManNr>0) then begin
-          res = false;
-          CredManr.SerNr = IVr.CustCredManNr;
-          if (ReadFirstMain(CredManr,1,true)) then begin
-            CMTr.Code = CredManr.Type;
-            if (ReadFirstMain(CMTr,1,true)) then begin
-              if (pmcode==CMTr.PMCode) then begin
-                res = true;
-              end;
-            end;
+
+    IVr.SerNr = ivnr;
+    if (ReadFirstMain(IVr,1,true)) then begin
+      if (IVr.CustCredManNr>0) then begin
+        CredManr.SerNr = IVr.CustCredManNr;
+        if (ReadFirstMain(CredManr,1,true)) then begin
+          CMTr.Code = CredManr.Type;
+          if (ReadFirstMain(CMTr,1,true)) then begin
+            credmanpmcode = CMTr.PMCode;
           end;
         end;
+      end;
+    end;
+
+    ResetLoop(CMTr);
+    CMTr.PMCode = pmcode;
+    if (ReadFirstKey("PMCode",CMTr,1,true)) then begin//check that we have such agreement types with pm code, otherwise we can use it.
+      if (pmcode!=credmanpmcode) then begin
+        res = false;
+      end;
+    end else begin
+      if (nonblank(credmanpmcode)) then begin
+        res = false;
       end;
     end;
   end;
@@ -274,18 +282,25 @@ begin
   record IVVc IVr;
   record CredManTypeVc CMTr;
   record BankImportSetBlock BIb;
+  string 255 credmanpmcode;
 
   res = true;
   BlockLoad(BIb);
   if (BIb.CheckCredManPMCode==1 or skipf) then begin
+    CMTr.Code = CredManr.Type;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      credmanpmcode = CMTr.PMCode;
+    end;
+
+    ResetLoop(CMTr);
     CMTr.PMCode = pmcode;
-    if (ReadFirstKey("PMCode",CMTr,1,true)) then begin//check that we have such agreement types with pm code, otherwise we can use it.
-      res = false;
-      CMTr.Code = CredManr.Type;
-      if (ReadFirstMain(CMTr,1,true)) then begin
-        if (pmcode==CMTr.PMCode) then begin
-          res = true;
-        end;
+    if (ReadFirstKey("PMCode",CMTr,1,true)) then begin
+      if (pmcode!=credmanpmcode) then begin
+        res = false;
+      end;
+    end else begin
+      if (nonblank(credmanpmcode)) then begin
+        res = false;
       end;
     end;
   end;
