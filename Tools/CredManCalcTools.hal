@@ -609,8 +609,8 @@ begin
             sum = CredManr.MaxMonthlyPayment-(curpayment-sum);
           end;
         end;
-        if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
-          if (calcbal-sum<(CredManr.LastMonthPrinc+(usemonths*0.01))) then begin
+        if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0 and month==(tusemonths-1)) then begin
+          if (calcbal-sum!=CredManr.LastMonthPrinc) then begin
             sum = calcbal - CredManr.LastMonthPrinc;
           end;
         end;
@@ -949,7 +949,7 @@ begin
   record SMVc SMr;
   row SMVc lastSMrw,lastSM2rw;
   Boolean res;
-  Integer rwcnt;
+  Integer rwcnt,tmonthdiff;
   record CMApplicationSetBlock CMb;
   
   BlockLoad(CMb);
@@ -958,10 +958,16 @@ begin
     BlockLoad(CredManSetb);
     BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
     rwcnt = MatRowCnt(SMr);
-    MatRowGet(SMr,rwcnt-1,lastSMrw);
-    MatRowGet(SMr,rwcnt-2,lastSM2rw);
+    if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
+      MatRowGet(SMr,rwcnt-2,lastSMrw);
+      MatRowGet(SMr,rwcnt-3,lastSM2rw);
+      tmonthdiff = 1;
+    end else begin
+      MatRowGet(SMr,rwcnt-1,lastSMrw);
+      MatRowGet(SMr,rwcnt-2,lastSM2rw);
+    end;
     if (blank(lastSM2rw.ExtraComment)) then begin
-      if (TotalsDifferTooMuch(lastSM2rw.ToRateB2,lastSMrw.ToRateB2,diff,CredManr,usemonths)) then begin//funny name :)
+      if (TotalsDifferTooMuch(lastSM2rw.ToRateB2,lastSMrw.ToRateB2,diff,CredManr,usemonths-tmonthdiff)) then begin//funny name :)
         res = true;
       end;
     end;
@@ -1232,7 +1238,7 @@ LCalcSchedule:;
     end;
   end;
 
-  if (inCredManr.InstalmentType==0 and tries<5) then begin//annuity
+  if (inCredManr.InstalmentType==0 and tries<8) then begin//annuity
     if (ShouldRecalculateAnnuitySchedule(inCredManr,CredManPayPlanr,usemonths,annuity_diff)) then begin
       RecordClear(CredManPayPlanr);
       tries = tries + 1;
