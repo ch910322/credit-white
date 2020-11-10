@@ -1238,7 +1238,7 @@ LCalcSchedule:;
     end;
   end;
 
-  if (inCredManr.InstalmentType==0 and tries<8) then begin//annuity
+  if (inCredManr.InstalmentType==0 and tries<25) then begin//annuity
     if (ShouldRecalculateAnnuitySchedule(inCredManr,CredManPayPlanr,usemonths,annuity_diff)) then begin
       RecordClear(CredManPayPlanr);
       tries = tries + 1;
