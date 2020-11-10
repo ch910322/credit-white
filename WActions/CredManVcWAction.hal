@@ -1106,6 +1106,8 @@ begin
   
   if (nonblank(RepSpec.d1) and RepSpec.vals0>0) then begin
     CredManPartialBuyoutDo(RepSpec.d1,RepSpec.vals0,RepSpec.long1);
+    UpdateBrowses("CredManVc");
+    UpdateBrowses("CredHistVc");
     CloseWindow(wn);
   end;
 
