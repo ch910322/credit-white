@@ -1560,7 +1560,9 @@ begin
     if (ARPayr.CustCode!=CredManr.CustCode) then begin
       TrHs = false;
     end else begin
-      res = res + ARPayr.RVal;
+      if (PMCodeMatches(CredManr,ARPayr.CUPNr)) then begin
+        res = res + ARPayr.RVal;
+      end;
     end;
   end;
 
