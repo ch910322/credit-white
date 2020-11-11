@@ -16,7 +16,7 @@ external procedure AddLateFees(record CredManVc,record CredManSetBlock,var recor
 external procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
 external procedure SetupOverdueLangCode(var record IVVc,string);
 external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
-external function Boolean CredManPMCodeMathes(string,Longint);
+external function Boolean CredManPMCodeMatches(string,Longint,Boolean);
 
 
 /*Invoicing tools*/
@@ -291,7 +291,7 @@ begin
     end else begin
       if (credmannr==-1 or credmannr==CredHistr.CredManNr) then begin
         if (CredHistr.RecordType==0 and (blank(untildate) or CredHistr.TransDate<=untildate)) then begin
-          if (CredManPMCodeMathes(IPr.PayMode,CredHistr.RecordNr)) then begin
+          if (CredManPMCodeMatches(IPr.PayMode,CredHistr.RecordNr,false)) then begin
             priority = GetItemPriority(CredHistr.CredManNr,CredHistr.ArtCode);
             InsertCredHistInArray(CredHistr,arrORr,priority);
           end;

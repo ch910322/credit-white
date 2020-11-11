@@ -232,45 +232,89 @@ return;
 end;
 
 global
-function Boolean CredManPMCodeMathes(string pmcode,Longint ivnr)
+function Boolean CredManPMCodeMatches(string pmcode,Longint ivnr,Boolean skipf)
 begin
   Boolean res;
   record IVVc IVr;
   record CredManVc CredManr;
   record CredManTypeVc CMTr;
   record BankImportSetBlock BIb;
+  string 255 credmanpmcode;
 
   res = true;
   BlockLoad(BIb);
-  if (BIb.CheckCredManPMCode==1) then begin
+  if (BIb.CheckCredManPMCode==1 or skipf) then begin
+
     IVr.SerNr = ivnr;
-    CMTr.PMCode = pmcode;
-    if (ReadFirstKey("PMCode",CMTr,1,true)) then begin//check that we have such agreement types with pm code, otherwise we can use it.
-      if (ReadFirstMain(IVr,1,true)) then begin
-        if (IVr.CustCredManNr>0) then begin
-          CredManr.SerNr = IVr.CustCredManNr;
-          if (ReadFirstMain(CredManr,1,true)) then begin
-            CMTr.Code = CredManr.Type;
-            if (ReadFirstMain(CMTr,1,true)) then begin
-              if (pmcode!=CMTr.PMCode) then begin
-                res = false;
-              end;
-            end;
+    if (ReadFirstMain(IVr,1,true)) then begin
+      if (IVr.CustCredManNr>0) then begin
+        CredManr.SerNr = IVr.CustCredManNr;
+        if (ReadFirstMain(CredManr,1,true)) then begin
+          CMTr.Code = CredManr.Type;
+          if (ReadFirstMain(CMTr,1,true)) then begin
+            credmanpmcode = CMTr.PMCode;
           end;
         end;
       end;
     end;
+
+    ResetLoop(CMTr);
+    CMTr.PMCode = pmcode;
+    if (ReadFirstKey("PMCode",CMTr,1,true)) then begin//check that we have such agreement types with pm code, otherwise we can use it.
+      if (pmcode!=credmanpmcode) then begin
+        res = false;
+      end;
+    end else begin
+      if (nonblank(credmanpmcode)) then begin
+        res = false;
+      end;
+    end;
   end;
 
-  CredManPMCodeMathes = res;
+  CredManPMCodeMatches = res;
   return;
 end;
+
+global
+function Boolean CredManPMCodeMatches2(string pmcode,record CredManVc CredManr,Boolean skipf)
+begin
+  Boolean res;
+  record IVVc IVr;
+  record CredManTypeVc CMTr;
+  record BankImportSetBlock BIb;
+  string 255 credmanpmcode;
+
+  res = true;
+  BlockLoad(BIb);
+  if (BIb.CheckCredManPMCode==1 or skipf) then begin
+    CMTr.Code = CredManr.Type;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      credmanpmcode = CMTr.PMCode;
+    end;
+
+    ResetLoop(CMTr);
+    CMTr.PMCode = pmcode;
+    if (ReadFirstKey("PMCode",CMTr,1,true)) then begin
+      if (pmcode!=credmanpmcode) then begin
+        res = false;
+      end;
+    end else begin
+      if (nonblank(credmanpmcode)) then begin
+        res = false;
+      end;
+    end;
+  end;
+
+  CredManPMCodeMatches2 = res;
+  return;
+end;
+
 
 function Boolean ShouldAddInvoiceToIP(record IPVc IPr,record ARVc ARr,Date untildate,val remsum)
 begin
   Boolean res;
 
-  if (remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate) and CredManPMCodeMathes(IPr.PayMode,ARr.InvoiceNr)) then begin
+  if (remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate) and CredManPMCodeMatches(IPr.PayMode,ARr.InvoiceNr,false)) then begin
     res = true;
   end;
 

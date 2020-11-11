@@ -254,6 +254,27 @@ begin
   SString(200271,"Can't update becauce there is an Invoice already created");
   SString(200272,"Agreement schedule is not matching with Fixed schedule");
 
+/*CreditAgreementsRn*/
+  SString(200280,"Credit Agreements");
+  SString(200281,"No.");
+  SString(200282,"Agr. Type");
+  SString(200285,"Not Approved");
+  SString(200286,"Not OK");
+  SString(200287,"Finished");
+  SString(200288,"Customer");
+  SString(200289,"Reg. No.");
+  SString(200290,"Name");
+  SString(200291,"Start Date");
+  SString(200292,"End Date");
+  SString(200293,"Total");
+  SString(200294,"Email");
+  SString(200295,"Downp.");
+  SString(200296,"Downp. %");
+  SString(200297,"Months");
+  SString(200298,"Rate");
+  SString(200299,"Monthly p.");
+  SString(200300,"Balance");
+  SString(200301,"Buy-out");
 
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");

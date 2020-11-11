@@ -49,3 +49,39 @@ begin
   Ext_AddPreCreatedDocument = res;
   return;
 end;
+
+global
+function Boolean Ext_CreateInvoiceHeader(record IVVc IVr,row MailTextVc MTrw,record IVMailBlock IVMailr,var record MailVc Mailr)
+begin
+  string 255 sernr;
+
+  if (nonblank(MTrw.Header)) then begin  
+    Mailr.Header = MTrw.Header;
+  end else begin
+    if (nonblank(IVMailr.Header)) then begin
+      Mailr.Header = IVMailr.Header & " ";
+    end;
+    Mailr.Header = Mailr.Header;
+  end;
+  switch (IVr.InvType) begin
+    case kInvoiceTypeCredit:
+      Mailr.Header = Mailr.Header & USetStr(1805) & " ";
+    case kInvoiceTypeCreditSpecialSales:
+      Mailr.Header = Mailr.Header & USetStr(1805) & " ";
+    otherwise
+      Mailr.Header = Mailr.Header & USetStr(1803) & " ";
+  end;
+  if (nonblank(IVr.OfficialSerNr)) then begin
+    sernr = IVr.OfficialSerNr;
+  end else begin
+    sernr = IVr.SerNr;
+  end;
+  if (right(Mailr.Header,1)!=" ") then begin
+    Mailr.Header = Mailr.Header & " ";
+  end;
+  Mailr.Header = Mailr.Header & sernr;
+
+  Ext_CreateInvoiceHeader = true;
+  return;
+end;
+

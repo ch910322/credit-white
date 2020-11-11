@@ -3,8 +3,6 @@ external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPa
 external inner function Boolean SetInSet2(string,string);
 external procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 
-SetLangMode(LangLithuanian,"LIT",2);
-
 function string 10 Checkbocout(boolean in)
 begin
 	string 10 res;
@@ -98,7 +96,7 @@ begin
 
 
 	BlockLoad(CredManSetb);
-	startreportjob(USetStr(1000005));
+	startreportjob(USetStr(200280));
 	
 	endheader;
 
@@ -123,33 +121,31 @@ begin
   
 	
 	StartFormat(15);
-		OutString(0,0,"Nr",false);
-		OutString(rp[2],0,"Agr. Type",false);
+		OutString(0,0,USetStr(200281),false);
+		OutString(rp[2],0,USetStr(200282),false);
 		if(RepSpec.Media==mtExcel)then begin
-			OutString(35,0,"Sustabdytos",false);
-			OutString(70,0,"Nutrauktos",false);
-			OutString(70,0,"Nepatvirtintos",false);
-			OutString(70,0,"Be OK",false);
-			OutString(70,0,"Baigtos",false);
+			OutString(70,0,USetStr(200285),false);
+			OutString(70,0,USetStr(200286),false);
+			OutString(70,0,USetStr(200287),false);
 		end;
-		OutString(rp[15],0,"Pirkėjas",false);
-		OutString(rp[3],0,"Įmonės kd.",false);
+		OutString(rp[15],0,USetStr(200288),false);
+		OutString(rp[3],0,USetStr(200289),false);
 //		OutString(35,0,"Klientas",false);
-		OutString(rp[4],0,"Pavadinimas",false);
-		OutString(rp[5],0,"Pradžios data",false);
-		OutString(rp[6],0,"Pabaigos data",false);
-		OutString(rp[7],0,"Viso suma",false);//totoals
+		OutString(rp[4],0,USetStr(200290),false);
+		OutString(rp[5],0,USetStr(200291),false);
+		OutString(rp[6],0,USetStr(200292),false);
+		OutString(rp[7],0,USetStr(200293),false);//totoals
     if (RepSpec.flags[6]==1) then begin
-		  OutString(rp[8],0,"El. paštas",false);//totoals
+		  OutString(rp[8],0,USetStr(200294),false);//totoals
     end else begin
-  		OutString(rp[8],0,"Užstato suma",false);//totals
-  		OutString(rp[9],0,"Užstato %",false);
+  		OutString(rp[8],0,USetStr(200295),false);//totals
+  		OutString(rp[9],0,USetStr(200296),false);
     end;
-		OutString(rp[10],0,"Mėnesiai",false);
-		OutString(rp[11],0,"Palūkanų %",false);
-		OutString(rp[12],0,"Mėnesiniai įnašai",true);//totals
-		OutString(rp[13],0,"Balansų vertė",true);//totals
-		OutString(rp[14],0,"Buy-out",true);//buyout value
+		OutString(rp[10],0,USetStr(200297),false);
+		OutString(rp[11],0,USetStr(200298),false);
+		OutString(rp[12],0,USetStr(200299),true);//totals
+		OutString(rp[13],0,USetStr(200300),true);//totals
+		OutString(rp[14],0,USetStr(200301),true);//buyout value
 	EndFormat;
 	
 	TrHs = true;

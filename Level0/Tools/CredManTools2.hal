@@ -1010,10 +1010,10 @@ begin
   twelve = 12;
   BlockLoad(CredManSetb);
   CredManr.endDate = AddMonth(CredManr.FirstInvDate,CredManr.InstalmentMonths - 1);
-  BuildCredManPayPlan(CredManr,CredManPayPlanr,CredManSetb,true,false);
-  CalcCredManSums(CredManr,CredManPayPlanr,CredManSetb,planinst,planint,planfee,plandep,suginst,sugint,sugfee,sugdep,
-                  invdinst,invdint,invdfee,invddep,paidinst,paidint,paidfee,paiddep,addinst,addint,addfee,adddep,
-                  lastpaid,lastpaiddate,curbal,cursuginst,contractage);
+  //BuildCredManPayPlan(CredManr,CredManPayPlanr,CredManSetb,true,false);
+  //CalcCredManSums(CredManr,CredManPayPlanr,CredManSetb,planinst,planint,planfee,plandep,suginst,sugint,sugfee,sugdep,
+  //                invdinst,invdint,invdfee,invddep,paidinst,paidint,paidfee,paiddep,addinst,addint,addfee,adddep,
+  //                lastpaid,lastpaiddate,curbal,cursuginst,contractage);
 //  CredManr.TotalInterest = totint;
 //  CredManr.TotalSumExclDep = totinst + totint + totfee;
 //  CredManr.TotalSum = CredManr.TotalSumExclDep + totdep;
