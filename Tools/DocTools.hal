@@ -63,6 +63,9 @@ begin
     end;
     Mailr.Header = Mailr.Header;
   end;
+  if (right(Mailr.Header,1)!=" ") then begin
+    Mailr.Header = Mailr.Header & " ";
+  end;
   switch (IVr.InvType) begin
     case kInvoiceTypeCredit:
       Mailr.Header = Mailr.Header & USetStr(1805) & " ";
