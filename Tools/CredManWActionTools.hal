@@ -375,7 +375,7 @@ begin
     if (tprolongmonths==0) then begin
       tprolongmonths = blankval;
     end;
-    if (RepSpec.vals3>0) then begin
+    if (nonblank(RepSpec.vals3)) then begin
       rate = RepSpec.vals3;
     end;
     if (tmonths==0) then begin
@@ -389,9 +389,6 @@ begin
       if (RepSpec.flags[3]==0) then begin
         if (tmonths>0 or tprolongmonths>0) then begin
           CreatePauseRecord(CredManr.SerNr,td,tmonths,tprolongmonths,rate,1);
-        end;
-        if (RepSpec.vals3>0) then begin
-          CreateRateChangeRecord(CredManr.SerNr,td,RepSpec.vals3,1);
         end;
         CredManSetDatesCust(CredManr,false);
         /*
@@ -409,9 +406,6 @@ begin
       end else begin
         if (tmonths>0 or tprolongmonths>0) then begin
           CreatePauseRecord(CredManr.SerNr,td,tmonths,tprolongmonths,rate,0);
-        end;
-        if (RepSpec.vals3>0) then begin
-          CreateRateChangeRecord(CredManr.SerNr,td,RepSpec.vals3,0);
         end;
       end;
       res = true;      

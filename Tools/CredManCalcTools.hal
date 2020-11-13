@@ -890,7 +890,7 @@ begin
       TrHs = false;
     end else begin
       if (Changer.OKFlag==1) then begin
-        if (Changer.IntRate!=0) then begin
+        if (nonblank(Changer.IntRate)) then begin
           CredManr.IntRate = Changer.IntRate;
           CredManr.AnnualRate = Changer.AnnualRate;
         end;
@@ -993,7 +993,7 @@ begin
       TrHs = false;
     end else begin
       if (Changer.OKFlag==1) then begin
-        if (Changer.IntRate!=0) then begin
+        if (nonblank(Changer.IntRate)) then begin
           CredManr.IntRate = Changer.IntRate;
           CredManr.AnnualRate = Changer.AnnualRate;
         end;

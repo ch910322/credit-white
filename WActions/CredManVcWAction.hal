@@ -840,6 +840,7 @@ begin
   //SetWindowSubset(wn,CredManr.SerNr);
   //logtext(0,"set subset" & CredManr.SerNr);
   //UpdateCredManStringList(wn,CredManr);
+  RerunWindowDef(wn);
   UpdateCredManSoftFields(wn,CredManr,true);
 
   return;
