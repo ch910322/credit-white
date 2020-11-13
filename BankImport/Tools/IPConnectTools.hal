@@ -4,7 +4,7 @@ external procedure BankFillIProws(var record IPVc,string,var string,var val,stri
 external procedure BankFillOProws(var record OPVc,string,string,var val,string,boolean,string,string);
 external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
 external function Integer GetItemPriority(Longint,string);
-external procedure InsertCredHistInArray(record CredHistVc,array record ORVc,Integer);
+external procedure InsertCredHistInArray(record CredHistVc,array record ORVc,Integer,Date);
 external function val GetLoanItemPaidAmount(Longint,Longint);
 external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var val,Boolean,var Boolean);
 external inner procedure IPPastePayMode(var record IPVc);
@@ -716,7 +716,7 @@ begin
       TrHs = false;
     end else begin
       priority = GetItemPriority(CredHistr.CredManNr,CredHistr.ArtCode);
-      InsertCredHistInArray(CredHistr,arrORr,priority);
+      InsertCredHistInArray(CredHistr,arrORr,priority,"");
     end;
   end;
 
