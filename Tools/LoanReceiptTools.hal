@@ -71,6 +71,7 @@ begin
       end;
     end;
   end else begin
+    BlockLoad(IPb);
     rwcnt = MatRowCnt(IPb);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(IPb,i,IPbrw);
@@ -86,7 +87,7 @@ begin
 end;
 
 global
-procedure InsertCredHistInArray(record CredHistVc CredHistr,array record ORVc arrORr,Integer tpriority)
+procedure InsertCredHistInArray(record CredHistVc CredHistr,array record ORVc arrORr,Integer tpriority,Date td)
 begin
   Integer i,rwcnt,index;
   record ORVc ORr,nORr;
@@ -98,7 +99,7 @@ begin
   priority = tpriority;
   BlockLoad(BISb);
   if (BISb.InvFIFO==1) then begin
-    if (CredHistr.PayDate>CurrentDate) then begin
+    if (nonblank(td) and CredHistr.PayDate>td) then begin
       priority = priority + 1000;
     end;
   end;
@@ -211,7 +212,6 @@ begin
       num = MatRowCnt(IPr);
     end;
 
-    logtext(0,num & ":" & credsum);
     ClearRow(IPr,IPrw,1);
     IPrw.InvoiceNr = ORrw.GroupOrdRow;
     invused[IPrw.InvoiceNr] = true;
@@ -293,7 +293,7 @@ begin
         if (CredHistr.RecordType==0 and (blank(untildate) or CredHistr.TransDate<=untildate)) then begin
           if (CredManPMCodeMatches(IPr.PayMode,CredHistr.RecordNr,false)) then begin
             priority = GetItemPriority(CredHistr.CredManNr,CredHistr.ArtCode);
-            InsertCredHistInArray(CredHistr,arrORr,priority);
+            InsertCredHistInArray(CredHistr,arrORr,priority,IPr.TransDate);
           end;
         end;
       end;
@@ -368,7 +368,7 @@ begin
   if (IPrw.CredHistNr>0) then begin
     CredHistr.SerNr = IPrw.CredHistNr;
     if (ReadFirstMain(CredHistr,1,true)) then begin
-      InsertCredHistInArray(CredHistr,arrORr,10);
+      InsertCredHistInArray(CredHistr,arrORr,0,IPr.TransDate);
     end;
   end else begin
     TrHs = true;
@@ -379,7 +379,7 @@ begin
         TrHs = false;
       end else begin
         priority = GetItemPriority(CredHistr.CredManNr,CredHistr.ArtCode);
-        InsertCredHistInArray(CredHistr,arrORr,priority);
+        InsertCredHistInArray(CredHistr,arrORr,priority,IPr.TransDate);
       end;
     end;
   end;
@@ -682,7 +682,7 @@ begin
               CredHistr.SerNr = IVrw.CredHistNr;
               if (ReadFirstMain(CredHistr,1,true)) then begin
                 priority = GetItemPriority(CredHistr.CredManNr,CredHistr.ArtCode);
-                InsertCredHistInArray(CredHistr,arrORr,priority);
+                InsertCredHistInArray(CredHistr,arrORr,priority,IPr.TransDate);
               end;
             end;
           end;
