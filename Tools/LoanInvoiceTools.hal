@@ -32,6 +32,7 @@ external function val FindInvoicePaidAmount_OP(LongInt,LongInt);
 external inner procedure IPPastePayMode(var record IPVc);
 external inner updating procedure CreateInvoicePdfFile(record IVVc);
 external function Boolean CredManPMCodeMatches2(string,record CredManVc,Boolean);
+remote procedure CheckBuyOutAgreementCallBack(record RcVc,Integer);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -1646,6 +1647,19 @@ begin
 
   return;
 end;
+
+global
+procedure CheckBuyOutAgreementAsync(record CredManVc CredManr,Date td,Integer wn)
+begin
+  record RcVc RepSpec;
+
+  RepSpec.d1 = CurrentDate;
+  CheckBuyOutAgreement(CredManr,RepSpec);
+  clientremoteasync.CheckBuyOutAgreementCallBack(RepSpec,wn);
+
+  return;
+end;
+
 
 //very sad that I have to map these now. Adding each new type needs an exception now
 function Integer MapChargeTypes(Integer type)

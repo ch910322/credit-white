@@ -46,6 +46,7 @@ remote procedure PasteSuretyInBOESurety(var record BOESuretyVc,string,Integer);
 remote procedure InsertBOESuretySignerName(var record BOESuretyVc,Integer);
 remote updating procedure GetCredManMoneyReceiverRecord(record CredManVc,var record CredManMoneyRecVc);
 remote updating procedure CreatePaymentFakeReceipt(record CredManVc,record IVVc);
+remote procedure CheckBuyOutAgreementAsync(record CredManVc,Date,Integer);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -62,13 +63,20 @@ begin
   PutWindowString(wn,"monthlyfixedfees",GetMonthlyFees(CredManr,1));
 */  
   if (allf) then begin
-    RepSpec.d1 = CurrentDate;
-    CheckBuyOutAgreement(CredManr,RepSpec);
+    threadremoteasync.CheckBuyOutAgreementAsync(CredManr,CurrentDate,wn);
+  end;
+
+  return;
+end;
+
+global
+procedure CheckBuyOutAgreementCallBack(record RcVc RepSpec,Integer wn)
+begin
+  
     PutWindowString(wn,"buyoutvalue",RepSpec.vals2);
     PutWindowString(wn,"remainingprinciple",RepSpec.f13);
     PutWindowString(wn,"totaldue",RepSpec.vals4);
     PutWindowString(wn,"acumpenalty",RepSpec.f12);
-  end;
 
   return;
 end;
@@ -604,7 +612,7 @@ begin
   GetWindowRecord(wn,RepSpec);
   CredManr.SerNr = RepSpec.long1;
   if (ReadFirstMain(CredManr,1,true)) then begin
-    CheckBuyOutAgreement(CredManr,RepSpec);
+    threadremote.CheckBuyOutAgreement(CredManr,RepSpec);
     PutWindowRecord(wn,RepSpec);
   end;
   SelectWindow(wn);
