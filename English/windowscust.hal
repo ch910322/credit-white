@@ -2938,7 +2938,7 @@ begin
   RlCol(300,300,"Pause Months",PauseMonths,false);
   RlCol(-180,-180,"Rate",IntRate,false);
   RlCol(-130,-130,"Ovrd. Prc.",OverduePercentage,false);
-  RlCol(-90,-90,"Pmt Day",MonthlyPaymentDay,false);
+  //RlCol(-90,-90,"Pmt Day",MonthlyPaymentDay,false);
   RlColTL(-30,-30,"OK",M4Mark,OKFlag,false);
   SearchField("Search");
   EndWindow;
