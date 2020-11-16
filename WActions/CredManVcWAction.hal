@@ -749,7 +749,6 @@ begin
           end else begin
             asyncremote.RecreateAgreementSchedule3(CredManr,false,mwn);
           end;
-          closedf = true;
         end;
         if (IVr.SerNr>0 and IVr.Sum4>0) then begin
           UpdateBrowses("CredHistVc");
@@ -777,7 +776,7 @@ begin
     CloseWindow(wn);
     OpenWindow("CredManDClass",1,0,"","",CredManr);
   end;
-  
+
   return;
 end;
 
