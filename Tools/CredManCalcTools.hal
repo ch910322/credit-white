@@ -1111,6 +1111,7 @@ begin
     GetMonthlyVatVector(CredManr.VATSum, CredManr.VATAddMonths, vatPayments);
   end;
 */
+logtext(0,"BuildCredManPayPlanCust start");
   RecordCopy(tCredManr,inCredManr);
   BlockLoad(CIb);
 LCalcSchedule:;
@@ -1248,6 +1249,7 @@ LCalcSchedule:;
     end;
   end;
 
+logtext(0,"BuildCredManPayPlanCust end1 retry=" & tries);
   if (recalculatef) then begin
     if (inCredManr.InstalmentType==0 and tries<25) then begin//annuity
       if (ShouldRecalculateAnnuitySchedule(inCredManr,CredManPayPlanr,usemonths,annuity_diff)) then begin
@@ -1257,7 +1259,8 @@ LCalcSchedule:;
       end;
     end;
   end;
-  
+
+logtext(0,"BuildCredManPayPlanCust end2");
   SortRows(CredManPayPlanr,"TransDate",true);
   RecordCopy(inCredManr,tCredManr);
 
