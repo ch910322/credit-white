@@ -886,11 +886,8 @@ begin
         //PrintMultiDocDocument("CredManLongForm",fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
       end;
     case 2://schedule
-logtext(0,"PrintSingleAgreementDoc1");
       fn = GetAgreementDocumentName(ADr,"Schedule",regenf);
-logtext(0,"PrintSingleAgreementDoc2");
       GenerateAgreementSchedule(CredManr,false);
-logtext(0,"PrintSingleAgreementDoc3");
       langcode = GetDocumentLangCode(CredManr,2);
       if (ExternalDocumentEnabled("CredManScheduleForm")) then begin
         RepSpec.long1 = CredManr.InstalmentType;
@@ -902,7 +899,6 @@ logtext(0,"PrintSingleAgreementDoc3");
         PrintCredManDocument("CredManScheduleForm",fn,CredManr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
         //PrintMultiDocDocument("CredManScheduleForm",fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
       end;
-logtext(0,"PrintSingleAgreementDoc4");
     case 3://surety
       fn = GetAgreementDocumentName(ADr,"Surety",regenf);
       langcode = GetDocumentLangCode(CredManr,3);
@@ -1150,7 +1146,6 @@ updating procedure RecreateAgreementDocument(var record AgreementDocVc ADr,Boole
 begin
   record CredManVc CredManr;
   
-logtext(0,"RecreateAgreementDocument1");
   if (ADr.RecordType==0) then begin
     CredManr.SerNr = ADr.RecordNr;
     if (ReadFirstMain(CredManr,1,true)) then begin
@@ -1160,7 +1155,6 @@ logtext(0,"RecreateAgreementDocument1");
       end;
     end;
   end;
-logtext(0,"RecreateAgreementDocument2");
 
   return;
 end;

@@ -744,9 +744,9 @@ begin
         PutWindowRecord(mwn,CredManr);
         if (WindowDoOK(mwn,0)) then begin
           if (setf and RepSpec.flags[1]==1) then begin
-            RecreateAgreementSchedule2(CredManr,true);
+            remoteasync.RecreateAgreementSchedule2(CredManr,true);
           end else begin
-            RecreateAgreementSchedule2(CredManr,false);
+            remoteasync.RecreateAgreementSchedule2(CredManr,false);
           end;
           closedf = true;
           CloseWindow(mwn);

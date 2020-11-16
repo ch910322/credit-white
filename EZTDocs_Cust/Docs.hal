@@ -213,7 +213,6 @@ begin
   Boolean foundf;
   record UserVc Userr;
   
-
   CUr.Code = CredManr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
   end;

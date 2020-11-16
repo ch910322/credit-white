@@ -427,12 +427,9 @@ begin
   record CUVc CUr;
   area comparea;
   
-logtext(0,"GetCreditInfoHistory1 " & source & ":" & id);
   CUr.Code = LAr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
-logtext(0,"GetCreditInfoHistory2");
     if (GetExistingCompanyInfo(CUr.RegNr1,CUr.CountryCode,id,comparea)) then begin
-logtext(0,"GetCreditInfoHistory3");
       switch (source) begin
         case 1:
           qupdating.TreatCreditInfoReply(LAr,CUr,comparea,res);
