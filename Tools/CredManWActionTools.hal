@@ -55,6 +55,8 @@ external procedure SetupOverdueLangCode(var record IVVc,string);
 external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
 external procedure CM_AddPrepayments(var record IVVc,record CredManVc,record CMInvoicingBlock);
 external procedure SetupInvoiceRowAndAdd(var record IVVc,string,string,val,val,val,Integer,Longint);
+remote procedure RecreateAgreementSchedule3CallBack(record CredManVc,Integer);
+
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -335,6 +337,17 @@ begin
       RecreateAgreementDocument(ADr,true);
     end;
   end;
+
+  return;
+end;
+
+global
+updating procedure RecreateAgreementSchedule3(record CredManVc CredManr,Boolean fullf,Integer wn)
+begin
+
+  RecreateAgreementSchedule2(CredManr,fullf);
+  ReadFirstMain(CredManr,1,true);
+  ClientRemoteAsync.RecreateAgreementSchedule3CallBack(CredManr,wn);
 
   return;
 end;
