@@ -1619,7 +1619,7 @@ begin
     schedf = true;
   end else begin
 */
-    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,RepSpec.d1,IVr);
 //  end;
   CheckUnpaidInvoices(CredManr,dueamount,openamount);
