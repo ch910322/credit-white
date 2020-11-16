@@ -1,7 +1,6 @@
 external function string 255 GetCredManNr(Longint);
 external function val GetFutureCredManBalance(record CredManVc,record CredManSetBlock,Date);
 external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,record CredManSetBlock,var record SMVc);
-external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 external inner function Integer GetCheck(string,string,LongInt,var string,var string,var string,var val,var Date,var Date);
 external inner function LongInt DateDiff(Date,Date);

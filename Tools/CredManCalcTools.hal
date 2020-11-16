@@ -1089,7 +1089,7 @@ begin
 end;
 
 global
-procedure BuildCredManPayPlanCust(record CredManVc inCredManr,var record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb,Boolean withactuals,Boolean suggestedonsameday)
+procedure BuildCredManPayPlanCust(record CredManVc inCredManr,var record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb,Boolean withactuals,Boolean recalculatef)
 begin
   Integer calculatedmonths,months;
   val acumint,calcbal;
@@ -1248,14 +1248,16 @@ LCalcSchedule:;
     end;
   end;
 
-  if (inCredManr.InstalmentType==0 and tries<25) then begin//annuity
-    if (ShouldRecalculateAnnuitySchedule(inCredManr,CredManPayPlanr,usemonths,annuity_diff)) then begin
-      RecordClear(CredManPayPlanr);
-      tries = tries + 1;
-      goto LCalcSchedule;
+  if (recalculatef) then begin
+    if (inCredManr.InstalmentType==0 and tries<25) then begin//annuity
+      if (ShouldRecalculateAnnuitySchedule(inCredManr,CredManPayPlanr,usemonths,annuity_diff)) then begin
+        RecordClear(CredManPayPlanr);
+        tries = tries + 1;
+        goto LCalcSchedule;
+      end;
     end;
   end;
-
+  
   SortRows(CredManPayPlanr,"TransDate",true);
   RecordCopy(inCredManr,tCredManr);
 

@@ -1183,7 +1183,7 @@ begin
     oldlang = CM_SetCompanyLanguage;
     if (CreateInvoiceBasedOnSchedule(CredManr,ed,IVr)==false) then begin
       BlockLoad(CMb);
-      BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
+      BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
       CreateInvoicesFromPlan(CredManr,CMb,CredManPayPlanr,ed,IVr,ivno);
     end;
     CM_ResetCompanyLanguage(oldlang);
@@ -1226,7 +1226,7 @@ begin
 
     end else begin
       BlockLoad(CMb);
-      BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
+      BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
       BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CMb,SMr);
       rwcnt = MatRowCnt(SMr);
       cnt = CredManr.BuyoutFeeMonths;
@@ -1457,7 +1457,7 @@ begin
   if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
     BlockLoad(CMb);
     BlockLoad(CIb);
-    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,CurrentDate,IVr);
     CM_AddPrepayments(IVr,CredManr,CIb);
     if (IVr.SerNr>-1) then begin
@@ -1619,7 +1619,7 @@ begin
     schedf = true;
   end else begin
 */
-    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,RepSpec.d1,IVr);
 //  end;
   CheckUnpaidInvoices(CredManr,dueamount,openamount);
@@ -2131,7 +2131,7 @@ begin
   CSr.TransDate = CurrentDate;
   CSr.TransTime = CurrentTime;
   BlockLoad(CMb);
-  BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
+  BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
   BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CMb,SMr);
   bal = CredManr.InvSum4;
   rwcnt = MatRowCnt(SMr);
