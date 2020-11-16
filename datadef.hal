@@ -217,6 +217,7 @@ begin
   RecordField(Surety3Amount,M4Val,0,0);
   RecordField(Surety3Signer,M4Str,255,0);
   RecordField(Surety3Signed,M4Int,0,0);
+  RecordField(FinishStep,M4Int,0,0);
 
   ArrayBegin(Math,-,1);
   ArrayField(Period,M4Str,10,0);
