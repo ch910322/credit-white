@@ -11,6 +11,7 @@ external outer function Boolean UseCredManStatus();
 external outer function Boolean SimplifiedSureties();
 external outer function Boolean ShowBuyOutFee();
 external outer function Boolean HasBalloonLoanType();
+external outer function Boolean IsNovitiCustomer;
 
 procedure ShowCredManLClassWindow()
 begin
@@ -1096,7 +1097,10 @@ begin
   EditFieldTL(h,v+=20,150,"Agreement Type",M4Code,Normal,40,f2,false,CredManTypeSClass);
   EditFieldTL(h,v+=20,150,"Manager",M4Code,Normal,255,f3,false,UserSClass);
   EditFieldTL(h,v+=20,150,"Order Class",M4Code,Normal,40,f4,false,OrderClassSClass);
-  EditFieldTL(h,v+=20,150,"Source",M4Str,Normal,255,f5,false,0);  
+  EditFieldTL(h,v+=20,150,"Source",M4Str,Normal,255,f5,false,0);
+  if (IsNovitiCustomer) then begin
+    CheckBox(h,v+=30,0,"Show only who finished Second Step",flags[10]);
+  end;
   EndWindow;
 end;
 
