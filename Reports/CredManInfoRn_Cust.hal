@@ -483,7 +483,7 @@ begin
   Integer c10,c11;
   val totprinc,totdep,totint,totfees,totoverdues,total,totvat;
 
-  BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,withactuals,suggestedonsameday);
+  BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,withactuals,true);
   PrintCredManTop(CredManr,CredManPayPlanr,CredManSetb);
 
   SetRepCol(2,50);

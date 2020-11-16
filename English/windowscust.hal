@@ -2938,7 +2938,7 @@ begin
   RlCol(300,300,"Pause Months",PauseMonths,false);
   RlCol(-180,-180,"Rate",IntRate,false);
   RlCol(-130,-130,"Ovrd. Prc.",OverduePercentage,false);
-  RlCol(-90,-90,"Pmt Day",MonthlyPaymentDay,false);
+  //RlCol(-90,-90,"Pmt Day",MonthlyPaymentDay,false);
   RlColTL(-30,-30,"OK",M4Mark,OKFlag,false);
   SearchField("Search");
   EndWindow;
@@ -2962,6 +2962,6 @@ begin
   EditField(h,v+=vs,100,"Rate",Normal,IntRate,false,0);
   Checkbox(h2,v,0,"Annual Rate",AnnualRate);
   EditField(h,v+=vs,100,"Overdue Percentage",Normal,OverduePercentage,false,0);
-  EditField(h,v+=vs,100,"Monthly Payment Day",Normal,MonthlyPaymentDay,false,0);
+  //EditField(h,v+=vs,100,"Monthly Payment Day",Normal,MonthlyPaymentDay,false,0);
   EndWindow;
 end;

@@ -6,20 +6,21 @@ updating procedure CreateCredManChangeMn(record RcVc RepSpec)
 begin
   record CredManSchedVc CSr;
   record CredManVc CredManr;
+  val pause,prolong;
   
   while (LoopMain(CredManr,1,true)) begin
     //if (CredManr.OKFlag==1 and CredManr.endDate>CurrentDate) then begin
-      if (nonblank(CredManr.xPauseDate) and CredManr.xPauseMonths>0) then begin
-        if (CredManr.xProlongDate==CredManr.xPauseDate) then begin
-          CreatePauseRecord(CredManr.SerNr,CredManr.xPauseDate,CredManr.xPauseMonths,CredManr.xProlongMonths,blankval,1);
-        end else begin
-          CreatePauseRecord(CredManr.SerNr,CredManr.xPauseDate,CredManr.xPauseMonths,blankval,blankval,1);
-        end;
-      end;
-      if (nonblank(CredManr.xProlongDate) and CredManr.xProlongMonths>0 and CredManr.xProlongDate!=CredManr.xPauseDate) then begin
-        CreateProlongRecord(CredManr.SerNr,CredManr.xProlongDate,CredManr.xProlongMonths,1);
-      end;
-    //end;
+    prolong = CredManr.xProlongMonths;
+    pause = CredManr.xPauseMonths;
+    if (prolong<=0) then begin
+      prolong = blankval;
+    end;
+    if (pause<=0) then begin
+      pause = blankval;
+    end;
+    if (nonblank(pause) or nonblank(prolong)) then begin
+      CreatePauseRecord(CredManr.SerNr,CredManr.xPauseDate,pause,prolong,blankval,1);
+    end;
   end;
 
   return;

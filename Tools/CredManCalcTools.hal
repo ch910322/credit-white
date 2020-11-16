@@ -404,8 +404,11 @@ global
 function val FIN_PMT(val monthly_rate, integer payments, val total_sum)
 begin
   val t, t2;
-  t = monthly_rate * (total_sum * power(1 + monthly_rate, payments)) / (power(1 + monthly_rate, payments) - 1);
-
+  if (monthly_rate==0) then begin
+    t = total_sum/payments;
+  end else begin
+    t = monthly_rate * (total_sum * power(1 + monthly_rate, payments)) / (power(1 + monthly_rate, payments) - 1);
+  end;
   FIN_PMT = t;
   return;
 end;
@@ -413,10 +416,13 @@ end;
 function val FIN_PPMT(val monthly_rate, integer payments, val total_sum, integer payment_nr)
 begin
   val res, t, c;
-
-  c = Round(-FIN_PMT(monthly_rate, payments, total_sum),SetRoundModeD(2));//monthly payment. 
-  res = c + (c * (power(1 + monthly_rate, payment_nr-1) - 1) / monthly_rate + total_sum * power(1 + monthly_rate, payment_nr-1)) * monthly_rate;
-
+  
+  if (monthly_rate==0) then begin
+    res = -(total_sum/payments);
+  end else begin
+    c = Round(-FIN_PMT(monthly_rate, payments, total_sum),SetRoundModeD(2));//monthly payment. 
+    res = c + (c * (power(1 + monthly_rate, payment_nr-1) - 1) / monthly_rate + total_sum * power(1 + monthly_rate, payment_nr-1)) * monthly_rate;
+  end;
   FIN_PPMT = -res;
   return;
 end;
@@ -586,7 +592,11 @@ begin
           if (month==0 and extra_diff==0) then begin
             tsum = FIN_PMT(rate, tusemonths, tusesum);
             MatRowGet(CredManPayPlanr,MatRowCnt(CredManPayPlanr)-1,CredManPayPlanrw);
-            tint = CredManPayPlanrw.Sum;
+            if (CredManPayPlanrw.PlanType==kEventTypeCalcInterest) then begin
+              tint = CredManPayPlanrw.Sum;
+            end else begin
+              tint = 0;
+            end;
             tsum = tsum - tint;
             extra_diff = CalculateAnnuityDiff(CredManr,tsum-sum,tusemonths);
             if (AbsoluteVal(extra_diff)>1) then begin
@@ -890,7 +900,7 @@ begin
       TrHs = false;
     end else begin
       if (Changer.OKFlag==1) then begin
-        if (Changer.IntRate!=0) then begin
+        if (nonblank(Changer.IntRate)) then begin
           CredManr.IntRate = Changer.IntRate;
           CredManr.AnnualRate = Changer.AnnualRate;
         end;
@@ -993,7 +1003,7 @@ begin
       TrHs = false;
     end else begin
       if (Changer.OKFlag==1) then begin
-        if (Changer.IntRate!=0) then begin
+        if (nonblank(Changer.IntRate)) then begin
           CredManr.IntRate = Changer.IntRate;
           CredManr.AnnualRate = Changer.AnnualRate;
         end;
@@ -1079,7 +1089,7 @@ begin
 end;
 
 global
-procedure BuildCredManPayPlanCust(record CredManVc inCredManr,var record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb,Boolean withactuals,Boolean suggestedonsameday)
+procedure BuildCredManPayPlanCust(record CredManVc inCredManr,var record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb,Boolean withactuals,Boolean recalculatef)
 begin
   Integer calculatedmonths,months;
   val acumint,calcbal;
@@ -1101,6 +1111,7 @@ begin
     GetMonthlyVatVector(CredManr.VATSum, CredManr.VATAddMonths, vatPayments);
   end;
 */
+logtext(0,"BuildCredManPayPlanCust start");
   RecordCopy(tCredManr,inCredManr);
   BlockLoad(CIb);
 LCalcSchedule:;
@@ -1238,14 +1249,18 @@ LCalcSchedule:;
     end;
   end;
 
-  if (inCredManr.InstalmentType==0 and tries<25) then begin//annuity
-    if (ShouldRecalculateAnnuitySchedule(inCredManr,CredManPayPlanr,usemonths,annuity_diff)) then begin
-      RecordClear(CredManPayPlanr);
-      tries = tries + 1;
-      goto LCalcSchedule;
+logtext(0,"BuildCredManPayPlanCust end1 retry=" & tries);
+  if (recalculatef) then begin
+    if (inCredManr.InstalmentType==0 and tries<25) then begin//annuity
+      if (ShouldRecalculateAnnuitySchedule(inCredManr,CredManPayPlanr,usemonths,annuity_diff)) then begin
+        RecordClear(CredManPayPlanr);
+        tries = tries + 1;
+        goto LCalcSchedule;
+      end;
     end;
   end;
 
+logtext(0,"BuildCredManPayPlanCust end2");
   SortRows(CredManPayPlanr,"TransDate",true);
   RecordCopy(inCredManr,tCredManr);
 
