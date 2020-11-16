@@ -1300,6 +1300,7 @@ begin
   WindowBegin("Credit Agreement Type",CredManTypeDClass,CGview,-);
   SetWRect(20,80,750,380);//CUST 640>>750
   h = 150; h2 = 300; h3 = 440; v = 6; vs=20;
+  Sizeable(-1,-1,0,0);
   UseView(CredManTypeVc);
   //CUST-BEGIN
   h2 = 330;
