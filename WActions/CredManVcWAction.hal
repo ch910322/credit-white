@@ -19,7 +19,7 @@ remote function Boolean GetAgreementDoc(record CredManVc,Integer,var record Agre
 remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc,var record IVVc,string,var val,Boolean);
 remote function Boolean GetAgreementDoc2(Longint,string,Integer,var record AgreementDocVc);
 remote updating procedure CredManPartialBuyoutDo(Date,val,Longint);
-remote function Date GetPauseCredManNextDate(record CredManVc);
+remote procedure GetPauseCredManNextDate(record CredManVc,var Date);
 remote updating procedure RecreateAgreementSchedule(record CredManVc);
 remote updating procedure RecreateAgreementSchedule2(record CredManVc,Boolean);
 
@@ -182,7 +182,7 @@ begin
 
   if (changedf) then begin  
     GetWindowRecord(wn,CredManr);
-    CredManSetDatesCust(CredManr,allf);
+    threadremote.CredManSetDatesCust(CredManr,allf);
     PutWindowRecord(wn,CredManr);   
   end; 
   CredManDClassstartDateEFAfter = true;
@@ -394,7 +394,7 @@ begin
   if (changedf) then begin  
     DeselectWindow(wn,true);
     GetWindowRecord(wn,CredManr);
-    CredManCalcLastMonthPrinciple(CredManr);
+    threadremote.CredManCalcLastMonthPrinciple(CredManr);
     PutWindowRecord(wn,CredManr);   
   end; 
   CredManDClassMaxMonthlyPaymentEFAfter = true;
@@ -408,7 +408,7 @@ begin
   if (changedf) then begin  
     DeselectWindow(wn,true);
     GetWindowRecord(wn,CredManr);
-    CredManCalcMaxMonthlyPayment(CredManr);
+    threadremote.CredManCalcMaxMonthlyPayment(CredManr);
     PutWindowRecord(wn,CredManr);   
   end; 
   CredManDClassLastMonthPrincEFAfter = true;
@@ -708,7 +708,7 @@ begin
     if (ProlongInProgress(CredManr)) then begin
       MessageBox(200233,"");
     end else begin
-      td = GetPauseCredManNextDate(CredManr);
+      threadremote.GetPauseCredManNextDate(CredManr,td);
       //RepSpec.vals1 = CredManr.ProlongMonths;
       RepSpec.d1 = td;
       RepSpec.flags[1] = 1;
@@ -938,7 +938,7 @@ begin
 
   if (changedf) then begin  
     GetWindowRecord(wn,RepSpec);
-    GetRefinCredManData(RepSpec.long1,RepSpec.ArtMode,RepSpec,true);
+    threadremote.GetRefinCredManData(RepSpec.long1,RepSpec.ArtMode,RepSpec,true);
     PutWindowRecord(wn,RepSpec);   
   end; 
   RefinCredMan2WClassd1EFAfter = true;
@@ -1041,7 +1041,7 @@ begin
   DeselectWindow(wn,true);
   GetWindowRecord(wn,RepSpec);
   
-  GetRefinCredManData(RepSpec.long1,type,RepSpec2,true);
+  threadremote.GetRefinCredManData(RepSpec.long1,type,RepSpec2,true);
 
   CloseWindow(wn);
   OpenWindow("RefinCredMan2WClass",0,0,"","",RepSpec2);
@@ -1237,7 +1237,7 @@ begin
 
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
-  GetFactoringRecord(CredManr,CMFr);
+  threadremote.GetFactoringRecord(CredManr,CMFr);
   OpenWindow("CredManFactDClass",1,0,"","",CMFr);
 
   return;
@@ -1266,7 +1266,7 @@ begin
 
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
-  GetPayGrntRecord(CredManr,PGr);
+  threadremote.GetPayGrntRecord(CredManr,PGr);
   OpenWindow("CredManPmtGrntDClass",1,0,"","",PGr);
 
   return;
@@ -1770,10 +1770,10 @@ begin
   switch (GetWindowClass(mwn)) begin
     case "B2BLoanApplicationDClass":
       GetWindowRecord(mwn,LAr);
-      CredLegalNrSerNrSClassOnOpenWindowRemote("B2BLoanApplicationVc",LAr.SerNr,LAr.Type,LAr.TransDate,"",arrOffSerNr);
+      threadremote.CredLegalNrSerNrSClassOnOpenWindowRemote("B2BLoanApplicationVc",LAr.SerNr,LAr.Type,LAr.TransDate,"",arrOffSerNr);
     case "CredManDClass":
       GetWindowRecord(mwn,CredManr);
-      CredLegalNrSerNrSClassOnOpenWindowRemote("CredManVc",CredManr.SerNr,CredManr.startDate,CredManr.Type,CredManr.Classifications,arrOffSerNr);
+      threadremote.CredLegalNrSerNrSClassOnOpenWindowRemote("CredManVc",CredManr.SerNr,CredManr.startDate,CredManr.Type,CredManr.Classifications,arrOffSerNr);
   end;
   ClearStringList(wn);
   for (i=0;i<arrOffSerNr.length;i=i+1) begin
@@ -2077,7 +2077,7 @@ begin
   if (rw>=0) then begin
     MatRowGet(LegalInvNrRec,rw,LegalInvNrrw);
 
-    InvLegalInvSerieSClassRemote(LegalInvNrrw.StartDate,LegalInvNrrw.EndDate,astr);
+    threadremote.InvLegalInvSerieSClassRemote(LegalInvNrrw.StartDate,LegalInvNrrw.EndDate,astr);
     for (i=0;i<astr.length;i=i+1) begin
       SetListString(wn,len(astr[i]),astr[i],false);    
     end;

@@ -417,38 +417,36 @@ begin
 end;
 
 global
-function Date GetPauseCredManNextDate(record CredManVc CredManr)
+procedure GetPauseCredManNextDate(record CredManVc CredManr,var Date td)
 begin
   record CredManVc oldCredManr;
   record CredManPayPlanVc CredManPayPlanr;
   row CredManPayPlanVc CredManPayPlanrw;
   Integer i,rwcnt;
-  Date res;
   record CredManSetBlock CMb;
   
   BlockLoad(CMb);
   BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
   rwcnt = MatRowCnt(CredManPayPlanr);
-  res = CredManr.FirstInvDate;
+  td = CredManr.FirstInvDate;
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
     if (CredManPayPlanrw.PlanType<5) then begin
       i = rwcnt;
-      res = CredManPayPlanrw.TransDate;
+      td = CredManPayPlanrw.TransDate;
     end;
   end;
 
-  if (res<CredManr.FirstInvDate) then begin
-    res = CredManr.FirstInvDate;
+  if (td<CredManr.FirstInvDate) then begin
+    td = CredManr.FirstInvDate;
   end;
 
   if (CredManr.PrincipleDelayMonths>0) then begin
-    if (AddDay(AddMonth(CredManr.FirstInvDate,CredManr.PrincipleDelayMonths),-1)>res) then begin
-      res = AddMonth(CredManr.FirstInvDate,CredManr.PrincipleDelayMonths);
+    if (AddDay(AddMonth(CredManr.FirstInvDate,CredManr.PrincipleDelayMonths),-1)>td) then begin
+      td = AddMonth(CredManr.FirstInvDate,CredManr.PrincipleDelayMonths);
     end;
   end;
   
-  GetPauseCredManNextDate = res;
   return;
 end;
 

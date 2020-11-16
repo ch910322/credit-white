@@ -466,5 +466,9 @@ begin
   EndSet;
 
 
+/*Master strings*/
+  SString(1803,"Sąskaita");
+  SString(1805,"Kredito pažyma");
+
   return;
 end;
