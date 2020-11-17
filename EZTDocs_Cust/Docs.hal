@@ -721,7 +721,7 @@ begin
     vVals["F_CONTACTNAME"] = name;
     vVals["F_CONTACTPHONE"] = phone;
     vVals["F_CONTACTMOBILE"] = mobile;
-    vVals["F_CONTACTMAIL"] = email;
+    vVals["F_CONTACTEMAIL"] = email;
     vVals["F_CONTACTID"] = id;
     vVals["F_CONTACTVALUE"] = value;
     vVals["F_CONTACTDATE"] = td;
@@ -734,7 +734,7 @@ begin
     vVals["F_CONTACTSIGNER"] = signer;
     vVals["F_CONTACTSIGNERPHONE"] = signerphone;
     vVals["F_CONTACTSIGNERMOBILE"] = signermobile;
-    vVals["F_CONTACTSIGNERMAIL"] = signeremail;
+    vVals["F_CONTACTSIGNEREMAIL"] = signeremail;
     vVals["F_CONTACTSIGNERID"] = signerid;
     vVals["F_CONTACTSIGNERIDCARD"] = signeridcard;
     vVals["F_CONTACTSIGNERIDCARDDATE"] = signeriddate;
