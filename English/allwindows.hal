@@ -1332,7 +1332,6 @@ begin
   EditField(h,v+=vs,40,"Days in Year",Normal,DaysInYear,false,0);
   if (UseBuyOutMonths) then begin
     EditField(h2,v,82,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
-    v = v - 20;
   end else begin
     EditField(h2,v,82,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
   end;

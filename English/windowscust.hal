@@ -2876,7 +2876,11 @@ begin
   Sizeable(-1,-1,0,0);
   h = 100;
   vs = 20;
-  ButtonFrame(h,v=20,150,7,"Default Loan Type");
+  if (HasBalloonLoanType) then begin//stupid workaround because EndFrame doens't work here
+    ButtonFrame(h,v=40,150,7,"Default Loan Type");
+  end else begin
+    ButtonFrame(h,v=40,150,6,"Default Loan Type");
+  end;
   RadioButton(h,v,0,0,"Not set",DefCredManLoanType);
   RadioButton(h,v+=16,1,0,"Loan",DefCredManLoanType); 
   RadioButton(h,v+=16,2,0,"Leasing",DefCredManLoanType); 
