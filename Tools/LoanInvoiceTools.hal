@@ -213,6 +213,10 @@ begin
   IVr.CredToDate = todate;
   if (invdate<CredManr.FirstInvDate and blank(fromdate)) then begin//First invoice language
     IVr.LangCode = CredManr.LangCode2;
+    if (nonblank(CIb.FirstInvPayDeal)) then begin
+      IVr.PayDeal = CIb.FirstInvPayDeal;
+      IVVc_PastePayDeal(IVr,"",LMb.DefReturnLocation);
+    end;
   end else begin
     IVr.LangCode = CredManr.LangCode;
   end;

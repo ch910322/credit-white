@@ -1454,6 +1454,7 @@ begin
   RecordField(UsePreCreatedInvoicePdf,M4Int,0,0);
   RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
   RecordField(ItemPriorityCode,M4Code,20,0);
+  RecordField(FirstInvPayDeal,M4Code,5,PDVc);
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
