@@ -923,8 +923,10 @@ begin
   MatCol(t,-140,"%",0,vRebate,true,0);
   MatCol(t,-100,"Sum",0,Sum,true,0);
   Flip(2);
-  MatCol(t,-300,"Invoice No.",0,InvoicedOn,false,0);
-  MatCol(t,-200,"Invoiced Sum",0,InvoicedSum,true,0);
+  //MatCol(t,-400,"Invoice No.",0,InvoicedOn,false,0);
+  //MatCol(t,-300,"Invoiced Sum",0,InvoicedSum,true,0);
+
+  MatCol(t,-200,"Invoice Date",0,InvDate,true,PasteCurDate);
   MatCol(t,-100,"Sum",0,Sum,true,0);
 //CUST-BEGIN
   Flip(3);
