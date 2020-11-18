@@ -246,7 +246,7 @@ begin
   bankacc = XmlGet(xdata,"Document/BkToCstmrStmt/Stmt/Acct/Id/IBAN");
 
   if (GetBankAccPMRow(PMb,"",bankacc,PMbrw)==false) then begin
-    goto LImpSEBLTU;
+    goto LImpSwedBankLTU;
   end;
 
   acctkey = "Document/BkToCstmrStmt/Stmt/Acct/";
