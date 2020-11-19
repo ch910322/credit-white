@@ -6,7 +6,7 @@ external inner function Boolean IVVc_PasteArtCode(var record IVVc,Integer,var st
 external inner procedure IVDchsum(var record IVVc,Integer);
 external inner procedure IVVc_PastePrice(var record IVVc,record IVVc,Integer,var string);
 external inner function LongInt DateDiff(Date,Date);
-external procedure AddPlannedFees(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,Integer,Integer,Date,var val,var val,Date,Date,Longint);
+external procedure AddPlannedFees(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,Integer,Integer,Date,var val,var val,Date,Date,Longint,Boolean);
 external procedure AddInterest(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,Integer,Date,var val,var val,Date,Date,Longint,Boolean);
 external procedure AddInstalmentFixed(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,val,Date,var val,var val,Date,Date);
 forward procedure GetCredManEventList2(Longint,var record ORVc);
@@ -832,6 +832,22 @@ begin
   return;
 end;
 
+function Boolean CanInvoiceDate(record CredManVc CredManr,Integer invtype)
+begin
+  Boolean res;
+  
+  if (invtype==1 and CredManr.OKFlag==1) then begin
+    res = true;
+  end else begin
+    if (invtype==0) then begin
+      res = true;
+    end;
+  end;
+
+  CanInvoiceDate = res;
+  return;
+end;  
+
 updating procedure CreateInvoicesFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date ed,var record IVVc firstIVr,string ivno)
 begin
   Integer i,rwcnt;
@@ -849,7 +865,7 @@ begin
   rwcnt = MatRowCnt(CredManPayPlanr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
-    if (CredManPayPlanrw.PlanType<=4 and CredManPayPlanrw.TransDate<=ed) then begin
+    if (CredManPayPlanrw.PlanType<=4 and CredManPayPlanrw.TransDate<=ed and CanInvoiceDate(CredManr,CredManPayPlanrw.InvType)) then begin
       if (lastd!=CredManPayPlanrw.TransDate) then begin
         //Setup new invoice
         if (nonblank(lastd)) then begin
@@ -881,6 +897,7 @@ begin
         lastd2 = AddDay(lastd,1);//to get the start date for penalty calculation.
         lastd = CredManPayPlanrw.TransDate;
         SetupLoanInvoice(CredManr,CMb,IVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno,GetInvoiceType(CredManr,lastd),true);
+        logtext(0,"ddd2 " & IVr.SerNr);
 
       end;
       if (CredManPayPlanrw.PlanType==kEventTypeCalcInterest) then begin
@@ -1046,6 +1063,21 @@ begin
   return;
 end;
 
+function Integer InvoiceTypeFromSchedule(record CredManVc CredManr,row CredManSchedVc CSrw)
+begin
+  Integer res;
+
+  res = 1;
+  if (CredManr.FirstInvDate<CSrw.InvDate) then begin
+    if (CSrw.Deposit==0 and CSrw.Interest==0 and CSrw.Principle==0 and CSrw.Fees!=0) then begin
+      res = 0;
+    end;
+  end;
+
+  InvoiceTypeFromSchedule = res;
+  return;
+end;
+
 updating function Boolean CreateInvoiceBasedOnSchedule(record CredManVc CredManr,Date ed,var record IVVc firstIVr)
 begin
   record CredManSchedVc CSr,oldCSr;
@@ -1076,7 +1108,7 @@ begin
     rwcnt = MatRowCnt(CSr);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CSr,i,CSrw);
-      if (CSrw.InvDate<=ed and CSrw.Invoiced==0) then begin
+      if (CSrw.InvDate<=ed and CSrw.Invoiced==0 and CanInvoiceDate(CredManr,InvoiceTypeFromSchedule(CredManr,CSrw))) then begin
         BuildInvoiceBasedOnSchedule(CredManr,CSrw,CMb,ASb,lastd,IVr,true,true);
         if (IVr.SerNr>-1) then begin
           StoreLoanInvoice(IVr,CredManr);
@@ -1323,7 +1355,7 @@ begin
     tCredManr.InvSum4 = balance;
     tCredManr.DepositSum = 0;
     AddInterest(tCredManr,CredManPayPlan2r,CMb,kMonthTypeFirst,td,cumint,balance,lastinv,td,-1,true);
-    AddPlannedFees(CredManr,CredManPayPlan2r,CMb,kPlannedFeesMonthly,kMonthTypeFirst,td,cumint,balance,lastinv,td,-1);
+    AddPlannedFees(CredManr,CredManPayPlan2r,CMb,kPlannedFeesMonthly,kMonthTypeFirst,td,cumint,balance,lastinv,td,-1,false);
     rwcnt = MatRowCnt(CredManPayPlan2r);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CredManPayPlan2r,i,CredManPayPlanrw);
@@ -1382,7 +1414,7 @@ begin
     tCredManr.InvSum4 = balance;
     tCredManr.DepositSum = 0;
     AddInterest(tCredManr,CredManPayPlan2r,CMb,kMonthTypeFirst,td,cumint,balance,lastinv,td,-1,true);
-    AddPlannedFees(CredManr,CredManPayPlan2r,CMb,kPlannedFeesMonthly,kMonthTypeFirst,td,cumint,balance,lastinv,td,-1);
+    AddPlannedFees(CredManr,CredManPayPlan2r,CMb,kPlannedFeesMonthly,kMonthTypeFirst,td,cumint,balance,lastinv,td,-1,false);
     rwcnt = MatRowCnt(CredManPayPlan2r);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CredManPayPlan2r,i,CredManPayPlanrw);

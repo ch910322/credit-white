@@ -990,6 +990,7 @@ begin
   ArrayField(Reb,M4Val,0,0);
   ArrayField(FactoringInvoice,M4Long,0,0);
   ArrayField(OpenAmount,M4Val,0,0);
+  ArrayField(InvType,M4Int,0,0);
   EndRecordAdd;
 
   BlockBegin(ItemPriorityBlock,-,"");
