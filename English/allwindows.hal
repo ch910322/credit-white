@@ -66,6 +66,7 @@ remote function Boolean ExternalDocumentEnabled(string);
 remote outer function Boolean HasCredManChanges(record CredManVc);
 external outer function Boolean HasBillOfExchangeShort();
 external outer function Boolean HasSuretyPerson();
+external outer function Boolean HasConditionTexts();
 
 //CUST-END
 
@@ -681,6 +682,10 @@ begin
     ColourPushButton(h3,v+3,h3+100,v+23,"CredManDClassOpenChanges","Agr. Changes",kButtonColourGreen);
   end else begin
     HalPushButton(h3,v+3,h3+100,v+23,"CredManDClassOpenChanges","Agr. Changes");    
+  end;
+  if (HasConditionTexts) then begin
+    HalPushButton(h3+110,v+3,h3+210,v+23,"CredManDClassOpenPaymentConditions","Paym. Condition");    
+    HalPushButton(h3,v+26,h3+100,v+46,"CredManDClassOpenOtherConditions","Other Conditions");    
   end;
 //CUST-END
   EditField(h,v+=vs,82,"Type",Normal,Type,false,CredManTypeSClass);

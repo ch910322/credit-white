@@ -50,8 +50,6 @@ begin
   return;
 end;
 
-
-
 global
 function Boolean HasSuretyPerson()
 begin
@@ -59,3 +57,9 @@ begin
   return;
 end;
 
+global
+function Boolean HasConditionTexts()
+begin
+  HasConditionTexts = true;
+  return;
+end;

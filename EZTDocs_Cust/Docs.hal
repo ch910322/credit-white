@@ -52,6 +52,9 @@ external inner function string 255 StrReplace(string,string,string);
 external function val GetCustomerOpenAmount(string,record IVVc);
 external function Integer GetProlongMonths(record CredManVc);
 external function string 255 DateInWords(Date,string);
+external function Boolean GetConditionText2(Longint,Integer,var record ConditionTextVc);
+external function Boolean HasConditionTexts();
+
 
 procedure GetCredManCustContact(record CredManVc CredManr,var string contactid,var string contactname)
 begin
@@ -102,6 +105,28 @@ begin
   res = GetTotalFromCredManInfoMatrix(SMr);
 
   GetContactTotalPaidAmount = res;
+  return;
+end;
+
+global
+function string 255 GetConditionsText(Longint sernr,Integer type)
+begin
+  record ConditionTextVc CTr;
+  Integer j;
+  string 255 res;
+  
+  if (HasConditionTexts) then begin
+    if (GetConditionText2(sernr,type,CTr)) then begin
+      res = "";
+      for (j=0;j<LineTextCnt2(CTr);j=j+1) begin
+        res = res & LineTextGet2(CTr,j);
+      end;
+
+      res = StrReplace(res,chr(13),"\\n");
+    end;
+  end;
+
+  GetConditionsText = res;
   return;
 end;
 
@@ -503,6 +528,8 @@ begin
   end;
 
   vVals["F_FIRSTINVDATE"] = CredManr.FirstInvDate;
+  vVals["F_OTHERCONDITIONS"] = GetConditionsText(CredManr.SerNr,0);
+  vVals["F_PMTCONDITIONS"] = GetConditionsText(CredManr.SerNr,1);
 
   PrintFirstPrincipleDueDate(vVals,CredManr);
 
@@ -836,6 +863,9 @@ begin
     vVals["F_SALESMANEMAIL"] = Userr.emailAddr;
     vVals["F_SALESMANJOB"] = Userr.Job;
   end;
+  vVals["F_OTHERCONDITIONS"] = GetConditionsText(CredManr.SerNr,0);
+  vVals["F_PMTCONDITIONS"] = GetConditionsText(CredManr.SerNr,1);
+
 
   return;
 end;
@@ -1006,6 +1036,9 @@ begin
   vVals["F_ENDDATE2INWORDS"] = tstr;
 
   Ext_PrintDocumentSigner(vVals);
+
+  vVals["F_OTHERCONDITIONS"] = GetConditionsText(CredManr.SerNr,0);
+  vVals["F_PMTCONDITIONS"] = GetConditionsText(CredManr.SerNr,1);
 
   return;
 end;
