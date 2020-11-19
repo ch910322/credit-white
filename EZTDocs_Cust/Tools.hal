@@ -330,6 +330,7 @@ begin
 
   Userr.Code = CredManr.SalesMan;
   if (ReadFirstMain(Userr,1,true)) then begin
+    vVals["F_SALESMANNAME"] = Userr.Name;
     vVals["F_SALESMANJOB"] = Userr.Job;
   end;
 
