@@ -50,3 +50,12 @@ begin
   return;
 end;
 
+
+
+global
+function Boolean HasSuretyPerson()
+begin
+  HasSuretyPerson = false;
+  return;
+end;
+

@@ -65,6 +65,7 @@ external outer function Boolean HasMoneyReceivers();
 remote function Boolean ExternalDocumentEnabled(string);
 remote outer function Boolean HasCredManChanges(record CredManVc);
 external outer function Boolean HasBillOfExchangeShort();
+external outer function Boolean HasSuretyPerson();
 
 //CUST-END
 
@@ -1441,7 +1442,7 @@ begin
 //CUST-BEGIN
   Tile(2,400,false,"2",CredManCEO1);
   v = 6;
-  h = 30;h2 = 170; h3 = 300; h4 = 400; h5 = 500; h6 = 620;
+  h = 30;h2 = 190; h3 = 320; h4 = 420; h5 = 520; h6 = 640;
   StaticText(h,v+13,"Credit Agreement",false);
   CheckBox(h2,v,0,"CEO not Surety",CredManCEO1);
   CheckBox(h3,v,0,"CEO Surety",CredManCEO2);
@@ -1450,12 +1451,26 @@ begin
   EditField(h6,v,40,"Language",Normal,CredManLangCode,false,LangSClass);
   
   v = v + vs;
-  StaticText(h,v+13,"Surety Agreement",false);
+  if (HasSuretyPerson) then begin
+    tstr = " - Company";
+  end;
+  StaticText(h,v+13,"Surety Agreement" & tstr,false);
   CheckBox(h2,v,0,"CEO not Surety",SuretyCEO1);
   CheckBox(h3,v,0,"CEO Surety",SuretyCEO2);
   CheckBox(h4,v,0,"Surety",SuretySurety);
   CheckBox(h5,v,0,"Us",SuretyUs);
   EditField(h6,v,40,"Language",Normal,SuretyLangCode,false,LangSClass);
+
+  v = v + vs;
+
+  if (HasSuretyPerson) then begin
+    StaticText(h,v+13,"Surety Agreement - Person",false);
+    CheckBox(h2,v,0,"CEO not Surety",SuretyPersonCEO1);
+    CheckBox(h3,v,0,"CEO Surety",SuretyPersonCEO2);
+    CheckBox(h4,v,0,"Surety",SuretyPersonSurety);
+    CheckBox(h5,v,0,"Us",SuretyPersonUs);
+    EditField(h6,v,40,"Language",Normal,SuretyPersonLangCode,false,LangSClass);
+  end;
 
   v = v + vs;
   StaticText(h,v+13,"Schedule",false);
@@ -1465,6 +1480,7 @@ begin
   CheckBox(h5,v,0,"Us",ScheduleUs);
   EditField(h6,v,40,"Language",Normal,ScheduleLangCode,false,LangSClass);
 
+  tstr = "";
   if (HasBillOfExchangeShort) then begin
     v = v + vs;
     StaticText(h,v+13,"Bill of Exchange - short",false);

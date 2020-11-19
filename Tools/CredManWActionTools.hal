@@ -56,6 +56,7 @@ external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
 external procedure CM_AddPrepayments(var record IVVc,record CredManVc,record CMInvoicingBlock);
 external procedure SetupInvoiceRowAndAdd(var record IVVc,string,string,val,val,val,Integer,Longint);
 remote procedure RecreateAgreementSchedule3CallBack(record CredManVc,Integer);
+external function Boolean HasSuretyPerson();
 
 
 global
@@ -174,13 +175,23 @@ function string 255 GetDocumentLangCode(record CredManVc CredManr,Integer type)
 begin
   string 255 res;
   record CredManTypeVc CMTr;
+  record CUVc CUr;
   
   CMTr.Code = CredManr.Type;
   if (ReadFirstMain(CMTr,1,true)) then begin
     switch (type) begin
       case 1: res = CMTr.CredManLangCode;
       case 2: res = CMTr.ScheduleLangCode;
-      case 3: res = CMTr.SuretyLangCode;
+      case 3: 
+        res = CMTr.SuretyLangCode;
+        if (HasSuretyPerson) then begin
+          CUr.Code = CredManr.CustCode;
+          if (ReadFirstmain(CUr,1,true))then begin
+            if (CUr.CustType==1) then begin
+              res = CMTr.SuretyPersonLangCode;
+            end;
+          end;
+        end;
       case 4: 
         if (CMTr.VekselisShortMonths>0 and CredManr.InstalmentMonths<CMTr.VekselisShortMonths) then begin
           res = CMTr.VekselisShortLangCode;
@@ -769,6 +780,7 @@ end;
 procedure GetDocumentSigners(Integer type,record CredManVc CredManr,var Boolean flag1,var Boolean flag2,var Boolean flag3)
 begin
   record CredManTypeVc CMTr;
+  record CUVc CUr;
   
   CMTr.Code = CredManr.Type;
   if (ReadFirstMain(CMTr,1,true)) then begin
@@ -777,6 +789,14 @@ begin
         flag1 = CMTr.CredManCEO1==1; flag2 = CMTr.CredManCEO2==1; flag3 = CMTr.CredManSurety==1;
       case 3: 
         flag1 = CMTr.SuretyCEO1==1; flag2 = CMTr.SuretyCEO2==1; flag3 = CMTr.SuretySurety==1;
+        if (HasSuretyPerson) then begin
+          CUr.Code = CredManr.CustCode;
+          if (ReadFirstmain(CUr,1,true))then begin
+            if (CUr.CustType==1) then begin
+              flag1 = CMTr.SuretyPersonCEO1==1; flag2 = CMTr.SuretyPersonCEO2==1; flag3 = CMTr.SuretyPersonSurety==1;
+            end;
+          end;
+        end;
       case 2: 
         flag1 = CMTr.ScheduleCEO1==1; flag2 = CMTr.ScheduleCEO2==1; flag3 = CMTr.ScheduleSurety==1;
       case 6: 

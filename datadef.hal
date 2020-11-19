@@ -844,6 +844,12 @@ begin
   RecordField(VekselisShortMonths,M4Long,0,0);
   RecordField(VekselisExtraMonths,M4Long,0,0);
 
+  RecordField(SuretyPersonCEO1,M4Int,0,0);
+  RecordField(SuretyPersonCEO2,M4Int,0,0);
+  RecordField(SuretyPersonSurety,M4Int,0,0);
+  RecordField(SuretyPersonUs,M4Int,0,0);
+  RecordField(SuretyPersonLangCode,M4Code,10,0);
+
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
   ChangeMatrixField(vRebate,M4Rate,0,0);
