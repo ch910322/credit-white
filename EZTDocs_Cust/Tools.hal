@@ -279,7 +279,7 @@ begin
   vVals["F_NUMMER"] = GetCredManNr(IVr.CustCredManNr);
   CredManr.SerNr = IVr.CustCredManNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
-    vVals["F_CREDMANCREATEDATE"] = CredManr.CreatedDate;
+    vVals["F_CREDMANCREATEDATE"] = CredManr.TransDate;
   end;
 
   BlockLoad(CMb);

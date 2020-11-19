@@ -324,7 +324,7 @@ begin
   vVals["F_KUNDNAMN"] = CredManr.Addr0;
   vVals["F_NUMMER"] = CredManr.SerNr;
   vVals["F_NUMMER2"] = GetCredManNr(CredManr.SerNr);
-  vVals["F_CREDMANCREATEDATE"] = CredManr.CreatedDate;
+  vVals["F_CREDMANCREATEDATE"] = CredManr.TransDate;
   
   //Ext_OutAddress("F_ADRESS",IVr.Addr0,IVr.Addr1,IVr.Addr2,IVr.Addr3,IVr.InvAddr3,IVr.InvAddr4);//CUST-REMOVED
   vVals["F_ADDR2"] = IVr.Addr1;
@@ -880,7 +880,7 @@ begin
 
   ExtPrintOwnBankDetails(vVals,CredManr.SerNr);
   vVals["F_NUMMER2"] = GetCredManNr(CredManr.SerNr);
-  vVals["F_CREDMANCREATEDATE"] = CredManr.CreatedDate;
+  vVals["F_CREDMANCREATEDATE"] = CredManr.TransDate;
   if (CredManr.AnnualRate==1) then begin
     vVals["F_ANNUALRATE"] = Round(CredManr.IntRate,SetRoundModeD(2)) & " %";
   end else begin
@@ -1051,7 +1051,7 @@ begin
     vVals["F_CFOEMAIL"] = CUr.eMail;
   end;
   vVals["F_NUMMER2"] = GetCredManNr(CredManr.SerNr);
-  vVals["F_CREDMANCREATEDATE"] = CredManr.CreatedDate;
+  vVals["F_CREDMANCREATEDATE"] = CredManr.TransDate;
   if (CredManr.AnnualRate==1) then begin
     vVals["F_ANNUALRATE"] = Round(CredManr.IntRate,SetRoundModeD(2)) & " %";
   end else begin
