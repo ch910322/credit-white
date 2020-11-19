@@ -67,6 +67,44 @@ begin
   return;
 end;
 
+function val GetTotalFromCredManInfoMatrix(record SMVc SMr)
+begin
+  Integer i,rwcnt;
+  row SMVc SMrw;
+  val res;
+
+  rwcnt = MatRowCnt(SMr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(SMr,i,SMrw);
+    res = res + SMrw.DebVal + SMrw.CredVal + SMrw.DebVal2;
+  end;
+
+  GetTotalFromCredManInfoMatrix = res;
+  return;
+end;
+
+global
+function val GetContactTotalPaidAmount(record CredManVc CredManr)
+begin
+  val res;
+  record CredManSetBlock CredManSetb;
+  record CredManPayPlanVc CredManPayPlanr;
+  row CredManPayPlanVc CredManPayPlanrw;
+  record SMVc SMr;
+ 
+  BlockLoad(CredManSetb);
+  
+  if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+    BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+  end;
+
+  res = GetTotalFromCredManInfoMatrix(SMr);
+
+  GetContactTotalPaidAmount = res;
+  return;
+end;
+
 function Boolean GetCredManCustContactRecord(record CredManVc CredManr,var record CUVc CUr)
 begin
   record CUVc ContactCUr,tCUr;
@@ -158,7 +196,7 @@ begin
       i = rwcnt;
     end;
   end;
-
+  vVals["F_TOTALBRUTO"] = GetTotalFromCredManInfoMatrix(SMr);
   vVals["F_INSTALMENTDUEDATE"] = res;
 
   return;

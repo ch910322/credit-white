@@ -14,6 +14,7 @@ external inner function boolean AddEMailRecipients(var record MailVc,string,stri
 external inner function Boolean FindCustomerRelation(string,string,var record CUVc);
 external inner procedure ValToText(val,Integer,string,string,var string);
 external inner procedure Ext_PrintValueInclZero(var vector string,string,val,Integer,record LangNrVc,record SysFormatBlock,Boolean);
+external function val GetContactTotalPaidAmount(record CredManVc);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -347,6 +348,9 @@ begin
     if (CIb.ReplaceVATNr==vatnr) then begin
       vatnr = CIb.ReplaceVATNrWith;
     end;
+  end;
+  if (CredManr.SerNr>0) then begin
+    vVals["F_TOTALBRUTO"] = GetContactTotalPaidAmount(CredManr);
   end;
   vVals["F_KUNDMOMSNR2"] = vatnr;
 
