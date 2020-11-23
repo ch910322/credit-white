@@ -281,6 +281,7 @@ begin
   SetText(3,"Bullet Loan");
   SetText(4,"Factoring");
   SetText(5,"Payment Guarantee");
+  SetText(6,"Balloon");
 //  SetText(6,"Linear with Delay");
 //  SetText(7,"Annuity with Delay");
   EndSet;
