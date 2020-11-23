@@ -171,7 +171,7 @@ begin
   return;
 end;
 
-function string 255 GetDocumentLangCode(record CredManVc CredManr,Integer type)
+function string 255 GetDocumentLangCode(record CredManVc CredManr,Integer type,Integer param)
 begin
   string 255 res;
   record CredManTypeVc CMTr;
@@ -185,7 +185,7 @@ begin
       case 3: 
         res = CMTr.SuretyLangCode;
         if (HasSuretyPerson) then begin
-          CUr.Code = CredManr.CustCode;
+          CUr.Code = GetFieldValueByName(CredManr,"SuretyProvider" & param,-1);
           if (ReadFirstmain(CUr,1,true))then begin
             if (CUr.CustType==1) then begin
               res = CMTr.SuretyPersonLangCode;
@@ -315,7 +315,7 @@ begin
       //should move this out to a function
       fn = "Schedule" & CredManr.SerNr & ".pdf";
       GenerateAgreementSchedule(CredManr,true);
-      langcode = GetDocumentLangCode(CredManr,2);
+      langcode = GetDocumentLangCode(CredManr,2,-1);
       if (ExternalDocumentEnabled("CredManScheduleForm")) then begin
         RepSpec.long1 = CredManr.InstalmentType;
         if (CredManr.MaxMonthlyPayment>0) then begin
@@ -907,7 +907,7 @@ begin
   switch (ADr.Type) begin
     case 1://agreement
       fn = GetAgreementDocumentName(ADr,"Agreement",regenf);
-      langcode = GetDocumentLangCode(CredManr,1);
+      langcode = GetDocumentLangCode(CredManr,1,-1);
       if (ExternalDocumentEnabled("CredManForm")) then begin
         RepSpec.long1 = CredManr.InstalmentType;
         if (CredManr.MaxMonthlyPayment>0) then begin
@@ -921,7 +921,7 @@ begin
     case 2://schedule
       fn = GetAgreementDocumentName(ADr,"Schedule",regenf);
       GenerateAgreementSchedule(CredManr,false);
-      langcode = GetDocumentLangCode(CredManr,2);
+      langcode = GetDocumentLangCode(CredManr,2,-1);
       if (ExternalDocumentEnabled("CredManScheduleForm")) then begin
         RepSpec.long1 = CredManr.InstalmentType;
         if (CredManr.MaxMonthlyPayment>0) then begin
@@ -934,7 +934,7 @@ begin
       end;
     case 3://surety
       fn = GetAgreementDocumentName(ADr,"Surety",regenf);
-      langcode = GetDocumentLangCode(CredManr,3);
+      langcode = GetDocumentLangCode(CredManr,3,-1);
       if (ExternalDocumentEnabled("SuretyAgreementForm")) then begin
         RepSpec.long1 = CredManr.InstalmentType;
         if (CredManr.MaxMonthlyPayment>0) then begin
@@ -948,7 +948,7 @@ begin
       end;
     case 6://vekselis
       fn = GetAgreementDocumentName(ADr,"Bill",regenf);
-      langcode = GetDocumentLangCode(CredManr,4);
+      langcode = GetDocumentLangCode(CredManr,4,-1);
       if (ExternalDocumentEnabled("VekselisForm")) then begin
         RepSpec.long1 = CredManr.InstalmentType;
         if (CredManr.MaxMonthlyPayment>0) then begin
@@ -963,7 +963,7 @@ begin
     otherwise//surety simplified 7-12
       if (ADr.Type>8 and ADr.Type<15) then begin
         fn = GetAgreementDocumentName(ADr,"Surety",regenf);
-        langcode = GetDocumentLangCode(CredManr,3);
+        langcode = GetDocumentLangCode(CredManr,3,ADr.Type-8);
         if (ExternalDocumentEnabled("SuretyAgreementForm")) then begin
           RepSpec.long1 = CredManr.InstalmentType;
           if (CredManr.MaxMonthlyPayment>0) then begin
@@ -978,7 +978,7 @@ begin
       end;
       if (ADr.Type>15 and ADr.Type<20) then begin
         fn = GetAgreementDocumentName(ADr,"Bill",regenf);
-        langcode = GetDocumentLangCode(CredManr,4);
+        langcode = GetDocumentLangCode(CredManr,4,-1);
         if (ExternalDocumentEnabled("VekselisForm")) then begin
           RepSpec.long1 = CredManr.InstalmentType;
           if (CredManr.MaxMonthlyPayment>0) then begin
