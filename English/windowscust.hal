@@ -2826,7 +2826,7 @@ begin
   vs = 20;
   WindowBegin("Account",CredManAccDCLass,CGview,-);
   UseView(CredManAccVc);
-  SetWRect(64,80,509,375);
+  SetWRect(64,80,599,375);
   EditField(h=145,v=6, 100, "Type",Normal,CredManType,false,CredManTypeSClass);
   EditField(h,v+=vs,-40,"Name",Normal,Comment,false,0);
   EditField(h,v+=vs,100,"P/L Debit Account",Normal,PLDebitAcc,false,AccSClass);
@@ -2839,6 +2839,7 @@ begin
   MatCol(1,24,"Item",0,ArtCode,false,INSClass);
   MatCol(1,134,"Debit Account",0,DebitAcc,false,AccSClass);
   MatCol(1,284,"Credit Account",0,CreditAcc,false,AccSClass);
+  MatCol(1,-100,"N/L Accrual",0,PeriodCode,false,AutSimPerSClass);
   EndMatrix;
 
   EndWindow;

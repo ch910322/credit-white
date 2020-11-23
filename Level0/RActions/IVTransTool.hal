@@ -43,6 +43,7 @@ external procedure ConvertSalesAcc(var string,Integer);
 external procedure GetItemSalesAcc(string,Integer,var string);
 //CUST-BEGIn
 external outer function string 255 CM_GetCredManTypeSalesItemAccount(Longint,string,string,Boolean);
+external outer function val GetCredManPeriodAmount(record IVVc,val);
 //CUST-END
 
 global
@@ -133,6 +134,16 @@ BEGIN
         tcur = ivrwsump - totsumcur;
       end;
     end else begin
+//CUST-BEGIN
+    if (ASPrw.calc=="#") then begin
+      tcur = GetCredManPeriodAmount(IVp,base1valp);
+      if (IVp.InvType!=kInvoiceTypeCredit and IVp.InvType!=kInvoiceTypeCreditSpecialSales) then begin
+        totsumcur = totsumcur + tcur;
+      end else begin
+        totsumcur = totsumcur - tcur;
+      end;
+    end else begin
+//CUST-END
       tstr = ASPrw.calc;
       if (Mid(tstr,len(tstr)-1,1)=="%") then begin
         tstr = Left(tstr,len(tstr)-1);
@@ -148,6 +159,9 @@ BEGIN
         totsumcur = totsumcur - tcur;
       end;
     end;
+//CUST-BEGIN
+    end;
+//CUST-END
     if (nonblank(ASPrw.VATCode)) then begin
       locvatcod = ASPrw.VATCode;
     end;

@@ -4,6 +4,7 @@ external function Integer GetItemPriority(Longint,string);
 external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,record CredManSetBlock,var record SMVc);
+external inner function LongInt DateDiff(Date,Date);
 
 
 
@@ -284,5 +285,22 @@ begin
     CM_GetTransactionDebtorsAcc(CredManr,shortacc,longacc);
   end;
 
+  return;
+end;
+
+global
+function val GetCredManPeriodAmount(record IVVc IVr,val rowsum)
+begin
+  Integer days1,days2,totdays;
+  val res;
+  
+  if (nonblank(IVr.CredFromDate)) then begin
+    days1 = DaysInMonth(GetYear(IVr.CredFromDate),GetMonth(IVr.CredFromDate));
+    days2 = days1 - GetDay(IVr.CredFromDate)+1;
+    totdays = DateDiff(IVr.CredToDate,IVr.CredFromDate);
+    res = days2*rowsum/totdays;
+  end;
+
+  GetCredManPeriodAmount = res;
   return;
 end;

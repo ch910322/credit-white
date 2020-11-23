@@ -54,7 +54,7 @@ external procedure AddLateFees(record CredManVc,record CredManSetBlock,var recor
 external procedure SetupOverdueLangCode(var record IVVc,string);
 external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
 external procedure CM_AddPrepayments(var record IVVc,record CredManVc,record CMInvoicingBlock);
-external procedure SetupInvoiceRowAndAdd(var record IVVc,string,string,val,val,val,Integer,Longint);
+external procedure SetupInvoiceRowAndAdd(record CredManVc,var record IVVc,string,string,val,val,val,Integer,Longint);
 remote procedure RecreateAgreementSchedule3CallBack(record CredManVc,Integer);
 external function Boolean HasSuretyPerson();
 
@@ -1511,7 +1511,7 @@ begin
     BlockLoad(CIb);
     SetupLoanInvoice(CredManr,CMb,IVr,CurrentDate,"","",true,false,"",1,true);
     GetItemName(CMb.InstalmentItem,spec);
-    SetupInvoiceRowAndAdd(IVr,CMb.InstalmentItem,spec,1,buyoutval-tval,blankval,1,-1);
+    SetupInvoiceRowAndAdd(CredManr,IVr,CMb.InstalmentItem,spec,1,buyoutval-tval,blankval,1,-1);
     CM_AddPrepayments(IVr,CredManr,CIb);
     StoreLoanInvoice(IVr,CredManr);
 

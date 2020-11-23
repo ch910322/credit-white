@@ -1736,6 +1736,7 @@ begin
   ArrayField(ArtCode,M4Code,20,INVc);
   ArrayField(CreditAcc,M4Code,20,AccVc);
   ArrayField(DebitAcc,M4Code,20,AccVc);
+  ArrayField(PeriodCode,M4Code,20,AutSimPerVc);
   EndArray;
   MainKeyBegin(CredManType,0);
   KeySegment(CredManType);
