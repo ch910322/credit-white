@@ -60,7 +60,7 @@ end;
 global
 function Boolean HasConditionTexts()
 begin
-  HasConditionTexts = true;
+  HasConditionTexts = false;
   return;
 end;
 
