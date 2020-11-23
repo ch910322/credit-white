@@ -5,6 +5,7 @@ external inner function LongInt MonthDiff(Date,Date);
 external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string,Boolean,Boolean);
 external inner function val AbsoluteVal(val);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
+forward procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
 
 enum begin
   kEventTypeNone = 0,
@@ -1109,6 +1110,30 @@ begin
   return;
 end;
 
+function val GetBalloonInterest(record CredManVc CredManr,record CredManSetBlock CredManSetb)
+begin
+  record CredManPayPlanVc CredManPayPlanr;
+  row CredManPayPlanVc CredManPayPlanrw;
+  val res;
+  record CredManVc inCredManr;
+  Integer i,rwcnt;
+
+  RecordCopy(inCredManr,CredManr);
+  inCredManr.SerNr = -1;
+  inCredManr.InstalmentType = 1;
+  BuildCredManPayPlanCust(inCredManr,CredManPayPlanr,CredManSetb,true,true);
+  rwcnt = MatRowCnt(CredManPayPlanr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
+    if (CredManPayPlanrw.PlanType==kEventTypeCalcInterest) then begin
+      res = res + CredManPayPlanrw.Sum;
+    end;
+  end;
+
+  GetBalloonInterest = res;
+  return;
+end;
+
 global
 procedure BuildCredManPayPlanCust(record CredManVc inCredManr,var record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb,Boolean withactuals,Boolean recalculatef)
 begin
@@ -1126,6 +1151,7 @@ begin
   val annuity_diff,vblank;
   Integer tries;
   record CredManVc tCredManr;
+  val totint;
 
 /*should we calculate VAT here?
   if CredManr.VATSum > 0 and nonblank(CredManr.VATAddMonths) then begin
@@ -1256,10 +1282,9 @@ LCalcSchedule:;
         case 6://Balloon
           AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype,invdat,acumint,calcbal,frdat,todat,-1,false);
           if (i==months-1) then begin
-            int_frdat = inCredManr.startDate;
-            int_todat = inCredManr.endDate;
-            AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype,int_invdat,acumint,calcbal,int_frdat,int_todat,-1,false);
-            AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,0,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths,vblank)
+            totint = GetBalloonInterest(inCredManr,CredManSetb);
+            AddCredPayPlanLine(CredManPayPlanr,invdat,CredManSetb.RateItem,"",kEventTypeCalcInterest,totint,0,acumint,calcbal,frdat,todat,-1,-1,0);
+            AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,1,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths,vblank);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
       end;
