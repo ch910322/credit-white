@@ -268,7 +268,7 @@ begin
     end;
     RecalcCredManFees(CredManr);
     PutWindowRecord(wn,CredManr); 
-    NewTimedTask("rerun window def","rerunwindowdef","RerunWindowDefHAL",wn,CurrentDate,AddSeconds(CurrentTime,1),"","");  
+    //NewTimedTask("rerun window def","rerunwindowdef","RerunWindowDefHAL",wn,CurrentDate,AddSeconds(CurrentTime,1),"","");  
     //
   end; 
   CredManDClassTypeEFAfter = true;
