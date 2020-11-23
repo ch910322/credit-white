@@ -2826,7 +2826,7 @@ begin
   vs = 20;
   WindowBegin("Account",CredManAccDCLass,CGview,-);
   UseView(CredManAccVc);
-  SetWRect(64,80,599,375);
+  SetWRect(64,80,599,475);
   EditField(h=145,v=6, 100, "Type",Normal,CredManType,false,CredManTypeSClass);
   EditField(h,v+=vs,-40,"Name",Normal,Comment,false,0);
   EditField(h,v+=vs,100,"P/L Debit Account",Normal,PLDebitAcc,false,AccSClass);
@@ -2835,7 +2835,7 @@ begin
   EditField(h,v+=vs,100,"Debtors Account - short",Normal,DebtorsAccShort,false,AccSClass);
   EditField(h,v+=vs,100,"Debtors Account - long",Normal,DebtorsAccLong,false,AccSClass);
 
-  MatrixBegin(4,v=v+40,-32,-3,-,99);
+  MatrixBegin(4,v=v+40,-32,420,-,99);
   MatCol(1,24,"Item",0,ArtCode,false,INSClass);
   MatCol(1,134,"Debit Account",0,DebitAcc,false,AccSClass);
   MatCol(1,284,"Credit Account",0,CreditAcc,false,AccSClass);
