@@ -113,13 +113,13 @@ begin
         tCUr.Name = "";
         TrHs = true;
         if(nonblank(inname))then begin
-          ResetLoop(CUr);
+          ResetLoop(tCUr);
           while (LoopKey("Name",tCUr,1,TrHs)) begin
             outname = ConvertNameToSet(tCUr.Name);
             if(inname==outname)then begin
               TrHs = false;
               foundf = true;
-              RecordCopy(tCUr,CUr);
+              RecordCopy(CUr,tCUr);
             end;
           end;
           if (foundf==false) then begin
