@@ -1,0 +1,86 @@
+//<halrule>server-only</halrule>
+external procedure AddCMTransactionDebtorsAccounts(record CredManVc,var string,var string,var val,var val);
+external inner function Boolean CheckTTRPerRow(string,string,string,Boolean,var string,Integer);
+external inner procedure AddEuroTrRow(record TRVc,string,string,string,string,val,val,val,Boolean,Boolean,var val,Boolean,string,string,string);
+external inner function Integer GetIntYc(Date);
+external inner procedure TRSumup(var record TRVc,var val);
+external inner function Boolean GetAccName(string,var string,Integer);
+
+updating procedure TreatSingleCredMan(record CredManVc CredManr,record RcVc RepSpec)
+begin
+  record CredHistVc CredHistr;
+  record TRVc TRr;
+  Boolean TrHs,accf;
+  val base1,base2,totsum,calcsum;
+  string 255 taccnumber,accname;
+  record BaseERVc BERr; 
+  string 255 shortacc,longacc;
+  val shortval,longval;
+  val blanks;
+  val t;
+
+  TrHs = true;
+  CredHistr.TransDate = RepSpec.d1;
+  CredHistr.CredManNr = CredManr.SerNr;
+  CredHistr.ChargeType = 5;
+  while (LoopKey("CredManChargeType",CredHistr,3,TrHs)) begin
+    if (CredHistr.TransDate>RepSpec.d2 or CredHistr.CredManNr!=CredManr.SerNr or CredHistr.ChargeType!=5) then begin
+      TrHs = false;
+    end else begin
+      if (CredHistr.RecordType==0 and CredHistr.ChargeType==5) then begin
+        totsum = totsum + CredHistr.Sum;
+      end;
+    end;
+  end;
+
+
+  if (totsum>0) then begin
+
+    RecordNew(TRr);
+    TRr.TransDate = RepSpec.RegDate;
+    TRr.Number = NextSerNr("TRVc",TRr.TransDate,-1,false,"");  
+    TRr.IntYc = 0;
+    TRr.Comment = CredManr.SerNr & " " & RepSpec.d1 & ":" & RepSpec.d2;
+
+    BERr.Date = TRr.TransDate;
+    if (ReadLastMain(BERr,1,false)) then begin
+      base1 = BERr.Rate1;
+      base2 = BERr.Rate2;
+    end;  
+    AddCMTransactionDebtorsAccounts(CredManr,shortacc,longacc,shortval,longval);
+
+    if (nonblank(shortacc) and nonblank(longacc)) then begin
+      if (GetAccName(shortacc,accname,60)) then begin
+        accf = CheckTTRPerRow("TRVc",shortacc,"",true,taccnumber,2);
+        AddEuroTrRow(TRr,shortacc,"","",accname,totsum,base1,base2,accf,true,calcsum,false,taccnumber,"","");
+      end;    
+
+      if (GetAccName(longacc,accname,60)) then begin
+        accf = CheckTTRPerRow("TRVc",longacc,"",false,taccnumber,2);
+        AddEuroTrRow(TRr,longacc,"","",accname,totsum,base1,base2,accf,false,calcsum,false,taccnumber,"","");
+      end;  
+      TRSumup(TRr,t);  
+      TRr.IntYc = GetIntYc(TRr.TransDate);
+      if (MatRowCnt(TRr)>0) then begin            
+        if (RecordInsert(TRr,false)) then begin end;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+
+global
+updating procedure CMBalanceTransferMn(record RcVc RepSpec)
+begin
+  record CredManVc CredManr;
+  
+  while (LoopMain(CredManr,1,true)) begin
+    if (CredManr.OKFlag==1) then begin
+      TreatSingleCredMan(CredManr,RepSpec);
+    end;
+  end;
+
+  return;
+end;

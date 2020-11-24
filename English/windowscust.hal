@@ -413,6 +413,15 @@ begin
   h = 150; v = 6; vs = 20;
   EndWindow;
 
+  WindowBegin("Specify Agreement Changes",CMBalanceTransferVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 160; v = 6; vs = 20;
+  EditFieldTL(h,v,120,"Date From",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,120,"Date Until",M4Date,Normal,0,d2,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,120,"Transaction Date",M4Date,Normal,0,RegDate,false,PasteCurDate);
+  EndWindow;
+
+
   WindowBegin("Additional Bank Accounts",CUBankAccDClass,CGView,-);
   SetWRect(20,80,400,250);
   AutoSizeWindow(false);  

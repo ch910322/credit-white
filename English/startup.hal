@@ -67,6 +67,8 @@ begin
   Maintenance("Create Mails from Schedules",SendScheduleEmailsVClass,SendScheduleEmailsMn,modCredMan);
   Maintenance("Generate Agreement Changes",CreateCredManChangeVClass,CreateCredManChangeMn,modCredMan);
 
+  Maintenance("Account Balance Transfer",CMBalanceTransferVClass,CMBalanceTransferMn,modCredMan);
+
   Maintenance("Recreate Invoices with Prolong months",CredManRecreateDocsVClass,CredManRecreateDocsMn,modCredMan);
 
   Maintenance("Create Agreement Test from Agreement",CredManCreateTestVClass,CredManCreateTestMn,modCredMan);
