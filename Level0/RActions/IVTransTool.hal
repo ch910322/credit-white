@@ -124,6 +124,14 @@ BEGIN
     if (days<0) then begin
       pdat = AddDay(pdat,days);
     end;  
+
+    //CUST-BEGIN
+    if (nonblank(IVp.CredFromDate)) then begin
+      if (GetMonth(IVp.CredFromDate)==GetMonth(IVp.TransDate)) then begin
+        pdat = AddMonth(pdat,1);
+      end;
+    end;
+    //CUST-END
     tstr = "";
     if (ASPrw.calc=="=") then begin
       if (IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales) then begin
@@ -137,6 +145,7 @@ BEGIN
 //CUST-BEGIN
     if (ASPrw.calc=="#") then begin
       tcur = GetCredManPeriodAmount(IVp,base1valp);
+      t = GetCredManPeriodAmount(IVp,ivrwsump);
       if (IVp.InvType!=kInvoiceTypeCredit and IVp.InvType!=kInvoiceTypeCreditSpecialSales) then begin
         totsumcur = totsumcur + tcur;
       end else begin

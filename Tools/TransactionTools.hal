@@ -296,8 +296,8 @@ begin
   
   if (nonblank(IVr.CredFromDate)) then begin
     days1 = DaysInMonth(GetYear(IVr.CredFromDate),GetMonth(IVr.CredFromDate));
-    days2 = days1 - GetDay(IVr.CredFromDate)+1;
-    totdays = DateDiff(IVr.CredToDate,IVr.CredFromDate);
+    days2 = days1 - GetDay(IVr.CredFromDate);
+    totdays = DateDiff(IVr.CredToDate,IVr.CredFromDate)+1;
     res = days2*rowsum/totdays;
   end;
 

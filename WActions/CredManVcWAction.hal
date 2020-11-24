@@ -2415,8 +2415,6 @@ begin
   return;
 end;
 
-
-
 global
 function Boolean CMBalanceTransferVClassOnOKWindow(Integer wn)
 begin

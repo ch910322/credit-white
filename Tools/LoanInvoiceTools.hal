@@ -292,12 +292,14 @@ begin
       IVrw.Spec = itemname;
       MatRowPut(IVr,rw,IVrw);
     end;
+
     CMAr.CredManType = CredManr.Type;
     if (ReadFirstMain(CMAr,1,true)) then begin
       rwcnt = MatRowCnt(CMAr);
       for (i=0;i<rwcnt;i=i+1) begin
         MatRowGet(CMAr,i,CMArw);
         if (CMArw.ArtCode==IVrw.ArtCode) then begin
+          MatRowGet(IVr,rw,IVrw);
           IVrw.PeriodCode = CMArw.PeriodCode;
           MatRowPut(IVr,rw,IVrw);
           i = rwcnt;
