@@ -2414,3 +2414,39 @@ begin
   CMShowVATColumn = res;
   return;
 end;
+
+
+
+global
+function Boolean CMBalanceTransferVClassOnOKWindow(Integer wn)
+begin
+  Boolean res;
+  record RcVc RepSpec;
+
+  res = true;
+
+  GetWindowRecord(wn,RepSpec);
+  if (blank(RepSpec.d1)) then begin
+    res = false;
+    MessageBox(1058,"");
+    WindowFieldGoto(wn,RepSpec,-1,"d1",true);
+    goto LCMBalanceTransferVClassOnOKWindow;
+  end;
+  if (blank(RepSpec.d2)) then begin
+    res = false;
+    MessageBox(1058,"");
+    WindowFieldGoto(wn,RepSpec,-1,"d2",true);
+    goto LCMBalanceTransferVClassOnOKWindow;
+  end;
+  if (blank(RepSpec.RegDate)) then begin
+    res = false;
+    MessageBox(1058,"");
+    WindowFieldGoto(wn,RepSpec,-1,"RegDate",true);
+    goto LCMBalanceTransferVClassOnOKWindow;
+  end;
+
+
+LCMBalanceTransferVClassOnOKWindow:;
+  CMBalanceTransferVClassOnOKWindow = res;
+  return;
+end;
