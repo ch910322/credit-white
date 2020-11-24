@@ -1668,7 +1668,7 @@ begin
   transaction Boolean gSilenceIVOpenPrepExists;
   array string 255 lateformula;
   Boolean schedf;
-
+logtext(0,"CheckBuyOutAgreement start");
   gSilenceIVOpenPrepExists = true;
   BlockLoad(CMb);
 /* why should be base this on schedule. we should always take "actual" data
@@ -1703,6 +1703,7 @@ begin
   RepSpec.f13 = GetActualBalance(CredManr,CredManPayPlanr,true);
   gSilenceIVOpenPrepExists = false;
 
+logtext(0,"CheckBuyOutAgreement end");
 
   return;
 end;
