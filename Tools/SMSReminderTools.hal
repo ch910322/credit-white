@@ -760,6 +760,10 @@ begin
   record SMSReminderVc SMSReminder;
   vector Boolean vCust;
   
+  if (TestEnablerFile("EnNoSMS")) then begin
+    logtext(0,"skipping sms sending");
+    goto LCheckSMSRemindersCompany;
+  end;
   TrHs = true;
   SMSReminder.ActiveFlag = 1;
   while (LoopKey("ActiveFlag",SMSReminder,1,TrHs)) begin
@@ -772,6 +776,7 @@ begin
     end;
   end;
 
+LCheckSMSRemindersCompany:;
   return;
 end;
 
