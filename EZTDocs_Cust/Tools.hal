@@ -292,7 +292,7 @@ begin
   ValToText(topay2,M4Val,IVr.CurncyCode,CredManr.LangCode,tstr);
   vVals["F_TOPAY2_TEXT"] = tstr;
 
-  vVals["F_LASTDAY"] = GetDay(td);
+  vVals["F_LASTDAY"] = USetStr(22780 + GetMonth(td)) & " " & GetDay(td);
   vVals["F_OPENAMOUNT2"] = openamount2;
   vVals["F_TOPAY3"] = topay3;
   ValToText(topay3,M4Val,IVr.CurncyCode,CredManr.LangCode,tstr);
