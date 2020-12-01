@@ -15,6 +15,9 @@ external inner function Boolean FindCustomerRelation(string,string,var record CU
 external inner procedure ValToText(val,Integer,string,string,var string);
 external inner procedure Ext_PrintValueInclZero(var vector string,string,val,Integer,record LangNrVc,record SysFormatBlock,Boolean);
 external function val GetContactTotalPaidAmount(record CredManVc);
+external inner procedure CustAged(record CUVc,Date,Date,Date,var val,var val,var val,var val,var val,var val,var val,var val,var val,var val,boolean);
+external inner procedure GetOnAccBalance(record RcVc,string,string,Boolean,Integer,var val,var val,var val,var val,var val,var val,var val,record SMVc,
+                   Array string,Array val,var Integer);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -237,14 +240,27 @@ begin
   string 255 vatnr,del;
   record CUVc CUr;
   record CredManVc CredManr;
-  val topay2,openamount;
+  val topay2,topay3,openamount,openamount2;
   string 255 credivno;
   record IVVc IVCreditr;
   record UserVc Userr;
+  Date bd,td;
+  val ARSSumod,ARSsactod,ARSs0od,ARSs1od,ARSs16od,ARSs31od,ARSs61od,ARSs91od,ARSs121od,ARSs151od;
+  record RcVc RepSpec;
+  val ARSOnAccBal,ARSOnAccBalb1;
+  record SMVc CurTotalsr;
+  val sumbooked,sumnow,sumcurncy,sumdiff;
+  Array val debbal;
+  Integer debcnt;
+  Array string 10 debaccs;
+  val rval,rval2;
 
   Ext_PrintInvoiceSigner(vVals);
 
   ExtPrintOwnBankDetails(vVals,IVr.CustCredManNr);
+
+  CUr.Code = IVr.CustCode;
+  if (ReadFirstMain(CUr,1,true)) then begin end;
 
   del = ":";
   BlockLoad(CIb);
@@ -256,11 +272,18 @@ begin
 
   GetHiddenInvoiceValues(IVr,abovehiddenbase,abovehiddenvat);
   openamount = GetCustomerOpenAmount(IVr.CustCode,IVr);
+  td = AddDay(IVr.InvDate,-1);
+  CustAged(CUr,td,bd,td,ARSSumod,ARSsactod,ARSs0od,ARSs1od,ARSs16od,ARSs31od,ARSs61od,ARSs91od,ARSs121od,ARSs151od,0);
+  GetOnAccBalance(RepSpec,CUr.Code,CUr.CurncyCode,false,0,ARSOnAccBalB1,rval2,ARSOnAccBal,sumbooked,sumnow,sumcurncy,sumdiff,CurTotalsr,debaccs,debbal,debcnt);//ObjStr
+  
+  openamount2 = ARSSumod + ARSOnAccBal;
+  topay3 = openamount2;
 
   topay2 = openamount;
   if (IVr.PayDate>=CurrentDate) then begin
     topay2 = topay2 + abovehiddenbase + abovehiddenvat + GetCredManItemValue(IVr,CMb.InstalmentItem,true);
   end;
+  topay3 = topay3 + abovehiddenbase + abovehiddenvat + GetCredManItemValue(IVr,CMb.InstalmentItem,true);
   if (topay2<0) then begin
     topay2 = 0;
   end;
@@ -268,6 +291,13 @@ begin
   vVals["F_TOPAY2"] = topay2;
   ValToText(topay2,M4Val,IVr.CurncyCode,CredManr.LangCode,tstr);
   vVals["F_TOPAY2_TEXT"] = tstr;
+
+  vVals["F_LASTDAY"] = GetDay(td);
+  vVals["F_OPENAMOUNT2"] = openamount2;
+  vVals["F_TOPAY3"] = topay3;
+  ValToText(topay3,M4Val,IVr.CurncyCode,CredManr.LangCode,tstr);
+  vVals["F_TOPAY3_TEXT"] = tstr;
+
 
   vVals["F_ABOVEHIDDENBASE"] = abovehiddenbase;
   vVals["F_ABOVEHIDDENVAT"] = abovehiddenvat;
@@ -336,10 +366,7 @@ begin
 
   
   if (blank(IVr.VATNr)) then begin
-    CUr.Code = IVr.CustCode;
-    if (ReadFirstMain(CUr,1,true)) then begin
-      vatnr = CUr.VATNr;   
-    end;   
+    vatnr = CUr.VATNr;   
   end else begin
     vatnr = IVr.VATNr;      
   end;
