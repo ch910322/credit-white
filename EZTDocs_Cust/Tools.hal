@@ -18,6 +18,7 @@ external function val GetContactTotalPaidAmount(record CredManVc);
 external inner procedure CustAged(record CUVc,Date,Date,Date,var val,var val,var val,var val,var val,var val,var val,var val,var val,var val,boolean);
 external inner procedure GetOnAccBalance(record RcVc,string,string,Boolean,Integer,var val,var val,var val,var val,var val,var val,var val,record SMVc,
                    Array string,Array val,var Integer);
+external inner  procedure GetMonthText(string,Date,var string);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -292,7 +293,8 @@ begin
   ValToText(topay2,M4Val,IVr.CurncyCode,CredManr.LangCode,tstr);
   vVals["F_TOPAY2_TEXT"] = tstr;
 
-  vVals["F_LASTDAY"] = USetStr(22780 + GetMonth(td)) & " " & GetDay(td);
+  GetMonthText(IVr.LangCode,td,tstr);
+  vVals["F_LASTDAY"] = tstr & " " & GetDay(td);
   vVals["F_OPENAMOUNT2"] = openamount2;
   vVals["F_TOPAY3"] = topay3;
   ValToText(topay3,M4Val,IVr.CurncyCode,CredManr.LangCode,tstr);
