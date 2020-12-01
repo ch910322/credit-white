@@ -19,7 +19,7 @@ external inner procedure SumNoDownPay(record IVVc,var val,var val,var val,var va
 external function string 255 GetCredManNr(Longint);
 external procedure GetHiddenInvoiceValues(record IVVc,var val,var val);
 external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
-external updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
+external procedure GenerateAgreementSchedule(record CredManVc,Boolean);
 external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,record CredManSetBlock,var record SMVc);
 external function Boolean GetCredLegalNrLine(string,string,Date,string,string,var row CredLegalInvNrBlock,Integer);
 external inner function string 50 NextLegalSerNr(string,LongInt,Date,string,string,string);
@@ -2153,9 +2153,23 @@ begin
   return;
 end; 
 
+global
+updating procedure StoreCredManSchedRecord(record CredManSchedVc CSr)
+begin
+  record CredManSchedVc oldCSr;
+
+  oldCSr.CredManNr = CSr.CredManNr;
+  if (ReadFirstMain(oldCSr,1,true)) then begin
+    RecordUpdate(oldCSr,CSr,false);
+  end else begin
+    RecordInsert(CSr,true);
+  end;
+
+  return;
+end;
 
 global
-updating procedure GenerateAgreementSchedule(record CredManVc CredManr,Boolean forcef)
+procedure GenerateAgreementSchedule(record CredManVc CredManr,Boolean forcef)
 begin
   record CredManSetBlock CMb;
   record CredManPayPlanVc CredManPayPlanr;
@@ -2227,12 +2241,7 @@ logtext(0,"GenerateAgreementSchedule1");
     MatRowPut(CSr,rw,CSrw);
     rw = rw + 1;
   end;
-
-  if (updf) then begin
-    RecordUpdate(oldCSr,CSr,false);
-  end else begin
-    RecordInsert(CSr,true);
-  end;
+  qupdating.StoreCredManSchedRecord(CSr);
 
 lout:;
 logtext(0,"GenerateAgreementSchedule2");

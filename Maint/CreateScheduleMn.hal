@@ -1,7 +1,7 @@
-external updating procedure GenerateAgreementSchedule(record CredManVc,Boolean);
+external procedure GenerateAgreementSchedule(record CredManVc,Boolean);
 
 global
-updating procedure CreateCredManScheduleMn(record RcVc RepSpec)
+procedure CreateCredManScheduleMn(record RcVc RepSpec)
 begin
   record CredManSchedVc CSr;
   record CredManVc CredManr;

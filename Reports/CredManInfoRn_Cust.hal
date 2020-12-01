@@ -213,7 +213,7 @@ begin
   CheckBuyOutAgreement(CredManr,RepSpec2);
   settlesum = RepSpec2.vals2;
 
-  CalcCredManSums(CredManr,CredManPayPlanr,CredManSetb,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,d,v,cursuginst,l);
+  //CalcCredManSums(CredManr,CredManPayPlanr,CredManSetb,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,d,v,cursuginst,l);
 
   PrintLeft(USetStr(17317),CredManr.SerNr,USetStr(200270),StringFromSet(2001,CredManr.InstalmentType));
   PrintLeft2("Customer",CredManr.CustCode,CredManr.Addr0,USetStr(17315),CredManr.startDate);
