@@ -1525,6 +1525,51 @@ begin
   return;
 end;
 
+updating procedure CredManMakePayment(record CredManVc CredManr,Boolean receiptf,string ivno,val sendsum)
+begin
+  record VIVc VIr;
+  record IVVc IVr;
+  val sum;
+  
+  CredManMakePaymentRemote(CredManr,VIr,IVr,ivno,sum,receiptf);
+  PutWindowRecord(wn,CredManr);
+  WindowDoOK(wn,0);
+  if (receiptf) then begin
+    CloseWindow(wn);
+    CreatePaymentFakeReceipt(CredManr,IVr);
+    CM_CreatePaymentOrder(CredManr,VIr,sum);
+    ReadFirstMain(CredManr,1,true);
+    OpenWindow("CredManDClass",1,0,"","",CredManr);
+  end;
+
+  if (VIr.SerNr>0) then begin
+    OpenWindow("VIDClass",0,0,"","",VIr);
+  end;
+
+
+  return;
+end;
+
+global
+updating procedure CredManMakePaymentWithAmount()
+begin
+  Integer wn,mwn;
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  mwn = MotherWindow(wn);
+  GetWindowRecord(mwn,CredManr);
+  CloseWindow(wn);
+  
+  CredManMakePayment(CredManr,RepSpec.flags[10]==0,"",RepSpec.vals1);
+
+  return;
+end;
+
+
 global
 updating procedure CredManMakePaymentDsm()
 begin
@@ -1545,16 +1590,10 @@ begin
       RepSpec.ArtMode = 1;
       nwn = OpenWindow("CredManInvNoWClass",0,wn,"","",RepSpec);
     end else begin
-      CredManMakePaymentRemote(CredManr,VIr,IVr,"",sum,true);
-      PutWindowRecord(wn,CredManr);
-      WindowDoOK(wn,0);
-      CloseWindow(wn);
-      CreatePaymentFakeReceipt(CredManr,IVr);
-      CM_CreatePaymentOrder(CredManr,VIr,sum);
-      ReadFirstMain(CredManr,1,true);
-      OpenWindow("CredManDClass",1,0,"","",CredManr);
-      if (VIr.SerNr>0) then begin
-        OpenWindow("VIDClass",0,0,"","",VIr);
+      if (CredManr.LoanType==7) then begin
+        OpenWindow("CredManPaymentWClass",0,wn,"","",RepSpec);
+      end else begin
+        CredManMakePayment(CredManr,true,"",0);
       end;
     end;
   end else begin
@@ -1586,11 +1625,11 @@ begin
       RepSpec.flags[10] = 1;
       nwn = OpenWindow("CredManInvNoWClass",0,wn,"","",RepSpec);
     end else begin
-      CredManMakePaymentRemote(CredManr,VIr,IVr,"",sum,false);
-      PutWindowRecord(wn,CredManr);
-      WindowDoOK(wn,0);
-      if (VIr.SerNr>0) then begin
-        OpenWindow("VIDClass",0,0,"","",VIr);
+      if (CredManr.LoanType==7) then begin
+        RepSpec.flags[10] = 1;
+        OpenWindow("CredManPaymentWClass",0,wn,"","",RepSpec);
+      end else begin
+        CredManMakePayment(CredManr,false,"",0);
       end;
     end;
   end else begin
@@ -1619,19 +1658,7 @@ begin
   if (RepSpec.ArtMode==0) then begin
     CreateCredManInvoiceDo(CredManr,RepSpec.f1,mwn);
   end else begin
-    CredManMakePaymentRemote(CredManr,VIr,IVr,RepSpec.f1,sum,RepSpec.flags[10]==0);
-    PutWindowRecord(mwn,CredManr);
-    WindowDoOK(mwn,0);
-    CloseWindow(mwn);
-    if (RepSpec.flags[10]==1) then begin
-      CreatePaymentFakeReceipt(CredManr,IVr);
-    end;
-    CM_CreatePaymentOrder(CredManr,VIr,sum);
-    ReadFirstMain(CredManr,1,true);
-    OpenWindow("CredManDClass",1,0,"","",CredManr);
-    if (VIr.SerNr>0) then begin
-      twn = OpenWindow("VIDClass",0,0,"","",VIr);
-    end;
+    CredManMakePayment(CredManr,RepSpec.flags[10]==0,RepSpec.f1,0);
   end;
 
   return;
@@ -2067,6 +2094,28 @@ begin
   
   CloseWindow(CurWindow);
   OpenWindow("CredMan7LClass",0,0,"6","",CredManr);
+
+  return;
+end;
+
+global
+procedure CredManLClass7Btn()
+begin
+  record CredManVc CredManr;
+  
+  CloseWindow(CurWindow);
+  OpenWindow("CredMan8LClass",0,0,"7","",CredManr);
+
+  return;
+end;
+
+global
+procedure CredManLClass8Btn()
+begin
+  record CredManVc CredManr;
+  
+  CloseWindow(CurWindow);
+  OpenWindow("CredMan9LClass",0,0,"8","",CredManr);
 
   return;
 end;

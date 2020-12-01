@@ -726,7 +726,7 @@ begin
   if (type!=4 and type!=5) then begin
     EditField(h,v+=vs,30,"Months",Normal,InstalmentMonths,false,0);
   end;
-  if (type==1 or type==4 or type==5) then begin
+  if (type==1 or type==4 or type==5 or type==7) then begin
     EditField(h,v+=vs,30,"Monthly Paym. Day",Normal,MonthlyPaymentDay,false,0);
   end;
 //CUST-BEGIN
@@ -744,7 +744,7 @@ begin
     end;
   end;
   th = h;
-  if (type==1 or type==3) then begin
+  if (type==1 or type==3 or type==7) then begin
     if (type==3 or HideLoanPledges==false) then begin
       HalPushButton(h-50,v+=vs,h+70,v+20,"CredManDClassOpenProperties","Pledges");
       th = h + 140;
@@ -797,7 +797,11 @@ begin
   EditField(h3,v+=vs,72,"Order Class",Normal,OrderClass,false,OrderClassSClass);
   EditField(h3,v+=vs,72,"Overdue percentage",Normal,OverduePercentage,false,0);
   if (UseBuyOutMonths) then begin
-    EditField(h3,v+=vs,72,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
+    if (type==7) then begin
+      EditField(h3,v+=vs,72,"Not Used Amount Fee %",Normal,BuyoutFeeMonths,true,0);
+    end else begin
+      EditField(h3,v+=vs,72,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
+    end;
   end else begin
     EditField(h3,v+=vs,72,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
     EditField(h3,v+=vs,72,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
@@ -815,7 +819,7 @@ begin
   if (statusf) then begin
     v = v + vs;
   end;
-  if (type!=4 and type!=5) then begin
+  if (type!=4 and type!=5 and type!=7) then begin
     EditField(h4,v+=vs,-40,"Max Monthly Payment",Normal,MaxMonthlyPayment,true,0);
 //CUST-BEGIN
     if (type==2 or type==3) then begin
@@ -825,7 +829,7 @@ begin
     end;
   end;
 //CUST-END
-  if (type!=4 and type!=5) then begin
+  if (type!=4 and type!=5 and type!=7) then begin
     EditField(h4,v+=vs,-40,"Princ. Delay Months",Normal,PrincipleDelayMonths,false,0);
     EditField(h4,v+=vs,-40,"Princ. Delay Interest %",Normal,PrincipleDelayInterest,false,0);
   end;
@@ -1035,6 +1039,12 @@ begin
   end;
   if (ISb.ShowLoanType6==1) then begin
     RadioButton(h3,v+=16,6,0,"Balloon",LoanType);
+  end;
+  if (ISb.ShowLoanType7==1) then begin
+    RadioButton(h3,v+=16,7,0,"Credit Line",LoanType);
+  end;
+  if (ISb.ShowLoanType8==1) then begin
+    RadioButton(h3,v+=16,8,0,"Credit Limit",LoanType);
   end;
   EndFrame;
   
@@ -1407,6 +1417,12 @@ begin
   end;
   if (ISb.ShowLoanType6==1) then begin
     RadioButton(h3,v+=16,6,0,"Balloon",LoanType);
+  end;
+  if (ISb.ShowLoanType7==1) then begin
+    RadioButton(h3,v+=16,7,0,"Credit Line",LoanType);
+  end;
+  if (ISb.ShowLoanType8==1) then begin
+    RadioButton(h3,v+=16,8,0,"Credit Limit",LoanType);
   end;
   if (vm3+(3*16)>v) then begin
     v = vm3;

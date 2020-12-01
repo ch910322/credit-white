@@ -303,7 +303,7 @@ begin
   
   if (nonblank(frdate)) then begin
     sendmonthtypef = monthtypef;
-    if (CredManr.ChargeMethod==1 and overridef==false and sendmonthtypef!=kMonthTypeFirst) then begin
+    if ((CredManr.ChargeMethod==1 or CredManr.LoanType==7) and overridef==false and sendmonthtypef!=kMonthTypeFirst) then begin
       sendmonthtypef = kMonthTypeLast;
     end;
     AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.IntRate,sendmonthtypef,frdate,todate,calcbal,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
@@ -768,7 +768,7 @@ begin
       TrHs = false;
     end else begin
  //     if (CredHistr.RecordType==0) then begin
-      if (CredHistr.ChargeType!=15 and CredHistr.ChargeType!=14) then begin
+      if (CredHistr.ChargeType!=15 and CredHistr.ChargeType!=14 and CredHistr.RecordType!=5) then begin
         openamount = 0;
         switch (CredHistr.RecordType) begin
           case 0: 
@@ -795,6 +795,7 @@ begin
           lastrecnr = CredHistr.RecordNr;
         end;
       end;
+
     end;
   end;
 
@@ -1140,6 +1141,28 @@ begin
   return;
 end;
 
+procedure UpdateAgreementBalance(record CredManVc CredManr,var val calcbal,Date frdate,Date todate)
+begin
+  record CredHistVc CredHistr;
+  Boolean TrHs;
+  
+  if (CredManr.LoanType==7) then begin
+    TrHs = true;
+    CredHistr.TransDate = frdate;
+    while (LookKey("CredManTransDate:" & CredManr.SerNr,CredHistr,1,TrHs)) begin
+      if (CredManr.TransDate>todate) then begin
+        TrHs = false;
+      end else begin
+        if (CredManr.RecordType==5) then begin//payment
+          calcbal = calcbal + CredHistr.Sum;
+        end;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
 global
 procedure BuildCredManPayPlanCust(record CredManVc inCredManr,var record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb,Boolean withactuals,Boolean recalculatef)
 begin
@@ -1194,11 +1217,12 @@ LCalcSchedule:;
 //logtext(0,"start dev");
 
   LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths);
-
+  
   for(i=calculatedmonths;i<months;i=i+1) begin
     if (calcbal>0) then begin
       CalcCredManCurrentPeriod(inCredManr,CIb,i-1,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
       LoadAgreementChangesMonthly(inCredManr,invdat);
+      UpdateAgreementBalance(inCredManr,calcbal,frdat,todat);
       if (GetDay(invdat)!=inCredManr.MonthlyPaymentDay) then begin
         CalcCredManCurrentPeriod(inCredManr,CIb,i-1,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates,   frdat, todat and invdat
       end;

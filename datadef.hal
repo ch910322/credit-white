@@ -1784,6 +1784,8 @@ begin
   RecordField(ShowLoanType6,M4Int,0,0);
   RecordField(ShowRealInterestFlag,M4Int,0,0);
   RecordField(UseCredManDaysInMonth,M4Int,0,0);
+  RecordField(ShowLoanType7,M4Int,0,0);
+  RecordField(ShowLoanType8,M4Int,0,0);
   EndBlock;
 
   RecordBegin(CredManChangeVc,-,"");

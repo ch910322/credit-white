@@ -42,6 +42,12 @@ begin
   if (ISb.ShowLoanType6==1) then begin
     HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass6Btn","Balloon");
   end;
+  if (ISb.ShowLoanType7==1) then begin
+    HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass7Btn","Credit Line");
+  end;
+  if (ISb.ShowLoanType8==1) then begin
+    HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass8Btn","Credit Limit");
+  end;
   HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClassBtn","All");
   RecordList(4,v+=20,-21,-39);
   RlColKey(4,2,"N_o.",SerNr,false,TypeSerNr);
@@ -461,6 +467,17 @@ begin
 
   HalPushButton(h,v+=vs,h+120,v+20,"CredManInvNoWClassProceed","Create");
   EndWindow;
+
+  WindowBegin("Create Payment",CredManPaymentWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,400,150);
+  h = 150; h2 = 250; v=450;
+  EditFieldTL(h,v=6,120,"Amount",M4Val,Normal,0,vals1,false,0);
+
+  HalPushButton(h,v+=vs,h+120,v+20,"CredManMakePaymentWithAmount","Create");
+  EndWindow;
+
+
 
   WindowBegin("Specify Credit Agreement Schedule",CredManScheduleRClass,CGRcW,RcType);
   SetWRect(20,80,400,220);
@@ -2579,6 +2596,22 @@ window CredMan7LClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Balloon Agreements",CredMan7LClass,CGmlist,-);
+  ShowCredManLClassWindow;
+  EndWindow;
+end;
+
+window CredMan8LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Credit Line Agreements",CredMan8LClass,CGmlist,-);
+  ShowCredManLClassWindow;
+  EndWindow;
+end;
+
+window CredMan9LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Credit Limit Agreements",CredMan9LClass,CGmlist,-);
   ShowCredManLClassWindow;
   EndWindow;
 end;
