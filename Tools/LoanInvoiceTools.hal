@@ -2062,6 +2062,28 @@ begin
   return;
 end;
 
+function Integer GetInterestPaymentType(record CredManVc CredManr)
+begin
+  record CMInvoicingBlock CIb;
+  record CredManTypeVc CMTr;
+  Integer res;
+
+  res = CredManr.InterestPaymentType-1;
+  if (res==-1) then begin
+    CMTr.Code = CredManr.Type;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      res = CMTr.InterestPaymentType-1;
+    end;
+  end;
+
+  if (res==-1) then begin
+    BlockLoad(CIb);
+    res = CIb.InterestPaymentType;
+  end;
+  GetInterestPaymentType = res;
+  return;
+end;
+
 global
 procedure GetCredManEventList(record CredManVc CredManr,var record ORVc ORr)
 begin
@@ -2071,7 +2093,12 @@ begin
   
   TrHs = true;
   CredHistr.CredManNr = CredManr.SerNr;
-  balance = CredManr.InvSum4;
+  int_type = GetInterestPaymentType(CredManr);
+  if (int_type==1) then begin
+    balance = 0;
+  end else begin
+    balance = CredManr.InvSum4;
+  end;
   while (LoopKey("CredManTypeDate",CredHistr,1,TrHs)) begin
     if (CredHistr.CredManNr!=CredManr.SerNr) then begin
       TrHs = false;
@@ -2085,6 +2112,9 @@ begin
       end;
       if (CredHistr.RecordType==4) then begin//partial buyout
         balance = balance - CredHistr.Sum;
+      end;
+      if (CredHistr.RecordType==5 and int_type==1) then begin//payment
+        balance = balance + CredHistr.Sum;
       end;
       firstf = true;
       RecordCopy(prevCredHistr,CredHistr);
