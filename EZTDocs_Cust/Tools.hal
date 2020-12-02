@@ -288,16 +288,19 @@ begin
   if (topay2<0) then begin
     topay2 = 0;
   end;
+  if (topay3<0) then begin
+    topay2 = 0;
+  end;
   vVals["F_OPENAMOUNT"] = openamount;
   vVals["F_TOPAY2"] = topay2;
-  ValToText(topay2,M4Val,IVr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText(topay2,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
   vVals["F_TOPAY2_TEXT"] = tstr;
 
   GetMonthText(IVr.LangCode,td,tstr);
   vVals["F_LASTDAY"] = tstr & " " & GetDay(td);
   vVals["F_OPENAMOUNT2"] = openamount2;
   vVals["F_TOPAY3"] = topay3;
-  ValToText(topay3,M4Val,IVr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText(topay3,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
   vVals["F_TOPAY3_TEXT"] = tstr;
 
 
