@@ -289,7 +289,7 @@ begin
     topay2 = 0;
   end;
   if (topay3<0) then begin
-    topay2 = 0;
+    topay3 = 0;
   end;
   vVals["F_OPENAMOUNT"] = openamount;
   vVals["F_TOPAY2"] = topay2;
