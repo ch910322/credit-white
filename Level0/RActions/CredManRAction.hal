@@ -423,6 +423,7 @@ BEGIN
   mainr.TransNr = CredManr.SerNr;
   mainr.IVNr = CredManr.IVNr;
   mainr.TransDate = CredManr.TransDate;
+/* CUST REMOVED - we don't need this
   if (deletef) then begin
     if (ReadFirstMain(mainr,0,true)) then begin
       RecordDelete(mainr);
@@ -430,6 +431,7 @@ BEGIN
   end else begin
     if (RecordStore(mainr,false)) then begin end;
   end;
+*/
 L88CredManIPrsStats:;
   RETURN;
 END;
