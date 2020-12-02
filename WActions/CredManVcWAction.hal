@@ -16,7 +16,7 @@ remote procedure GetFactoringRecord(record CredManVc,var record CredManFactVc);
 remote procedure GetPayGrntRecord(record CredManVc,var record CredManPmtGrntVc);
 remote procedure PrepareAgreementDocSigningSession(record AgreementDocVc,var string,var Integer);
 remote function Boolean GetAgreementDoc(record CredManVc,Integer,var record AgreementDocVc);
-remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc,var record IVVc,string,var val,Boolean);
+remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc,var record IVVc,string,var val,Boolean,val);
 remote function Boolean GetAgreementDoc2(Longint,string,Integer,var record AgreementDocVc);
 remote updating procedure CredManPartialBuyoutDo(Date,val,Longint);
 remote procedure GetPauseCredManNextDate(record CredManVc,var Date);
@@ -886,6 +886,7 @@ begin
   Longint pos,sernr;
   record IVVc IVr;
   record IPVc IPr;
+  record OPVc OPr;
   string 255 tstr,tstr2,type;
   record CredHistVc CredHistr;
 
@@ -903,8 +904,14 @@ begin
       if (ReadFirstMain(IVr,1,true)) then begin
         OpenWindow("IVDClass",1,0,"","",IVr);
       end;
-    case "4":
+    case "5":
+      OPr.SerNr = CredHistr.RecordNr;
+      if (ReadFirstMain(OPr,1,true)) then begin
+        OpenWindow("OPDClass",1,0,"","",OPr);
+      end;
+    otherwise
       OpenWindow("CredHistDClass",1,0,"","",CredHistr);
+    
   end;
 
   return;
@@ -1525,13 +1532,13 @@ begin
   return;
 end;
 
-updating procedure CredManMakePayment(record CredManVc CredManr,Boolean receiptf,string ivno,val sendsum)
+updating procedure CredManMakePayment(Integer wn,record CredManVc CredManr,Boolean receiptf,string ivno,val sendsum)
 begin
   record VIVc VIr;
   record IVVc IVr;
   val sum;
   
-  CredManMakePaymentRemote(CredManr,VIr,IVr,ivno,sum,receiptf);
+  CredManMakePaymentRemote(CredManr,VIr,IVr,ivno,sum,receiptf,sendsum);
   PutWindowRecord(wn,CredManr);
   WindowDoOK(wn,0);
   if (receiptf) then begin
@@ -1564,7 +1571,7 @@ begin
   GetWindowRecord(mwn,CredManr);
   CloseWindow(wn);
   
-  CredManMakePayment(CredManr,RepSpec.flags[10]==0,"",RepSpec.vals1);
+  CredManMakePayment(mwn,CredManr,RepSpec.flags[10]==0,"",RepSpec.vals1);
 
   return;
 end;
@@ -1593,7 +1600,7 @@ begin
       if (CredManr.LoanType==7) then begin
         OpenWindow("CredManPaymentWClass",0,wn,"","",RepSpec);
       end else begin
-        CredManMakePayment(CredManr,true,"",0);
+        CredManMakePayment(wn,CredManr,true,"",0);
       end;
     end;
   end else begin
@@ -1629,7 +1636,7 @@ begin
         RepSpec.flags[10] = 1;
         OpenWindow("CredManPaymentWClass",0,wn,"","",RepSpec);
       end else begin
-        CredManMakePayment(CredManr,false,"",0);
+        CredManMakePayment(wn,CredManr,false,"",0);
       end;
     end;
   end else begin
@@ -1658,7 +1665,7 @@ begin
   if (RepSpec.ArtMode==0) then begin
     CreateCredManInvoiceDo(CredManr,RepSpec.f1,mwn);
   end else begin
-    CredManMakePayment(CredManr,RepSpec.flags[10]==0,RepSpec.f1,0);
+    CredManMakePayment(mwn,CredManr,RepSpec.flags[10]==0,RepSpec.f1,0);
   end;
 
   return;

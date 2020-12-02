@@ -358,6 +358,7 @@ begin
   SetText(2,"Prepayment");
   SetText(3,"Credit Note");
   SetText(4,"Partial Buy-out");
+  SetText(5,"Made Payment");
   EndSet;
 
   SetBegin(2012);

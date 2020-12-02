@@ -999,9 +999,10 @@ begin
   RadioButton(h2,v+=16,1,0,"Trans. Date",LateRateOption);
 
   if (ISb.ShowRealInterestFlag) then begin
-    ButtonFrame(h2,v+=40,150,2,"Int. based on Money Trans.");
-    RadioButton(h2,v,0,0,"No",RealInterestFlag);
-    RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
+    ButtonFrame(h2,v+=40,150,3,"Int. based on Money Trans.");
+    RadioButton(h2,v,0,0,"Default",RealInterestFlag);
+    RadioButton(h2,v+=16,1,0,"No",RealInterestFlag);
+    RadioButton(h2,v+=16,2,0,"Yes",RealInterestFlag);
   end;
   if (ISb.UseCredManDaysInMonth) then begin
     ButtonFrame(h2,v+=40,82,3,"Days in Month");
@@ -1373,9 +1374,10 @@ begin
   vm2 = v;
   EditField(h2+150,v=vm-20,-40,"Minimum Overdue Fee",Normal,MinOverdueFee,false,0);
   vm = vm + 20;
-  ButtonFrame(h2,v=vm,270,2,"Interest according to Money Transfer Date");
-  RadioButton(h2,v,0,0,"No",RealInterestFlag);
-  RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
+  ButtonFrame(h2,v=vm,270,3,"Interest according to Money Transfer Date");
+  RadioButton(h2,v,0,0,"Default",RealInterestFlag);
+  RadioButton(h2,v+=16,1,0,"No",RealInterestFlag);
+  RadioButton(h2,v+=16,2,0,"Yes",RealInterestFlag);
 
   //CUST-END
   vm = v+40;

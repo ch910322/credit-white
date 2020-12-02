@@ -2121,6 +2121,10 @@ begin
   Checkbox(h,v,0,"Update when creating Payment",MoneyTransferDateVI);
   Checkbox(h,v+=16,0,"Update when Invoices are paid",MoneyTransferDateOP);
 
+  ButtonFrame(h,v+=40,270,2,"Interest according to Money Transfer Date");
+  RadioButton(h,v,0,0,"No",RealInterestFlag);
+  RadioButton(h,v+=16,1,0,"Yes",RealInterestFlag);
+
   EndWindow;
   return;
 end;
@@ -2921,9 +2925,9 @@ begin
   h = 100;
   vs = 20;
   if (HasBalloonLoanType) then begin//stupid workaround because EndFrame doens't work here
-    ButtonFrame(h,v=40,150,7,"Default Loan Type");
+    ButtonFrame(h,v=40,150,9,"Default Loan Type");
   end else begin
-    ButtonFrame(h,v=40,150,6,"Default Loan Type");
+    ButtonFrame(h,v=40,150,8,"Default Loan Type");
   end;
   RadioButton(h,v,0,0,"Not set",DefCredManLoanType);
   RadioButton(h,v+=16,1,0,"Loan",DefCredManLoanType); 
@@ -2934,6 +2938,8 @@ begin
   if (HasBalloonLoanType) then begin
     RadioButton(h,v+=16,6,0,"Balloon",DefCredManLoanType); 
   end;
+  RadioButton(h,v+=16,7,0,"Credit Line",DefCredManLoanType); 
+  RadioButton(h,v+=16,8,0,"Credit Limit",DefCredManLoanType); 
 
   CheckBox(h,v+=30,0,"Display Loan",ShowLoanType1);
   CheckBox(h,v+=16,0,"Display Leasing",ShowLoanType2);
@@ -2943,6 +2949,8 @@ begin
   if (HasBalloonLoanType) then begin
     CheckBox(h,v+=16,0,"Display Balloon",ShowLoanType6);
   end;
+  CheckBox(h,v+=16,0,"Display Credit Line",ShowLoanType7);
+  CheckBox(h,v+=16,0,"Display Credit Limit",ShowLoanType8);
 
   CheckBox(h,v+=30,0,"Show VAT Data",ShowVAT);
   CheckBox(h,v+=vs,0,"Show 'Int. based on Money Transfer'",ShowRealInterestFlag);

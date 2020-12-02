@@ -997,6 +997,7 @@ begin
   ArrayField(FactoringInvoice,M4Long,0,0);
   ArrayField(OpenAmount,M4Val,0,0);
   ArrayField(InvType,M4Int,0,0);
+  ArrayField(SortString,M4Str,255,0);
   EndRecordAdd;
 
   BlockBegin(ItemPriorityBlock,-,"");
@@ -1463,6 +1464,7 @@ begin
   RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
   RecordField(ItemPriorityCode,M4Code,20,0);
   RecordField(FirstInvPayDeal,M4Code,5,PDVc);
+  RecordField(RealInterestFlag,M4Int,0,0);
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
@@ -1810,7 +1812,11 @@ begin
   AppendFieldToKeyName(CredManNr);
   KeySegment(SerNr);
   
-  EndRecord;  
+  EndRecord; 
+
+  RecordAddBegin(VIVc,"Cred_VIVc"); 
+  RecordField(CustCredManNr,M4Long,0,0);
+  EndRecordAdd;
 
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);

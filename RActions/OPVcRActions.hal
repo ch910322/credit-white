@@ -1,6 +1,9 @@
 //<halrule>server-only</halrule>
 external updating procedure UpdateFactoringInvoicePayment(record OPVc,Boolean);
 external updating procedure UpdatePmtGrntReportPayment(record OPVc,Boolean);
+external updating procedure CreateCredHist(Longint,Integer,string,val,Integer,string,Date,Longint,Date,var Longint,Date,Date,Integer,Longint,val,Longint,val);
+external updating procedure UpdateCredHistBalance(Longint,Longint,Integer);
+external updating procedure RemoveCredHist(Longint,Integer);
 
 updating procedure UpdateCredManPaymentDate(record OPVc OPr)
 begin
@@ -10,6 +13,8 @@ begin
   record CMInvoicingBlock CIb;
   Boolean updf;
   record APVc APr;
+  record VIVc VIr;
+  Longint histnr;
 
   BlockLoad(CIb);
   rwcnt = MatRowCnt(OPr);
@@ -21,6 +26,14 @@ begin
       if (ReadFirstMain(APr,1,true)) then begin
         if (APr.RVal>0) then begin
           updf = false;
+        end;
+      end;
+      VIr.SerNr = OPrw.VISerNr;
+      if (ReadFirstMain(VIr,1,true)) then begin
+        if (VIr.CustCredManNr>-1) then begin
+          CreateCredHist(OPr.SerNr,16,VIr.VECode,OPrw.RecVal,5,"",OPr.TransDate,VIr.CustCredManNr,OPr.TransDate,histnr,"","",1,-1,OPrw.RecVal,-1,blankval);
+          UpdateCredHistBalance(VIr.CustCredManNr,OPr.SerNr,5);
+
         end;
       end;
       if (updf) then begin
@@ -56,6 +69,7 @@ BEGIN
   if (OPr.DoneFlag==0 and OP2r.DoneFlag==1) then begin
     UpdateFactoringInvoicePayment(OPr,false);
     UpdatePmtGrntReportPayment(OPr,false);
+    RemoveCredHist(OPr.SerNr,5);
   end;
 
   OPVcRecordUpdateAfter = res;
