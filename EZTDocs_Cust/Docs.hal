@@ -404,9 +404,9 @@ begin
     MatRowGet(CredManr,i,CredManrw);
     if (CredManrw.ChargeType==0 or CredManrw.ChargeType==2) then begin
       if (CredManrw.ChargeType==2) then begin
-        fees = fees + AdjustFees(((CredManr.InvSum4-CredManr.DepositSum) * (CredManrw.vRebate/100)));
+        fees = fees + AdjustFees(((CredManr.InvSum4-CredManr.DepositSum) * (CredManrw.vRebate/100)),CredManrw.MinSum,CredManrw.MaxSum);
       end else begin
-        fees = fees + AdjustFees(CredManrw.Price);
+        fees = fees + AdjustFees(CredManrw.Price,CredManrw.MinSum,CredManrw.MaxSum);
       end;
     end;
   end;
