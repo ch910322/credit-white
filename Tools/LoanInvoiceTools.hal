@@ -1669,6 +1669,7 @@ begin
   array string 255 lateformula;
   Boolean schedf;
 logtext(0,"CheckBuyOutAgreement start");
+
   gSilenceIVOpenPrepExists = true;
   BlockLoad(CMb);
 /* why should be base this on schedule. we should always take "actual" data

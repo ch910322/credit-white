@@ -357,6 +357,7 @@ begin
   return;
 end;
 
+global
 function val AdjustFees(val sum,val minsum,val maxsum)
 begin
   val res;
