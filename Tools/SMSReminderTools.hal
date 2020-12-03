@@ -67,6 +67,8 @@ begin
         res = RepSpec.vals1;
       case "PayableAmount":
         res = RepSpec.vals2;
+      case "BankAccount":
+        res = RepSpec.f5;
     end;
   end;
 
@@ -265,6 +267,11 @@ begin
   record ARVc ARr;
   Boolean res;
   
+  if (TestEnablerFile("EnNoSMS")) then begin
+    logtext(0,"skipping sms sending");
+    goto LSendSMSReminder;
+  end;
+
   CUr.Code = custcode;
   if (ReadFirstMain(CUr,1,true)) then begin
     if (CUr.NoLetterPosting!=0) then begin
@@ -526,40 +533,30 @@ begin
   return;
 end;
 
-global
-updating procedure Cust_SendReminder3(record ORVc ORr,record SMSReminderVc SMSReminder)
+updating procedure SendSingleSMS3(record SMSReminderVc SMSReminder,record ORVc ORr,row ORVc ORrw)
 begin
-  string 255 list,qList,qnr;
-  Integer i,rwcnt;
-  row ORVc ORrw;
   record SMSReminderQueueVc SRQr;
   Boolean sentf;
   Longint pos;
-  record ARVc ARr;
   record RcVc RepSpec;
-
-  rwcnt = MatRowCnt(ORr);
-  for (i=0;i<rwcnt;i=i+1) begin
-    MatRowGet(ORr,i,ORrw);
-    if (i>0) then begin
-      list = list & chr(10);
-    end;
-    list = list & ORrw.Price & " " & ORrw.ShipNote;
-  end;
-
+  string 255 list;
+  
   RecordNew(SRQr);
   SRQr.SerNr = NextSerNr("SMSReminderQueueVc",CurrentDate,-1,false,"");
 
-  SRQr.InvoiceList = ORr.Addr1;
+  SRQr.InvoiceList = ORrw.UnitComment;
   SRQr.InvDate = CurrentDate;
   SRQr.ReminderNr = SMSReminder.SerNr;
   SRQr.SentFlag = 1;
   RecordInsert(SRQr,true);
+  list = ORrw.Price & " " & ORrw.ShipNote;
     
   RepSpec.f4 = list;
+  RepSpec.vals2 = ORrw.Price;
+  RepSpec.f5 = ORrw.ShipNote;
   RepSpec.searchstr = ORr.Addr0;
 
- 
+
   if (SMSReminder.ReminderType==0) then begin
     sentf = DoSendSMSReminder(SMSReminder,RepSpec,ORr.CustCode,SRQr.SerNr);
   end else begin
@@ -571,6 +568,31 @@ begin
     RecordStore(SRQr,true);
     CreateFailedReminderActivity(SMSReminder,ORr.CustCode);
   end;
+
+
+  return;
+end;
+
+global
+updating procedure Cust_SendReminder3(record ORVc ORr,record SMSReminderVc SMSReminder)
+begin
+  string 255 list,qList,qnr;
+  Integer i,rwcnt;
+  row ORVc ORrw;
+
+  rwcnt = MatRowCnt(ORr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(ORr,i,ORrw);
+    /*
+    if (i>0) then begin
+      list = list & chr(10);
+    end;
+    list = list & ORrw.Price & " " & ORrw.ShipNote;
+    */
+    SendSingleSMS3(SMSReminder,ORr,ORrw);
+
+  end;
+
 
   return;
 end;
@@ -645,11 +667,15 @@ LAddInvoiceToReminderArr:;
   ORrw.ShipNote = bankacc;
   rownum = MatRowCnt(ORr);
 LAddInvoiceToReminderArrRow:;
+  ORrw.Price = ORrw.Price + ARr.RVal;
+  if (nonblank(ORrw.UnitComment)) then begin
+    ORrw.UnitComment = ORrw.UnitComment & ",";
+  end;
+  ORrw.UnitComment = ORrw.UnitComment & IVr.SerNr;
   if (nonblank(ORr.Addr1)) then begin
     ORr.Addr1 = ORr.Addr1 & ",";
   end;
   ORr.Addr1 = ORr.Addr1 & IVr.SerNr;
-  ORrw.Price = ORrw.Price + ARr.RVal;
   MatRowPut(ORr,rownum,ORrw);
   arrORr[num] = ORr;
 
@@ -760,10 +786,6 @@ begin
   record SMSReminderVc SMSReminder;
   vector Boolean vCust;
   
-  if (TestEnablerFile("EnNoSMS")) then begin
-    logtext(0,"skipping sms sending");
-    goto LCheckSMSRemindersCompany;
-  end;
   TrHs = true;
   SMSReminder.ActiveFlag = 1;
   while (LoopKey("ActiveFlag",SMSReminder,1,TrHs)) begin
