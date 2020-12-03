@@ -260,7 +260,7 @@ begin
         end;
         addf = true;
       case 2: 
-        intrate = IVrw.Sum;
+        intrate = intrate + IVrw.Sum;
         addf = true;
       case 3: 
         calcbal = calcbal - IVrw.Sum;
@@ -518,7 +518,7 @@ begin
   record SMVc SMr;
   row SMVc SMrw;
   val princ;
-  Integer c10,c11;
+  Integer c10,c11,int_type;
   val totprinc,totdep,totint,totfees,totoverdues,total,totvat;
 
   BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,withactuals,true);
@@ -555,7 +555,12 @@ begin
   Gray_Divider(0,1);
   StartFormat(15);
   OutString(0,0,USetStr(17303),false);
-  OutVal(1,0,CredManr.InvSum4,M4Val,true);
+  int_type = GetInterestPaymentType(CredManr);
+  if (int_type==1) then begin
+    OutVal(1,0,0,M4Val,true);
+  end else begin
+    OutVal(1,0,CredManr.InvSum4,M4Val,true);
+  end;
   EndFormat;
   Gray_Divider(0,1);
 
@@ -592,7 +597,9 @@ begin
     OutString(9,0,SMrw.CurDebVal,true);
     OutString(1,0,SMrw.CurCredVal,true);
 
-    totprinc = totprinc + princ;
+    if (SMrw.RowSimStat!=5) then begin
+      totprinc = totprinc + princ;
+    end;
     totdep = totdep + SMrw.ToRateB1;
     totint = totint + SMrw.CredVal;
     totfees = totfees + SMrw.DebVal2;
