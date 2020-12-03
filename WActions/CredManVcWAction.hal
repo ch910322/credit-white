@@ -1543,8 +1543,10 @@ begin
   WindowDoOK(wn,0);
   if (receiptf) then begin
     CloseWindow(wn);
-    CreatePaymentFakeReceipt(CredManr,IVr);
-    CM_CreatePaymentOrder(CredManr,VIr,sum);
+    if (IVr.SerNr>0 and sum>0) then begin
+      CreatePaymentFakeReceipt(CredManr,IVr);
+      CM_CreatePaymentOrder(CredManr,VIr,sum);
+    end;
     ReadFirstMain(CredManr,1,true);
     OpenWindow("CredManDClass",1,0,"","",CredManr);
   end;
