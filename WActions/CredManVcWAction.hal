@@ -2202,6 +2202,42 @@ begin
   return;
 end;
 
+global
+function Boolean CredManDClassLoanTypeButtonAction(Integer wn,Integer value)
+begin
+  record CredManVc CredManr;
+  Boolean res;
+
+  res = true;
+  GetWindowRecord(wn,CredManr);
+  if (value==7) then begin
+    CredManr.InstalmentType = 3;
+    PutWindowRecord(wn,CredManr);
+  end;
+
+
+  CredManDClassLoanTypeButtonAction = res;
+  return;
+end;
+
+global
+function Integer CredManDClassSelectSetToPaste(Integer wn,string fieldname)
+begin
+  Integer res,rownr;
+  record CredManVc CredManr;
+  
+  res = 2001;
+  GetWindowRecord(wn,CredManr);
+  switch (fieldname) begin
+    case "InstalmentType":
+      if (CredManr.LoanType==7) then begin
+        res = 2031;
+      end;
+  end;
+  CredManDClassSelectSetToPaste = res;
+  return;
+end;
+
 
 global
 function Boolean GenOverdueInvVClassArtModeButtonAction(Integer wn,Integer value)

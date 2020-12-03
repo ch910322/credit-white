@@ -333,10 +333,31 @@ begin
         TrHs = false;
       end else begin
         if (CredHistr.RecordType==5) then begin
-          AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.IntRate,0,CredHistr.TransDate,todate,calcbal,false,false),0,  acumint,calcbal,frdate,todate,-1,factinv,0);
+          AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.IntRate,0,CredHistr.TransDate,todate,CredHistr.Sum,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
+          if (int_type==1) then begin
+            AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.BuyoutFeePrc,0,frdate,CredHistr.TransDate,CredHistr.Sum,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
+          end;
         end;
       end;
     end;
+  end;
+
+  return;
+end;
+
+global
+procedure AddUnusedInterest(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Integer monthtypef,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,Longint factinv,Boolean overridef)
+begin
+  Integer sendmonthtypef;
+  record CredHistVc CredHistr;
+  Boolean TrHs;
+  
+  if (nonblank(frdate)) then begin
+    sendmonthtypef = monthtypef;
+    if ((CredManr.ChargeMethod==1) and overridef==false and sendmonthtypef!=kMonthTypeFirst) then begin
+      sendmonthtypef = kMonthTypeLast;
+    end;
+    AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.BuyoutFeePrc,sendmonthtypef,frdate,todate,GetAmount(CredManr)-calcbal,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
   end;
 
   return;
@@ -1194,7 +1215,7 @@ begin
   return;
 end;
 
-function val GetBalloonInterest(record CredManVc CredManr,record CredManSetBlock CredManSetb)
+function val GetBalloonInterest(record CredManVc CredManr,record CredManSetBlock CredManSetb,Integer int_type)
 begin
   record CredManPayPlanVc CredManPayPlanr;
   row CredManPayPlanVc CredManPayPlanrw;
@@ -1203,8 +1224,11 @@ begin
   Integer i,rwcnt;
 
   RecordCopy(inCredManr,CredManr);
-  inCredManr.SerNr = -1;
+  //inCredManr.SerNr = -1;
   inCredManr.InstalmentType = 1;
+  if (int_type==1) then begin
+    inCredManr.InstalmentType = 3;
+  end;
   BuildCredManPayPlanCust(inCredManr,CredManPayPlanr,CredManSetb,true,true);
   rwcnt = MatRowCnt(CredManPayPlanr);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -1399,6 +1423,9 @@ LCalcSchedule:;
           AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype,invdat,acumint,calcbal,frdat,todat,-1,false);
           AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1,false);
           AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,addbal,int_frdat,int_todat,-1,false,int_type);
+          if (int_type==1) then begin
+            AddUnusedInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1,false);
+          end;
           if (i==months-1) then begin
             AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,0,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths,vblank)
           end;
@@ -1410,7 +1437,7 @@ LCalcSchedule:;
         case 6://Balloon
           AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype,invdat,acumint,calcbal,frdat,todat,-1,false);
           if (i==months-1) then begin
-            totint = GetBalloonInterest(inCredManr,CredManSetb);
+            totint = GetBalloonInterest(inCredManr,CredManSetb,int_type);
             AddCredPayPlanLine(CredManPayPlanr,invdat,CredManSetb.RateItem,"",kEventTypeCalcInterest,totint,0,acumint,calcbal,frdat,todat,-1,-1,0);
             AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,1,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths,vblank);
           end;

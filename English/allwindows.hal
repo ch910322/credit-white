@@ -797,13 +797,13 @@ begin
   EditField(h3,v+=vs,72,"Order Class",Normal,OrderClass,false,OrderClassSClass);
   EditField(h3,v+=vs,72,"Overdue percentage",Normal,OverduePercentage,false,0);
   if (UseBuyOutMonths) then begin
-    if (type==7) then begin
-      EditField(h3,v+=vs,72,"Not Used Amount Fee %",Normal,BuyoutFeeMonths,true,0);
-    end else begin
-      EditField(h3,v+=vs,72,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
-    end;
+    EditField(h3,v+=vs,72,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
   end else begin
-    EditField(h3,v+=vs,72,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
+    if (type==7) then begin
+      EditField(h3,v+=vs,72,"Not Used Amount Fee %",Normal,BuyoutFeePrc,true,0);
+    end else begin
+      EditField(h3,v+=vs,72,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
+    end;
     EditField(h3,v+=vs,72,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
   end;
 

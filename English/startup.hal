@@ -522,5 +522,12 @@ begin
   SetText(1,"Second");
   EndSet;
 
+  SetBegin(2031);
+  SetText(3,"Bullet Loan");
+  if (ISb.ShowLoanType6==1) then begin
+    SetText(6,"Balloon");
+  end;
+  EndSet;
+
   return;
 end;
