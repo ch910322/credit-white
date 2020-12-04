@@ -65,11 +65,16 @@ procedure SendMessenteMessage(string receiver,string text)
 begin
   string 255 messageid;
 
+  if (TestEnablerFile("EnNoSMS")) then begin
+    logtext(0,"skipping sms sending");
+    goto LSendMessenteMessage;
+  end;
 
   DoSendMessage(receiver,text,messageid);
   //if (MSb.CheckStatus==1) then begin
   //  CheckMessageStatus(messageid);
   //end;
 
+LSendMessenteMessage:;
   return;
 end;

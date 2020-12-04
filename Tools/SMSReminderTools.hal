@@ -267,11 +267,6 @@ begin
   record ARVc ARr;
   Boolean res;
   
-  if (TestEnablerFile("EnNoSMS")) then begin
-    logtext(0,"skipping sms sending");
-    goto LSendSMSReminder;
-  end;
-
   CUr.Code = custcode;
   if (ReadFirstMain(CUr,1,true)) then begin
     if (CUr.NoLetterPosting!=0) then begin

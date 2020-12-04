@@ -588,7 +588,7 @@ begin
   record CMInvoicingBlock CIb;
 
   PrepareIPRecord(SMr,IPr);
-
+logtext(0,"ReceiptEntryCreateReceipts start");
   BlockLoad(CMb);
   BlockLoad(CIb);
   rwcnt = MatRowCnt(SMr);
@@ -620,6 +620,7 @@ begin
     end;
 
 
+logtext(0,"ReceiptEntryCreateReceipts2 line " & i);
     CUr.Code = SMrw.Objects;
     if (ReadFirstMain(CUr,1,true)) then begin
       if (MatRowCnt(IPr)>100) then begin
@@ -630,11 +631,13 @@ begin
       remsum = SMrw.DebVal;
       BankFillIProws(IPr,CUr.Name,SMrw.CurncyCode,remsum,CUr.Code,nonblank(CUr.Code),instr,"",allf);
     end;
+logtext(0,"ReceiptEntryCreateReceipts3 line " & i & ":" & MatRowCnt(IPr));
   end;
 
   if (MatRowCnt(IPr)>0) then begin
     StoreIPRecord(IPr);
   end;
+logtext(0,"ReceiptEntryCreateReceipts4 end");
 
 //this is needed for partial buy-out. In that case we will always have only one row/one customer
   totremsum = remsum;
