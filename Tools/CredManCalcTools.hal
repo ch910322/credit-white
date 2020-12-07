@@ -1297,6 +1297,7 @@ logtext(0,"BuildCredManPayPlanCust start");
   RecordCopy(tCredManr,inCredManr);
   BlockLoad(CIb);
 LCalcSchedule:;
+  RecordCopy(inCredManr,tCredManr);
   months = inCredManr.InstalmentMonths;
   acumint = 0;
   int_type = GetInterestPaymentType(inCredManr);
