@@ -57,6 +57,7 @@ external procedure CM_AddPrepayments(var record IVVc,record CredManVc,record CMI
 external procedure SetupInvoiceRowAndAdd(record CredManVc,var record IVVc,string,string,val,val,val,Integer,Longint);
 remote procedure RecreateAgreementSchedule3CallBack(record CredManVc,Integer);
 external function Boolean HasSuretyPerson();
+external procedure DistributeCredHistValues(var record IPVc,Integer);
 
 
 global
@@ -1300,6 +1301,7 @@ begin
   vector Boolean invused;
   Integer k;
   val remsum;
+  Integer rownr;
 
   BlockLoad(CIb);
   IPr.TransDate = IVr.InvDate;
@@ -1311,7 +1313,8 @@ begin
 
 
   remsum = IVr.Sum4;
-  GetCustomerLoanAmounts2(IPr,k,IVr.Addr0,IVr.CurncyCode,remsum,IVr.CustCode,true,"","",invused,IVr.InvDate,CredManr.SerNr);
+  //GetCustomerLoanAmounts2(IPr,k,IVr.Addr0,IVr.CurncyCode,remsum,IVr.CustCode,true,"","",invused,IVr.InvDate,CredManr.SerNr);
+
 /*
   ClearRow(IPr,IPrw,1);
   IPrw.InvoiceNr = IVr.SerNr;
@@ -1319,6 +1322,13 @@ begin
 
   PasteInvIn2IPr(IPr,0,IPr.TransDate,chk,false,installmentf);
 */
+  rownr = 0;
+  ClearRow(IPr,IPrw,1);
+  IPrw.InvoiceNr = IVr.SerNr;
+  MatRowPut(IPr,rownr,IPrw);
+  PasteInvIn2IPr(IPr,rownr,IPr.TransDate,chk,false,installmentf);
+  DistributeCredHistValues(IPr,rownr);
+
   if (RecordStore(IPr,true)) then begin
     RecordCopy(oldIPr,IPr);
     IPr.OKFlag = 1;
