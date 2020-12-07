@@ -698,10 +698,10 @@ begin
   SetWRect(20,80,460,380);
   h = 120; h2 = 300; h3 = 440; v = 6; vs=20;
   UseView(SMSReminderQueueVc);
-  EditField(h,v,120,"Ser. No.",Normal,SerNr,false,0);
-  EditField(h,v+=vs,120,"Inv. Date",Normal,InvDate,false,0);
-  EditField(h,v+=vs,120,"Invoice Nr.",Normal,InvoiceNr,false,0);
-  EditField(h,v+=vs,120,"Reminder Nr.",Normal,ReminderNr,false,0);
+  EditField(h,v,120,"Ser. No.",ViewOnly,SerNr,false,0);
+  EditField(h,v+=vs,120,"Inv. Date",ViewOnly,InvDate,false,0);
+  EditField(h,v+=vs,120,"Invoice Nr.",ViewOnly,InvoiceNr,false,0);
+  EditField(h,v+=vs,120,"Reminder Nr.",ViewOnly,ReminderNr,false,0);
   EditField(h,v+=vs,120,"Invoice List",ViewOnly,InvoiceList,false,0);
   EditField(h,v+=vs,120,"Check Days",ViewOnly,CheckDays,false,0);
   EditField(h,v+=vs,120,"Start Date",ViewOnly,StartDate,false,0);
