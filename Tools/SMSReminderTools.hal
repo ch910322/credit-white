@@ -7,7 +7,7 @@ external updating procedure Cust_SetReminderStatus(record SMSReminderQueueVc,Int
 external inner function string 255 CredManOwnBankAccount(Longint,var string,var string,var string);
 
 enum begin
-  kMaxCheckDays = 5
+  kMaxCheckDays = 3
 end;
 
 function string 255 GetReminderTextToken(record RcVc RepSpec,string token)
@@ -528,7 +528,7 @@ begin
   return;
 end;
 
-updating procedure SendSingleSMS3(record SMSReminderVc SMSReminder,record ORVc ORr,row ORVc ORrw)
+updating procedure SendSingleSMS3(record SMSReminderVc SMSReminder,record ORVc ORr,row ORVc ORrw,Integer days,Date sd,Date ed)
 begin
   record SMSReminderQueueVc SRQr;
   Boolean sentf;
@@ -543,6 +543,9 @@ begin
   SRQr.InvDate = CurrentDate;
   SRQr.ReminderNr = SMSReminder.SerNr;
   SRQr.SentFlag = 1;
+  SRQr.CheckDays = days;
+  SRQr.StartDate = sd;
+  SRQr.EndDate = ed;
   RecordInsert(SRQr,true);
   list = ORrw.Price & " " & ORrw.ShipNote;
     
@@ -569,7 +572,7 @@ begin
 end;
 
 global
-updating procedure Cust_SendReminder3(record ORVc ORr,record SMSReminderVc SMSReminder)
+updating procedure Cust_SendReminder3(record ORVc ORr,record SMSReminderVc SMSReminder,Integer days,Date sd,Date ed)
 begin
   string 255 list,qList,qnr;
   Integer i,rwcnt;
@@ -584,7 +587,7 @@ begin
     end;
     list = list & ORrw.Price & " " & ORrw.ShipNote;
     */
-    SendSingleSMS3(SMSReminder,ORr,ORrw);
+    SendSingleSMS3(SMSReminder,ORr,ORrw,days,sd,ed);
 
   end;
 
@@ -749,6 +752,7 @@ begin
         end;
       end;
       for (i=0;i<arrORr.length;i=i+1) begin
+
         ORr = arrORr[i];
         vCust[ORr.CustCode] = true;
         TrHs = true;
@@ -767,7 +771,7 @@ begin
           end;
         end;
         ORr = arrORr[i];
-        queued.Cust_SendReminder3(ORr,SMSReminder);
+        queued.Cust_SendReminder3(ORr,SMSReminder,SMSReminder.Days,AddDay(td,-kMaxCheckDays),ed);
       end;
   end;
 

@@ -702,6 +702,11 @@ begin
   EditField(h,v+=vs,120,"Inv. Date",Normal,InvDate,false,0);
   EditField(h,v+=vs,120,"Invoice Nr.",Normal,InvoiceNr,false,0);
   EditField(h,v+=vs,120,"Reminder Nr.",Normal,ReminderNr,false,0);
+  EditField(h,v+=vs,120,"Invoice List",ViewOnly,InvoiceList,false,0);
+  EditField(h,v+=vs,120,"Check Days",ViewOnly,CheckDays,false,0);
+  EditField(h,v+=vs,120,"Start Date",ViewOnly,StartDate,false,0);
+  EditField(h,v+=vs,120,"End Date",ViewOnly,EndDate,false,0);
+
   ButtonFrame(h,v=v+40,150,4,"Status");
   RadioButton(h,v,0,0,"Created",SentFlag);
   RadioButton(h,v+=16,1,0,"Sent",SentFlag);

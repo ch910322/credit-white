@@ -1055,6 +1055,10 @@ begin
   RecordField(InvDate,M4Date,0,0);//Actually due date
   RecordField(ReminderNr,M4Long,0,0);
   RecordField(InvoiceList,M4Str,255,0);
+  RecordField(CheckDays,M4Int,0,0);
+  RecordField(StartDate,M4Date,0,0);
+  RecordField(EndDate,M4Date,0,0);
+
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(SentFlag);
