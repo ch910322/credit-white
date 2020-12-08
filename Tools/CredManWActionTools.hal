@@ -1732,13 +1732,14 @@ begin
   
   CRr.ContactName = GetFieldValueByName(CredManr,"Surety" & num & "Signer",-1);
   CRr.CustCode = GetFieldValueByName(CredManr,"SuretyProvider" & num,-1);
+  /*
   if (ReadFirstKey("Contact",CRr,2,true)) then begin
     CUr.Code = CRr.ContactCode;
     if (ReadFirstMain(CUr,1,true)) then begin
       SetFieldValueByName(CredManr,"Surety" & num & "Position",CUr.JobDesc,-1);
     end;
   end;
-
+  */
   return;
 end;
 
