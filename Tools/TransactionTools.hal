@@ -5,6 +5,7 @@ external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPa
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,record CredManSetBlock,var record SMVc);
 external inner function LongInt DateDiff(Date,Date);
+external function val GetCredHistOpenValue(Longint);
 
 
 
@@ -307,13 +308,14 @@ end;
 
 
 global
-function Boolean CheckInvoiceDebtorsAC(string acc,record IVVc IVr)
+function Boolean CheckInvoiceDebtorsAC(string acc,record IVVc IVr,var val rs)
 begin
   Boolean res;
   Integer i,rwcnt;
   row IVVc IVrw;
   string 255 ivacc;
   
+  rs = 0;
   res = false;
   rwcnt = MatRowCnt(IVr);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -321,9 +323,14 @@ begin
     ivacc = CM_GetCredManTypeSalesItemAccount2(IVrw.CredHistNr,IVr.ARAcc,true);
     if (acc==ivacc) then begin
       res = true;
-      i = rwcnt;
+      rs = rs + GetCredHistOpenValue(IVrw.CredHistNr);
     end;
   end;
+
+  if (rs==0 and res) then begin
+    res = false;
+  end;
+  logtext(0,"dd " & rs);
 
   CheckInvoiceDebtorsAC = res;
   return;

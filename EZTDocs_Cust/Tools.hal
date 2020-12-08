@@ -566,8 +566,6 @@ begin
     res = yearstr & " " & USetStr(22780 + GetMonth(td)) & " " & GetDay(td) & " " & LowerCase(USetStr(38471));
   end;
 
-Logtext(0,"ddd " & td & ":" & type & ":" & res);
-
   DateInWords = res;
   return;
 end;
