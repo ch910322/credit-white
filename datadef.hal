@@ -669,6 +669,7 @@ begin
   RecordField(BuyoutFeeMonths,M4Long,0,0);
   RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
   RecordField(DaysInMonth,M4Int,0,0);
+  
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);

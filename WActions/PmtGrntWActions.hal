@@ -210,7 +210,7 @@ begin
   record RcVc RepSpec;
   record CredManVc CredManr;
 
-  if (GetWindowClass(MotherWindow(CurWindow))=="CredManDClass") then begin
+  if (GetWindowFileName(MotherWindow(CurWindow))=="CredManVc") then begin
     GetWindowRecord(MotherWindow(CurWindow),CredManr);
     
     RepSpec.long1 = CredManr.SerNr;

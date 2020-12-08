@@ -643,20 +643,14 @@ begin
   EndWindow;
 end;
 
-window CredManDClass:1
-  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+procedure CredManWindow(Integer type)
 begin
   real h,h2,h3,h4,t,v,vm,vs,th;
-  string 255 label1,label2,label3,label4,label5;
-  record CredManVc CredManr;
-  Integer type,n;
+  string 255 label1,label2,label3,label4,label5,wstr;
+  Integer n;
   Boolean statusf;
   record CMInterfaceSetBlock ISb;
 
-  if (CurWindow>0) then begin
-    GetWindowRecord(CurWindow,CredManr);
-    type = CredManr.LoanType;
-  end;
   BlockLoad(ISb);
 
   if (UseCredManStatus) then begin
@@ -665,11 +659,15 @@ begin
   end else begin
     n = -40;
   end;
-
-  WindowBegin("Credit Agreement",CredManDClass,CGview,-);
+  wstr = "CredManDClass";
+  if (type>0) then begin
+    wstr = "CredMan" & type & "DClass";
+  end;
+  
+  WindowBegin("Credit Agreement",wstr,CGview,-);
   SetWRect(20,80,940,500);
   Sizeable(-1,-1,0,0);
-  DynamicWindow;
+  //DynamicWindow;
   UseView(CredManVc);
   FormName(CredManForm);
   h = 120; h2 = 320; h3 = 550; h4 = 780; vs = 20;
@@ -678,11 +676,12 @@ begin
 //CUST-BEGIN
   EditField(h+90,v,50,"",ViewOnly,VersionNo,false,0);
   EditField(h2,v,150,"Legal No.",Normal,OfficialSerNr,false,CredLegalNrSerNrSClass);
-  if (HasCredManChanges(CredManr)) then begin
-    ColourPushButton(h3,v+3,h3+100,v+23,"CredManDClassOpenChanges","Agr. Changes",kButtonColourGreen);
-  end else begin
+  //if (HasCredManChanges(CredManr)) then begin
+  //  ColourPushButton(h3,v+3,h3+100,v+23,"CredManDClassOpenChanges","Agr. Changes",kButtonColourGreen);
+  //end else begin
+    CheckBox(h3-30,v+3,0,"",HasChanges);
     HalPushButton(h3,v+3,h3+100,v+23,"CredManDClassOpenChanges","Agr. Changes");    
-  end;
+  //end;
   if (HasConditionTexts) then begin
     HalPushButton(h3+110,v+3,h3+210,v+23,"CredManDClassOpenPaymentConditions","Paym. Condition");    
     HalPushButton(h3,v+26,h3+100,v+46,"CredManDClassOpenOtherConditions","Other Conditions");    
@@ -1303,6 +1302,80 @@ begin
 //CUST-END
   //SpecialMenu("Receipt",'r',1,"ReceiptCredManDsm");
   EndWindow;
+
+  return;
+end;
+
+window CredManDClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(0);
+
+end;
+
+window CredMan1DClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(1);
+
+end;
+
+window CredMan2DClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(2);
+
+end;
+
+window CredMan3DClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(3);
+
+end;
+
+window CredMan4DClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(4);
+
+end;
+
+window CredMan5DClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(5);
+
+end;
+
+window CredMan6DClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(6);
+
+end;
+
+window CredMan7DClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(7);
+
+end;
+
+window CredMan8DClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(8);
+
 end;
 
 window CredManTypeDClass:1

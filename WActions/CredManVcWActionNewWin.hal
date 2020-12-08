@@ -1,0 +1,657 @@
+external function Boolean CredManDClassAfterEditField(Integer,string,Integer,Integer,Integer);
+external function Boolean CredManDClassOnOpenWindow(Integer);
+external procedure CredManDClassOnWindowRecordChange(Integer);
+external function Boolean CredManDClassUpdateWindowSubset(Integer,var string);
+external function Boolean CredManDClassListDblClick(Integer);
+external function Boolean CredManDClassActiveEditField(Integer,string,Integer,Integer,Integer,Integer);
+external function Boolean CredManDClassStatusButtonAction(Integer,Integer);
+external function Boolean CredManDClassLoanTypeButtonAction(Integer,Integer);
+external function Integer CredManDClassSelectSetToPaste(Integer,string);
+external procedure CredManDClassButtonFlags(Integer,var Boolean,var Boolean,var Boolean,var Boolean);
+external function Boolean CredManDClassHasChangesButtonAction(Integer,Integer);
+
+/*CredManDClassAfterEditField*/
+global
+function Boolean CredMan1DClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+
+  CredMan1DClassAfterEditField = CredManDClassAfterEditField(wn,fieldname,fn,rownr,changed);
+  return;
+end;
+
+global
+function Boolean CredMan2DClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+
+  CredMan2DClassAfterEditField = CredManDClassAfterEditField(wn,fieldname,fn,rownr,changed);
+  return;
+end;
+
+global
+function Boolean CredMan3DClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+
+  CredMan3DClassAfterEditField = CredManDClassAfterEditField(wn,fieldname,fn,rownr,changed);
+  return;
+end;
+
+global
+function Boolean CredMan4DClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+
+  CredMan4DClassAfterEditField = CredManDClassAfterEditField(wn,fieldname,fn,rownr,changed);
+  return;
+end;
+
+global
+function Boolean CredMan5DClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+
+  CredMan5DClassAfterEditField = CredManDClassAfterEditField(wn,fieldname,fn,rownr,changed);
+  return;
+end;
+
+global
+function Boolean CredMan6DClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+
+  CredMan6DClassAfterEditField = CredManDClassAfterEditField(wn,fieldname,fn,rownr,changed);
+  return;
+end;
+
+global
+function Boolean CredMan7DClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+
+  CredMan7DClassAfterEditField = CredManDClassAfterEditField(wn,fieldname,fn,rownr,changed);
+  return;
+end;
+
+global
+function Boolean CredMan8DClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+
+  CredMan8DClassAfterEditField = CredManDClassAfterEditField(wn,fieldname,fn,rownr,changed);
+  return;
+end;
+
+/*CredManDClassOnOpenWindow*/
+
+global
+function Boolean CredMan1DClassOnOpenWindow(Integer wn)
+begin
+  CredMan1DClassOnOpenWindow = CredManDClassOnOpenWindow(wn);
+  return;
+end;
+
+global
+function Boolean CredMan2DClassOnOpenWindow(Integer wn)
+begin
+  CredMan2DClassOnOpenWindow = CredManDClassOnOpenWindow(wn);
+  return;
+end;
+
+global
+function Boolean CredMan3DClassOnOpenWindow(Integer wn)
+begin
+  CredMan3DClassOnOpenWindow = CredManDClassOnOpenWindow(wn);
+  return;
+end;
+global
+function Boolean CredMan4DClassOnOpenWindow(Integer wn)
+begin
+  CredMan4DClassOnOpenWindow = CredManDClassOnOpenWindow(wn);
+  return;
+end;
+global
+function Boolean CredMan5DClassOnOpenWindow(Integer wn)
+begin
+  CredMan5DClassOnOpenWindow = CredManDClassOnOpenWindow(wn);
+  return;
+end;
+global
+function Boolean CredMan6DClassOnOpenWindow(Integer wn)
+begin
+  CredMan6DClassOnOpenWindow = CredManDClassOnOpenWindow(wn);
+  return;
+end;
+global
+function Boolean CredMan7DClassOnOpenWindow(Integer wn)
+begin
+  CredMan7DClassOnOpenWindow = CredManDClassOnOpenWindow(wn);
+  return;
+end;
+global
+function Boolean CredMan8DClassOnOpenWindow(Integer wn)
+begin
+  CredMan8DClassOnOpenWindow = CredManDClassOnOpenWindow(wn);
+  return;
+end;
+
+
+/*CredManDClassOnWindowRecordChange*/
+
+global
+procedure CredMan1DClassOnWindowRecordChange(Integer wn)
+begin
+  CredManDClassOnWindowRecordChange(wn);
+  return;
+end;
+
+global
+procedure CredMan2DClassOnWindowRecordChange(Integer wn)
+begin
+  CredManDClassOnWindowRecordChange(wn);
+  return;
+end;
+
+global
+procedure CredMan3DClassOnWindowRecordChange(Integer wn)
+begin
+  CredManDClassOnWindowRecordChange(wn);
+  return;
+end;
+
+global
+procedure CredMan4DClassOnWindowRecordChange(Integer wn)
+begin
+  CredManDClassOnWindowRecordChange(wn);
+  return;
+end;
+
+global
+procedure CredMan5DClassOnWindowRecordChange(Integer wn)
+begin
+  CredManDClassOnWindowRecordChange(wn);
+  return;
+end;
+
+global
+procedure CredMan6DClassOnWindowRecordChange(Integer wn)
+begin
+  CredManDClassOnWindowRecordChange(wn);
+  return;
+end;
+
+global
+procedure CredMan7DClassOnWindowRecordChange(Integer wn)
+begin
+  CredManDClassOnWindowRecordChange(wn);
+  return;
+end;
+
+global
+procedure CredMan8DClassOnWindowRecordChange(Integer wn)
+begin
+  CredManDClassOnWindowRecordChange(wn);
+  return;
+end;
+
+/*CredManDClassUpdateWindowSubset*/
+global
+function Boolean CredMan1DClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  CredMan1DClassUpdateWindowSubset = CredManDClassUpdateWindowSubset(wn,subsetname);
+  return;
+end;
+
+global
+function Boolean CredMan2DClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  CredMan2DClassUpdateWindowSubset = CredManDClassUpdateWindowSubset(wn,subsetname);
+  return;
+end;
+
+global
+function Boolean CredMan3DClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  CredMan3DClassUpdateWindowSubset = CredManDClassUpdateWindowSubset(wn,subsetname);
+  return;
+end;
+
+global
+function Boolean CredMan4DClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  CredMan4DClassUpdateWindowSubset = CredManDClassUpdateWindowSubset(wn,subsetname);
+  return;
+end;
+
+global
+function Boolean CredMan5DClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  CredMan5DClassUpdateWindowSubset = CredManDClassUpdateWindowSubset(wn,subsetname);
+  return;
+end;
+
+global
+function Boolean CredMan6DClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  CredMan6DClassUpdateWindowSubset = CredManDClassUpdateWindowSubset(wn,subsetname);
+  return;
+end;
+
+global
+function Boolean CredMan7DClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  CredMan7DClassUpdateWindowSubset = CredManDClassUpdateWindowSubset(wn,subsetname);
+  return;
+end;
+
+global
+function Boolean CredMan8DClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  CredMan8DClassUpdateWindowSubset = CredManDClassUpdateWindowSubset(wn,subsetname);
+  return;
+end;
+
+/*CredManDClassListDblClick*/
+
+global
+function Boolean CredMan1DClassListDblClick(Integer wn)
+begin
+  CredMan1DClassListDblClick = CredManDClassListDblClick(wn);
+  return;
+end;
+
+global
+function Boolean CredMan2DClassListDblClick(Integer wn)
+begin
+  CredMan2DClassListDblClick = CredManDClassListDblClick(wn);
+  return;
+end;
+
+global
+function Boolean CredMan3DClassListDblClick(Integer wn)
+begin
+  CredMan3DClassListDblClick = CredManDClassListDblClick(wn);
+  return;
+end;
+
+global
+function Boolean CredMan4DClassListDblClick(Integer wn)
+begin
+  CredMan4DClassListDblClick = CredManDClassListDblClick(wn);
+  return;
+end;
+
+global
+function Boolean CredMan5DClassListDblClick(Integer wn)
+begin
+  CredMan5DClassListDblClick = CredManDClassListDblClick(wn);
+  return;
+end;
+
+global
+function Boolean CredMan6DClassListDblClick(Integer wn)
+begin
+  CredMan6DClassListDblClick = CredManDClassListDblClick(wn);
+  return;
+end;
+
+global
+function Boolean CredMan7DClassListDblClick(Integer wn)
+begin
+  CredMan7DClassListDblClick = CredManDClassListDblClick(wn);
+  return;
+end;
+
+global
+function Boolean CredMan8DClassListDblClick(Integer wn)
+begin
+  CredMan8DClassListDblClick = CredManDClassListDblClick(wn);
+  return;
+end;
+
+/*CredManDClassActiveEditField*/
+
+global
+function Boolean CredMan1DClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
+begin
+
+  CredMan1DClassActiveEditField = CredManDClassActiveEditField(wn,fieldname,fn,wnst,rownr,changed);
+  return;
+end;
+
+global
+function Boolean CredMan2DClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
+begin
+
+  CredMan2DClassActiveEditField = CredManDClassActiveEditField(wn,fieldname,fn,wnst,rownr,changed);
+  return;
+end;
+
+global
+function Boolean CredMan3DClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
+begin
+
+  CredMan3DClassActiveEditField = CredManDClassActiveEditField(wn,fieldname,fn,wnst,rownr,changed);
+  return;
+end;
+
+global
+function Boolean CredMan4DClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
+begin
+
+  CredMan4DClassActiveEditField = CredManDClassActiveEditField(wn,fieldname,fn,wnst,rownr,changed);
+  return;
+end;
+
+global
+function Boolean CredMan5DClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
+begin
+
+  CredMan5DClassActiveEditField = CredManDClassActiveEditField(wn,fieldname,fn,wnst,rownr,changed);
+  return;
+end;
+
+global
+function Boolean CredMan6DClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
+begin
+
+  CredMan6DClassActiveEditField = CredManDClassActiveEditField(wn,fieldname,fn,wnst,rownr,changed);
+  return;
+end;
+
+global
+function Boolean CredMan7DClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
+begin
+
+  CredMan7DClassActiveEditField = CredManDClassActiveEditField(wn,fieldname,fn,wnst,rownr,changed);
+  return;
+end;
+
+global
+function Boolean CredMan8DClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
+begin
+
+  CredMan8DClassActiveEditField = CredManDClassActiveEditField(wn,fieldname,fn,wnst,rownr,changed);
+  return;
+end;
+
+/*CredManDClassStatusButtonAction*/
+global
+function Boolean CredMan1DClassStatusButtonAction(Integer wn,Integer value)
+begin
+  CredMan1DClassStatusButtonAction = CredManDClassStatusButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan2DClassStatusButtonAction(Integer wn,Integer value)
+begin
+  CredMan2DClassStatusButtonAction = CredManDClassStatusButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan3DClassStatusButtonAction(Integer wn,Integer value)
+begin
+  CredMan3DClassStatusButtonAction = CredManDClassStatusButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan4DClassStatusButtonAction(Integer wn,Integer value)
+begin
+  CredMan4DClassStatusButtonAction = CredManDClassStatusButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan5DClassStatusButtonAction(Integer wn,Integer value)
+begin
+  CredMan5DClassStatusButtonAction = CredManDClassStatusButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan6DClassStatusButtonAction(Integer wn,Integer value)
+begin
+  CredMan6DClassStatusButtonAction = CredManDClassStatusButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan7DClassStatusButtonAction(Integer wn,Integer value)
+begin
+  CredMan7DClassStatusButtonAction = CredManDClassStatusButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan8DClassStatusButtonAction(Integer wn,Integer value)
+begin
+  CredMan8DClassStatusButtonAction = CredManDClassStatusButtonAction(wn,value);
+  return;
+end;
+
+
+/*CredManDClassLoanTypeButtonAction*/
+
+
+global
+function Boolean CredMan1DClassLoanTypeButtonAction(Integer wn,Integer value)
+begin
+  CredMan1DClassLoanTypeButtonAction = CredManDClassLoanTypeButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan2DClassLoanTypeButtonAction(Integer wn,Integer value)
+begin
+  CredMan2DClassLoanTypeButtonAction = CredManDClassLoanTypeButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan3DClassLoanTypeButtonAction(Integer wn,Integer value)
+begin
+  CredMan3DClassLoanTypeButtonAction = CredManDClassLoanTypeButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan4DClassLoanTypeButtonAction(Integer wn,Integer value)
+begin
+  CredMan4DClassLoanTypeButtonAction = CredManDClassLoanTypeButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan5DClassLoanTypeButtonAction(Integer wn,Integer value)
+begin
+  CredMan5DClassLoanTypeButtonAction = CredManDClassLoanTypeButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan6DClassLoanTypeButtonAction(Integer wn,Integer value)
+begin
+  CredMan6DClassLoanTypeButtonAction = CredManDClassLoanTypeButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan7DClassLoanTypeButtonAction(Integer wn,Integer value)
+begin
+  CredMan7DClassLoanTypeButtonAction = CredManDClassLoanTypeButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan8DClassLoanTypeButtonAction(Integer wn,Integer value)
+begin
+  CredMan8DClassLoanTypeButtonAction = CredManDClassLoanTypeButtonAction(wn,value);
+  return;
+end;
+
+/*CredManDClassSelectSetToPaste*/
+
+global
+function Integer CredMan1DClassSelectSetToPaste(Integer wn,string fieldname)
+begin
+  CredMan1DClassSelectSetToPaste = CredManDClassSelectSetToPaste(wn,fieldname);
+  return;
+end;
+
+global
+function Integer CredMan2DClassSelectSetToPaste(Integer wn,string fieldname)
+begin
+  CredMan2DClassSelectSetToPaste = CredManDClassSelectSetToPaste(wn,fieldname);
+  return;
+end;
+
+global
+function Integer CredMan3DClassSelectSetToPaste(Integer wn,string fieldname)
+begin
+  CredMan3DClassSelectSetToPaste = CredManDClassSelectSetToPaste(wn,fieldname);
+  return;
+end;
+
+global
+function Integer CredMan4DClassSelectSetToPaste(Integer wn,string fieldname)
+begin
+  CredMan4DClassSelectSetToPaste = CredManDClassSelectSetToPaste(wn,fieldname);
+  return;
+end;
+
+global
+function Integer CredMan5DClassSelectSetToPaste(Integer wn,string fieldname)
+begin
+  CredMan5DClassSelectSetToPaste = CredManDClassSelectSetToPaste(wn,fieldname);
+  return;
+end;
+
+global
+function Integer CredMan6DClassSelectSetToPaste(Integer wn,string fieldname)
+begin
+  CredMan6DClassSelectSetToPaste = CredManDClassSelectSetToPaste(wn,fieldname);
+  return;
+end;
+
+global
+function Integer CredMan7DClassSelectSetToPaste(Integer wn,string fieldname)
+begin
+  CredMan7DClassSelectSetToPaste = CredManDClassSelectSetToPaste(wn,fieldname);
+  return;
+end;
+
+global
+function Integer CredMan8DClassSelectSetToPaste(Integer wn,string fieldname)
+begin
+  CredMan8DClassSelectSetToPaste = CredManDClassSelectSetToPaste(wn,fieldname);
+  return;
+end;
+
+
+
+/*CredManDClassButtonFlags*/
+global
+procedure CredMan1DClassButtonFlags(Integer wn,var Boolean duplOK,var Boolean newOK,var Boolean saveOK,var Boolean restOK)
+begin // Temporary fix for the RecordList
+  CredManDClassButtonFlags(wn,duplOK,newOK,saveOK,restOK);
+  return;
+end;
+global
+procedure CredMan2DClassButtonFlags(Integer wn,var Boolean duplOK,var Boolean newOK,var Boolean saveOK,var Boolean restOK)
+begin // Temporary fix for the RecordList
+  CredManDClassButtonFlags(wn,duplOK,newOK,saveOK,restOK);
+  return;
+end;
+global
+procedure CredMan3DClassButtonFlags(Integer wn,var Boolean duplOK,var Boolean newOK,var Boolean saveOK,var Boolean restOK)
+begin // Temporary fix for the RecordList
+  CredManDClassButtonFlags(wn,duplOK,newOK,saveOK,restOK);
+  return;
+end;
+global
+procedure CredMan4DClassButtonFlags(Integer wn,var Boolean duplOK,var Boolean newOK,var Boolean saveOK,var Boolean restOK)
+begin // Temporary fix for the RecordList
+  CredManDClassButtonFlags(wn,duplOK,newOK,saveOK,restOK);
+  return;
+end;
+global
+procedure CredMan5DClassButtonFlags(Integer wn,var Boolean duplOK,var Boolean newOK,var Boolean saveOK,var Boolean restOK)
+begin // Temporary fix for the RecordList
+  CredManDClassButtonFlags(wn,duplOK,newOK,saveOK,restOK);
+  return;
+end;
+global
+procedure CredMan6DClassButtonFlags(Integer wn,var Boolean duplOK,var Boolean newOK,var Boolean saveOK,var Boolean restOK)
+begin // Temporary fix for the RecordList
+  CredManDClassButtonFlags(wn,duplOK,newOK,saveOK,restOK);
+  return;
+end;
+global
+procedure CredMan7DClassButtonFlags(Integer wn,var Boolean duplOK,var Boolean newOK,var Boolean saveOK,var Boolean restOK)
+begin // Temporary fix for the RecordList
+  CredManDClassButtonFlags(wn,duplOK,newOK,saveOK,restOK);
+  return;
+end;
+global
+procedure CredMan8DClassButtonFlags(Integer wn,var Boolean duplOK,var Boolean newOK,var Boolean saveOK,var Boolean restOK)
+begin // Temporary fix for the RecordList
+  CredManDClassButtonFlags(wn,duplOK,newOK,saveOK,restOK);
+  return;
+end;
+
+
+
+/*CredManDClassHasChangesButtonAction*/
+
+global
+function Boolean CredMan1DClassHasChangesButtonAction(Integer wn,Integer value)
+begin
+  CredMan1DClassHasChangesButtonAction = CredManDClassHasChangesButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan2DClassHasChangesButtonAction(Integer wn,Integer value)
+begin
+  CredMan2DClassHasChangesButtonAction = CredManDClassHasChangesButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan3DClassHasChangesButtonAction(Integer wn,Integer value)
+begin
+  CredMan3DClassHasChangesButtonAction = CredManDClassHasChangesButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan4DClassHasChangesButtonAction(Integer wn,Integer value)
+begin
+  CredMan4DClassHasChangesButtonAction = CredManDClassHasChangesButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan5DClassHasChangesButtonAction(Integer wn,Integer value)
+begin
+  CredMan5DClassHasChangesButtonAction = CredManDClassHasChangesButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan6DClassHasChangesButtonAction(Integer wn,Integer value)
+begin
+  CredMan6DClassHasChangesButtonAction = CredManDClassHasChangesButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan7DClassHasChangesButtonAction(Integer wn,Integer value)
+begin
+  CredMan7DClassHasChangesButtonAction = CredManDClassHasChangesButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan8DClassHasChangesButtonAction(Integer wn,Integer value)
+begin
+  CredMan8DClassHasChangesButtonAction = CredManDClassHasChangesButtonAction(wn,value);
+  return;
+end;
+

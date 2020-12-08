@@ -13,16 +13,28 @@ external outer function Boolean ShowBuyOutFee();
 external outer function Boolean HasBalloonLoanType();
 external outer function Boolean IsNovitiCustomer;
 
-procedure ShowCredManLClassWindow()
+procedure ShowCredManLClassWindow(Integer type)
 begin
   real v,h;
   record CMInterfaceSetBlock ISb;
+  string 255 wstr;
 
   BlockLoad(ISb);
   
   SetWRect(10,80,700,298);
   Sizeable(-1,-1,0,0);
-  SpawnClass(CredManDClass);
+  switch (type) begin
+    case 1: SpawnClass(CredMan1DClass);
+    case 2: SpawnClass(CredMan2DClass);
+    case 3: SpawnClass(CredMan3DClass);
+    case 4: SpawnClass(CredMan4DClass);
+    case 5: SpawnClass(CredMan5DClass);
+    case 6: SpawnClass(CredMan6DClass);
+    case 7: SpawnClass(CredMan7DClass);
+    case 8: SpawnClass(CredMan8DClass);
+    otherwise
+      SpawnClass(CredManDClass);
+  end;
   UseView(CredManVc);
   if (ISb.ShowLoanType1==1) then begin
     HalPushButton(h=5,v=5,h+=100,v+=20,"CredManLClass1Btn","Loans");
@@ -2561,67 +2573,67 @@ begin
 end;
 
 
+window CredMan1LClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Loan Agreements",CredMan1LClass,CGmlist,-);
+  ShowCredManLClassWindow(1);
+  EndWindow;
+end;
+
 window CredMan2LClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  WindowBegin("Loan Agreements",CredMan2LClass,CGmlist,-);
-  ShowCredManLClassWindow;
+  WindowBegin("Leasing Agreements",CredMan2LClass,CGmlist,-);
+  ShowCredManLClassWindow(2);
   EndWindow;
 end;
 
 window CredMan3LClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  WindowBegin("Leasing Agreements",CredMan3LClass,CGmlist,-);
-  ShowCredManLClassWindow;
+  WindowBegin("Martgage Agreements",CredMan3LClass,CGmlist,-);
+  ShowCredManLClassWindow(3);
   EndWindow;
 end;
 
 window CredMan4LClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  WindowBegin("Martgage Agreements",CredMan4LClass,CGmlist,-);
-  ShowCredManLClassWindow;
+  WindowBegin("Factoring Agreements",CredMan4LClass,CGmlist,-);
+  ShowCredManLClassWindow(4);
   EndWindow;
 end;
 
 window CredMan5LClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  WindowBegin("Factoring Agreements",CredMan5LClass,CGmlist,-);
-  ShowCredManLClassWindow;
+  WindowBegin("Payment Guarantee Agreements",CredMan5LClass,CGmlist,-);
+  ShowCredManLClassWindow(5);
   EndWindow;
 end;
 
 window CredMan6LClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  WindowBegin("Payment Guarantee Agreements",CredMan6LClass,CGmlist,-);
-  ShowCredManLClassWindow;
+  WindowBegin("Balloon Agreements",CredMan6LClass,CGmlist,-);
+  ShowCredManLClassWindow(6);
   EndWindow;
 end;
 
 window CredMan7LClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  WindowBegin("Balloon Agreements",CredMan7LClass,CGmlist,-);
-  ShowCredManLClassWindow;
+  WindowBegin("Credit Line Agreements",CredMan7LClass,CGmlist,-);
+  ShowCredManLClassWindow(7);
   EndWindow;
 end;
 
 window CredMan8LClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  WindowBegin("Credit Line Agreements",CredMan8LClass,CGmlist,-);
-  ShowCredManLClassWindow;
-  EndWindow;
-end;
-
-window CredMan9LClass:1
-  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
-begin
-  WindowBegin("Credit Limit Agreements",CredMan9LClass,CGmlist,-);
-  ShowCredManLClassWindow;
+  WindowBegin("Credit Limit Agreements",CredMan8LClass,CGmlist,-);
+  ShowCredManLClassWindow(8);
   EndWindow;
 end;
 
@@ -2629,7 +2641,7 @@ window CredManLClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Credit Agreements",CredManLClass,CGmlist,-);
-  ShowCredManLClassWindow;
+  ShowCredManLClassWindow(0);
   EndWindow;
 end;
 

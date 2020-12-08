@@ -14,7 +14,7 @@ begin
   record RcVc RepSpec;
   record CredManVc CredManr;
 
-  if (GetWindowClass(MotherWindow(CurWindow))=="CredManDClass") then begin
+  if (GetWindowFileName(MotherWindow(CurWindow))=="CredManVc") then begin
     GetWindowRecord(MotherWindow(CurWindow),CredManr);
     
     RepSpec.long1 = CredManr.SerNr;
@@ -33,7 +33,7 @@ begin
 
   wn = MotherWindow(CurWindow);
 
-  if (GetWindowClass(wn)=="CredManDClass") then begin
+  if (GetWindowFileName(wn)=="CredManVc") then begin
     GetWindowRecord(wn,CredManr);
     
     CreateSingleAgreementInvoice(CredManr,CurrentDate,IVr,"");
@@ -379,7 +379,7 @@ begin
   record CUVc CUr;
   record DummyAttachVc DAr;
   
-  if (GetWindowClass(MotherWindow(CurWindow))=="CredManDClass") then begin
+  if (GetWindowFileName(MotherWindow(CurWindow))=="CredManVc") then begin
     //GetWindowRecord(MotherWindow(CurWindow),CredManr);
     //res = OpenFileDialog("",fpath);
     fpath = "/Users/kristapszogots/Downloads/SF.pdf";
