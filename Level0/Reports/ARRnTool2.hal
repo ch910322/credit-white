@@ -1137,6 +1137,10 @@ BEGIN
      OutString(100,0,USetStr(2436),false);
      OutString(170,0,USetStr(2707),false);
      OutString(240,0,USetStr(2438),false);
+//CUST-BEGIN
+    OutString(290,0,"Overdue",false);
+
+//CUST-END
      if (RepSpec.flags[2]==1) then begin
        OutStringAdjustBiDi(360,0,USetStr(2425),true,M4Val,400);
        OutStringAdjustBiDi(410,0,USetStr(3201),true,M4Val,450);

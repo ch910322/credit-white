@@ -53,6 +53,7 @@ external function Boolean ReportMediaIsFile(record RcVc);
 external outer procedure SumAgedNewWithItems(record IVVc,Date,Date,Date,Boolean,Integer,Integer,var val,var val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector Boolean,var vector Boolean);
 external outer procedure PrintAgedLineWithItems(val,vector val,vector val,vector val,vector val,vector val,vector val,vector val,vector val,val,val,Integer,Integer,vector Boolean,vector Boolean,record RcVc);
 external outer  function val GetCredHistOpenValue(Longint);
+external outer function Boolean CheckInvoiceDebtorsAC(string,record IVVc);
 //CUST-END
 
 global
@@ -614,11 +615,20 @@ L22:;
                testf = false;
             end;
           end;
+//CUST-BEGIN
           if (nonblank(RepSpec.AccStr)) then begin
+/*
             if (RepSpec.AccStr!=IVr.ARAcc) then begin
               testf = false;
             end;
+*/
+            if (CheckInvoiceDebtorsAC(RepSpec.AccStr,IVr)==false) then begin
+              testf = false;
+            end;
+
           end;
+
+//CUST-END
           if (nonblank(RepSpec.f5)) then begin
             if (testf) then begin
               testf = false;
@@ -680,6 +690,13 @@ L22:;
                   testf = false;
                 end;
                 i = rwcnt;
+              end;
+            end;
+          end;
+          if (testf) then begin
+            if (nonblank(RepSpec.f15)) then begin
+              if (SetInSet(IVr.CustCredManNr,RepSpec.f15)==false) then begin
+                testf = false;
               end;
             end;
           end;

@@ -2983,6 +2983,8 @@ begin
 //CUST-BEGIN
     EditFieldTL(h,v,70,"Item",M4UStr,Normal,60,f14,false,INSClass);
     v = v + 20;
+    EditFieldTL(h,v,150,"Agreement Nr.",M4UStr,Normal,200,f15,false,CredManSClass);
+    v = v + 20;
 //CUST-END
     if (HasSalesman or HasSalesmanBonus) then begin
       EditFieldTL(h,v, 70, "#Salesman#",   M4UStr,Normal,10,f2,false,UserSClass);

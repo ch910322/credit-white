@@ -304,3 +304,27 @@ begin
   GetCredManPeriodAmount = res;
   return;
 end;
+
+
+global
+function Boolean CheckInvoiceDebtorsAC(string acc,record IVVc IVr)
+begin
+  Boolean res;
+  Integer i,rwcnt;
+  row IVVc IVrw;
+  string 255 ivacc;
+  
+  res = false;
+  rwcnt = MatRowCnt(IVr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    ivacc = CM_GetCredManTypeSalesItemAccount2(IVrw.CredHistNr,IVr.ARAcc,true);
+    if (acc==ivacc) then begin
+      res = true;
+      i = rwcnt;
+    end;
+  end;
+
+  CheckInvoiceDebtorsAC = res;
+  return;
+end;
