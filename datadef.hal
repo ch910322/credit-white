@@ -1822,6 +1822,23 @@ begin
   RecordField(CustCredManNr,M4Long,0,0);
   EndRecordAdd;
 
+  BlockBegin(CMDateTextBlock,-,"");
+  RecordField(YearLang1,M4Code,20,0);
+  RecordField(MonthLang1,M4Code,20,0);
+  RecordField(MonthCur1,M4Code,20,0);
+  RecordField(DayLang1,M4Code,20,0);
+  RecordField(YearCur1,M4Code,20,0);
+  RecordField(DayCur1,M4Code,20,0);
+  RecordField(YearLang2,M4Code,20,0);
+  RecordField(MonthLang2,M4Code,20,0);
+  RecordField(MonthCur2,M4Code,20,0);
+  RecordField(DayLang2,M4Code,20,0);
+  RecordField(YearCur2,M4Code,20,0);
+  RecordField(DayCur2,M4Code,20,0);
+
+  EndBlock;
+
+
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Estonian", 0);

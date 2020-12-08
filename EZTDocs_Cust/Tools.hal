@@ -532,19 +532,41 @@ begin
 end;
 
 global
-function string 255 DateInWords(Date td,string langcode)
+function string 255 DateInWords(Date td,string langcode,Integer type)
 begin
   string 255 yearstr,res;
   Integer pos;
-  
-  //if (HasLocalization("LTU")) then begin
+  string 255 daystr,monthstr,yl,yc,ml,mc,dl,dc;
+  record CMDateTextBlock DTb;
+  Boolean foundf;
+
+  BlockLoad(DTb);
+  yl = GetFieldValueByName(DTb,"YearLang" & type,-1);
+  yc = GetFieldValueByName(DTb,"YearCur" & type,-1);
+  ml = GetFieldValueByName(DTb,"MonthLang" & type,-1);
+  mc = GetFieldValueByName(DTb,"MonthCur" & type,-1);
+  dl = GetFieldValueByName(DTb,"DayLang" & type,-1);
+  dc = GetFieldValueByName(DTb,"DayCur" & type,-1);
+
+  if (nonblank(yl) and nonblank(yc)) then begin
+    ValToText(GetYear(td),M4Val,yc,yl,yearstr);
+    ValToText(GetMonth(td),M4Val,mc,ml,monthstr);
+    ValToText(GetDay(td),M4Val,dc,dl,daystr);
+    res = yearstr & " " & monthstr & " " & daystr;
+    foundf = true;
+  end;
+
+
+  if (!foundf) then begin
     ValToText(GetYear(td),M4Int,"",langcode,yearstr);
     pos = InString(yearstr,"Eur");
     if (pos>0) then begin
       yearstr = left(yearstr,pos-2);
     end;
     res = yearstr & " " & USetStr(22780 + GetMonth(td)) & " " & GetDay(td) & " " & LowerCase(USetStr(38471));
-  //end;
+  end;
+
+Logtext(0,"ddd " & td & ":" & type & ":" & res);
 
   DateInWords = res;
   return;

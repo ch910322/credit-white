@@ -2666,7 +2666,7 @@ window InvegaReportTClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm;
-  WindowBegin("Automatically Closed Tasks",InvegaReportTClass,CGSbl,-);
+  WindowBegin("Invega Report Settings",InvegaReportTClass,CGSbl,-);
   SetBlid(InvegaReportBlock);
   SetWRect(20,80,500,298);
   vs=20; h=250; vs2=16; hm=-100;
@@ -2674,6 +2674,33 @@ begin
   EditField(h,v+=vs,100,"EVRK Code Classification Type",Normal,EVKRClassType,false,CTypeSClas);
   EndWindow;
 end;
+
+window CMDateTextTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Date in Text",CMDateTextTClass,CGSbl,-);
+  SetBlid(CMDateTextBlock);
+  SetWRect(20,80,700,298);
+  vs=20; h=150; vs2=16; hm=-100;
+  ButtonFrame(h-130,v=30,250,7,"Date 1");
+  EditField(h,v,100,"Year Language",Normal,YearLang1,false,LangSClass);
+  EditField(h,v+=vs,100,"Year Currency",Normal,YearCur1,false,CurncyCodeSClass);
+  EditField(h,v+=vs,100,"Month Language",Normal,MonthLang1,false,LangSClass);
+  EditField(h,v+=vs,100,"Month Currency",Normal,MonthCur1,false,CurncyCodeSClass);
+  EditField(h,v+=vs,100,"Day Language",Normal,DayLang1,false,LangSClass);
+  EditField(h,v+=vs,100,"Year Currency",Normal,DayCur1,false,CurncyCodeSClass);
+  h=450;
+  ButtonFrame(h-130,v=30,250,7,"Date 2");
+  EditField(h,v,100,"Year Language",Normal,YearLang2,false,LangSClass);
+  EditField(h,v+=vs,100,"Year Currency",Normal,YearCur2,false,CurncyCodeSClass);
+  EditField(h,v+=vs,100,"Month Language",Normal,MonthLang2,false,LangSClass);
+  EditField(h,v+=vs,100,"Month Currency",Normal,MonthCur2,false,CurncyCodeSClass);
+  EditField(h,v+=vs,100,"Day Language",Normal,DayLang2,false,LangSClass);
+  EditField(h,v+=vs,100,"Year Currency",Normal,DayCur2,false,CurncyCodeSClass);
+  EndWindow;
+end;
+
 
 window InvegaFundRClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")

@@ -51,7 +51,7 @@ external function string 255 GetCredManNr(Longint);
 external inner function string 255 StrReplace(string,string,string);
 external function val GetCustomerOpenAmount(string,record IVVc);
 external function Integer GetProlongMonths(record CredManVc);
-external function string 255 DateInWords(Date,string);
+external function string 255 DateInWords(Date,string,Integer);
 external function string 255 GetConditionsText(record CredManVc,Integer);
 external function val AdjustFees(val,val,val);
 
@@ -906,6 +906,9 @@ begin
     vVals["F_CONTACTVALUE"] = value;
     vVals["F_CONTACTSIGNER"] = signer;
     vVals["F_CONTACTDATE"] = td;
+    vVals["F_CONTACTDATE"] = td;
+    tstr = DateInWords(td,CredManr.LangCode,2);
+    vVals["F_CONTACTDATEINWORDS"] = tstr;
 
     BSr.CredManNr = CredManr.SerNr;
     BSr.BOENum = gBOENumber;
@@ -1008,7 +1011,7 @@ begin
     enddate = AddMonth(enddate,CMTr.VekselisExtraMonths);
   end;
 
-  tstr = DateInWords(enddate,CredManr.LangCode);
+  tstr = DateInWords(enddate,CredManr.LangCode,1);
   vVals["F_ENDDATE2"] = enddate;
   vVals["F_ENDDATE2INWORDS"] = tstr;
 
