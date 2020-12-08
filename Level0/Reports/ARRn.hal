@@ -298,6 +298,7 @@ L22:;
             CUs = false;
           end;
         end; 
+      end;
 //CUST-BEGIN
         if (nonblank(RepSpec.f15)) then begin
           begin
@@ -309,15 +310,14 @@ L22:;
               CredManr.SerNr = StringToLongint(tmp);
               if (ReadFirstMain(CredManr,1,true)) then begin
                 if (CredManr.CustCode!=CUr.Code) then begin
-                  CUs = false;
-                  pos = 2000;
+                  testf = false;
+                  pos2 = 2000;
                 end;
               end;
             end;
           end;
         end;
 //CUST-END
-      end;
     end;
   if (CUs==false) then begin goto L88; end;
   if (testf==false) then begin goto L22; end;
