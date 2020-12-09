@@ -693,7 +693,6 @@ begin
             tsum = FIN_PMT(rate, tusemonths, tusesum);
             tint = GetCurMonthInterest(CredManPayPlanr,invdate);
             tsum = tsum - tint;
-            logtext(0,"dd " & tsum & ":" & tusesum & ":" & tusemonths & ":" & invdate & ":" & tint);
             extra_diff = CalculateAnnuityDiff(CredManr,tsum-sum,tusemonths);
             if (AbsoluteVal(extra_diff)>1) then begin
               sum = tsum - (extra_diff/(tusemonths));
@@ -714,6 +713,7 @@ begin
           if (CredManr.MaxMonthlyPayment<curpayment) then begin
             sum = CredManr.MaxMonthlyPayment-(curpayment-sum);
           end;
+          extra_diff = 0;
         end;
         if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0 and month==(tusemonths-1)) then begin
           if (calcbal-sum!=CredManr.LastMonthPrinc) then begin
@@ -1459,7 +1459,7 @@ LCalcSchedule:;
 
 logtext(0,"BuildCredManPayPlanCust end1 retry=" & tries);
   if (recalculatef) then begin
-    if (inCredManr.InstalmentType==0 and tries<25) then begin//annuity
+    if (inCredManr.InstalmentType==0 and tries<25 and inCredManr.MaxMonthlyPayment==0) then begin//annuity
       if (ShouldRecalculateAnnuitySchedule(inCredManr,CredManPayPlanr,usemonths,annuity_diff)) then begin
         RecordClear(CredManPayPlanr);
         tries = tries + 1;
