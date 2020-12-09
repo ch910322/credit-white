@@ -1713,7 +1713,7 @@ begin
       RepSpec.long1 = CredManr.SerNr;
       OpenWindow("SchedYesNoWClass",0,0,"","",RepSpec);
     end else begin
-      GenerateAgreementSchedule(CredManr,false);
+      threadremote.GenerateAgreementSchedule(CredManr,false);
     end;
 //  end;
 
@@ -1732,7 +1732,7 @@ begin
   
   CredManr.SerNr = RepSpec.long1;
   if (ReadFirstMain(CredManr,1,true)) then begin
-    GenerateAgreementSchedule(CredManr,true);
+    threadremote.GenerateAgreementSchedule(CredManr,true);
   end;
 
   CloseWindow(wn);
