@@ -128,8 +128,8 @@ begin
     if (CredManr.StdProlongFee>100) then begin
       CredManr.StdProlongFee = 100;
     end;
-*/
     PutWindowRecord(wn,CredManr);   
+*/
   end; 
   CredManDClassStdProlongFeeEFAfter = true;
   return;
@@ -1367,6 +1367,7 @@ begin
   record AgreementDocVc ADr;
   record RcVc RepSpec;
   record CredManVc CredManr;
+  string 255 wstr;
 
   wn = CurWindow;
   if (WindowState(wn)==Rs_Normal) then begin
@@ -1376,7 +1377,9 @@ begin
     if (GetWindowFileName(cwn)=="CredManVc") then begin
       GetWindowRecord(cwn,CredManr);
       ReadFirstMain(CredManr,1,true);
-      ReOpenWindow(cwn,GetWindowClass(cwn),1,MotherWindow(cwn),"","",CredManr);
+      wstr = GetWindowClass(cwn);
+      CloseWindow(cwn);
+      OpenWindow(wstr,1,MotherWindow(cwn),"","",CredManr);
     end;
     CloseWindow(wn);
     OpenWindow("AgreementDocDClass",1,0,"","",ADr);
@@ -1563,6 +1566,7 @@ begin
   record VIVc VIr;
   record IVVc IVr;
   val sum;
+  string 255 wstr;
   
   CredManMakePaymentRemote(CredManr,VIr,IVr,ivno,sum,receiptf,sendsum);
   PutWindowRecord(wn,CredManr);
@@ -1573,7 +1577,9 @@ begin
       CM_CreatePaymentOrder(CredManr,VIr,sum);
     end;
     ReadFirstMain(CredManr,1,true);
-    ReOpenWindow(wn,GetWindowClass(wn),1,0,"","",CredManr);
+    wstr = GetWindowClass(wn);
+    CloseWindow(wn);
+    OpenWindow(wstr,1,0,"","",CredManr);
   end;
 
   if (VIr.SerNr>0) then begin
