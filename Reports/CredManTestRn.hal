@@ -44,6 +44,8 @@ begin
   CredManr.IntRate = CredManTestr.IntRate;
   CredManr.InstalmentMonths = CredManTestr.Months;
   CredManr.startDate = CredManTestr.startDate;
+  CredManr.MoneyTransferDate = CredManTestr.MoneyTransferDate;
+  
   CredManr.PrincipleDelayMonths = CredManTestr.PrincipleDelayMonths;
   CredManr.PrincipleDelayInterest = CredManTestr.PrincipleDelayInterest;
   CredManr.MaxMonthlyPayment = CredManTestr.MaxMonthlyPayment;

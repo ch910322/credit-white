@@ -2863,6 +2863,8 @@ begin
   EditField(h,v+=vs,50,"Sum",Normal,InvSum4,false,0);
   EditField(h,v+=vs,50,"Pay Deal",Normal,PayDeal,false,PDSClass);
   EditField(h,v+=vs,90,"Start Date",Normal,startDate,false,PasteCurDate);
+  EditField(h,v+=vs,90,"Money Transfer Date",Normal,MoneyTransferDate,false,PasteCurDate);
+  
   EditField(h,v+=vs,50,"Deposit Sum",Normal,DepositSum,false,0);
   EditField(h,v+=vs,50,"Additional Downp. Months",Normal,ExtraDepositMonths,false,0);
   EditField(h,v+=vs,50,"Additional Downp. Sum",Normal,ExtraDepositSum,true,0);
