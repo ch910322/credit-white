@@ -56,10 +56,3 @@ begin
   HasSuretyPerson = false;
   return;
 end;
-
-global
-function Boolean HasConditionTexts()
-begin
-  HasConditionTexts = false;
-  return;
-end;

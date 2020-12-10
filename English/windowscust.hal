@@ -2754,6 +2754,7 @@ begin
   EditField(h+270,v,80,"",Normal,Surety1Amount,true,0);
   EditField(h+360,v,100,"",Normal,Surety1Signer,false,B2BLoanApp_ContactSClass);
   EditField(h+470,v,100,"",Normal,Surety1Position,false,JobTitleSClass);
+  HalPushButtonTag(h+600,v,h+700,v+20,"BOESuretyDClassOpenConditions","Conditions","1");
   v = v + 30;
 
   EditField(h,v,60,"Surety 2",Normal,SuretyProvider2,false,B2BLoanApp_CUSClass);
@@ -2762,6 +2763,7 @@ begin
   EditField(h+270,v,80,"",Normal,Surety2Amount,true,0);
   EditField(h+360,v,100,"",Normal,Surety2Signer,false,B2BLoanApp_ContactSClass);
   EditField(h+470,v,100,"",Normal,Surety2Position,false,JobTitleSClass);
+  HalPushButtonTag(h+600,v,h+700,v+20,"BOESuretyDClassOpenConditions","Conditions","2");
   v = v + 30;
 
   EditField(h,v,60,"Surety 3",Normal,SuretyProvider3,false,B2BLoanApp_CUSClass);
@@ -2770,6 +2772,7 @@ begin
   EditField(h+270,v,80,"",Normal,Surety3Amount,true,0);
   EditField(h+360,v,100,"",Normal,Surety3Signer,false,B2BLoanApp_ContactSClass);
   EditField(h+470,v,100,"",Normal,Surety3Position,false,JobTitleSClass);
+  HalPushButtonTag(h+600,v,h+700,v+20,"BOESuretyDClassOpenConditions","Conditions","3");
   v = v + 30;
 
   EditField(h,v,60,"Surety 4",Normal,SuretyProvider4,false,B2BLoanApp_CUSClass);
@@ -2778,6 +2781,7 @@ begin
   EditField(h+270,v,80,"",Normal,Surety4Amount,true,0);
   EditField(h+360,v,100,"",Normal,Surety4Signer,false,B2BLoanApp_ContactSClass);
   EditField(h+470,v,100,"",Normal,Surety4Position,false,JobTitleSClass);
+  HalPushButtonTag(h+600,v,h+700,v+20,"BOESuretyDClassOpenConditions","Conditions","4");
   v = v + 30;
 
   EditField(h,v,60,"Surety 5",Normal,SuretyProvider5,false,B2BLoanApp_CUSClass);
@@ -2786,6 +2790,7 @@ begin
   EditField(h+270,v,80,"",Normal,Surety5Amount,true,0);
   EditField(h+360,v,100,"",Normal,Surety5Signer,false,B2BLoanApp_ContactSClass);
   EditField(h+470,v,100,"",Normal,Surety5Position,false,JobTitleSClass);
+  HalPushButtonTag(h+600,v,h+700,v+20,"BOESuretyDClassOpenConditions","Conditions","5");
   v = v + 30;
 
   EditField(h,v,60,"Surety 6",Normal,SuretyProvider6,false,B2BLoanApp_CUSClass);
@@ -2794,6 +2799,7 @@ begin
   EditField(h+270,v,80,"",Normal,Surety6Amount,true,0);
   EditField(h+360,v,100,"",Normal,Surety6Signer,false,B2BLoanApp_ContactSClass);
   EditField(h+470,v,100,"",Normal,Surety6Position,false,JobTitleSClass);
+  HalPushButtonTag(h+600,v,h+700,v+20,"BOESuretyDClassOpenConditions","Conditions","6");
   v = v + 30;
 
   EndWindow;

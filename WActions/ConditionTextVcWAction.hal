@@ -87,13 +87,6 @@ begin
 end;
 
 global
-function Boolean HasConditionTexts()
-begin
-  HasConditionTexts = true;
-  return;
-end;
-
-global
 updating procedure CredManDClassOpenOtherConditions()
 begin
   Integer wn;
@@ -109,6 +102,43 @@ begin
 
   return;
 end;
+
+global
+updating procedure CredManDClassOpenConditions2()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record ConditionTextVc CTr;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  
+  if (GetConditionText(CredManr.SerNr,0,PushButtonTag,CTr)) then begin
+    OpenWindow("ConditionTextDClass",1,0,"","",CTr);
+  end;
+
+  return;
+end;
+
+global
+updating procedure BOESuretyDClassOpenConditions()
+begin
+  Integer wn;
+  record BOESuretyVc BSr;
+  record ConditionTextVc CTr;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,BSr);
+  
+  if (GetConditionText(BSr.CredManNr,0,BSr.BOENum & ":" & PushButtonTag,CTr)) then begin
+    OpenWindow("ConditionTextDClass",1,0,"","",CTr);
+  end;
+
+  return;
+end;
+
+
+
 
 global
 updating procedure CredManDClassOpenPaymentConditions()

@@ -1,6 +1,5 @@
 //<halrule>server-only</halrule>
 external inner function string 255 StrReplace(string,string,string);
-external function Boolean HasConditionTexts();
 
 global
 function Boolean GetConditionTextRecord(Longint sernr,Integer type,string id,var record ConditionTextVc tCTr)
@@ -34,7 +33,7 @@ begin
   CTr.CredManNr = sernr;
   CTr.Type = type;
   CTr.ID = id;
-  if (ReadFirstMain(CTr,2,true)==false) then begin
+  if (ReadFirstMain(CTr,3,true)==false) then begin
     RecordNew(CTr);
     CTr.CredManNr = sernr;
     CTr.Type = type;

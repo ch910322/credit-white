@@ -66,7 +66,9 @@ remote function Boolean ExternalDocumentEnabled(string);
 remote outer function Boolean HasCredManChanges(record CredManVc);
 external outer function Boolean HasBillOfExchangeShort();
 external outer function Boolean HasSuretyPerson();
-external outer function Boolean HasConditionTexts();
+external outer function Boolean HasPaymentConditionTexts();
+external outer function Boolean HasOtherConditionTexts();
+external outer function Boolean HasSuretyConditionTexts();
 
 //CUST-END
 
@@ -682,8 +684,10 @@ begin
     CheckBox(h3-30,v+3,0,"",HasChanges);
     HalPushButton(h3,v+3,h3+100,v+23,"CredManDClassOpenChanges","Agr. Changes");    
   //end;
-  if (HasConditionTexts) then begin
+  if (HasPaymentConditionTexts) then begin
     HalPushButton(h3+110,v+3,h3+210,v+23,"CredManDClassOpenPaymentConditions","Paym. Condition");    
+  end;
+  if (HasOtherConditionTexts) then begin
     HalPushButton(h3,v+26,h3+100,v+46,"CredManDClassOpenOtherConditions","Other Conditions");    
   end;
 //CUST-END
@@ -1067,9 +1071,12 @@ begin
     EditField(h+270,v,80,"",Normal,Surety1Amount,true,0);
     EditField(h+360,v,100,"",Normal,Surety1Signer,false,B2BLoanApp_ContactSClass);
     EditField(h+470,v,100,"",Normal,Surety1Position,false,JobTitleSClass);
-    EditField(h+580,v,100,"",Normal,Surety1OfficialSerNr,false,0);
-    CheckBox(h+730,v,0,"",Surety1Signed);
-    HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","1");
+    EditField(h+580,v,90,"",Normal,Surety1OfficialSerNr,false,0);
+    CheckBox(h+700,v,0,"",Surety1Signed);
+    HalPushButtonTag(h+730,v,h+790,v+20,"CredManDClassSignSuretySimplified","Open","1");
+    if (HasSuretyConditionTexts) then begin
+      HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassOpenConditions2","Cond.","1");
+    end;
     v = v + 30;
 
     EditField(h=50,v,60,"Surety 2",Normal,SuretyProvider2,false,B2BLoanApp_CUSClass);
@@ -1078,9 +1085,12 @@ begin
     EditField(h+270,v,80,"",Normal,Surety2Amount,true,0);
     EditField(h+360,v,100,"",Normal,Surety2Signer,false,B2BLoanApp_ContactSClass);
     EditField(h+470,v,100,"",Normal,Surety2Position,false,JobTitleSClass);
-    EditField(h+580,v,100,"",Normal,Surety2OfficialSerNr,false,0);
-    CheckBox(h+730,v,0,"",Surety2Signed);
-    HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","2");
+    EditField(h+580,v,90,"",Normal,Surety2OfficialSerNr,false,0);
+    CheckBox(h+700,v,0,"",Surety2Signed);
+    HalPushButtonTag(h+730,v,h+790,v+20,"CredManDClassSignSuretySimplified","Open","2");
+    if (HasSuretyConditionTexts) then begin
+      HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassOpenConditions2","Cond.","2");
+    end;
     v = v + 30;
 
     EditField(h=50,v,60,"Surety 3",Normal,SuretyProvider3,false,B2BLoanApp_CUSClass);
@@ -1089,9 +1099,12 @@ begin
     EditField(h+270,v,80,"",Normal,Surety3Amount,true,0);
     EditField(h+360,v,100,"",Normal,Surety3Signer,false,B2BLoanApp_ContactSClass);
     EditField(h+470,v,100,"",Normal,Surety3Position,false,JobTitleSClass);
-    EditField(h+580,v,100,"",Normal,Surety3OfficialSerNr,false,0);
-    CheckBox(h+730,v,0,"",Surety3Signed);
-    HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","3");
+    EditField(h+580,v,90,"",Normal,Surety3OfficialSerNr,false,0);
+    CheckBox(h+700,v,0,"",Surety3Signed);
+    HalPushButtonTag(h+730,v,h+790,v+20,"CredManDClassSignSuretySimplified","Open","3");
+    if (HasSuretyConditionTexts) then begin
+      HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassOpenConditions2","Cond.","3");
+    end;
     v = v + 30;
 
     EditField(h=50,v,60,"Surety 4",Normal,SuretyProvider4,false,B2BLoanApp_CUSClass);
@@ -1100,9 +1113,12 @@ begin
     EditField(h+270,v,80,"",Normal,Surety4Amount,true,0);
     EditField(h+360,v,100,"",Normal,Surety4Signer,false,B2BLoanApp_ContactSClass);
     EditField(h+470,v,100,"",Normal,Surety4Position,false,JobTitleSClass);
-    EditField(h+580,v,100,"",Normal,Surety4OfficialSerNr,false,0);
-    CheckBox(h+730,v,0,"",Surety4Signed);
-    HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","4");
+    EditField(h+580,v,90,"",Normal,Surety4OfficialSerNr,false,0);
+    CheckBox(h+700,v,0,"",Surety4Signed);
+    HalPushButtonTag(h+730,v,h+790,v+20,"CredManDClassSignSuretySimplified","Open","4");
+    if (HasSuretyConditionTexts) then begin
+      HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassOpenConditions2","Cond.","4");
+    end;
     v = v + 30;
 
     EditField(h=50,v,60,"Surety 5",Normal,SuretyProvider5,false,B2BLoanApp_CUSClass);
@@ -1111,9 +1127,12 @@ begin
     EditField(h+270,v,80,"",Normal,Surety5Amount,true,0);
     EditField(h+360,v,100,"",Normal,Surety5Signer,false,B2BLoanApp_ContactSClass);
     EditField(h+470,v,100,"",Normal,Surety5Position,false,JobTitleSClass);
-    EditField(h+580,v,100,"",Normal,Surety5OfficialSerNr,false,0);
-    CheckBox(h+730,v,0,"",Surety5Signed);
-    HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","5");
+    EditField(h+580,v,90,"",Normal,Surety5OfficialSerNr,false,0);
+    CheckBox(h+700,v,0,"",Surety5Signed);
+    HalPushButtonTag(h+730,v,h+790,v+20,"CredManDClassSignSuretySimplified","Open","5");
+    if (HasSuretyConditionTexts) then begin
+      HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassOpenConditions2","Cond.","5");
+    end;
     v = v + 30;
 
     EditField(h=50,v,60,"Surety 6",Normal,SuretyProvider6,false,B2BLoanApp_CUSClass);
@@ -1122,9 +1141,12 @@ begin
     EditField(h+270,v,80,"",Normal,Surety6Amount,true,0);
     EditField(h+360,v,100,"",Normal,Surety6Signer,false,B2BLoanApp_ContactSClass);
     EditField(h+470,v,100,"",Normal,Surety6Position,false,JobTitleSClass);
-    EditField(h+580,v,100,"",Normal,Surety6OfficialSerNr,false,0);
-    CheckBox(h+730,v,0,"",Surety6Signed);
-    HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","6");
+    EditField(h+580,v,90,"",Normal,Surety6OfficialSerNr,false,0);
+    CheckBox(h+700,v,0,"",Surety6Signed);
+    HalPushButtonTag(h+730,v,h+790,v+20,"CredManDClassSignSuretySimplified","Open","6");
+    if (HasSuretyConditionTexts) then begin
+      HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassOpenConditions2","Cond.","6");
+    end;
     v = v + 30;
 
   end else begin
