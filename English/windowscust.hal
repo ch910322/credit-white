@@ -3071,3 +3071,53 @@ begin
   //EditField(h,v+=vs,100,"Monthly Payment Day",Normal,MonthlyPaymentDay,false,0);
   EndWindow;
 end;
+
+window PaymentConditionTextWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs;
+  
+  WindowBegin("Payment Conditions",PaymentConditionTextWClass,CGOther,-);
+  UseView(CUVc);
+  SetWRect(20,80,450,300);
+  AutoSizeWindow(false);
+  ToolBar;
+  HalPushButton(-140,5,-80,22,"PaymentConditionTextWClassSave","Save");
+  EndToolBar;
+  h = 150;
+  TextField(20,v=6,-20,-20,Math2,0);
+  EndWindow;
+	
+	return;
+end;
+
+window OtherConditionTextWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs;
+  
+  WindowBegin("Other Conditions",OtherConditionTextWClass,CGOther,-);
+  UseView(CUVc);
+  SetWRect(20,80,450,300);
+  AutoSizeWindow(false);
+  ToolBar;
+  HalPushButton(-140,5,-80,22,"OtherConditionTextWClassSave","Save");
+  EndToolBar;
+  h = 150;
+  TextField(20,v=6,-20,-20,Math2,0);
+  EndWindow;
+	
+	return;
+end;
+
+window ConditionTextDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Conditions",ConditionTextDClass,CGview,-);
+  SetWRect(20,80,400,239);
+  UseView(ConditionTextVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  TextField(20,v=6,-20,-20,Text,0);
+  EndWindow;
+end;

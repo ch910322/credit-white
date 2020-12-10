@@ -63,12 +63,3 @@ begin
   HasConditionTexts = false;
   return;
 end;
-
-
-global
-function string 255 GetConditionsText(record CredManVc CredManr,Integer type)
-begin
-
-  GetConditionsText = "";
-  return;
-end;

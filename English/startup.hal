@@ -47,7 +47,10 @@ begin
   Setting("Invega Fund Report Settings",InvegaReportTClass,modCredMan);
   Setting("Agreement Type Accounts",CredManAccLClass,modCredMan);
   Setting("Date in Text",CMDateTextTClass,modSY);
-  
+  Setting("Payment Condition Text",PaymentConditionTextWClass,modCredMan);
+  Setting("Other Condition Text",PaymentConditionTextWClass,modCredMan);
+
+
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
 	Report("Application Overview",LoanApplicationListRClass,LoanApplicationListRn,0,modCredMan);

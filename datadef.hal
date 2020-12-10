@@ -1840,6 +1840,23 @@ begin
 
   EndBlock;
 
+  RecordBegin(DefConditionTextVc,-,"");
+  RecordField(Code,M4Code,20,0);
+  RecordField(Text,M4TextField,0,0);
+  MainKeyBegin(Code,0);
+  KeySegment(Code);
+  EndRecord;
+
+  RecordBegin(ConditionTextVc,-,"");
+  RecordField(CredManNr,M4Long,0,0);
+  RecordField(Type,M4Int,0,0);
+  RecordField(Text,M4TextField,0,0);
+  RecordField(ID,M4Str,30,0);
+  MainKeyBegin(CredManNr,0);
+  KeySegment(CredManNr);
+  KeySegment(Type);
+  KeySegment(ID);
+  EndRecord;
 
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);

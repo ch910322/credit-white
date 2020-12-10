@@ -53,6 +53,7 @@ external function val GetCustomerOpenAmount(string,record IVVc);
 external function Integer GetProlongMonths(record CredManVc);
 external function string 255 DateInWords(Date,string,Integer);
 external function string 255 GetConditionsText(record CredManVc,Integer);
+external function string 255 GetConditionsText2(record CredManVc,Integer,string);
 external function val AdjustFees(val,val,val);
 
 procedure GetCredManCustContact(record CredManVc CredManr,var string contactid,var string contactname)
@@ -772,7 +773,8 @@ begin
     vVals["F_CONTACTIDCARD"] = idcard;
     vVals["F_CONTACTIDCARDDATE"] = iddate;
     vVals["F_CONTACTLEGALID"] = legalid;
-    
+    vVals["F_SURETYCOND"] = GetConditionsText2(CredManr,0,gSuretyNumber);
+
     Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
 
     vVals["F_CONTACTSIGNER"] = signer;
@@ -925,6 +927,8 @@ begin
         vVals["ROW_" & strnum & "_F_BOESURVALUE"] = GetFieldValueByName(BSr,"Surety" & num & "Value",-1);
         vVals["ROW_" & strnum & "_F_BOESURSIGNER"] = GetFieldValueByName(BSr,"Surety" & num & "Singer",-1);
         vVals["ROW_" & strnum & "_F_BOESURDATE"] = GetFieldValueByName(BSr,"Surety" & num & "Date",-1);
+        
+        vVals["ROW_" & strnum & "_F_BOESURCOND"] = GetConditionsText2(CredManr,0,gBOENumber & ":" & num);
       end;
     end;
   end else begin

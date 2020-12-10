@@ -1,0 +1,128 @@
+remote updating function Boolean GetConditionText(Longint,Integer,string,var record ConditionTextVc);
+
+global
+updating procedure PaymentConditionTextWClassSave()
+begin
+  Integer wn;
+  record DefConditionTextVc CTr;
+  record CUVc CUr;
+  Longint i,pos,cnt;
+  string 255 tstr;
+  
+  wn = CurWindow;
+  SetTextField(CTr,"");
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,CUr);
+  for (i=0;i<LineTextCnt2(CUr);i=i+1) begin
+    LineTextPut2(CTr,i,LineTextGet2(CUr,i));
+  end;
+  CTr.Code = "PMT";
+  RecordStore(CTr,true);
+  CloseWindow(wn);
+
+  return;
+end;
+
+global
+updating procedure OtherConditionTextWClassSave()
+begin
+  Integer wn;
+  record DefConditionTextVc CTr;
+  record CUVc CUr;
+  Longint i,pos,cnt;
+  string 255 tstr;
+  
+  wn = CurWindow;
+  SetTextField(CTr,"");
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,CUr);
+  for (i=0;i<LineTextCnt2(CUr);i=i+1) begin
+    LineTextPut2(CTr,i,LineTextGet2(CUr,i));
+  end;
+  CTr.Code = "OTHER";
+  RecordStore(CTr,true);
+  CloseWindow(wn);
+
+  return;
+end;
+
+global
+function Boolean PaymentConditionTextWClassOnOpenWindow(Integer wn)
+begin
+  record DefConditionTextVc CTr;
+  record CUVc CUr;
+  Longint i;
+  string 255 tstr;
+
+  SetTextField(CUr,"");
+  CTr.Code = "PMT";
+  ReadFirstMain(CTr,1,true);
+  for (i=0;i<LineTextCnt2(CTr);i=i+1) begin
+    LineTextPut2(CUr,i,LineTextGet(CTr,i));
+  end;
+  PutWindowRecord(wn,CUr);
+
+  PaymentConditionTextWClassOnOpenWindow = false;
+  return;
+end;
+
+global
+function Boolean OtherConditionTextWClassOnOpenWindow(Integer wn)
+begin
+  record DefConditionTextVc CTr;
+  record CUVc CUr;
+  Longint i;
+  string 255 tstr;
+
+  SetTextField(CUr,"");
+  CTr.Code = "OTHER";
+  ReadFirstMain(CTr,1,true);
+  for (i=0;i<LineTextCnt2(CTr);i=i+1) begin
+    LineTextPut2(CUr,i,LineTextGet(CTr,i));
+  end;
+  PutWindowRecord(wn,CUr);
+
+  OtherConditionTextWClassOnOpenWindow = false;
+  return;
+end;
+
+global
+function Boolean HasConditionTexts()
+begin
+  HasConditionTexts = true;
+  return;
+end;
+
+global
+updating procedure CredManDClassOpenOtherConditions()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record ConditionTextVc CTr;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  
+  if (GetConditionText(CredManr.SerNr,0,"",CTr)) then begin
+    OpenWindow("ConditionTextDClass",1,0,"","",CTr);
+  end;
+
+  return;
+end;
+
+global
+updating procedure CredManDClassOpenPaymentConditions()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record ConditionTextVc CTr;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  
+  if (GetConditionText(CredManr.SerNr,1,"",CTr)) then begin
+    OpenWindow("ConditionTextDClass",1,0,"","",CTr);
+  end;
+
+  return;
+end;
