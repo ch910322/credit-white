@@ -120,6 +120,7 @@ begin
   record CredManVc CredManr;
 
   if (changedf) then begin  
+/* why was this here?
     GetWindowRecord(wn,CredManr);
     if (CredManr.StdProlongFee<0) then begin
       CredManr.StdProlongFee = 0;
@@ -127,6 +128,7 @@ begin
     if (CredManr.StdProlongFee>100) then begin
       CredManr.StdProlongFee = 100;
     end;
+*/
     PutWindowRecord(wn,CredManr);   
   end; 
   CredManDClassStdProlongFeeEFAfter = true;
