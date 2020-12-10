@@ -6,6 +6,7 @@ external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlan
 external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,record CredManSetBlock,var record SMVc);
 external inner function LongInt DateDiff(Date,Date);
 external function val GetCredHistOpenValue(Longint);
+external inner function LongInt MonthDiff(Date,Date);
 
 
 
@@ -290,18 +291,41 @@ begin
 end;
 
 global
-function val GetCredManPeriodAmount(record IVVc IVr,val rowsum)
+function val GetCredManPeriodAmount(record IVVc IVr,val rowsum,Integer month)
 begin
   Integer days1,days2,totdays;
   val res;
+  Date sd,ed,td;
+  Integer cnt;
   
+
   if (nonblank(IVr.CredFromDate)) then begin
-    days1 = DaysInMonth(GetYear(IVr.CredFromDate),GetMonth(IVr.CredFromDate));
-    days2 = days1 - GetDay(IVr.CredFromDate);
     totdays = DateDiff(IVr.CredToDate,IVr.CredFromDate)+1;
-    res = days2*rowsum/totdays;
+    td = IVr.CredToDate;
+    cnt = 0;
+    td.Day = 1;
+    while (td>=IVr.CredFromDate or (GetYear(td)==GetYear(IVr.CredFromDate) and GetMonth(td)==GetMonth(IVr.CredFromDate))) begin
+      sd = td;
+      ed = td;
+      ed.Day = DaysInMonth(GetYear(sd),GetMonth(sd));
+      if (sd<IVr.CredFromDate) then begin
+        sd = IVr.CredFromDate;
+      end;
+      if (ed>IVr.CredToDate) then begin
+        ed = IVr.CredToDate;
+      end;
+      if (cnt==month) then begin
+        days2 = DateDiff(ed,sd)+1;
+        res = days2*rowsum/totdays;
+        goto LGetCredManPeriodAmount;
+      end;
+
+      td = AddMonth(td,-1);
+      cnt = cnt - 1;
+    end;
   end;
 
+LGetCredManPeriodAmount:;
   GetCredManPeriodAmount = res;
   return;
 end;

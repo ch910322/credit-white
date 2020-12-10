@@ -43,7 +43,7 @@ external procedure ConvertSalesAcc(var string,Integer);
 external procedure GetItemSalesAcc(string,Integer,var string);
 //CUST-BEGIn
 external outer function string 255 CM_GetCredManTypeSalesItemAccount(Longint,string,string,Boolean);
-external outer function val GetCredManPeriodAmount(record IVVc,val);
+external outer function val GetCredManPeriodAmount(record IVVc,val,Integer);
 //CUST-END
 
 global
@@ -127,7 +127,7 @@ BEGIN
 
     //CUST-BEGIN
     if (nonblank(IVp.CredFromDate)) then begin
-      if (GetMonth(IVp.CredFromDate)==GetMonth(IVp.TransDate)) then begin
+      if (GetMonth(IVp.CredToDate)!=GetMonth(IVp.InvDate)) then begin
         pdat = AddMonth(pdat,1);
       end;
     end;
@@ -144,8 +144,8 @@ BEGIN
     end else begin
 //CUST-BEGIN
     if (ASPrw.calc=="#") then begin
-      tcur = GetCredManPeriodAmount(IVp,base1valp);
-      t = GetCredManPeriodAmount(IVp,ivrwsump);
+      tcur = GetCredManPeriodAmount(IVp,base1valp,StringToInt(ASPrw.Months));
+      t = GetCredManPeriodAmount(IVp,ivrwsump,StringToInt(ASPrw.Months));
       if (IVp.InvType!=kInvoiceTypeCredit and IVp.InvType!=kInvoiceTypeCreditSpecialSales) then begin
         totsumcur = totsumcur + tcur;
       end else begin
