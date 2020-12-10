@@ -1072,8 +1072,10 @@ begin
       if (CRr.Invalid==0) then begin
         ContactCUr.Code = CRr.ContactCode;
         if (ReadFirstMain(ContactCUr,1,true)) then begin
-          if (SetInSet(ContactCUr.JobDesc,CMb.CFOTitle)) then begin
-            aCUr[aCUr.length] = ContactCur;
+          if (nonblank(ContactCUr.JobDesc)) then begin
+            if (SetInSet(ContactCUr.JobDesc,CMb.CFOTitle)) then begin
+              aCUr[aCUr.length] = ContactCur;
+            end;
           end;
         end;
       end;
