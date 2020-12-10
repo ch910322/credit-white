@@ -256,7 +256,8 @@ begin
   Boolean res;
   
   if (CredManr.LoanType!=type) then begin
-    ReopenWindow(wn,"CredMan" & type & "DClass",1,0,"","",CredManr);
+    CloseWindow(wn);
+    OpenWindow("CredMan" & type & "DClass",1,0,"","",CredManr);
     res = true;
   end;
 
@@ -1931,7 +1932,7 @@ begin
   record CredManVc CredManr;
   
   GetWindowRecord(wn,CredManr);
-  subsetname = 1;
+  subsetname = 2;
 
   CredMan2LClassUpdateWindowSubset = true;
   return;
@@ -1944,7 +1945,7 @@ begin
   record CredManVc CredManr;
   
   GetWindowRecord(wn,CredManr);
-  SetWindowSubset(wn,1);
+  SetWindowSubset(wn,2);
 
   CredMan2LClassOnOpenWindow = true;
   return;
@@ -1956,7 +1957,7 @@ begin
   record CredManVc CredManr;
   
   GetWindowRecord(wn,CredManr);
-  subsetname = 2;
+  subsetname = 3;
 
   CredMan3LClassUpdateWindowSubset = true;
   return;
@@ -1968,7 +1969,7 @@ begin
   record CredManVc CredManr;
   
   GetWindowRecord(wn,CredManr);
-  SetWindowSubset(wn,2);
+  SetWindowSubset(wn,3);
 
   CredMan3LClassOnOpenWindow = true;
   return;
@@ -1981,7 +1982,7 @@ begin
   record CredManVc CredManr;
   
   GetWindowRecord(wn,CredManr);
-  subsetname = 3;
+  subsetname = 4;
 
   CredMan4LClassUpdateWindowSubset = true;
   return;
@@ -1993,7 +1994,7 @@ begin
   record CredManVc CredManr;
   
   GetWindowRecord(wn,CredManr);
-  SetWindowSubset(wn,3);
+  SetWindowSubset(wn,4);
 
   CredMan4LClassOnOpenWindow = true;
   return;
@@ -2007,7 +2008,7 @@ begin
   record CredManVc CredManr;
   
   GetWindowRecord(wn,CredManr);
-  subsetname = 4;
+  subsetname = 5;
 
   CredMan5LClassUpdateWindowSubset = true;
   return;
@@ -2019,7 +2020,7 @@ begin
   record CredManVc CredManr;
   
   GetWindowRecord(wn,CredManr);
-  SetWindowSubset(wn,4);
+  SetWindowSubset(wn,5);
 
   CredMan5LClassOnOpenWindow = true;
   return;
@@ -2032,7 +2033,7 @@ begin
   record CredManVc CredManr;
   
   GetWindowRecord(wn,CredManr);
-  subsetname = 5;
+  subsetname = 6;
 
   CredMan6LClassUpdateWindowSubset = true;
   return;
@@ -2044,9 +2045,57 @@ begin
   record CredManVc CredManr;
   
   GetWindowRecord(wn,CredManr);
-  SetWindowSubset(wn,5);
+  SetWindowSubset(wn,6);
 
   CredMan6LClassOnOpenWindow = true;
+  return;
+end;
+
+global
+function Boolean CredMan7LClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  subsetname = 7;
+
+  CredMan7LClassUpdateWindowSubset = true;
+  return;
+end;
+
+global
+function Boolean CredMan7LClassOnOpenWindow(Integer wn)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  SetWindowSubset(wn,7);
+
+  CredMan7LClassOnOpenWindow = true;
+  return;
+end;
+
+global
+function Boolean CredMan8LClassUpdateWindowSubset(Integer wn,var string subsetname)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  subsetname = 8;
+
+  CredMan8LClassUpdateWindowSubset = true;
+  return;
+end;
+
+global
+function Boolean CredMan8LClassOnOpenWindow(Integer wn)
+begin
+  record CredManVc CredManr;
+  
+  GetWindowRecord(wn,CredManr);
+  SetWindowSubset(wn,8);
+
+  CredMan8LClassOnOpenWindow = true;
   return;
 end;
 
