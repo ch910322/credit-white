@@ -680,11 +680,34 @@ LAddInvoiceToReminderArrRow:;
   return;
 end;
 
+function Boolean HasOlderUnpaidInvoices(record IVVc IVr)
+begin
+  Boolean res,TrHs;
+  record ARVc ARr;
+
+  TrHs = true;
+  ResetLoop(ARr);
+  ARr.CustCode = IVr.CustCode;
+  while (LoopKey("CustCode",ARr,1,TrHs)) begin
+    if (ARr.CustCode!=IVr.CustCode) then begin
+      TrHs = false;
+    end else begin
+      if (ARr.InvDate>IVr.InvDate) then begin
+        res = true;
+        TrHs = false;
+      end;
+    end;
+  end;
+
+  HasOlderUnpaidInvoices = res;
+  return;
+end;
+
 procedure FindAndSendInvoiceReminders(record SMSReminderVc SMSReminder,var vector Boolean vCust)
 begin
   record SMSReminderQueueVc SRQr;
   record IVVc IVr;
-  Boolean TrHs,testf;
+  Boolean TrHs,testf,oldestf;
   record ARVc ARr;
   Integer latedays,i;
   Date td,ed;
@@ -725,7 +748,11 @@ begin
           end;
         end;
       end;
+    case 2:
+      oldestf = true;
+      goto LFindAndSendInvoiceReminders_overdue;
     case 1://due date
+LFindAndSendInvoiceReminders_overdue:;
       TrHs = true;
       ed = td;
       ARr.DueDate = AddDay(td,-kMaxCheckDays);
@@ -741,6 +768,11 @@ begin
             end;
             if (SMSReminder.MinAmount>0 and SkipCustomerBalance(IVr.CustCredManNr,SMSReminder.MinAmount)) then begin
               testf = false;
+            end;
+            if (oldestf) then begin
+              if (HasOlderUnpaidInvoices(IVr)) then begin
+                testf = false;
+              end;
             end;
             if (testf) then begin
               if (ReminderAlreadySent(IVr.SerNr,SMSReminder.SerNr)==false) then begin

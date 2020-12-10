@@ -414,6 +414,7 @@ begin
   SetBegin(2012);
   SetText(0,"Invoice");
   SetText(1,"Due Invoice");
+  SetText(2,"Oldest Overdue Invoice");
   EndSet;
 
   SetBegin(2013);
