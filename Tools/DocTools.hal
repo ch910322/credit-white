@@ -91,6 +91,7 @@ end;
 global
 function Boolean OuterGetExternalDocMatrix(string docname,var string type)
 begin
+  Boolean res;
   
   if (docname=="CredManForm") then begin
     MatCol(1,24,"Language",0,LangCode,false,LangSClass);
