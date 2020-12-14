@@ -255,7 +255,7 @@ begin
   rwcnt = MatRowCnt(CredManPayPlanr);
   for (i=rwcnt-1;i>=0;i=i-1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
-    if (CredManPayPlanrw.PlanType>=5) then begin
+    if (CredManPayPlanrw.PlanType==5 or CredManPayPlanrw.PlanType==6 or CredManPayPlanrw.PlanType==7) then begin
       if (td<=CredManPayPlanrw.TransDate) then begin
         res = false;
       end else begin
@@ -271,7 +271,7 @@ begin
     res = false;
   end;
 
-  if (td<CredManr.FirstInvDate) then begin
+  if (DateInRange(td,CredManr.startDate,CredManr.endDate)==false) then begin
     res = false;
   end;
 
@@ -429,7 +429,7 @@ begin
         */
         setf = true;
       end else begin
-        if (tmonths>0 or tprolongmonths>0) then begin
+        if (tmonths>0 or tprolongmonths>0 or rate>0) then begin
           CreatePauseRecord(CredManr.SerNr,td,tmonths,tprolongmonths,rate,0);
         end;
       end;

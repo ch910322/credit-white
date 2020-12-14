@@ -1303,7 +1303,7 @@ begin
   SpecialMenu("Check Buy-out Value",' ',6,"CheckBuyoutValueWindowDsm");
   SpecialMenu("Customer Status",'e',7,"CUStatusCredManDsm");
   //SpecialMenu("Print Payment Schedule",' ',8,"PaymentScheduleCredManDsm");
-  SpecialMenu("Pause/prolong Agreement",' ',8,"PauseCredManDsm");
+  SpecialMenu("Register Agreement Changes",' ',8,"PauseCredManDsm");
   SpecialMenu("Credit Agreement Info",'I',0,"CredManInfoDsm");
   SpecialMenu("Refinance Agreement",' ',9,"RefinCredManDsm");
   SpecialMenu("Generate Schedule",' ',9,"CredManGenScheduleDsm");

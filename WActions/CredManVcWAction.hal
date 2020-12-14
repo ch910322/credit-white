@@ -803,10 +803,12 @@ end;
 global
 procedure RecreateAgreementSchedule3CallBack(record CredManVc CredManr,Integer wn)
 begin
+  string 255 wstr;
   
   if (GetWindowFileName(wn)=="CredManVc") then begin
+    wstr = GetWindowClass(wn);
     CloseWindow(wn);
-    OpenWindow(GetWindowClass(wn),1,0,"","",CredManr);
+    OpenWindow(wstr,1,0,"","",CredManr);
   end;
 
   return;

@@ -1041,6 +1041,7 @@ begin
       if (Changer.OKFlag==1) then begin
         if (nonblank(Changer.IntRate)) then begin
           CredManr.IntRate = Changer.IntRate;
+          CredManr.PrincipleDelayInterest = Changer.IntRate;
           CredManr.AnnualRate = Changer.AnnualRate;
         end;
         if (Changer.OverduePercentage!=0) then begin
@@ -1144,6 +1145,7 @@ begin
       if (Changer.OKFlag==1) then begin
         if (nonblank(Changer.IntRate)) then begin
           CredManr.IntRate = Changer.IntRate;
+          CredManr.PrincipleDelayInterest = Changer.IntRate;
           CredManr.AnnualRate = Changer.AnnualRate;
         end;
         if (Changer.OverduePercentage!=0) then begin
