@@ -2290,23 +2290,47 @@ logtext(0,"GenerateAgreementSchedule2");
   return;
 end;
 
+global
+function Boolean AgreementPaidOut(record CredManVc CredManr)
+begin
+  Boolean res;
+  record CredHistVc CredHistr;
+  val calcbal;
+
+  while (LoopKey("CredManTransDate:" & CredManr.SerNr,CredHistr,1,true)) begin
+    if (CredHistr.RecordType==5) then begin//payment
+      calcbal = calcbal + CredHistr.Sum;
+    end;
+  end;
+  if (CredManr.InvSum4>=calcbal) then begin
+    res = true;
+  end;
+
+  AgreementPaidOut = res;
+  return;
+end;
+
 global 
 updating procedure CheckCredManFinished(Longint credmannr)
 begin
   record CMOrderClassBlock OCb;
   record CredManVc CredManr,oldCredManr;
   record RcVc RepSpec;
+  Integer int_type;
 
   CredManr.SerNr = credmannr;
   if (ReadFirstMain(CredManr,1,true)) then begin
     RepSpec.d1 = CurrentDate;
-    CheckBuyOutAgreement(CredManr,RepSpec);
-    if (RepSpec.vals2==0) then begin
-      BlockLoad(OCb);
-      RecordCopy(oldCredManr,CredManr);
-      CredManr.OrderClass = OCb.FinishCredOrderClass;
-      CredManr.Status = 7;
-      RecordUpdate(oldCredManr,CredManr,true);
+    int_type = GetInterestPaymentType(CredManr);
+    if (int_type==0 or AgreementPaidOut(CredManr)) then begin
+      CheckBuyOutAgreement(CredManr,RepSpec);
+      if (RepSpec.vals2==0) then begin
+        BlockLoad(OCb);
+        RecordCopy(oldCredManr,CredManr);
+        CredManr.OrderClass = OCb.FinishCredOrderClass;
+        CredManr.Status = 7;
+        RecordUpdate(oldCredManr,CredManr,true);
+      end;
     end;
   end;
   

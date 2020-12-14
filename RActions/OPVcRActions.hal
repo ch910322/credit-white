@@ -5,6 +5,7 @@ external updating procedure CreateCredHist(Longint,Integer,string,val,Integer,st
 external updating procedure UpdateCredHistBalance(Longint,Longint,Integer);
 external updating procedure RemoveCredHist(Longint,Integer);
 external function Integer GetInterestPaymentType(record CredManVc);
+external function Boolean AgreementPaidOut(record CredManVc);
 
 updating procedure UpdateCredManPaymentDate(record OPVc OPr)
 begin
@@ -12,10 +13,10 @@ begin
   row OPVc OPrw;
   record CredManVc CredManr,oldCredManr;
   record CMInvoicingBlock CIb;
-  Boolean updf;
+  Boolean updf,checkf;
   record APVc APr;
   record VIVc VIr;
-  Longint histnr;
+  Longint histnr,credmannr;
   Integer int_type;
 
   BlockLoad(CIb);
@@ -32,14 +33,16 @@ begin
       end;
       VIr.SerNr = OPrw.VISerNr;
       if (ReadFirstMain(VIr,1,true)) then begin
+        CredManr.SerNr = VIr.CustCredManNr;
         if (VIr.CustCredManNr>-1) then begin
-          CredManr.SerNr = VIr.CustCredManNr;
           if (ReadFirstMain(CredManr,1,true)) then begin
             int_type = GetInterestPaymentType(CredManr);
             if (int_type==1) then begin
               CreateCredHist(OPr.SerNr,16,VIr.VECode,OPrw.RecVal,5,"",OPr.TransDate,VIr.CustCredManNr,OPr.TransDate,histnr,"","",1,-1,OPrw.RecVal,-1,blankval);
               UpdateCredHistBalance(VIr.CustCredManNr,OPr.SerNr,5);
               updf = true;
+              checkf = true;
+              credmannr = VIr.CustCredManNr;
             end;
           end;
 
@@ -47,14 +50,16 @@ begin
       end;
       if (updf) then begin
         ResetLoop(CredManr);
-        CredManr.VINr = OPrw.VISerNr;
-        if (ReadFirstKey("VINr",CredManr,1,true)) then begin
+        CredManr.SerNr = credmannr;
+        if (ReadFirstMain(CredManr,1,true)) then begin
           if (blank(CredManr.MoneyTransferDate)) then begin
             RecordCopy(oldCredManr,CredManr);
             if (CIb.MoneyTransferDateOP==1) then begin
               CredManr.MoneyTransferDate = OPr.PayDate;
             end;
-            CredManr.Status = 4;
+            if (checkf==false or AgreementPaidOut(CredManr)) then begin
+              CredManr.Status = 4;
+            end;
             RecordUpdate(oldCredManr,CredManr,true);
           end;
         end;
