@@ -994,7 +994,7 @@ begin
   EditField(h2,v=vm-20,-40,"Bank Code",Normal,BankCode,false,BankSClass);
   EditField(h2,v+=vs,-40,"Bank Name",Normal,BankName,false,0);
   EditField(h2,v+=vs,-40,"Bank Account",Normal,BankAccount,false,BankAccountSClass);
-  CheckBox(h2,v+=20,0,"Last Principle Value adds last Calculated value",LastPrincipleWithExtraMonth);
+  CheckBox(h2,v+=20,0,"Remaining principle including Last Months Principle",LastPrincipleWithExtraMonth);
   vm = v+40;
 //CUST-END
   ButtonFrame(h2,v=vm,150,2,"Late Interest Based On");
@@ -1463,7 +1463,7 @@ begin
     EditField(h,v+=vs,150,"Pause Offset Days",Normal,PauseOffsetDays,false,0);
   end;
   EditField(h,v+=vs,100,"Default Item Priority",Normal,ItemPriorityCode,false,CMItemPrioritySCLass);  
-  CheckBox(h,v+=16,0,"Last Principle Value adds last Calculated value",LastPrincipleWithExtraMonth);
+  CheckBox(h,v+=16,0,"Remaining principle including Last Months Principle",LastPrincipleWithExtraMonth);
   CheckBox(h,v+=16,0,"Annual Rate",AnnualRate);
   CheckBox(h,v+=16,0,"Closed",Closed);
   vm2 = v;

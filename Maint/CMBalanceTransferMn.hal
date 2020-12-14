@@ -5,8 +5,12 @@ external inner procedure AddEuroTrRow(record TRVc,string,string,string,string,va
 external inner function Integer GetIntYc(Date);
 external inner procedure TRSumup(var record TRVc,var val);
 external inner function Boolean GetAccName(string,var string,Integer);
+external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
+external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
+external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,record CredManSetBlock,var record SMVc);
 
-updating procedure TreatSingleCredMan(record CredManVc CredManr,record RcVc RepSpec)
+global
+updating procedure CMBalanceTransferMnSingleAgr(record CredManVc CredManr,record RcVc RepSpec)
 begin
   record CredHistVc CredHistr;
   record TRVc TRr;
@@ -18,7 +22,15 @@ begin
   val shortval,longval;
   val blanks;
   val t;
+  record CredManPayPlanVc CredManPayPlanr;
+  row CredManPayPlanVc CredManPayPlanrw;
+  LongInt i,rwcnt;
+  record SMVc SMr;
+  row SMVc SMrw;
+  record CredManSetBlock CredManSetb;
 
+
+/*
   TrHs = true;
   CredHistr.TransDate = RepSpec.d1;
   CredHistr.CredManNr = CredManr.SerNr;
@@ -32,7 +44,22 @@ begin
       end;
     end;
   end;
+*/
 
+  BlockLoad(CredManSetb);
+  if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+    ReadFirstMain(CredManr,1,true);
+    BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+  end;
+
+  rwcnt = MatRowCnt(SMr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(SMr,i,SMrw);
+    if (DateInRange(SMrw.TransDate,RepSpec.d1,RepSpec.d2)) then begin
+      totsum = totsum + SMrw.CredVal;
+    end;
+  end;
 
   if (totsum>0) then begin
 
@@ -72,13 +99,13 @@ end;
 
 
 global
-updating procedure CMBalanceTransferMn(record RcVc RepSpec)
+procedure CMBalanceTransferMn(record RcVc RepSpec)
 begin
   record CredManVc CredManr;
   
   while (LoopMain(CredManr,1,true)) begin
     if (CredManr.OKFlag==1) then begin
-      TreatSingleCredMan(CredManr,RepSpec);
+      qupdating.CMBalanceTransferMnSingleAgr(CredManr,RepSpec);
     end;
   end;
 

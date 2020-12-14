@@ -2049,7 +2049,7 @@ begin
   CheckBox(h,v+=20,0,"Automatically send issued Invoices",AutoInvoiceSend);
   CheckBox(h,v+=16,0,"Automatically send Invoices created from Contracts",AutoMailsFromInvoices);
   CheckBox(h,v+=16,0,"When creating Email, use precreated PDFs",UsePreCreatedInvoicePdf);
-//  CheckBox(h,v+=16,0,"Last Principle Value adds last Calculated value",LastPrincipleWithExtraMonth);
+//  CheckBox(h,v+=16,0,"Remaining principle including Last Months Principle",LastPrincipleWithExtraMonth);
   
 
   EditField(h,v+=vs,100,"Additional Comment",Normal,InvoiceCommentStr,false,0);
