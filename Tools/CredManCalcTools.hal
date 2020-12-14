@@ -42,7 +42,7 @@ end;
 procedure CalcCredManCurrentPeriod(record CredManVc CredManr,record CMInvoicingBlock CIb,Integer paymentnr,var Date sdp,var Date edp,var Date int_sdp,var Date int_edp,var Date invd,var Date int_invdat)
 begin
   record PDVc PDr;
-  Date bd;
+  Date bd,nint_sdp;
 
   if (paymentnr==-1) then begin
     sdp = CredManr.startDate;
@@ -70,13 +70,16 @@ begin
 
   int_sdp = sdp;
   int_edp = edp;
-  if (paymentnr==-1) then begin
+  //if (paymentnr==-1) then begin
     if (nonblank(CredManr.FirstIntDate)) then begin
-      int_sdp = CredManr.FirstIntDate;
+      nint_sdp = CredManr.FirstIntDate;
     end;
     if (CredManr.MoneyTransferDate>int_sdp) then begin
-      int_sdp = CredManr.MoneyTransferDate;
+      nint_sdp = CredManr.MoneyTransferDate;
     end;
+  //end;
+  if (nint_sdp>int_sdp) then begin
+    int_sdp = nint_sdp;
   end;
   int_invdat = invd;
   if (CIb.InterestIVType>=2) then begin
@@ -306,7 +309,7 @@ procedure AddInterest(record CredManVc CredManr,record CredManPayPlanVc CredManP
 begin
   Integer sendmonthtypef;
   
-  if (nonblank(frdate)) then begin
+  if (nonblank(frdate) and frdate<=todate) then begin
     sendmonthtypef = monthtypef;
     if ((CredManr.ChargeMethod==1) and overridef==false and sendmonthtypef!=kMonthTypeFirst) then begin
       sendmonthtypef = kMonthTypeLast;
