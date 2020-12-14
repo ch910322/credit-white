@@ -380,6 +380,92 @@ begin
   return;
 end;
 
+function Boolean HasSureties(record CredManVc CredManr)
+begin
+  Boolean res;
+  
+  if (nonblank(GetFieldValueByName(CredManr,"Surety1Code",-1))) then begin
+    res = true;
+  end;
+
+  HasSureties = res;
+  return;
+end;
+
+function Boolean HasBOE(record CredManVc CredManr)
+begin
+  Boolean res;
+  
+  if (nonblank(GetFieldValueByName(CredManr,"BOE1Code",-1))) then begin
+    res = true;
+  end;
+
+  HasBOE = res;
+  return;
+end;
+
+function Boolean HasProperties(record CredManVc CredManr)
+begin
+  Boolean res;
+  record CredManPropertiesVc CMPr;
+  
+  CMPr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CMPr,1,true)) then begin
+    if (MatRowCnt(CMPr)>0) then begin
+      res = true;
+    end;
+  end;
+
+  HasProperties = res;
+  return;
+end;
+
+function Boolean HasSchedule(record CredManVc CredManr)
+begin
+  Boolean res;
+  record AgreementDocVc ADr;
+  
+  ADr.RecordNr = CredManr.SerNr;
+  ADr.RecordType = 0;
+  ADr.Type = 2;
+  if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
+    res = true;
+  end;
+
+  HasSchedule = res;
+  return;
+end;
+
+procedure PrintSingleConstant(var vector string vVals,string fn,record CMPrintConstantsBlock PCb,string blockfn,Boolean yesf)
+begin
+  string 255 tstr;
+  
+  if (yesf) then begin
+    tstr = GetFieldValueByName(PCb,blockfn & "Yes",-1);
+    tstr = tstr & "\\n";
+    tstr = tstr & GetFieldValueByName(PCb,blockfn & "Yes2",-1);
+    vVals[fn] = tstr;
+  end else begin
+    vVals[fn] = GetFieldValueByName(PCb,blockfn & "No",-1);
+  end;
+
+  return;
+end;
+
+procedure PrintCMConstants(var vector string vVals,record CredManVc CredManr)
+begin
+  record CMPrintConstantsBlock PCb;
+
+  BlockLoad(PCb);
+
+  PrintSingleConstant(vVals,"F_SURETYCONST",PCb,"Surety",HasSureties(CredManr));
+  PrintSingleConstant(vVals,"F_BOECONST",PCb,"BOE",HasBOE(CredManr));
+  PrintSingleConstant(vVals,"F_PROPCONST",PCb,"Property",HasProperties(CredManr));
+  PrintSingleConstant(vVals,"F_SCHEDULECONST",PCb,"Schedule",HasSchedule(CredManr));
+
+  return;
+end;
+
 procedure CredManHeader(var vector string vVals,record CredManVc CredManr)
 begin
   record CUVc CUr;
@@ -670,6 +756,7 @@ begin
   vVals["F_PMTCONDITIONS"] = GetConditionsText(CredManr,1);
 
   PrintFirstPrincipleDueDate(vVals,CredManr);
+  PrintCMConstants(vVals,CredManr);
 
   return;
 end;

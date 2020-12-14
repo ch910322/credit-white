@@ -2714,6 +2714,40 @@ begin
   EndWindow;
 end;
 
+window CMPrintConstantsTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Printout Constants",CMPrintConstantsTClass,CGSbl,-);
+  SetBlid(CMPrintConstantsBlock);
+  SetWRect(20,80,700,298);
+  vs=20; h=150; vs2=16; hm=-100;
+  
+  Tile(0,20,false,"",SuretyYes);
+  TileButton(1,"Surety");  
+  TileButton(2,"BOE");  
+  TileButton(3,"Properties");  
+  TileButton(4,"Schedule");  
+
+  Tile(1,700,false,"1",SuretyYes);
+  EditField(h,v=6,140,"Yes",Normal,SuretyYes,false,0);
+  EditField(h,v+=vs,140,"No",Normal,SuretyNo,false,0);
+  EditField(h,v+=vs,140,"If Yes, then",Normal,SuretyYes2,false,0);
+  Tile(2,700,false,"2",BOEYes);
+  EditField(h,v=6,140,"Yes",Normal,BOEYes,false,0);
+  EditField(h,v+=vs,140,"No",Normal,BOENo,false,0);
+  EditField(h,v+=vs,140,"If Yes, then",Normal,BOEYes2,false,0);
+  Tile(3,700,false,"3",PropertyYes);
+  EditField(h,v=6,140,"Yes",Normal,PropertyYes,false,0);
+  EditField(h,v+=vs,140,"No",Normal,PropertyNo,false,0);
+  EditField(h,v+=vs,140,"If Yes, then",Normal,PropertyYes2,false,0);
+  Tile(4,700,false,"4",ScheduleYes);
+  EditField(h,v=6,140,"Yes",Normal,ScheduleYes,false,0);
+  EditField(h,v+=vs,140,"No",Normal,ScheduleNo,false,0);
+  EditField(h,v+=vs,140,"If Yes, then",Normal,ScheduleYes2,false,0);
+  EndWindow;
+end;
+
 
 window InvegaFundRClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")

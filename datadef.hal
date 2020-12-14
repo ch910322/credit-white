@@ -1859,6 +1859,25 @@ begin
   KeySegment(ID);
   EndRecord;
 
+  BlockBegin(CMPrintConstantsBlock,-,"");
+  RecordField(SuretyYes,M4Str,255,0);
+  RecordField(SuretyNo,M4Str,255,0);
+  RecordField(SuretyYes2,M4Str,255,0);
+
+  RecordField(BOEYes,M4Str,255,0);
+  RecordField(BOENo,M4Str,255,0);
+  RecordField(BOEYes2,M4Str,255,0);
+
+  RecordField(PropertyYes,M4Str,255,0);
+  RecordField(PropertyNo,M4Str,255,0);
+  RecordField(PropertyYes2,M4Str,255,0);
+
+  RecordField(ScheduleYes,M4Str,255,0);
+  RecordField(ScheduleNo,M4Str,255,0);
+  RecordField(ScheduleYes2,M4Str,255,0);
+  EndBlock;
+ 
+
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Estonian", 0);
