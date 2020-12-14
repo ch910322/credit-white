@@ -703,7 +703,23 @@ begin
   return;
 end;
 
-procedure FindAndSendInvoiceReminders(record SMSReminderVc SMSReminder,var vector Boolean vCust)
+function Boolean MatchLanguage(string langcode,string custcode,vector Boolean vLang)
+begin
+  record CUVc CUr;
+  Boolean res;
+
+  CUr.Code = custcode;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    if (CUr.LangCode==langcode or (blank(langcode) and vLang[CUr.LangCode]==false)) then begin
+      res = true;
+    end;
+  end;
+
+  MatchLanguage = res;
+  return;
+end;
+
+procedure FindAndSendInvoiceReminders(record SMSReminderVc SMSReminder,var vector Boolean vCust,vector Boolean vLang)
 begin
   record SMSReminderQueueVc SRQr;
   record IVVc IVr;
@@ -734,6 +750,9 @@ begin
               testf = false;
             end;
             if (vCust[IVr.CustCode]) then begin
+              testf = false;
+            end;
+            if (MatchLanguage(SMSReminder.LangCode,IVr.CustCode,vLang)==false) then begin
               testf = false;
             end;
             if (testf) then begin
@@ -774,6 +793,9 @@ LFindAndSendInvoiceReminders_overdue:;
                 testf = false;
               end;
             end;
+            if (MatchLanguage(SMSReminder.LangCode,IVr.CustCode,vLang)==false) then begin
+              testf = false;
+            end;
             if (testf) then begin
               if (ReminderAlreadySent(IVr.SerNr,SMSReminder.SerNr)==false) then begin
                 //queued.Cust_SendReminder2(SMSReminder,IVr);
@@ -811,11 +833,10 @@ LFindAndSendInvoiceReminders_overdue:;
   return;
 end;
 
-procedure CheckSMSRemindersCompany()
+procedure LoadLanguageVector(vector Boolean vLang)
 begin
   Boolean TrHs;
   record SMSReminderVc SMSReminder;
-  vector Boolean vCust;
   
   TrHs = true;
   SMSReminder.ActiveFlag = 1;
@@ -823,8 +844,29 @@ begin
     if (SMSReminder.ActiveFlag!=1) then begin
       TrHs = false;
     end else begin
+      vLang[SMSReminder.LangCode] = true;
+    end;
+  end;
+
+  return;
+end;
+
+procedure CheckSMSRemindersCompany()
+begin
+  Boolean TrHs;
+  record SMSReminderVc SMSReminder;
+  vector Boolean vCust;
+  vector Boolean vLang;
+  
+  LoadLanguageVector(vLang);
+  TrHs = true;
+  SMSReminder.ActiveFlag = 1;
+  while (LoopKey("ActiveFlag",SMSReminder,1,TrHs)) begin
+    if (SMSReminder.ActiveFlag!=1) then begin
+      TrHs = false;
+    end else begin
       if (ShouldTrigerSMSReminder(SMSReminder)) then begin
-        FindAndSendInvoiceReminders(SMSReminder,vCust);
+        FindAndSendInvoiceReminders(SMSReminder,vCust,vLang);
       end;
     end;
   end;

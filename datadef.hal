@@ -1042,6 +1042,7 @@ begin
   RecordField(ActType,M4Code,20,0);
   RecordField(ActText,M4Str,255,0);
   RecordField(StdText,M4Code,10,0);
+  RecordField(LangCode,M4Code,20,0);
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(ActiveFlag);
