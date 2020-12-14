@@ -2635,3 +2635,22 @@ begin // Temporary fix for the RecordList
   saveOK = true;
   return;
 end;
+
+global
+function Boolean CredManDClassOKFlagButtonAction(Integer wn,Integer value)
+BEGIN
+  Boolean res;
+  record CredManVc CredManr;
+  Integer normalmode,updatemode;
+ 
+  res = inner.CredManDClassOKFlagButtonAction(wn,value);
+  if (res and WindowState(wn)==Rs_update) then begin
+    GetWindowRecord(wn,CredManr);
+    if (CredManr.Approved==0) then begin
+      res = false;
+    end;
+  end;
+
+  CredManDClassOKFlagButtonAction = res;
+  RETURN;
+END;

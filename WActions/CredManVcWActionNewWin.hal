@@ -9,6 +9,7 @@ external function Boolean CredManDClassLoanTypeButtonAction(Integer,Integer);
 external function Integer CredManDClassSelectSetToPaste(Integer,string);
 external procedure CredManDClassButtonFlags(Integer,var Boolean,var Boolean,var Boolean,var Boolean);
 external function Boolean CredManDClassHasChangesButtonAction(Integer,Integer);
+external function Boolean CredManDClassOKFlagButtonAction(Integer,Integer);
 
 /*CredManDClassAfterEditField*/
 global
@@ -654,4 +655,62 @@ begin
   CredMan8DClassHasChangesButtonAction = CredManDClassHasChangesButtonAction(wn,value);
   return;
 end;
+
+/*CredManDClassOKFlagButtonAction*/
+global
+function Boolean CredMan1DClassOKFlagButtonAction(Integer wn,Integer value)
+begin
+  CredMan1DClassOKFlagButtonAction = CredManDClassOKFlagButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan2DClassOKFlagButtonAction(Integer wn,Integer value)
+begin
+  CredMan2DClassOKFlagButtonAction = CredManDClassOKFlagButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan3DClassOKFlagButtonAction(Integer wn,Integer value)
+begin
+  CredMan3DClassOKFlagButtonAction = CredManDClassOKFlagButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan4DClassOKFlagButtonAction(Integer wn,Integer value)
+begin
+  CredMan4DClassOKFlagButtonAction = CredManDClassOKFlagButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan5DClassOKFlagButtonAction(Integer wn,Integer value)
+begin
+  CredMan5DClassOKFlagButtonAction = CredManDClassOKFlagButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan6DClassOKFlagButtonAction(Integer wn,Integer value)
+begin
+  CredMan6DClassOKFlagButtonAction = CredManDClassOKFlagButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan7DClassOKFlagButtonAction(Integer wn,Integer value)
+begin
+  CredMan7DClassOKFlagButtonAction = CredManDClassOKFlagButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan8DClassOKFlagButtonAction(Integer wn,Integer value)
+begin
+  CredMan8DClassOKFlagButtonAction = CredManDClassOKFlagButtonAction(wn,value);
+  return;
+end;
+
 
