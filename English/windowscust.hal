@@ -2281,6 +2281,22 @@ begin
   return;
 end;
 
+window TerminateYesNoWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v; 
+
+  WindowBegin("Terminate Agreement",TerminateYesNoWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,300,120);
+  AutoSizeWindow(false);  
+  HalPushButton(-260,-30,-160,-10,"TerminateYesNoWClassProceed","Yes");
+  HalPushButton(-120,-30,-20,-10,"SchedYesNoWClassClose","No");
+  EndWindow;
+
+  return;
+end;
+
 window CMPropertyLClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin

@@ -58,6 +58,8 @@ external procedure SetupInvoiceRowAndAdd(record CredManVc,var record IVVc,string
 remote procedure RecreateAgreementSchedule3CallBack(record CredManVc,Integer);
 external function Boolean HasSuretyPerson();
 external procedure DistributeCredHistValues(var record IPVc,Integer);
+external procedure AddInstalmentFixed(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,val,Date,var val,var val,Date,Date);
+external procedure GetBuyOutData(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var Date,var val);
 
 
 global
@@ -117,6 +119,7 @@ begin
   return;
 end;
 
+/*
 global
 updating procedure TerminateCredMan(var record CredManVc CredManr,var record IVVc IVr)
 begin
@@ -134,6 +137,7 @@ begin
 
   return;
 end;
+*/
 
 global
 procedure CredManSetDatesCust(var record CredManVc CredManr,Boolean allf)
@@ -1776,3 +1780,49 @@ begin
   HasCredManChanges = res;
   return;
 end;
+
+global
+updating procedure TerminateCredMan(var record CredManVc CredManr)
+begin
+  val calcbal,balance,cumint;
+  Date lastinv,td;
+  Integer i,rwcnt;
+  record IVVc IVr;
+  record CredManSetBlock CMb;
+  row CredManPayPlanVc CredManPayPlanrw;
+  record CredManPayPlanVc CredManPayPlan2r;
+  record CredManPayPlanVc CredManPayPlanr;
+   
+  BlockLoad(CMb);
+  BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
+  GetBuyOutData(CredManr,CredManPayPlanr,CMb,lastinv,balance);
+  td = CurrentDate;
+  if (balance>0) then begin
+    SetupLoanInvoice(CredManr,CMb,IVr,CurrentDate,lastinv,CurrentDate,true,false,"",1,true);
+    AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,CurrentDate);
+    rwcnt = MatRowCnt(CredManPayPlan2r);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(CredManPayPlan2r,i,CredManPayPlanrw);
+      SetupInvoiceRowAndAdd(CredManr,IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
+    end;
+    StoreLoanInvoice(IVr,CredManr);
+  end;
+
+  CreditCredManInvoices(CredManr);
+  ReadFirstMain(CredManr,1,true);
+
+  return;
+end;
+
+global
+procedure TerminateCredManFinish(var record CredManVc CredManr)
+begin
+  record CMOrderClassBlock OCb;
+   
+  BlockLoad(OCb);
+  CredManr.OrderClass = OCb.TerminatedOrderClass;
+  CredManr.Status = 7;
+
+  return;
+end;
+

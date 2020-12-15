@@ -1326,26 +1326,13 @@ begin
 end;
 
 global
-procedure CreateBuyOutInvoiceFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date td,var record IVVc IVr,BOolean testf,var Date sd)
+procedure GetBuyOutData(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,var Date lastinv,var val balance)
 begin
+  record CredHistVc CredHistr;
+  Boolean foundf;
   Integer i,rwcnt;
   row CredManPayPlanVc CredManPayPlanrw;
-  record CredManPayPlanVc CredManPayPlan2r;
-  val balance;
-  Date lastinv;
-  Integer latedays;
-  val lateamount;
-  val cumint,calcbal;
-  record CredHistVc CredHistr;
-  array string 255 lateformula;
-  record CredManVc tCredManr;
-  Boolean foundf;
-  record CMInvoicingBlock CIb;
-
-/*
-1. Get the last invoice date and the balance
-2. Set up and create an invoice
-*/ 
+ 
   lastinv = CredManr.startDate;
   rwcnt = MatRowCnt(CredManPayPlanr);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -1370,6 +1357,32 @@ begin
   if (!foundf) then begin
     balance = CredManr.InvSum4;
   end;
+
+  return;
+end;
+
+global
+procedure CreateBuyOutInvoiceFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date td,var record IVVc IVr,BOolean testf,var Date sd)
+begin
+  row CredManPayPlanVc CredManPayPlanrw;
+  record CredManPayPlanVc CredManPayPlan2r;
+  val balance;
+  Date lastinv;
+  Integer i,rwcnt;
+  Integer latedays;
+  val lateamount;
+  val cumint,calcbal;
+  array string 255 lateformula;
+  record CredManVc tCredManr;
+  record CMInvoicingBlock CIb;
+
+/*
+1. Get the last invoice date and the balance
+2. Set up and create an invoice
+*/ 
+
+  GetBuyOutData(CredManr,CredManPayPlanr,CMb,lastinv,balance);
+
   if (balance>0) then begin
     SetupLoanInvoice(CredManr,CMb,IVr,td,lastinv,td,true,false,"",1,true);
     AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td);

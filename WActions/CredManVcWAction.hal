@@ -1,6 +1,8 @@
 remote updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc,string);
 remote procedure PasteCustInAgreementRemote(var record CredManVc,var string);
-remote updating procedure TerminateCredMan(var record CredManVc,var record IVVc);
+remote updating procedure TerminateCredMan(var record CredManVc);
+remote procedure TerminateCredManFinish(var record CredManVc);
+//remote updating procedure TerminateCredMan(var record CredManVc,var record IVVc);//old implementation
 remote updating procedure DoBuyOutAgreement(record CredManVc,var record IVVc);
 remote procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 remote inner procedure SetupCustPS2Rn(string,var record RcVc);
@@ -592,7 +594,7 @@ begin
   return;
 end;
 
-
+/*
 global
 updating procedure TerminateCredManDsm()
 begin
@@ -613,6 +615,7 @@ begin
 
   return;
 end;
+*/
 
 global
 updating procedure BuyOutCredManDsm()
@@ -1728,6 +1731,49 @@ begin
     end;
 //  end;
 
+  return;
+end;
+
+global
+procedure CredManTerminateDsm()
+begin
+  Integer wn;
+  record CredManVc CredManr;
+  record VIVc VIr;
+  record RcVc RepSpec;
+  record CredManSchedVc CSr;
+    
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+
+  RepSpec.long1 = CredManr.SerNr;
+  OpenWindow("TerminateYesNoWClass",0,wn,"","",RepSpec);
+
+  return;
+end;
+
+global
+updating procedure TerminateYesNoWClassProceed()
+begin
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  Integer wn,mwn;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,RepSpec);
+  
+  CredManr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    TerminateCredMan(CredManr);
+    mwn = MotherWindow(wn);
+    PutWindowRecord(mwn,CredManr);
+    threadremote.TerminateCredManFinish(CredManr);
+    PutWindowRecord(mwn,CredManr);
+    WindowDoOK(mwn,0);
+    UpdateBrowses("CredHistVc");
+  end;
+
+  CloseWindow(wn);
   return;
 end;
 
