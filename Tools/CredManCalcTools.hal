@@ -893,7 +893,7 @@ begin
             vFirstInv[CredHistr.RecordNr] = true;//we can have multiple records for single invoice. so we need to store that this invoice is the initial invoice
           end else begin
             if (CredHistr.RecordType==0 and CredHistr.ArtCode!=CredManSetb.LateRateItem) then begin//invoice
-              if (CredManr.FirstInvDate>CredHistr.TransDate) then begin
+              if (CredHistr.TransDate>CredManr.FirstInvDate) then begin
                 calculatedmonths = MonthDiff(CredManr.FirstInvDate,CredHistr.TransDate)+1;
               end;
             end;
@@ -1342,7 +1342,6 @@ LCalcSchedule:;
 //logtext(0,"start dev");
 
   LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths);
-  
   for(i=calculatedmonths;i<months;i=i+1) begin
     if (calcbal>0 or int_type==1) then begin
       CalcCredManCurrentPeriod(inCredManr,CIb,i-1,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
