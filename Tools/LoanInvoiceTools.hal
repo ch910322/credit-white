@@ -1326,7 +1326,7 @@ begin
 end;
 
 global
-procedure CreateBuyOutInvoiceFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date td,var record IVVc IVr)
+procedure CreateBuyOutInvoiceFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date td,var record IVVc IVr,BOolean testf,var Date sd)
 begin
   Integer i,rwcnt;
   row CredManPayPlanVc CredManPayPlanrw;
@@ -1340,6 +1340,7 @@ begin
   array string 255 lateformula;
   record CredManVc tCredManr;
   Boolean foundf;
+  record CMInvoicingBlock CIb;
 
 /*
 1. Get the last invoice date and the balance
@@ -1359,8 +1360,8 @@ begin
             balance = CredManPayPlanrw.Bal;
             foundf = true;
           end;
-          if (CredHistr.RecordType==0 and CredManPayPlanrw.TransDate>lastinv) then begin
-            lastinv = AddDay(CredManPayPlanrw.TransDate,1);
+          if (CredHistr.RecordType==0 and CredManPayPlanrw.ToDate>lastinv) then begin
+            lastinv = AddDay(CredManPayPlanrw.ToDate,1);
           end;
         end;
       end;
@@ -1385,66 +1386,12 @@ begin
     end;
     AddBuyOutFee(CredManr,IVr);
     GetCredManOverdueInvoices(CredManr,CMb,td,AddDay(lastinv,1),latedays,lateamount,lateformula,false,false);
-    AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
-  end;
-
-  return;
-end;
-
-
-global
-procedure CreateBuyOutInvoiceFromSchedule(record CredManVc CredManr,record CredManSetBlock CMb,record CredManSchedVc CSr,Date td,var record IVVc IVr)
-begin
-  Integer i,rwcnt;
-  row CredManPayPlanVc CredManPayPlanrw;
-  record CredManPayPlanVc CredManPayPlan2r;
-  row CredManSchedVc CSrw;
-  val balance;
-  Date lastinv;
-  Integer latedays;
-  val lateamount;
-  val cumint,calcbal;
-  record CredHistVc CredHistr;
-  array string 255 lateformula;
-  record CredManVc tCredManr;
-
-/*
-1. Get the last invoice date and the balance
-2. Set up and create an invoice
-*/ 
-  lastinv = CredManr.startDate;
-  balance = CredManr.InvSum4;
-  rwcnt = MatRowCnt(CSr);
-  for (i=0;i<rwcnt;i=i+1) begin
-    MatRowGet(CSr,i,CSrw);
-    if (CSrw.Invoiced==0) then begin
-      i = rwcnt;
+    BlockLoad(CIb);
+    if (testf or CIb.OverdueIVType==0) then begin
+      AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
     end else begin
-      if (CSrw.Type==4) then begin
-        balance = balance - CSrw.Total;
-      end else begin
-        balance = balance - CSrw.Principle - CSrw.Deposit;
-        lastinv = AddDay(CSrw.InvDate,1);
-      end;
+      sd = AddDay(lastinv,1);
     end;
-  end;
-  
-  if (balance>0) then begin
-    SetupLoanInvoice(CredManr,CMb,IVr,td,lastinv,td,true,false,"",1,true);
-    AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td);
-    RecordCopy(tCredManr,CredManr);
-    tCredManr.InvSum4 = balance;
-    tCredManr.DepositSum = 0;
-    AddInterest(tCredManr,CredManPayPlan2r,CMb,kMonthTypeFirst,td,cumint,balance,lastinv,td,-1,true);
-    AddPlannedFees(CredManr,CredManPayPlan2r,CMb,kPlannedFeesMonthly,kMonthTypeFirst,td,cumint,balance,lastinv,td,-1,false);
-    rwcnt = MatRowCnt(CredManPayPlan2r);
-    for (i=0;i<rwcnt;i=i+1) begin
-      MatRowGet(CredManPayPlan2r,i,CredManPayPlanrw);
-      SetupInvoiceRowAndAdd(CredManr,IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
-    end;
-    AddBuyOutFee(CredManr,IVr);
-    GetCredManOverdueInvoices(CredManr,CMb,td,AddDay(lastinv,1),latedays,lateamount,lateformula,false,false);
-    AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
   end;
 
   return;
@@ -1513,24 +1460,32 @@ updating procedure DoBuyOutAgreement(record CredManVc CredManr,var record IVVc f
 begin
   record CredManSetBlock CMb;
   record CredManPayPlanVc CredManPayPlanr;
-  record IVVc IVr,oldIVr;
+  record IVVc IVr,oldIVr,oIVr;
   record CMInvoicingBlock CIb;
+  Date sd;
+  val openamount,lateamount;
+  Integer latedays;
+  array string 255 lateformula;
 
   if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
     BlockLoad(CMb);
     BlockLoad(CIb);
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
-    CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,CurrentDate,IVr);
+    CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,CurrentDate,IVr,false,sd);
+
     CM_AddPrepayments(IVr,CredManr,CIb);
     if (IVr.SerNr>-1) then begin
       if (IVr.Sum4>0) then begin
-        if (RecordInsert(IVr,true)) then begin
-          RecordCopy(oldIVr,IVr);
-          IVr.OKFlag = 1;
-          RecordUpdate(oldIVr,IVr,true);
-          LinkCredManAndInvoice(IVr,CredManr);
-          GenerateAgreementSchedule(CredManr,true);
+        if (CIb.OverdueIVType>0) then begin
+          GetCredManOverdueInvoices(CredManr,CMb,CurrentDate,sd,latedays,lateamount,lateformula,false,false);
+          SetupLoanInvoice(CredManr,CMb,oIVr,CurrentDate,sd,CurrentDate,true,false,"",2,true);
+          AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
+          SetupOverdueLangCode(IVr,CredManr.Type);
+          StoreLoanInvoice(oIVr,CredManr);
         end;
+
+        StoreLoanInvoice(IVr,CredManr);
+        GenerateAgreementSchedule(CredManr,true);
         RecordCopy(firstIVr,IVr);
       end else begin
         LogText(0,"Failed to store Invoice. Sum is 0");
@@ -1667,7 +1622,7 @@ begin
   record IVVc IVr;
   val dueamount,openamount,lateamount,prepayval,buyoutfee;
   Integer latedays;
-  Date sd;
+  Date sd,sd2;
   transaction Boolean gSilenceIVOpenPrepExists;
   array string 255 lateformula;
   Boolean schedf;
@@ -1675,15 +1630,8 @@ logtext(0,"CheckBuyOutAgreement start");
 
   gSilenceIVOpenPrepExists = true;
   BlockLoad(CMb);
-/* why should be base this on schedule. we should always take "actual" data
-  CSr.CredManNr = CredManr.SerNr;
-  if (ReadFirstMain(CSr,1,true)) then begin
-    CreateBuyOutInvoiceFromSchedule(CredManr,CMb,CSr,RepSpec.d1,IVr);
-    schedf = true;
-  end else begin
-*/
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
-    CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,RepSpec.d1,IVr);
+    CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,RepSpec.d1,IVr,true,sd2);
 //  end;
   CheckUnpaidInvoices(CredManr,dueamount,openamount);
   sd = GetLastInvoiceDate(CredManr,RepSpec.d1);
