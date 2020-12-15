@@ -585,14 +585,21 @@ end;
 
 updating procedure CreditAndOKInvoice(Longint ivnr)
 begin
-  record IVVc IVr,IVCreditr;
+  record IVVc IVr,IVCreditr,oldIVr;
 
   IVr.SerNr = ivnr;
   if (ReadFirstMain(IVr,1,true)) then begin
     if (CreateCreditNoteIV(IVr,kInvoiceTypeCredit,IVCreditr,"",false)==0) then begin
+      if (IVr.InvDate>IVCreditr.InvDate) then begin
+        IVCreditr.InvDate = IVr.InvDate;
+      end;
+      IVCreditr.CustCredManNr = IVr.CustCredManNr;
       IVCreditr.SerNr = NextSerNr("IVVc",IVCreditr.InvDate,-1,false,"");
-      IVCreditr.OKFlag = 1;
-      RecordInsert(IVCreditr,true);
+      if (RecordInsert(IVCreditr,true)) then begin
+        RecordCopy(oldIVr,IVCreditr);
+        IVCreditr.OKFlag = 1;
+        RecordUpdate(oldIVr,IVCreditr,true);
+      end;
     end;
   end;
 
