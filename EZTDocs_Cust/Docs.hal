@@ -384,7 +384,7 @@ function Boolean HasSureties(record CredManVc CredManr)
 begin
   Boolean res;
   
-  if (nonblank(GetFieldValueByName(CredManr,"Surety1Code",-1))) then begin
+  if (nonblank(GetFieldValueByName(CredManr,"SuretyProvider1",-1))) then begin
     res = true;
   end;
 
@@ -436,14 +436,44 @@ begin
   return;
 end;
 
+function Boolean HasInsurance(record CredManVc CredManr)
+begin
+  record CredManPropertiesVc CMPr;
+  row CredManPropertiesVc CMPrw;
+  record CMPropertyVc Propr;
+  Integer rwcnt,i;
+  Boolean res;
+  
+  CMPr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CMPr,1,true)) then begin
+    rwcnt = MatRowCnt(CMPr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(CMPr,i,CMPrw);
+      Propr.SerNr = CMPrw.Property;
+      if (ReadFirstMain(Propr,1,true)) then begin
+        if (nonblank(Propr.InsuranceType)) then begin
+          res = true;
+          i = rwcnt;
+        end;
+      end;
+    end;
+  end;
+
+  HasInsurance = res;
+  return;
+end;
+
 procedure PrintSingleConstant(var vector string vVals,string fn,record CMPrintConstantsBlock PCb,string blockfn,Boolean yesf)
 begin
-  string 255 tstr;
+  string 255 tstr,tmp;
   
   if (yesf) then begin
     tstr = GetFieldValueByName(PCb,blockfn & "Yes",-1);
-    tstr = tstr & "\\n";
-    tstr = tstr & GetFieldValueByName(PCb,blockfn & "Yes2",-1);
+    tmp = GetFieldValueByName(PCb,blockfn & "Yes2",-1);
+    if (nonblank(tmp)) then begin
+      tstr = tstr & "\\n";
+      tstr = tstr & tmp;
+    end;
     vVals[fn] = tstr;
   end else begin
     vVals[fn] = GetFieldValueByName(PCb,blockfn & "No",-1);
@@ -461,6 +491,7 @@ begin
   PrintSingleConstant(vVals,"F_SURETYCONST",PCb,"Surety",HasSureties(CredManr));
   PrintSingleConstant(vVals,"F_BOECONST",PCb,"BOE",HasBOE(CredManr));
   PrintSingleConstant(vVals,"F_PROPCONST",PCb,"Property",HasProperties(CredManr));
+  PrintSingleConstant(vVals,"F_PROPINSCONST",PCb,"Insurance",HasInsurance(CredManr));
   PrintSingleConstant(vVals,"F_SCHEDULECONST",PCb,"Schedule",HasSchedule(CredManr));
 
   return;

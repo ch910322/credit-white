@@ -2738,9 +2738,14 @@ begin
   EditField(h,v+=vs,140,"No",Normal,BOENo,false,0);
   EditField(h,v+=vs,140,"If Yes, then",Normal,BOEYes2,false,0);
   Tile(3,700,false,"3",PropertyYes);
-  EditField(h,v=6,140,"Yes",Normal,PropertyYes,false,0);
+  EditField(h,v=6,140,"Yes (Mortgage)",Normal,PropertyYes,false,0);
   EditField(h,v+=vs,140,"No",Normal,PropertyNo,false,0);
   EditField(h,v+=vs,140,"If Yes, then",Normal,PropertyYes2,false,0);
+  EditField(h,v+=30,140,"Yes (Insurance)",Normal,InsuranceYes,false,0);
+  EditField(h,v+=vs,140,"No",Normal,InsuranceNo,false,0);
+  EditField(h,v+=vs,140,"If Yes, then",Normal,InsuranceYes2,false,0);
+
+
   Tile(4,700,false,"4",ScheduleYes);
   EditField(h,v=6,140,"Yes",Normal,ScheduleYes,false,0);
   EditField(h,v+=vs,140,"No",Normal,ScheduleNo,false,0);

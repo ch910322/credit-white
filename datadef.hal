@@ -1875,6 +1875,10 @@ begin
   RecordField(ScheduleYes,M4Str,255,0);
   RecordField(ScheduleNo,M4Str,255,0);
   RecordField(ScheduleYes2,M4Str,255,0);
+
+  RecordField(InsuranceYes,M4Str,255,0);
+  RecordField(InsuranceNo,M4Str,255,0);
+  RecordField(InsuranceYes2,M4Str,255,0);
   EndBlock;
  
 
