@@ -1360,8 +1360,8 @@ begin
             balance = CredManPayPlanrw.Bal;
             foundf = true;
           end;
-          if (CredHistr.RecordType==0 and CredManPayPlanrw.ToDate>lastinv) then begin
-            lastinv = AddDay(CredManPayPlanrw.ToDate,1);
+          if (CredHistr.RecordType==0 and CredHistr.CredToDate>lastinv) then begin
+            lastinv = AddDay(CredHistr.CredToDate,1);
           end;
         end;
       end;
@@ -1370,7 +1370,6 @@ begin
   if (!foundf) then begin
     balance = CredManr.InvSum4;
   end;
-  
   if (balance>0) then begin
     SetupLoanInvoice(CredManr,CMb,IVr,td,lastinv,td,true,false,"",1,true);
     AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td);
