@@ -1838,7 +1838,8 @@ begin
   RecordField(DayLang2,M4Code,20,0);
   RecordField(YearCur2,M4Code,20,0);
   RecordField(DayCur2,M4Code,20,0);
-
+  RecordField(YearLangMin1,M4Code,20,0);
+  RecordField(YearLangMin2,M4Code,20,0);
   EndBlock;
 
   RecordBegin(DefConditionTextVc,-,"");

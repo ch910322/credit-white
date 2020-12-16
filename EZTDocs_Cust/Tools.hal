@@ -534,14 +534,17 @@ end;
 global
 function string 255 DateInWords(Date td,string langcode,Integer type)
 begin
-  string 255 yearstr,res;
+  string 255 yearstr,yearstr2,res;
   Integer pos;
-  string 255 daystr,monthstr,yl,yc,ml,mc,dl,dc;
+  string 255 daystr,monthstr,yl,yc,ml,mc,dl,dc,ylmin;
   record CMDateTextBlock DTb;
   Boolean foundf;
+  Longint tmp,pos2;
+  string 255 tres,tstr;
 
   BlockLoad(DTb);
   yl = GetFieldValueByName(DTb,"YearLang" & type,-1);
+  ylmin = GetFieldValueByName(DTb,"YearLangMin" & type,-1);
   yc = GetFieldValueByName(DTb,"YearCur" & type,-1);
   ml = GetFieldValueByName(DTb,"MonthLang" & type,-1);
   mc = GetFieldValueByName(DTb,"MonthCur" & type,-1);
@@ -549,11 +552,22 @@ begin
   dc = GetFieldValueByName(DTb,"DayCur" & type,-1);
 
   if (nonblank(yl) and nonblank(yc)) then begin
-    ValToText(GetYear(td),M4Val,yc,yl,yearstr);
+    tmp = GetYear(td);
+    tmp = tmp/100*100;
+    ValToText(tmp,M4Val,mc,yl,yearstr);
+    ValToText(GetYear(td)-tmp,M4Val,yc,ylmin,yearstr2);
     ValToText(GetMonth(td),M4Val,mc,ml,monthstr);
     ValToText(GetDay(td),M4Val,dc,dl,daystr);
-    res = yearstr & " " & monthstr & " " & daystr;
+    tres = yearstr & LowerCase(yearstr2) & monthstr & LowerCase(daystr);
     foundf = true;
+    while (GetNextSubString(tres,pos2," ",tstr)) begin
+      if (nonblank(tstr)) then begin
+        if (nonblank(res)) then begin
+          res = res & " ";
+        end;
+        res = res & tstr;
+      end;
+    end;
   end;
 
 
