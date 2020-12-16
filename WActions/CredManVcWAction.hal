@@ -20,7 +20,7 @@ remote procedure PrepareAgreementDocSigningSession(record AgreementDocVc,var str
 remote function Boolean GetAgreementDoc(record CredManVc,Integer,var record AgreementDocVc);
 remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc,var record IVVc,string,var val,Boolean,val);
 remote function Boolean GetAgreementDoc2(Longint,string,Integer,var record AgreementDocVc);
-remote updating procedure CredManPartialBuyoutDo(Date,val,Longint);
+remote updating procedure CredManPartialBuyoutDo(Date,val,Longint,var string);
 remote procedure GetPauseCredManNextDate(record CredManVc,var Date);
 remote updating procedure RecreateAgreementSchedule(record CredManVc);
 remote updating procedure RecreateAgreementSchedule2(record CredManVc,Boolean);
@@ -1156,16 +1156,21 @@ updating procedure RefinCredManPartialWClassSubmit()
 begin
   Integer wn;
   record RcVc RepSpec;
+  string 255 err;
 
   wn = CurWindow;
   DeselectWindow(wn,true);
   GetWindowRecord(wn,RepSpec);
   
   if (nonblank(RepSpec.d1) and RepSpec.vals0>0) then begin
-    CredManPartialBuyoutDo(RepSpec.d1,RepSpec.vals0,RepSpec.long1);
-    UpdateBrowses("CredManVc");
-    UpdateBrowses("CredHistVc");
-    CloseWindow(wn);
+    CredManPartialBuyoutDo(RepSpec.d1,RepSpec.vals0,RepSpec.long1,err);
+    if (nonblank(err)) then begin
+      MessageBox(0,err);
+    end else begin
+      UpdateBrowses("CredManVc");
+      UpdateBrowses("CredHistVc");
+      CloseWindow(wn);
+    end;
   end;
 
   return;

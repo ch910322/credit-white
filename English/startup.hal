@@ -201,6 +201,7 @@ begin
   SString(200108,"These Changes require Server Restart");
   SString(200109,"Can't pause becauce there is an Invoice already created");
   SString(200110,"Wrong Type for Credit Limit");
+  SString(200111,"Amount covers only due Invoices. Nothing left for buyout");
 
 /*Web Codes 200200-200230*/
   SString(200200,"Banner with this type already registered in these days");

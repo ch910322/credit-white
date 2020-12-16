@@ -1474,7 +1474,7 @@ begin
 end;
 
 global
-updating procedure CredManPartialBuyoutDo(Date td,val buyoutval,Longint sernr)
+updating procedure CredManPartialBuyoutDo(Date td,val buyoutval,Longint sernr,var string err)
 begin
   record CredManVc CredManr,oldCredManr;
   record SMVc SMr;
@@ -1493,7 +1493,7 @@ begin
   val lateamount;
   Date invdate,sd;
   val remsum;
-  record IPVc IPr;
+  record IPVc IPr,oldIPr;
   row IPVc IPrw;
   Integer i,rwcnt;
   array string 255 lateformula;
@@ -1539,6 +1539,13 @@ begin
       StoreLoanInvoice(IVr,CredManr);
     end;
 
+    IPr.TransDate = td;
+    IPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
+    IPr.RegDate = td;
+    IPr.OKFlag = 0;
+    IPr.PayMode = CIb.PaymentMode;
+    IPPastePayMode(IPr);
+
     remsum = buyoutval;
     GetCustomerLoanAmounts2(IPr,k,CredManr.Addr0,CredManr.CurncyCode,remsum,CredManr.CustCode,true,"","",invused,td,CredManr.SerNr);
     
@@ -1550,10 +1557,22 @@ begin
       end;
     end;
 
+    if (buyoutval-tval<=0) then begin
+      err = USetStr(200111);
+      goto LCredManPartialBuyoutDo;
+    end;
+
+
+    if (RecordStore(IPr,true)) then begin
+      RecordCopy(oldIPr,IPr);
+      IPr.OKFlag = 1;
+      RecordUpdate(oldIPr,IPr,true);
+    end;    
+
     //create a new invoice and creata receipt
     BlockLoad(CMb);
     BlockLoad(CIb);
-    SetupLoanInvoice(CredManr,CMb,IVr,CurrentDate,"","",true,false,"",1,true);
+    SetupLoanInvoice(CredManr,CMb,IVr,td,"","",true,false,"",1,true);
     GetItemName(CMb.InstalmentItem,spec);
     SetupInvoiceRowAndAdd(CredManr,IVr,CMb.InstalmentItem,spec,1,buyoutval-tval,blankval,1,-1);
     CM_AddPrepayments(IVr,CredManr,CIb);
@@ -1573,6 +1592,7 @@ begin
     end;
   end;
   
+LCredManPartialBuyoutDo:;
   return;
 end;
 
