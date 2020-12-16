@@ -1828,7 +1828,7 @@ begin
    
   BlockLoad(OCb);
   CredManr.OrderClass = OCb.TerminatedOrderClass;
-  CredManr.Status = 7;
+  CredManr.Status = 5;
 
   return;
 end;

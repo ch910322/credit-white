@@ -51,6 +51,7 @@ remote updating procedure GetCredManMoneyReceiverRecord(record CredManVc,var rec
 remote updating procedure CreatePaymentFakeReceipt(record CredManVc,record IVVc);
 remote procedure CheckBuyOutAgreementAsync(record CredManVc,Date,Integer);
 remote function Boolean HasCredManChanges(record CredManVc);
+remote function Boolean ContractHasHistory(record CredManVc);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -1766,6 +1767,7 @@ begin
   if (ReadFirstMain(CredManr,1,true)) then begin
     TerminateCredMan(CredManr);
     mwn = MotherWindow(wn);
+    PutWindowPrevRecord(mwn,CredManr);
     PutWindowRecord(mwn,CredManr);
     threadremote.TerminateCredManFinish(CredManr);
     PutWindowRecord(mwn,CredManr);
@@ -2321,6 +2323,11 @@ begin
   end;
   if (value==4) then begin
     if (UserCanAction("AllowDisburseCredMan",false)==false) then begin
+      res = false;
+    end;
+  end;
+  if (value==5) then begin
+    if (ContractHasHistory(CredManr)) then begin
       res = false;
     end;
   end;
