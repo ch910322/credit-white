@@ -2297,6 +2297,25 @@ begin
   return;
 end;
 
+window SellAgreementWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v; 
+
+  WindowBegin("Terminate Agreement",SellAgreementWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,300,150);
+  AutoSizeWindow(false);  
+  EditFieldTL(150,v=6,90,"Percentage of Loan",M4Val,Normal,0,vals0,false,0);
+  HalPushButton(-260,-30,-160,-10,"SellAgreementWClassProceed","Sell");
+  HalPushButton(-120,-30,-20,-10,"SchedYesNoWClassClose","No");
+  EndWindow;
+
+  return;
+end;
+
+
+
 window CMPropertyLClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin

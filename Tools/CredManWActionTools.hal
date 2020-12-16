@@ -60,7 +60,7 @@ external function Boolean HasSuretyPerson();
 external procedure DistributeCredHistValues(var record IPVc,Integer);
 external procedure AddInstalmentFixed(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,val,Date,var val,var val,Date,Date);
 external procedure GetBuyOutData(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var Date,var val);
-
+external inner procedure IVVc_PastePrice(var record IVVc,record IVVc,Integer,var string);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -583,9 +583,12 @@ begin
   return;
 end;
 
-updating procedure CreditAndOKInvoice(Longint ivnr)
+updating procedure CreditAndOKInvoice(Longint ivnr,val prc)
 begin
-  record IVVc IVr,IVCreditr,oldIVr;
+  record IVVc IVr,IVCreditr,oldIVr,IV2r;
+  string 255 warning;
+  Integer i,rwcnt;
+  row IVVc IVrw;
 
   IVr.SerNr = ivnr;
   if (ReadFirstMain(IVr,1,true)) then begin
@@ -595,6 +598,19 @@ begin
       end;
       IVCreditr.CustCredManNr = IVr.CustCredManNr;
       IVCreditr.SerNr = NextSerNr("IVVc",IVCreditr.InvDate,-1,false,"");
+      if (prc<100) then begin
+        rwcnt = MatRowCnt(IVCreditr);
+        for (i=0;i<rwcnt;i=i+1) begin
+          MatRowGet(IVCreditr,i,IVrw);
+          if (nonblank(IVrw.ArtCode)) then begin
+            if (IVrw.Price>0) then begin
+              IVrw.Price = IVrw.Price * prc / 100;
+              MatRowPut(IVCreditr,i,IVrw);
+              IVVc_PastePrice(IVCreditr,IV2r,i,warning);
+            end;
+          end;
+        end;
+      end;
       if (RecordInsert(IVCreditr,true)) then begin
         RecordCopy(oldIVr,IVCreditr);
         IVCreditr.OKFlag = 1;
@@ -606,7 +622,7 @@ begin
   return;
 end;
 
-updating procedure CreditCredManInvoices(record CredManVc CredManr)
+updating procedure CreditCredManInvoices(record CredManVc CredManr,val prc)
 begin
   Boolean TrHs;
   record CredHistVc CredHistr;
@@ -632,7 +648,7 @@ begin
     ARr.InvoiceNr = StringToLongint(invarr[i]);
     if (ReadFirstMain(ARr,1,true)) then begin
       if (ARr.RVal>0) then begin
-        CreditAndOKInvoice(ARr.InvoiceNr);
+        CreditAndOKInvoice(ARr.InvoiceNr,prc);
       end;
     end;
   end;
@@ -656,7 +672,7 @@ begin
     if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
       CreateRefinCredMan(RepSpec,nCredManr,CredManr);
       DoBuyOutAgreement(CredManr,IVr);
-      CreditCredManInvoices(CredManr);
+      CreditCredManInvoices(CredManr,100);
       res = true;
     end;
   end;
@@ -1789,7 +1805,7 @@ begin
 end;
 
 global
-updating procedure TerminateCredMan(var record CredManVc CredManr)
+updating procedure TerminateCredMan(var record CredManVc CredManr,val prc)
 begin
   val calcbal,balance,cumint;
   Date lastinv,td;
@@ -1815,7 +1831,7 @@ begin
     StoreLoanInvoice(IVr,CredManr);
   end;
 
-  CreditCredManInvoices(CredManr);
+  CreditCredManInvoices(CredManr,prc);
   ReadFirstMain(CredManr,1,true);
 
   return;

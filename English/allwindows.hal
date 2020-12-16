@@ -1308,6 +1308,7 @@ begin
   SpecialMenu("Refinance Agreement",' ',9,"RefinCredManDsm");
   SpecialMenu("Generate Schedule",' ',9,"CredManGenScheduleDsm");
   SpecialMenu("Terminate",' ',9,"CredManTerminateDsm");
+  SpecialMenu("Sell Agreement",' ',9,"CredManSellDsm");
   
   
 //CUST-END
