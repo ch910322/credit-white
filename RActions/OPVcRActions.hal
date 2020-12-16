@@ -37,7 +37,7 @@ begin
         if (VIr.CustCredManNr>-1) then begin
           if (ReadFirstMain(CredManr,1,true)) then begin
             int_type = GetInterestPaymentType(CredManr);
-            if (int_type==1) then begin
+            if (int_type==2) then begin
               CreateCredHist(OPr.SerNr,16,VIr.VECode,OPrw.RecVal,5,"",OPr.TransDate,VIr.CustCredManNr,OPr.TransDate,histnr,"","",1,-1,OPrw.RecVal,-1,blankval);
               UpdateCredHistBalance(VIr.CustCredManNr,OPr.SerNr,5);
               updf = true;
@@ -54,7 +54,7 @@ begin
         if (ReadFirstMain(CredManr,1,true)) then begin
           if (blank(CredManr.MoneyTransferDate)) then begin
             RecordCopy(oldCredManr,CredManr);
-            if (CIb.MoneyTransferDateOP==1) then begin
+            if (int_type==1) then begin
               CredManr.MoneyTransferDate = OPr.PayDate;
             end;
             if (checkf==false or AgreementPaidOut(CredManr)) then begin

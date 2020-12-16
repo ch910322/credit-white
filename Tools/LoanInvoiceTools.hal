@@ -916,14 +916,15 @@ begin
         lastd2 = AddDay(lastd,1);//to get the start date for penalty calculation.
         lastd = CredManPayPlanrw.TransDate;
         SetupLoanInvoice(CredManr,CMb,IVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno,GetInvoiceType(CredManr,lastd),true);
-        logtext(0,"ddd2 " & IVr.SerNr);
 
       end;
+/* not needed. this is done when creating the actual plan
       if (CredManPayPlanrw.PlanType==kEventTypeCalcInterest) then begin
         if (CredManr.RealInterestFlag==1) then begin
           CredManPayPlanrw.Sum = CredManPayPlanrw.Sum*GetPaidAmountRatio(CredManr,IVr.InvDate);
         end;
       end;
+*/
       SetupInvoiceRowAndAdd(CredManr,IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
 
     end;
@@ -1045,14 +1046,15 @@ begin
     GetItemName(CMb.DepositItem,spec);
     SetupInvoiceRowAndAdd(CredManr,IVr,CMb.DepositItem,spec,1,CSrw.Deposit,blankval,kEventTypeCalcInstalment,-1);
   end;
+/* this is done when creating the actual plan
   if (CSrw.Interest>0) then begin
     GetItemName(CMb.RateItem,spec);
     if (CredManr.RealInterestFlag==1) then begin
       CSrw.Interest = CSrw.Interest*GetPaidAmountRatio(CredManr,IVr.InvDate);
     end;
-
     SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,CSrw.Interest,blankval,kEventTypeCalcInterest,-1);
   end;
+*/
   if (CSrw.Fees>0) then begin
     UnpackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
     rwcnt = MatRowCnt(FMr);
@@ -2064,7 +2066,7 @@ begin
   TrHs = true;
   CredHistr.CredManNr = CredManr.SerNr;
   int_type = GetInterestPaymentType(CredManr);
-  if (int_type==1) then begin
+  if (int_type==2) then begin
     balance = 0;
   end else begin
     balance = CredManr.InvSum4;
@@ -2083,7 +2085,7 @@ begin
       if (CredHistr.RecordType==4) then begin//partial buyout
         balance = balance - CredHistr.Sum;
       end;
-      if (CredHistr.RecordType==5 and int_type==1) then begin//payment
+      if (CredHistr.RecordType==5 and int_type==2) then begin//payment
         balance = balance + CredHistr.Sum;
       end;
       firstf = true;
@@ -2282,7 +2284,7 @@ begin
   if (ReadFirstMain(CredManr,1,true)) then begin
     RepSpec.d1 = CurrentDate;
     int_type = GetInterestPaymentType(CredManr);
-    if (int_type==0 or AgreementPaidOut(CredManr)) then begin
+    if (int_type!=2 or AgreementPaidOut(CredManr)) then begin
       CheckBuyOutAgreement(CredManr,RepSpec);
       if (RepSpec.vals2==0) then begin
         BlockLoad(OCb);

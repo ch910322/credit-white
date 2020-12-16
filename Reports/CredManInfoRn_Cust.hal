@@ -413,7 +413,7 @@ begin
   Integer int_type;
 
   int_type = GetInterestPaymentType(CredManr);
-  if (int_type==1) then begin
+  if (int_type==2) then begin
     calcbal = 0;
   end else begin
     calcbal = CredManr.InvSum4;
@@ -435,7 +435,7 @@ begin
             case 4:
               AddBuyOutToList(CredHistr.Sum,CredHistr.TransDate,SMr,calcbal);
             case 5:
-              if (int_type==1) then begin
+              if (int_type==2) then begin
                 AddPayOutToList(CredHistr.Sum,CredHistr.TransDate,SMr,calcbal);
               end;
             otherwise
@@ -475,7 +475,7 @@ begin
   if (ReadFirstMain(CSr,1,true)) then begin
     res = true;
     int_type = GetInterestPaymentType(CredManr);
-    if (int_type==1) then begin
+    if (int_type==2) then begin
       calcbal = 0;
     end else begin
       calcbal = CredManr.InvSum4;
@@ -556,7 +556,7 @@ begin
   StartFormat(15);
   OutString(0,0,USetStr(17303),false);
   int_type = GetInterestPaymentType(CredManr);
-  if (int_type==1) then begin
+  if (int_type==2) then begin
     OutVal(1,0,0,M4Val,true);
   end else begin
     OutVal(1,0,CredManr.InvSum4,M4Val,true);

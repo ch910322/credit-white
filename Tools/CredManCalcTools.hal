@@ -327,7 +327,7 @@ begin
   record CredHistVc CredHistr;
   Boolean TrHs;
   
-  if (nonblank(frdate) and int_type==1 and calcbal>0) then begin
+  if (nonblank(frdate) and int_type==2 and calcbal>0) then begin
     sendmonthtypef = kMonthTypeFirst;
     CredHistr.TransDate = frdate;
     TrHs = true;
@@ -337,7 +337,7 @@ begin
       end else begin
         if (CredHistr.RecordType==5) then begin
           AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.IntRate,0,CredHistr.TransDate,todate,CredHistr.Sum,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
-          if (int_type==1) then begin
+          if (CredManr.BuyoutFeePrc>0) then begin
             AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.BuyoutFeePrc,0,frdate,CredHistr.TransDate,CredHistr.Sum,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
           end;
         end;
@@ -901,7 +901,7 @@ begin
           lastrecnr = CredHistr.RecordNr;
         end;
       end;
-      if (CredHistr.RecordType==5 and int_type==1 and CredHistr.TransDate<=lastinvdate) then begin
+      if (CredHistr.RecordType==5 and int_type==2 and CredHistr.TransDate<=lastinvdate) then begin
         calcbal = calcbal + CredHistr.Sum;
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,"","",kEventTypePayout,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,openamount);
         usesum = calcbal;
@@ -1240,7 +1240,7 @@ begin
   RecordCopy(inCredManr,CredManr);
   //inCredManr.SerNr = -1;
   inCredManr.InstalmentType = 1;
-  if (int_type==1) then begin
+  if (int_type==2) then begin
     inCredManr.InstalmentType = 3;
   end;
   BuildCredManPayPlanCust(inCredManr,CredManPayPlanr,CredManSetb,true,true);
@@ -1262,7 +1262,7 @@ begin
   Boolean TrHs;
   
   addbal = 0;
-  if (int_type==1) then begin
+  if (int_type==2) then begin
     TrHs = true;
     CredHistr.TransDate = frdate;
     while (LoopKey("CredManTransDate:" & CredManr.SerNr,CredHistr,1,TrHs)) begin
@@ -1315,7 +1315,7 @@ LCalcSchedule:;
   months = inCredManr.InstalmentMonths;
   acumint = 0;
   int_type = GetInterestPaymentType(inCredManr);
-  if (int_type==1) then begin
+  if (int_type==2) then begin
     calcbal = 0;
   end else begin
     calcbal = inCredManr.InvSum4;
@@ -1343,7 +1343,7 @@ LCalcSchedule:;
 
   LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths);
   for(i=calculatedmonths;i<months;i=i+1) begin
-    if (calcbal>0 or int_type==1) then begin
+    if (calcbal>0 or int_type==2) then begin
       CalcCredManCurrentPeriod(inCredManr,CIb,i-1,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
       LoadAgreementChangesMonthly(inCredManr,invdat);
       if (i!=0) then begin
@@ -1436,7 +1436,7 @@ LCalcSchedule:;
           AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype,invdat,acumint,calcbal,frdat,todat,-1,false);
           AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1,false);
           AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,addbal,int_frdat,int_todat,-1,false,int_type);
-          if (int_type==1) then begin
+          if (int_type==2) then begin
             AddUnusedInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1,false);
           end;
           if (i==months-1) then begin

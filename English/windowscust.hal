@@ -2139,9 +2139,10 @@ begin
   Checkbox(h,v,0,"Update when creating Payment",MoneyTransferDateVI);
   Checkbox(h,v+=16,0,"Update when Invoices are paid",MoneyTransferDateOP);
 
-  ButtonFrame(h,v+=40,270,2,"Interest according to Money Transfer Date");
-  RadioButton(h,v,0,0,"No",RealInterestFlag);
-  RadioButton(h,v+=16,1,0,"Yes",RealInterestFlag);
+  ButtonFrame(h,v+=40,200,3,"Interest based on");
+  RadioButton(h,v,0,0,"Start Date",RealInterestFlag);
+  RadioButton(h,v+=16,1,0,"Full Disbursement",RealInterestFlag);
+  RadioButton(h,v+=16,2,0,"Each Disbursement",RealInterestFlag);
 
   EndWindow;
   return;
