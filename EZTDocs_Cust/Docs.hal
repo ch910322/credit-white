@@ -510,11 +510,13 @@ begin
   record CUVc ContactCUr,CEOCUr;
   record B2BLoanApplicationVc LAr;
   record RLinkVc RLr;
+  record CMApplicationSetBlock CMb;
   Boolean foundf;
   record UserVc Userr;
   Integer surnum;
   string 255 sc;
   
+  BlockLoad(CMb);
   CUr.Code = CredManr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
   end;
@@ -681,6 +683,15 @@ begin
   ValToText(prolong,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
   vVals["F_PROLONGINTEXT"] = tstr;
   vVals["F_OVERDUEPRC"] = CredManr.OverduePercentage;
+  ValToText(CredManr.OverduePercentage,M4Val,CredManr.CurncyCode,CMb.NumberLangCode,tstr);
+  vVals["F_OVERDUEPRCINWORDS"] = tstr;
+  vVals["F_BUYOUTFEEPRC"] = CredManr.BuyoutFeePrc;
+  if (CredManr.BuyoutFeePrc>0) then begin
+    ValToText(CredManr.BuyoutFeePrc,M4Val,CredManr.CurncyCode,CMb.NumberLangCode,tstr);
+    vVals["F_BUYOUTFEEPRCINWORDS"] = tstr;
+  end else begin
+    vVals["F_BUYOUTFEEPRCINWORDS"] = "Netaikoma";
+  end;
   vVals["F_OTHERCONDITIONS"] = CredManr.OtherConditions;
 
   surnum = 1;

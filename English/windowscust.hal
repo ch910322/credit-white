@@ -157,7 +157,6 @@ begin
   if (HasB2BCreateOffer) then begin  
     EditField(h,v+=vs,100,"Offer Email Text",Normal,EmailOfferText,false,LTxtSClass);
     EditField(h,v+=vs,100,"Offer Email Row Text",Normal,EmailOfferTextRow,false,LTxtSClass);
-
   end;
   EditField(h,v+=vs,100,"Schudule Text",Normal,ScheduleText,false,LTxtSClass);
   EditField(h,v+=vs,100,"Mailing List",Normal,MailingList,false,PersColSClass);
@@ -166,6 +165,7 @@ begin
   EditField(h,v+=30,100,"Document Signer",Normal,DocumentSigner,false,UserSClass);
   EditField(h,v+=vs,100,"Signer's Job Description",Normal,DocumentSignerPosition,false,0);
   EditField(h,v+=30,100,"Invoice Signer",Normal,InvoiceSigner,false,UserSClass);
+  EditField(h,v+=30,100,"Language for Numbers",Normal,NumberLangCode,false,LangSClass);
 
   if (UseCredManStatus) then begin
     CheckBox(h,v+=30,0,"Automatically pause Agreements",AutoPauseCredMan);
