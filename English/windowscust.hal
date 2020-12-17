@@ -2797,7 +2797,7 @@ window InvegaFundRClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v;
-  WindowBegin("Specify Credit Agreements report",InvegaFundRClass,CGRcW,RcType);
+  WindowBegin("Specify Governmental Fund Report",InvegaFundRClass,CGRcW,RcType);
   SetWRect(20,80,440,150);
   PeriodField(h=140,v=6,"Period");
   EditFieldTL(h,v+=20,150,"Type",M4UStr,Normal,90,f1,false,CredManTypeSClass);
@@ -2805,6 +2805,9 @@ begin
   EditFieldTL(h,v+=20,150,"Classifications",M4UStr,Normal,255,f3,false,CredManClassSClass);
   EditFieldTL(h,v+=20,150,"Manager",M4Code,Normal,255,f4,false,UserSClass);
   EditFieldTL(h,v+=20,150,"Type Classifictions",M4UStr,Normal,255,f5,false,CredManClassSClass);
+  ButtonFrame(h,v+=40,150,2,"Type");
+  RadioButton(h,v,0,0,"Invega Fund Report",ArtMode);
+  RadioButton(h,v+=16,1,0,"Garfondas Fund Report",ArtMode); 
   
   EndWindow;
 end;

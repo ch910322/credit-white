@@ -56,7 +56,7 @@ begin
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
 	Report("Application Overview",LoanApplicationListRClass,LoanApplicationListRn,0,modCredMan);
-	Report("Invega Fund Report",InvegaFundRClass,InvegaFundRn,0,modCredMan);
+	Report("Governmental Fund Report",InvegaFundRClass,InvegaFundRn,0,modCredMan);
 
 	Report("Income Analysis",EBSIncomeAnalysisRClass,EBSIncomeAnalysisRn,0,modCredMan);
 	Report("Income Forecast",CMIncomeForecastRClass,CMIncomeForecastRn,0,modCredMan);
