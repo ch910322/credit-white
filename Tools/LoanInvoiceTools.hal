@@ -1554,7 +1554,7 @@ begin
 	rwcnt = MatRowCnt(CredManPayPlanr);
 	for (i=0;i<rwcnt;i=i+1) begin
 		MatRowGet(CredManPayPlanr,i,CredManPayrw);
-    if (CredManPayrw.PlanType>=5) then begin
+    if (CredManPayrw.PlanType>=5 and CredManPayrw.PlanType!=9) then begin
       if (res>CredManPayrw.Bal) then begin
         res = CredManPayrw.Bal;
       end;
