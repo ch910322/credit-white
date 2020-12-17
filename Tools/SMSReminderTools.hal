@@ -5,6 +5,7 @@ external inner function Boolean PasteCuInAct(var record ActVc,var string);
 external inner function Boolean PasteActTypeInAct2(string,var record ActVc,var string);
 external updating procedure Cust_SetReminderStatus(record SMSReminderQueueVc,Integer);
 external inner function string 255 CredManOwnBankAccount(Longint,var string,var string,var string);
+external inner function LongInt DateDiff(Date,Date);
 
 enum begin
   kMaxCheckDays = 3
@@ -69,6 +70,8 @@ begin
         res = RepSpec.vals2;
       case "BankAccount":
         res = RepSpec.f5;
+      case "AgreementList":
+        res = RepSpec.f6;
     end;
   end;
 
@@ -298,6 +301,25 @@ LSendSMSReminder:;
   return;
 end;
 
+procedure ReplaceHTMLText(area htmlarea,var area reshtml,string searchstr,string replacestr)
+begin
+  Longint pos;
+  area html1,html2;
+  
+  pos = FindStringInArea(searchstr,htmlarea);
+  if (pos>0) then begin
+    GetAreaFromArea(htmlarea,0,pos,html1);
+    GetAreaFromArea(htmlarea,pos+len(searchstr),GetAreaLength(htmlarea)-pos-len(searchstr),html2);
+    AddAreaToArea(html1,reshtml);
+    AddTextToArea(replacestr,reshtml);
+    AddAreaToArea(html2,reshtml);
+  end else begin
+    AddAreaToArea(htmlarea,reshtml);
+  end;
+
+  return;
+end;
+
 global
 updating function Boolean DoSendEmailReminder(record SMSReminderVc SMSReminder,record RcVc RepSpec,string custcode)
 begin
@@ -310,9 +332,12 @@ begin
   row EMailQueVc emarw;
   record CYBlock CYb;
   record ARVc ARr;
-  record LTxtVc LTxtr;
+  record LTxtVc LTxtr,Ltxt2r;
   Boolean res;
   Boolean foundf;
+  area htmlarea,reshtml;
+  record Attach2Vc Attachr;
+  record RLinkVc RLr;
   
   CUr.Code = custcode;
   if (ReadFirstMain(CUr,1,true)) then begin
@@ -368,12 +393,23 @@ begin
     emqrp.Lifespan = 0;
     emqrp.QueDate = CurrentDate;
     emqrp.QueTime = CurrentTime;
+    emqrp.HtmlFlag = LTxtr.HtmlFlag;
 
     if (RecordInsert(emqrp,false)) then begin
       if (foundf) then begin
-        CopyRecordLinks(LTxtr,emqrp);
+        //CopyRecordLinks(LTxtr,emqrp);
         if (LTxtr.HtmlFlag==1) then begin
-          ParseHtmlField(emqrp,RepSpec,"SMSReminderEQueueVcReplaceToken");
+          if (ReadRecordLink(LTxtr,1,Attachr,RLr)) begin
+            AddAttachFileToArea(Attachr,htmlarea,false);
+            ReplaceHTMLText(htmlarea,reshtml,"<!--invoicelist-->",RepSpec.f7);
+            //AddAreaToTextField(reshtml,LTxt2r);
+            //AddToHtmlRecord(Ltxt2r,true,emqrp,true,true);
+            WriteAreaToFile(reshtml,"tmp/body.html",0);
+            RecordLinkFile("tmp/body.html",0,emqrp,0);
+            Delete_File("tmp/body.html");
+            ParseHtmlField(emqrp,RepSpec,"SMSReminderEQueueVcReplaceToken");
+          end;
+
         end;
       end;
     end;
@@ -528,13 +564,44 @@ begin
   return;
 end;
 
+function string 255 GetInvoiceTable(string invlist,var string agreementlist)
+begin
+  string 255 res,tmp;
+  record IVVc IVr;
+  record ARVc ARr;
+  Integer days;
+  Longint pos;
+
+  while (GetNextSubString(invlist,pos,",",tmp)) begin
+    IVr.SerNr = StringToLongint(tmp);
+    if (ReadFirstMain(IVr,1,true)) then begin
+      ARr.InvoiceNr = IVr.SerNr;
+      if (ReadFirstMain(ARr,1,true)) then begin
+        days = DateDiff(CurrentDate,IVr.PayDate);
+        res = res "<tr><td>" & IVr.SerNr & "</td><td>" & IVr.InvDate & "</td><td>" & IVr.Sum4 & "</td><td>" & IVr.PayDate & "</td><td>" & days & "</td><td>" & ARr.RVal & "</td></tr>";
+        if (IVr.CustCredManNr>0) then begin
+          if (SetInSet(IVr.CustCredManNr,agreementlist)==false) then begin
+            if (nonblank(agreementlist)) then begin
+              agreementlist = agreementlist & ",";
+            end;
+            agreementlist = agreementlist & IVr.CustCredManNr;
+          end;
+        end;
+      end;
+    end;
+  end;
+  
+  GetInvoiceTable = res;
+  return;
+end;
+
 updating procedure SendSingleSMS3(record SMSReminderVc SMSReminder,record ORVc ORr,row ORVc ORrw,Integer days,Date sd,Date ed)
 begin
   record SMSReminderQueueVc SRQr;
   Boolean sentf;
   Longint pos;
   record RcVc RepSpec;
-  string 255 list;
+  string 255 list,tablelist,agreementlist;
   
   RecordNew(SRQr);
   SRQr.SerNr = NextSerNr("SMSReminderQueueVc",CurrentDate,-1,false,"");
@@ -552,6 +619,9 @@ begin
   RepSpec.f4 = list;
   RepSpec.vals2 = ORrw.Price;
   RepSpec.f5 = ORrw.ShipNote;
+  tablelist = GetInvoiceTable(ORrw.UnitComment,agreementlist);
+  RepSpec.f6 = agreementlist;
+  RepSpec.f7 = tablelist;
   RepSpec.searchstr = ORr.Addr0;
 
 
@@ -629,7 +699,7 @@ begin
   return;
 end;
 
-procedure AddInvoiceToReminderArr(record IVVc IVr,var array record ORVc arrORr)
+procedure AddInvoiceToReminderArr(record IVVc IVr,var array record ORVc arrORr,Integer peracc)
 begin
   Integer i,rwcnt,rownum,num;
   record ARVc ARr;
@@ -656,7 +726,7 @@ LAddInvoiceToReminderArr:;
   rwcnt = MatRowCnt(ORr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(ORr,i,ORrw);
-    if (ORrw.ShipNote==bankacc) then begin
+    if (ORrw.ShipNote==bankacc or peracc==0) then begin
       rownum = i;
       goto LAddInvoiceToReminderArrRow;
     end;
@@ -799,7 +869,7 @@ LFindAndSendInvoiceReminders_overdue:;
             if (testf) then begin
               if (ReminderAlreadySent(IVr.SerNr,SMSReminder.SerNr)==false) then begin
                 //queued.Cust_SendReminder2(SMSReminder,IVr);
-                AddInvoiceToReminderArr(IVr,arrORr);
+                AddInvoiceToReminderArr(IVr,arrORr,SMSReminder.PerBankAcc);
               end;
             end;
           end;
@@ -819,7 +889,7 @@ LFindAndSendInvoiceReminders_overdue:;
             if (SetInSet(ARr.InvoiceNr,ORr.Addr1)==false) then begin
               IVr.SerNr = ARr.InvoiceNr;
               if (ReadFirstMain(IVr,1,true)) begin
-               AddInvoiceToReminderArr(IVr,arrORr);
+               AddInvoiceToReminderArr(IVr,arrORr,SMSReminder.PerBankAcc);
               end;
             end;
           end;

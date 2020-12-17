@@ -56,3 +56,16 @@ begin
   HasSuretyPerson = false;
   return;
 end;
+
+global
+function string 255 NovitiGetEmailSender()
+begin
+  string 255 res;
+  record MailSettingsBlock MSb;
+
+  BlockLoad(MSb);
+  res = MSb.FromSystem;
+
+  NovitiGetEmailSender = res;
+  return;
+end;
