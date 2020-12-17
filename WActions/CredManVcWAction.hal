@@ -2351,11 +2351,21 @@ function LongInt CredManVcRecordDefaultsClient(LongInt wn,var record CredManVc C
 begin
   LongInt res;
   record CMInterfaceSetBlock ISb;
+  Integer mwn,num;
+  string 255 wstr;
   
   BlockLoad(ISb);
   if (CredManr.LoanType==0) then begin
-    CredManr.LoanType = ISb.DefCredManLoanType;
-    RerunWindowDef(wn);
+    wstr = GetWindowClass(wn);
+    if (wstr=="CredManDClass") then begin
+      CredManr.LoanType = ISb.DefCredManLoanType;
+      //RerunWindowDef(wn);//this will not work now
+    end else begin
+      num = StringToInt(mid(wstr,7,1));
+      if (num>0) then begin
+        CredManr.LoanType = num;
+      end;
+    end;
   end;
   
 
@@ -2406,12 +2416,19 @@ function Boolean CredManDClassLoanTypeButtonAction(Integer wn,Integer value)
 begin
   record CredManVc CredManr;
   Boolean res;
+  Integer mwn;
 
   res = true;
   GetWindowRecord(wn,CredManr);
   if (value==7) then begin
     CredManr.InstalmentType = 3;
     PutWindowRecord(wn,CredManr);
+  end;
+
+  if (value>0) then begin
+    mwn = MotherWindow(wn);
+    CloseWindow(wn);
+    OpenWindow("CredMan" & value & "DClass",1,mwn,"","",CredManr);
   end;
 
 
