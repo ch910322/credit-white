@@ -255,7 +255,7 @@ begin
   return;
 end;
 
-procedure PrintBOESureties(var vector string vVals,record CredManVc CredManr,Integer tnum,string rw)
+procedure PrintBOESureties(var vector string vVals,record CredManVc CredManr,Integer tnum,string rw,var Integer gnum)
 begin
   record BOESuretyVc BSr;
   Integer num;
@@ -267,7 +267,7 @@ begin
   BSr.BOENum = tnum;
   if (ReadFirstMain(BSr,2,true)) then begin
     while (GetNextSurety(BSr,SCUr,num)) begin
-      M4PadString(num,3,"0",true,strnum);
+      M4PadString(gnum,3,"0",true,strnum);
       vVals["ROW" & rw & "_" & strnum & "_F_BOESURNAME"] = GetFieldValueByName(BSr,"Surety" & num & "Name",-1);
       vVals["ROW" & rw & "_" & strnum & "_F_BOESURID"] = SCUr.RegNr1;
       Ext_OutAddress(vVals,"ROW" & rw & "_" & strnum & "_F_BOESURADDRESS",SCUr.Name,SCUr.InvAddr0,SCUr.InvAddr1,SCUr.InvAddr2,SCUr.InvAddr3,SCUr.InvAddr4);
@@ -278,6 +278,7 @@ begin
       vVals["ROW" & rw & "_" & strnum & "_F_BOESURDATE"] = GetFieldValueByName(BSr,"Surety" & num & "Date",-1);
       
       vVals["ROW" & rw & "_" & strnum & "_F_BOESURCOND"] = GetConditionsText2(CredManr,0,tnum & ":" & num);
+      gnum = gnum + 1;
     end;
   end;
 
@@ -514,7 +515,8 @@ begin
   Boolean foundf;
   record UserVc Userr;
   Integer surnum;
-  string 255 sc;
+  string 255 sc,strnum;
+  Integer gnum;
   
   BlockLoad(CMb);
   CUr.Code = CredManr.CustCode;
@@ -697,15 +699,16 @@ begin
   surnum = 1;
   sc = GetFieldValueByName(CredManr,"Surety" & surnum & "Code",-1);
   while (nonblank(sc)) begin
-    PrintCredManSureties(vVals,CredManr,surnum,"ROW2_");
-    surnum = surnum + 1;
+    M4PadString(surnum-1,3,"0",true,strnum);
+    PrintCredManSureties(vVals,CredManr,surnum,"ROW2_" & strnum);
     sc = GetFieldValueByName(CredManr,"Surety" & surnum & "Code",-1);
   end;
 
   surnum = 1;
+  gnum = 0;
   sc = GetFieldValueByName(CredManr,"BOE" & surnum & "Code",-1);
   while (nonblank(sc)) begin
-    PrintBOESureties(vVals,CredManr,surnum,"3");
+    PrintBOESureties(vVals,CredManr,surnum,"3",gnum);
     surnum = surnum + 1;
     sc = GetFieldValueByName(CredManr,"BOE" & surnum & "Code",-1);
   end;
@@ -1090,6 +1093,7 @@ begin
   string 255 strnum;
   record CredManTypeVc CMTr;
   Date enddate;
+  Integer gnum;
 
 
   Ext_CommonDocumentFields(vVals);
@@ -1106,7 +1110,7 @@ begin
     tstr = DateInWords(td,CredManr.LangCode,2);
     vVals["F_CONTACTDATEINWORDS"] = tstr;
 
-    PrintBOESureties(vVals,CredManr,gBOENumber,"");
+    PrintBOESureties(vVals,CredManr,gBOENumber,"",gnum);
   end else begin
     GetSuretyValues2(CredManr,1,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
     vVals["F_CONTACTNAME"] = name;
