@@ -880,20 +880,21 @@ begin
           case 4: 
             type = kEventTypePartialBuyout;
             buyoutamount = buyoutamount + CredHistr.Sum;
+            usesum = calcbal;
           otherwise
             PrevCredHistr.SerNr = CredHistr.PreviousNr;
             ReadFirstMain(PrevCredHistr,1,true);
             type = GetCredHistType(PrevCredHistr.ArtCode,-1,true);          
         end;
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,CredHistr.ArtCode,"",type,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,openamount);
-        usesum = calcbal;
+        //usesum = calcbal;
         if (CredHistr.RecordType==0) then begin
           if (IsInitialInvoice(CredManr,CredHistr.TransDate,lastrecnr,vFirstInv[CredHistr.RecordNr])) then begin
             firstinvf = true;
             vFirstInv[CredHistr.RecordNr] = true;//we can have multiple records for single invoice. so we need to store that this invoice is the initial invoice
           end else begin
-            if (CredHistr.RecordType==0 and CredHistr.ArtCode!=CredManSetb.LateRateItem) then begin//invoice
-              if (CredHistr.TransDate>CredManr.FirstInvDate) then begin
+            if (CredHistr.ArtCode!=CredManSetb.LateRateItem) then begin//invoice
+              if (CredHistr.PayDate>=CredManr.FirstInvDate) then begin//trans date is not correct, but pay date is not ideal as well
                 calculatedmonths = MonthDiff(CredManr.FirstInvDate,CredHistr.TransDate)+1;
               end;
             end;
@@ -908,7 +909,6 @@ begin
       end;
     end;
   end;
-
   if (buyoutamount>0) then begin
     //if (CredManr.InstalmentType==2 or CredManr.InstalmentType==6 or CredManr.InstalmentType==7) then begin
       monthlypayment = (CredManr.InvSum4-CredManr.DepositSum)/(CredManr.InstalmentMonths-CredManr.PrincipleDelayMonths);
@@ -1278,6 +1278,7 @@ begin
       end;
     end;
   end;
+  
 
   return;
 end;
