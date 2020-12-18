@@ -6,6 +6,7 @@ external inner function Boolean PasteActTypeInAct2(string,var record ActVc,var s
 external updating procedure Cust_SetReminderStatus(record SMSReminderQueueVc,Integer);
 external inner function string 255 CredManOwnBankAccount(Longint,var string,var string,var string);
 external inner function LongInt DateDiff(Date,Date);
+external inner function string 255 StrReplace(string,string,string);
 
 enum begin
   kMaxCheckDays = 3
@@ -72,6 +73,8 @@ begin
         res = RepSpec.f5;
       case "AgreementList":
         res = RepSpec.f6;
+      case "BankText":
+        res = RepSpec.f8;
     end;
   end;
 
@@ -641,6 +644,75 @@ begin
   return;
 end;
 
+
+updating procedure SendSingleSMS4(record SMSReminderVc SMSReminder,record ORVc ORr,Integer days,Date sd,Date ed)
+begin
+  record SMSReminderQueueVc SRQr;
+  Boolean sentf;
+  Longint pos,l;
+  record RcVc RepSpec;
+  string 255 list,tablelist,agreementlist,bankfulltext,tstr,notetext;
+  record NotePadVc Noter;
+  record RLinkVc RLr;
+  Integer rwcnt,i;
+  row ORVc ORrw;
+  
+  RecordNew(SRQr);
+  SRQr.SerNr = NextSerNr("SMSReminderQueueVc",CurrentDate,-1,false,"");
+
+  SRQr.InvoiceList = ORr.Addr1;
+  SRQr.InvDate = CurrentDate;
+  SRQr.ReminderNr = SMSReminder.SerNr;
+  SRQr.SentFlag = 1;
+  SRQr.CheckDays = days;
+  SRQr.StartDate = sd;
+  SRQr.EndDate = ed;
+  RecordInsert(SRQr,true);
+  list = ORrw.Price & " " & ORrw.ShipNote;//
+
+  if (ReadRecordLink(SMSReminder,1,Noter,RLr)) begin
+    pos = 0;
+    l = SizeTextCnt(Noter);
+    while (pos<l) begin
+      notetext = notetext & StringFromText(Noter,pos,255);
+      pos = pos + 255;
+    end;
+    rwcnt = MatRowCnt(ORr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(ORr,i,ORrw);
+      bankfulltext = bankfulltext & notetext;
+      bankfulltext = StrReplace(bankfulltext,"?BankAmount?",ORrw.Price);    
+      bankfulltext = StrReplace(bankfulltext,"?BankAcc?",ORrw.ShipNote);  
+    end;  
+  end;
+
+    
+  RepSpec.f4 = list;
+  RepSpec.vals2 = ORrw.Price;
+  RepSpec.f5 = ORrw.ShipNote;
+  tablelist = GetInvoiceTable(ORrw.UnitComment,agreementlist);
+  RepSpec.f6 = agreementlist;
+  RepSpec.f7 = tablelist;
+  RepSpec.f8 = bankfulltext;
+  RepSpec.searchstr = ORr.Addr0;
+
+
+  if (SMSReminder.ReminderType==0) then begin
+    sentf = DoSendSMSReminder(SMSReminder,RepSpec,ORr.CustCode,SRQr.SerNr);
+  end else begin
+    sentf = DoSendEmailReminder(SMSReminder,RepSpec,ORr.CustCode);
+  end;
+
+  if (!sentf) then begin
+    SRQr.SentFlag = 3;
+    RecordStore(SRQr,true);
+    CreateFailedReminderActivity(SMSReminder,ORr.CustCode);
+  end;
+
+
+  return;
+end;
+
 global
 updating procedure Cust_SendReminder3(record ORVc ORr,record SMSReminderVc SMSReminder,Integer days,Date sd,Date ed)
 begin
@@ -648,19 +720,15 @@ begin
   Integer i,rwcnt;
   row ORVc ORrw;
 
-  rwcnt = MatRowCnt(ORr);
-  for (i=0;i<rwcnt;i=i+1) begin
-    MatRowGet(ORr,i,ORrw);
-    /*
-    if (i>0) then begin
-      list = list & chr(10);
+  if (SMSReminder.PerBankAcc==0) then begin
+    rwcnt = MatRowCnt(ORr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(ORr,i,ORrw);
+      SendSingleSMS3(SMSReminder,ORr,ORrw,days,sd,ed);
     end;
-    list = list & ORrw.Price & " " & ORrw.ShipNote;
-    */
-    SendSingleSMS3(SMSReminder,ORr,ORrw,days,sd,ed);
-
+  end else begin
+    SendSingleSMS4(SMSReminder,ORr,days,sd,ed);
   end;
-
 
   return;
 end;
