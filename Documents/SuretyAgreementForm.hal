@@ -53,14 +53,19 @@ function Boolean FindContactWithJobTitle(string custcode,var record CUVc CUr,str
 begin
   record ContactRelVc CRr;
   Boolean res;
+  Longint pos;
+  string 255 tmp;
  
   while (LoopKey("CustContactCode:" & custcode,CRr,1,true)) begin
     if (CRr.Invalid==0) then begin
       CUr.Code = CRr.ContactCode;
       if (ReadFirstMain(CUr,1,true)) then begin
-        if (SetInSet(CUr.JobDesc,title)) then begin
-          res = true;
-          goto LFindContactWithJobTitle;
+        pos = 0;
+        while (GetNextSubString(CUr.JobDesc,pos,",",tmp)) begin
+          if (SetInSet(tmp,title)) then begin
+            res = true;
+            goto LFindContactWithJobTitle;
+          end;
         end;
       end;
     end;
