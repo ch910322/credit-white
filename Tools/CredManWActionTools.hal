@@ -416,7 +416,7 @@ begin
         CreateProlongInvoice(CredManr,IVr);
       end;
       if (RepSpec.flags[3]==0) then begin
-        if (tmonths>0 or tprolongmonths>0) then begin
+        if (tmonths>0 or tprolongmonths>0 or rate>0) then begin
           CreatePauseRecord(CredManr.SerNr,td,tmonths,tprolongmonths,rate,1);
         end;
         CredManSetDatesCust(CredManr,false);

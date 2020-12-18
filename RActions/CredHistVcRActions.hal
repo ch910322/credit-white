@@ -189,7 +189,7 @@ begin
       if (ReadFirstMain(CredManr,1,true)) then begin
         ndate = GetInvoicePaidDate(histnr);
         RecordCopy(oldCredManr,CredManr);
-        if (PSr.PauseMonths>0 or PSr.ProlongMonths>0) then begin
+        if (PSr.PauseMonths>0 or PSr.ProlongMonths>0 or PSr.IntRate>0) then begin
           ApprovePauseRecord(CredManr.SerNr,PSr.PauseDate,ndate,PSr.PauseMonths,PSr.ProlongMonths);
         end;
         /*
