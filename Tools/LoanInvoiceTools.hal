@@ -2185,6 +2185,7 @@ begin
   record CredFeesMatrixVc FMr;
   val bal;
   transaction Boolean gSilenceIVOpenPrepExists;
+  Integer int_type;
   
 logtext(0,"GenerateAgreementSchedule1");
   gSilenceIVOpenPrepExists = true;
@@ -2210,7 +2211,12 @@ logtext(0,"GenerateAgreementSchedule1");
   BlockLoad(CMb);
   BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
   BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CMb,SMr);
-  bal = CredManr.InvSum4;
+  int_type = GetInterestPaymentType(CredManr);
+  if (int_type==2) then begin
+    bal = 0;
+  end else begin
+    bal = CredManr.InvSum4;
+  end;
   rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(SMr,i,SMrw);
@@ -2218,28 +2224,33 @@ logtext(0,"GenerateAgreementSchedule1");
     CSrw.InvDate = SMrw.TransDate;
     CSrw.PayDate = SMrw.DueDate;
     CSrw.Type = SMrw.RowSimStat;
-    if (CSrw.Type==4) then begin
-      CSrw.Total = SMrw.CurDebVal;
-      CSrw.Invoiced = 1;
-      bal = bal - CSrw.Total;
-      CSrw.Balance = bal;
-//      CSrw.Principle = SMrw.CurDebVal;
-    end else begin
-      CSrw.FromDate = SMrw.Objects;
-      CSrw.ToDate = SMrw.Comment;
-      CSrw.Principle = SMrw.DebVal - SMrw.ToRateB1;
-      CSrw.Deposit = SMrw.ToRateB1;
-      bal = bal - CSrw.Principle - CSrw.Deposit;
-      CSrw.Balance = bal;
-      CSrw.Interest = SMrw.CredVal;
-      CSrw.Fees = SMrw.DebVal2;
-      UnpackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
-      PackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
-      CSrw.Total = SMrw.CurDebVal;
-      if (nonblank(SMrw.ExtraComment)) then begin
+    switch (CSrw.Type) begin
+      case 4:
+        CSrw.Total = SMrw.CurDebVal;
         CSrw.Invoiced = 1;
-        CSrw.InvoiceNr = SMrw.ExtraComment;
-      end;
+        bal = bal - CSrw.Total;
+        CSrw.Balance = bal;
+      case 5:
+        CSrw.Principle = SMrw.DebVal;
+        bal = bal + CSrw.Principle;
+        CSrw.Invoiced = 1;
+        CSrw.Balance = bal;
+      otherwise
+        CSrw.FromDate = SMrw.Objects;
+        CSrw.ToDate = SMrw.Comment;
+        CSrw.Principle = SMrw.DebVal - SMrw.ToRateB1;
+        CSrw.Deposit = SMrw.ToRateB1;
+        bal = bal - CSrw.Principle - CSrw.Deposit;
+        CSrw.Balance = bal;
+        CSrw.Interest = SMrw.CredVal;
+        CSrw.Fees = SMrw.DebVal2;
+        UnpackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
+        PackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
+        CSrw.Total = SMrw.CurDebVal;
+        if (nonblank(SMrw.ExtraComment)) then begin
+          CSrw.Invoiced = 1;
+          CSrw.InvoiceNr = SMrw.ExtraComment;
+        end;
     end;
     MatRowPut(CSr,rw,CSrw);
     rw = rw + 1;

@@ -339,7 +339,6 @@ begin
   calcbal = calcbal + sum;
   ClearRow(SMr,SMrw,1);
   SMrw.TransDate = td;
-  SMrw.DueDate = td;
   SMrw.RowSimStat = 5;//type
   SMrw.DebVal = sum;
   SMrw.CurCredVal = calcbal;
@@ -491,7 +490,7 @@ begin
         case 4:
           AddBuyOutToList(CSrw.Total,CSrw.InvDate,SMr,calcbal);
         case 5:
-          AddPayOutToList(CSrw.Total,CSrw.InvDate,SMr,calcbal);
+          AddPayOutToList(CSrw.Principle,CSrw.InvDate,SMr,calcbal);
       end;
     end;
     TestInvoiceBasedOnSchedule(CredManr,CSr,CredManr.endDate,aIVr);
@@ -572,7 +571,7 @@ begin
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(SMr,i,SMrw);
     StartFormat(15);
-    if (CMb.CMInfoReportDate==0) then begin
+    if (CMb.CMInfoReportDate==0 or SMrw.RowSimStat==5) then begin
       OutString(0,0,SMrw.TransDate,false);
     end else begin
       OutString(0,0,SMrw.DueDate,false);

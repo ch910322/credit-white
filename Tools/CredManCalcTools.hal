@@ -838,7 +838,7 @@ begin
     if (CredHistr.CredManNr!=CredManr.SerNr) then begin
       TrHs = false;
     end else begin
-      if (CredHistr.RecordType==0) then begin
+      if (CredHistr.RecordType==0 and (CredHistr.ChargeType==kEventTypeIssueInstalment or CredHistr.ChargeType==kEventTypeIssueInterest)) then begin
         if (CredHistr.TransDate>res) then begin
           res = CredHistr.TransDate;
         end;
@@ -901,7 +901,7 @@ begin
           lastrecnr = CredHistr.RecordNr;
         end;
       end;
-      if (CredHistr.RecordType==5 and int_type==2 and CredHistr.TransDate<=lastinvdate) then begin
+      if (CredHistr.RecordType==5 and int_type==2 and (CredHistr.TransDate<=lastinvdate and nonblank(lastinvdate))) then begin
         calcbal = calcbal + CredHistr.Sum;
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,"","",kEventTypePayout,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,openamount);
         usesum = calcbal;
@@ -1346,12 +1346,12 @@ LCalcSchedule:;
     if (calcbal>0 or int_type==2) then begin
       CalcCredManCurrentPeriod(inCredManr,CIb,i-1,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
       LoadAgreementChangesMonthly(inCredManr,invdat);
-      if (i!=0) then begin
+      //if (i!=0) then begin
         UpdateAgreementBalance(CredManPayPlanr,inCredManr,calcbal,acumint,frdat,todat,usesum,int_type,addbal);
         if (addbal>0) then begin
           usemonths = months - i;
         end;
-      end;
+      //end;
       int_calcbal = calcbal - addbal;
       if (GetDay(invdat)!=inCredManr.MonthlyPaymentDay) then begin
         CalcCredManCurrentPeriod(inCredManr,CIb,i-1,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates,   frdat, todat and invdat
