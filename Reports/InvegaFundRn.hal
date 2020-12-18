@@ -9,6 +9,8 @@ external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var v
 external inner function roundmode SetRoundMOdeD(integer);
 external inner function string 255 FindFirstContactPersonWithEmail(record CUVc);
 external function Boolean IsNovitiCustomer;
+external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
+external inner procedure StripSpace(var string,string);
 
 function string 255 GetCompanyType(record CUVc CUr,record InvegaReportBlock IRb)
 begin
@@ -519,6 +521,36 @@ begin
   return;
 end;
 
+procedure GetPeriodBalances(record CredManVc CredManr,record CredManSetBlock CredManSetb,Date sd,Date ed,var val unpaidstartbal,var val periodbal,var val paidstartbal,var val paidperiodbal)
+begin
+	val res;
+	record CredManPayPlanVc CredManPayr;
+	row CredManPayPlanVc CredManPayrw;
+	Integer rwcnt,i;
+  val open;
+  
+	res = blankval;
+	BuildCredManPayPlanCust(CredManr,CredManPayr,CredManSetb,true,false);
+	rwcnt = MatRowCnt(CredManPayr);
+	for (i=0;i<rwcnt;i=i+1) begin
+		MatRowGet(CredManPayr,i,CredManPayrw);
+    if (CredManPayrw.PlanType==5) then begin
+      if (CredManPayrw.TransDate<=sd) then begin
+        unpaidstartbal = unpaidstartbal + CredManPayrw.OpenAmount;
+        paidstartbal = paidstartbal + (CredManPayrw.Sum-CredManPayrw.OpenAmount);
+      end;
+      if (DateInRange(CredManPayrw.TransDate,sd,ed)) then begin
+        periodbal = periodbal + CredManPayrw.Sum;
+        paidperiodbal = paidperiodbal + (CredManPayrw.Sum-CredManPayrw.OpenAmount);
+      end;
+    end;
+  end;
+  
+  
+
+  return;
+end;
+
 procedure DisplayGarfondasReport(record RcVc RepSpec)
 begin
   record InvegaReportBlock IRb;
@@ -539,7 +571,7 @@ begin
   Boolean checkf;
   Integer transcnt;
   val totinterest,totprinciplelateamount,totinterestlateamount,totendbal,totpaid,totsum;
-
+  val unpaidstartbal,periodbal,paidstartbal,paidperiodbal,totunpaidstartbal,totperiodbal,totpaidstartbal,totpaidperiodbal;
 
   num = 0;
   for (i=0;i<26;i=i+1) begin
@@ -615,7 +647,8 @@ begin
       GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,5,principlelatedays,principlelateamount);
       GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,6,interestlatedays,interestlateamount);
       GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,9,overdueslatedays,overdueslateamount);
-      
+      GetPeriodBalances(CredManr,CredManSetb,RepSpec.sStartDate,RepSpec.sEndDate,unpaidstartbal,periodbal,paidstartbal,paidperiodbal);
+
       overduesign = "Ne";
       if (principlelatedays>90 or interestlatedays>90 or overdueslatedays>90 or CUr.OnHoldFlag==1) then begin
         overduesign = "Taip";
@@ -639,26 +672,20 @@ begin
       totsum = totsum + CredManr.InvSum4;
       OutString(p[9],0,paidval,false);
       totpaid = totpaid + paidval;
-      while (GetNextSubString(translist,pos,",",tmp)) begin
-        if (checkf) then begin
-          for (i=0;i<10;i=i+1) begin   
-            StartFormat(15);       
-            OutString(p[i],0,"",false);
-          end;
-        end;
+      checkf = false;
+      pos = 0;
+      if (GetNextSubString(translist,pos,",",tmp)) begin
         OutString(p[10],0,tmp,false);
-        transcnt = transcnt + 1;
-        checkf = true;
-      end;
-      if (transcnt>1) then begin
-        EndFormat;
       end;
 //what about these 4?
-      OutString(p[11],0,endbal,false);
-      OutString(p[12],0,CredManr.endDate,false);
-      OutString(p[13],0,startbal,false);
-      OutString(p[14],0,translist,false);
-
+      OutString(p[11],0,unpaidstartbal,false);
+      OutString(p[12],0,periodbal,false);
+      OutString(p[13],0,paidstartbal,false);
+      OutString(p[14],0,paidperiodbal,false);
+      totunpaidstartbal = totunpaidstartbal + unpaidstartbal;
+      totperiodbal = totperiodbal + periodbal;
+      totpaidstartbal = totpaidstartbal + paidstartbal;
+      totpaidperiodbal = totpaidperiodbal + paidperiodbal;
 
       OutString(p[16],0,endbal,false);
       totendbal = totendbal + endbal;
@@ -676,6 +703,15 @@ begin
       totinterestlateamount = totinterestlateamount + interestlateamount;
       EndFormat;
       cnt = cnt + 1;
+      if (GetNextSubString(translist,pos,",",tmp)) begin
+        StartFormat(15);       
+        for (i=0;i<10;i=i+1) begin  
+          OutString(p[i],0,"",false);
+        end;
+        StripSpace(tmp,tmp);
+        OutString(p[10],0,tmp,false);
+        EndFormat;
+      end;
     end;
   end; 
 
@@ -691,10 +727,10 @@ begin
   OutString(p[8],0,totsum,false);
   OutString(p[9],0,totpaid,false);
   OutString(p[10],0,"",false);
-  OutString(p[11],0,12,false);
-  OutString(p[12],0,13,false);
-  OutString(p[13],0,14,false);
-  OutString(p[14],0,15,false);
+  OutString(p[11],0,totunpaidstartbal,false);
+  OutString(p[12],0,totperiodbal,false);
+  OutString(p[13],0,totpaidstartbal,false);
+  OutString(p[14],0,totpaidperiodbal,false);
   OutString(p[16],0,totendbal,false);
   OutString(p[17],0,"",false);
   OutString(p[18],0,totinterest,false);
@@ -702,6 +738,7 @@ begin
   OutString(p[20],0,"",false);
   OutString(p[21],0,totinterestlateamount,false);
   EndFormat;
+
 
   return;
 end;
