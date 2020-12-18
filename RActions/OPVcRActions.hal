@@ -35,6 +35,7 @@ begin
       if (ReadFirstMain(VIr,1,true)) then begin
         CredManr.SerNr = VIr.CustCredManNr;
         if (VIr.CustCredManNr>-1) then begin
+          credmannr = VIr.CustCredManNr;
           if (ReadFirstMain(CredManr,1,true)) then begin
             int_type = GetInterestPaymentType(CredManr);
             if (int_type==2) then begin
@@ -42,7 +43,6 @@ begin
               UpdateCredHistBalance(VIr.CustCredManNr,OPr.SerNr,5);
               updf = true;
               checkf = true;
-              credmannr = VIr.CustCredManNr;
             end;
           end;
 
@@ -52,16 +52,16 @@ begin
         ResetLoop(CredManr);
         CredManr.SerNr = credmannr;
         if (ReadFirstMain(CredManr,1,true)) then begin
-          if (blank(CredManr.MoneyTransferDate)) then begin
-            RecordCopy(oldCredManr,CredManr);
-            if (int_type==1) then begin
+          RecordCopy(oldCredManr,CredManr);
+          if (int_type==1) then begin
+            if (blank(CredManr.MoneyTransferDate)) then begin
               CredManr.MoneyTransferDate = OPr.PayDate;
             end;
-            if (checkf==false or AgreementPaidOut(CredManr)) then begin
-              CredManr.Status = 4;
-            end;
-            RecordUpdate(oldCredManr,CredManr,true);
           end;
+          if (checkf==false or AgreementPaidOut(CredManr)) then begin
+            CredManr.Status = 4;
+          end;
+          RecordUpdate(oldCredManr,CredManr,true);
         end;
       end;
     end;

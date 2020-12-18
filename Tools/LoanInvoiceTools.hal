@@ -2264,7 +2264,7 @@ begin
       calcbal = calcbal + CredHistr.Sum;
     end;
   end;
-  if (CredManr.InvSum4>=calcbal) then begin
+  if (CredManr.InvSum4<=calcbal) then begin
     res = true;
   end;
 
