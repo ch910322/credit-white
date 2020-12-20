@@ -232,3 +232,12 @@ begin
   end;
   return;
 end;
+
+global
+procedure IVToMailMn_CUST(record RcVc RepSpec)
+begin
+
+  threadasync.IVToMailMn(RepSpec);
+
+  return;
+end;
