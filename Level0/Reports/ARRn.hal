@@ -463,6 +463,11 @@ L22:;
                 end;
               end;
             end;
+//CUST-BEGIN
+            if (nonblank(RepSpec.AccStr)) then begin
+              CheckInvoiceDebtorsAC(RepSpec.AccStr,IVr,rvalb1);//just to get rvalb1
+            end;
+//CUST-END
             if (IVr.InvType==kInvoiceTypeCredit or IVr.InvType==kInvoiceTypeCreditSpecialSales) then begin
               test2f = false;
               if (IVr.CredInv==-1) then begin test2f = true; end;
