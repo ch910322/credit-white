@@ -1699,6 +1699,7 @@ begin
     case 14: res = type;//prolong fee
     case 15: res = type;//extra fee
     case 16: res = type;//payment made
+    case 17: res = type;//sold agreement
     otherwise
       res = type + 4;
   end;
@@ -2264,18 +2265,19 @@ logtext(0,"GenerateAgreementSchedule2");
 end;
 
 global
-function Boolean AgreementPaidOut(record CredManVc CredManr)
+function Boolean AgreementPaidOut(record CredManVc CredManr,var val paidout)
 begin
   Boolean res;
   record CredHistVc CredHistr;
   val calcbal;
 
+  paidout = 0;
   while (LoopKey("CredManTransDate:" & CredManr.SerNr,CredHistr,1,true)) begin
     if (CredHistr.RecordType==5) then begin//payment
-      calcbal = calcbal + CredHistr.Sum;
+      paidout = paidout + CredHistr.Sum;
     end;
   end;
-  if (CredManr.InvSum4<=calcbal) then begin
+  if (CredManr.InvSum4<=paidout) then begin
     res = true;
   end;
 
@@ -2290,12 +2292,13 @@ begin
   record CredManVc CredManr,oldCredManr;
   record RcVc RepSpec;
   Integer int_type;
+  val paidout;
 
   CredManr.SerNr = credmannr;
   if (ReadFirstMain(CredManr,1,true)) then begin
     RepSpec.d1 = CurrentDate;
     int_type = GetInterestPaymentType(CredManr);
-    if (int_type!=2 or AgreementPaidOut(CredManr)) then begin
+    if (int_type!=2 or AgreementPaidOut(CredManr,paidout)) then begin
       CheckBuyOutAgreement(CredManr,RepSpec);
       if (RepSpec.vals2==0) then begin
         BlockLoad(OCb);

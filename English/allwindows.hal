@@ -729,7 +729,7 @@ begin
   if (type!=4 and type!=5) then begin
     EditField(h,v+=vs,30,"Months",Normal,InstalmentMonths,false,0);
   end;
-  if (type==1 or type==4 or type==5 or type==7) then begin
+  if (type==1 or type==4 or type==5 or type==7 or type==8) then begin
     EditField(h,v+=vs,30,"Monthly Paym. Day",Normal,MonthlyPaymentDay,false,0);
   end;
 //CUST-BEGIN
@@ -747,7 +747,7 @@ begin
     end;
   end;
   th = h;
-  if (type==1 or type==3 or type==7) then begin
+  if (type==1 or type==3 or type==7 or type==8) then begin
     if (type==3 or HideLoanPledges==false) then begin
       HalPushButton(h-50,v+=vs,h+70,v+20,"CredManDClassOpenProperties","Pledges");
       th = h + 140;
@@ -802,7 +802,7 @@ begin
   if (UseBuyOutMonths) then begin
     EditField(h3,v+=vs,72,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
   end else begin
-    if (type==7) then begin
+    if (type==7 or type==8) then begin
       EditField(h3,v+=vs,72,"Not Used Amount Fee %",Normal,BuyoutFeePrc,true,0);
     end else begin
       EditField(h3,v+=vs,72,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);

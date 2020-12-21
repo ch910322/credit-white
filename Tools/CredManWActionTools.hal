@@ -119,25 +119,6 @@ begin
   return;
 end;
 
-/*
-global
-updating procedure TerminateCredMan(var record CredManVc CredManr,var record IVVc IVr)
-begin
-  record CMOrderClassBlock OCb;
-  record CredManVc oldCredManr;
-   
-  BlockLoad(OCb);
-
-  if (nonblank(OCb.TerminatedOrderClass)) then begin
-    DoBuyOutAgreement(CredManr,IVr);
-    RecordCopy(oldCredManr,CredManr);
-    CredManr.OrderClass = OCb.TerminatedOrderClass;
-    RecordUpdate(oldCredManr,CredManr,true);
-  end;
-
-  return;
-end;
-*/
 
 global
 procedure CredManSetDatesCust(var record CredManVc CredManr,Boolean allf)
@@ -583,7 +564,7 @@ begin
   return;
 end;
 
-updating procedure CreditAndOKInvoice(Longint ivnr,val prc)
+updating procedure CreditAndOKInvoice(Longint ivnr,val prc,var val credval)
 begin
   record IVVc IVr,IVCreditr,oldIVr,IV2r;
   string 255 warning;
@@ -611,6 +592,7 @@ begin
           end;
         end;
       end;
+      credval = credval + IVr.Sum1;
       if (RecordInsert(IVCreditr,true)) then begin
         RecordCopy(oldIVr,IVCreditr);
         IVCreditr.OKFlag = 1;
@@ -622,7 +604,7 @@ begin
   return;
 end;
 
-updating procedure CreditCredManInvoices(record CredManVc CredManr,val prc)
+updating procedure CreditCredManInvoices(record CredManVc CredManr,val prc,var val credval)
 begin
   Boolean TrHs;
   record CredHistVc CredHistr;
@@ -631,6 +613,7 @@ begin
   record ARVc ARr;
   Integer i;
 
+  credval = 0;
   TrHs = true;
   CredHistr.CredManNr = CredManr.SerNr;
   while (LoopKey("CredManChargeType",CredHistr,1,TrHs)) begin
@@ -648,7 +631,7 @@ begin
     ARr.InvoiceNr = StringToLongint(invarr[i]);
     if (ReadFirstMain(ARr,1,true)) then begin
       if (ARr.RVal>0) then begin
-        CreditAndOKInvoice(ARr.InvoiceNr,prc);
+        CreditAndOKInvoice(ARr.InvoiceNr,prc,credval);
       end;
     end;
   end;
@@ -663,6 +646,7 @@ begin
   record IVVc IVr;
   record CredManVc CredManr,oldCredManr;
   Boolean res;
+  val credval;
   
   CredManr.SerNr = RepSpec.long1;
   if (ReadFirstMain(CredManr,1,true)) then begin
@@ -672,7 +656,7 @@ begin
     if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
       CreateRefinCredMan(RepSpec,nCredManr,CredManr);
       DoBuyOutAgreement(CredManr,IVr);
-      CreditCredManInvoices(CredManr,100);
+      CreditCredManInvoices(CredManr,100,credval);
       res = true;
     end;
   end;
@@ -1825,7 +1809,7 @@ begin
 end;
 
 global
-updating procedure TerminateCredMan(var record CredManVc CredManr,val prc)
+updating procedure TerminateCredMan(var record CredManVc CredManr,val prc,string custcode)
 begin
   val calcbal,balance,cumint;
   Date lastinv,td;
@@ -1835,8 +1819,13 @@ begin
   row CredManPayPlanVc CredManPayPlanrw;
   record CredManPayPlanVc CredManPayPlan2r;
   record CredManPayPlanVc CredManPayPlanr;
+  record CMInvoicingBlock CIb;
+  record CredManVc tCredManr;
+  val credval;
+  string 255 spec;
    
   BlockLoad(CMb);
+  BlockLoad(CIb);
   BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
   GetBuyOutData(CredManr,CredManPayPlanr,CMb,lastinv,balance);
   td = CurrentDate;
@@ -1851,8 +1840,19 @@ begin
     StoreLoanInvoice(IVr,CredManr);
   end;
 
-  CreditCredManInvoices(CredManr,prc);
+  CreditCredManInvoices(CredManr,prc,credval);
   ReadFirstMain(CredManr,1,true);
+
+  if (nonblank(custcode) and credval>0) then begin
+    RecordClear(IVr);
+    RecordNew(IVr);
+    RecordCopy(tCredManr,CredManr);
+    tCredManr.CustCode = custcode;
+    SetupLoanInvoice(tCredManr,CMb,IVr,CurrentDate,"","",true,false,"",1,true);
+    GetItemName(CIb.SellingItem,spec);
+    SetupInvoiceRowAndAdd(CredManr,IVr,CIb.SellingItem,spec,1,credval,blankval,17,-1);
+    StoreLoanInvoice(IVr,CredManr);
+  end;
 
   return;
 end;

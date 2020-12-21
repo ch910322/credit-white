@@ -1,6 +1,6 @@
 remote updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc,string);
 remote procedure PasteCustInAgreementRemote(var record CredManVc,var string);
-remote updating procedure TerminateCredMan(var record CredManVc,val);
+remote updating procedure TerminateCredMan(var record CredManVc,val,string);
 remote procedure TerminateCredManFinish(var record CredManVc);
 //remote updating procedure TerminateCredMan(var record CredManVc,var record IVVc);//old implementation
 remote updating procedure DoBuyOutAgreement(record CredManVc,var record IVVc);
@@ -52,6 +52,7 @@ remote updating procedure CreatePaymentFakeReceipt(record CredManVc,record IVVc)
 remote procedure CheckBuyOutAgreementAsync(record CredManVc,Date,Integer);
 remote function Boolean HasCredManChanges(record CredManVc);
 remote function Boolean ContractHasHistory(record CredManVc);
+remote function Boolean AgreementPaidOut(record CredManVc,var val);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -594,29 +595,6 @@ begin
   end;
   return;
 end;
-
-/*
-global
-updating procedure TerminateCredManDsm()
-begin
-  Integer wn;
-  record CredManVc CredManr;
-  record IVVc IVr;
-
-  wn = CurWindow;
-  if (WindowState(wn)==Rs_Normal) then begin
-    GetWindowRecord(wn,CredManr);
-    TerminateCredMan(CredManr,IVr);
-    PutWindowRecord(wn,CredManr);
-    SetWindowState(wn,Rs_Normal);
-    if (IVr.SerNr>0) then begin
-      OpenWindow("IVDClass",1,0,"","",IVr);
-    end;
-  end;
-
-  return;
-end;
-*/
 
 global
 updating procedure BuyOutCredManDsm()
@@ -1607,16 +1585,26 @@ begin
   Integer wn,mwn;
   record RcVc RepSpec;
   record CredManVc CredManr;
+  val paidout;
 
   wn = CurWindow;
   DeselectWindow(wn,true);
   GetWindowRecord(wn,RepSpec);
   mwn = MotherWindow(wn);
   GetWindowRecord(mwn,CredManr);
+
+  if (CredManr.LoanType==8) then begin
+    AgreementPaidOut(CredManr,paidout);
+    if (paidout+RepSpec.vals1>CredManr.InvSum4) then begin
+      MessageBox(200112,"");
+      goto LCredManMakePaymentWithAmount;
+    end;
+  end;
   CloseWindow(wn);
   
   CredManMakePayment(mwn,CredManr,RepSpec.flags[10]==0,"",RepSpec.vals1);
 
+LCredManMakePaymentWithAmount:;
   return;
 end;
 
@@ -1641,7 +1629,7 @@ begin
       RepSpec.ArtMode = 1;
       nwn = OpenWindow("CredManInvNoWClass",0,wn,"","",RepSpec);
     end else begin
-      if (CredManr.LoanType==7) then begin
+      if (CredManr.LoanType==7 or CredManr.LoanType==8) then begin
         OpenWindow("CredManPaymentWClass",0,wn,"","",RepSpec);
       end else begin
         CredManMakePayment(wn,CredManr,true,"",0);
@@ -1676,7 +1664,7 @@ begin
       RepSpec.flags[10] = 1;
       nwn = OpenWindow("CredManInvNoWClass",0,wn,"","",RepSpec);
     end else begin
-      if (CredManr.LoanType==7) then begin
+      if (CredManr.LoanType==7 or CredManr.LoanType==8) then begin
         RepSpec.flags[10] = 1;
         OpenWindow("CredManPaymentWClass",0,wn,"","",RepSpec);
       end else begin
@@ -1770,7 +1758,7 @@ begin
   
   CredManr.SerNr = RepSpec.long1;
   if (ReadFirstMain(CredManr,1,true)) then begin
-    TerminateCredMan(CredManr,100);
+    TerminateCredMan(CredManr,100,"");
     mwn = MotherWindow(wn);
     PutWindowPrevRecord(mwn,CredManr);
     PutWindowRecord(mwn,CredManr);
@@ -1819,9 +1807,14 @@ begin
     WindowFieldGoto(wn,RepSpec,-1,"vals0",true);
     goto LCredManSellWClassProceed;
   end;
+  if (blank(RepSpec.f1)) then begin
+    MessageBox(1058,"");
+    WindowFieldGoto(wn,RepSpec,-1,"f1",true);
+    goto LCredManSellWClassProceed;
+  end;
   CredManr.SerNr = RepSpec.long1;
   if (ReadFirstMain(CredManr,1,true)) then begin
-    TerminateCredMan(CredManr,RepSpec.vals0);
+    TerminateCredMan(CredManr,RepSpec.vals0,RepSpec.f1);
     mwn = MotherWindow(wn);
     PutWindowPrevRecord(mwn,CredManr);
     PutWindowRecord(mwn,CredManr);
@@ -2420,7 +2413,7 @@ begin
 
   res = true;
   GetWindowRecord(wn,CredManr);
-  if (value==7) then begin
+  if (value==7 or value==8) then begin
     CredManr.InstalmentType = 3;
     PutWindowRecord(wn,CredManr);
   end;
@@ -2446,7 +2439,7 @@ begin
   GetWindowRecord(wn,CredManr);
   switch (fieldname) begin
     case "InstalmentType":
-      if (CredManr.LoanType==7) then begin
+      if (CredManr.LoanType==7 or CredManr.LoanType==8) then begin
         res = 2031;
       end;
   end;

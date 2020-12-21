@@ -112,7 +112,7 @@ begin
   GetWindowRecord(wn,CMTr);
   switch (fieldname) begin
     case "InstalmentType":
-      if (CMTr.LoanType==7) then begin
+      if (CMTr.LoanType==7 or CMTr.LoanType==8) then begin
         res = 2031;
       end;
   end;

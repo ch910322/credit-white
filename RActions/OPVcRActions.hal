@@ -5,7 +5,8 @@ external updating procedure CreateCredHist(Longint,Integer,string,val,Integer,st
 external updating procedure UpdateCredHistBalance(Longint,Longint,Integer);
 external updating procedure RemoveCredHist(Longint,Integer);
 external function Integer GetInterestPaymentType(record CredManVc);
-external function Boolean AgreementPaidOut(record CredManVc);
+external function Boolean AgreementPaidOut(record CredManVc,var val);
+external procedure GenerateAgreementSchedule(record CredManVc,Boolean);
 
 updating procedure UpdateCredManPaymentDate(record OPVc OPr)
 begin
@@ -18,6 +19,7 @@ begin
   record VIVc VIr;
   Longint histnr,credmannr;
   Integer int_type;
+  record CredManSchedVc CSr;
 
   BlockLoad(CIb);
   rwcnt = MatRowCnt(OPr);
@@ -62,6 +64,10 @@ begin
           CredManr.Status = 4;
           //end;
           RecordUpdate(oldCredManr,CredManr,true);
+          CSr.CredManNr = CredManr.SerNr;
+          if (ReadFirstMain(CSr,1,true)) then begin
+            threadasync.GenerateAgreementSchedule(CredManr,true);
+          end;
         end;
       end;
     end;

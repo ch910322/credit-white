@@ -242,7 +242,7 @@ BEGIN
       goto LCredManVcRecordCheck;
     end;
   end;
-  if (CredManr.LoanType==7 and (CredManr.InstalmentType!=3 and CredManr.InstalmentType!=6)) then begin
+  if ((CredManr.LoanType==7 or CredManr.LoanType==8) and (CredManr.InstalmentType!=3 and CredManr.InstalmentType!=6)) then begin
     RecordCheckError(200110,"",-1,"InstalmentType");
     res = -1;
     goto LCredManVcRecordCheck;
