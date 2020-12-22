@@ -1057,15 +1057,13 @@ begin
     GetItemName(CMb.DepositItem,spec);
     SetupInvoiceRowAndAdd(CredManr,IVr,CMb.DepositItem,spec,1,CSrw.Deposit,blankval,kEventTypeCalcInstalment,-1);
   end;
-/* this is done when creating the actual plan
   if (CSrw.Interest>0) then begin
     GetItemName(CMb.RateItem,spec);
     if (CredManr.RealInterestFlag==1) then begin
-      CSrw.Interest = CSrw.Interest*GetPaidAmountRatio(CredManr,IVr.InvDate);
+//      CSrw.Interest = CSrw.Interest*GetPaidAmountRatio(CredManr,IVr.InvDate);
     end;
     SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,CSrw.Interest,blankval,kEventTypeCalcInterest,-1);
   end;
-*/
   if (CSrw.Fees>0) then begin
     UnpackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
     rwcnt = MatRowCnt(FMr);
