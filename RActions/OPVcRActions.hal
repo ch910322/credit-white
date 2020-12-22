@@ -7,6 +7,7 @@ external updating procedure RemoveCredHist(Longint,Integer);
 external function Integer GetInterestPaymentType(record CredManVc);
 external function Boolean AgreementPaidOut(record CredManVc,var val);
 external procedure GenerateAgreementSchedule(record CredManVc,Boolean);
+external function Boolean UseDisburseUntil();
 
 updating procedure UpdateCredManPaymentDate(record OPVc OPr)
 begin
@@ -97,6 +98,59 @@ BEGIN
   OPVcRecordUpdateAfter = res;
   return;
 end;
+
+function Boolean DisburseIsLate(record OPVc OPr,var Integer rownr)
+begin
+  Integer i,rwcnt;
+  row OPVc OPrw;
+  record VIVc VIr;
+  record CredManVc CredManr;
+  Boolean res;
+
+  rwcnt = MatRowCnt(OPr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(OPr,i,OPrw);
+    VIr.SerNr = OPrw.VISerNr;
+    if (ReadFirstMain(VIr,1,true)) then begin
+      if (VIr.CustCredManNr>-1) then begin
+        CredManr.SerNr = VIr.CustCredManNr;
+        if (ReadFirstMain(CredManr,1,true)) then begin
+          if (nonblank(CredManr.DisburseUntil) and CredManr.DisburseUntil<OPr.TransDate) then begin
+            res = true;
+            rownr = i;
+            i = rwcnt;
+          end;
+        end;
+      end;
+    end;
+  end;  
+
+  DisburseIsLate = res;
+  return;
+end;
+
+global
+updating function LongInt OPVcRecordCheck(var record OPVc OPr,record OPVc OP2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  Integer rownr;
+
+  res = 0;
+  if (UseDisburseUntil) then begin
+    if (DisburseIsLate(OPr,rownr)) then begin
+      RecordCheckError(200113,"",rownr,"VISerNr");
+      res = -1;
+      goto LOPVcRecordCheck;
+    end;
+  end;
+
+  res = inner.OPVcRecordCheck(OPr,OP2r,stat,long4);
+
+LOPVcRecordCheck:;
+  OPVcRecordCheck = res;
+  return;
+end;
+
 
 global
 updating function LongInt OPVcRecordSaveAfter(var record OPVc OPr,record OPVc OP2r,LongInt stat,LongInt long4)

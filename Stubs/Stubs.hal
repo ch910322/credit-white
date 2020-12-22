@@ -10,7 +10,7 @@ begin
 end;
 
 global
-function Boolean CanCredManMakePayment(record CredManVc CredManr)
+function Boolean CanCredManMakePayment(record CredManVc CredManr,var string errstr)
 begin
   Boolean res;
 
@@ -67,5 +67,12 @@ begin
   res = MSb.FromSystem;
 
   NovitiGetEmailSender = res;
+  return;
+end;
+
+global
+function Boolean UseDisburseUntil()
+begin
+  UseDisburseUntil = false;
   return;
 end;

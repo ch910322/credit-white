@@ -69,6 +69,7 @@ external outer function Boolean HasSuretyPerson();
 external outer function Boolean HasPaymentConditionTexts();
 external outer function Boolean HasOtherConditionTexts();
 external outer function Boolean HasSuretyConditionTexts();
+external outer function Boolean UseDisburseUntil();
 
 //CUST-END
 
@@ -779,6 +780,9 @@ begin
 //CUST-END
   EditField(h2,v+=vs,82,"End Date",ViewOnly,endDate,false,PasteCurDate);
 //CUST-BEGIN
+  if (UseDisburseUntil) then begin
+    EditField(h2,v+=vs,82,"Disburse Until",Normal,DisburseUntil,false,PasteCurDate);
+  end;
   if (CanEditCredManCreateDate) then begin
     EditField(h2,v+=vs,82,"Agreement Date",Normal,TransDate,false,PasteCurDate);
   end else begin

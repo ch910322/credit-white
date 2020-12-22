@@ -40,7 +40,7 @@ remote procedure InvLegalInvSerieSClassRemote(Date,Date,var array string);
 external inner procedure PasteFromSysList(Integer ,Integer);
 remote updating procedure CM_CreatePaymentOrder(record CredManVc,record VIVc,val);
 external function Boolean CheckForActiveAgreement(record CredManVc);
-external function Boolean CanCredManMakePayment(record CredManVc);
+external function Boolean CanCredManMakePayment(record CredManVc,var string);
 remote updating procedure GetCredManBOESuretyRecord(record CredManVc,var record BOESuretyVc,Integer);
 remote procedure InsertCredManDocSignerName(var record CredManVc,Integer);
 remote procedure PasteBOEInCredMan(var record CredManVc,string,Integer);
@@ -1619,11 +1619,12 @@ begin
   record RcVc RepSpec;
   record IVVc IVr;
   val sum;
+  string 255 errstr;
     
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
 
-  if (CanCredManMakePayment(CredManr)) then begin
+  if (CanCredManMakePayment(CredManr,errstr)) then begin
     BlockLoad(CIb);
     if (CIb.ManualInvoiceNumber==1) then begin
       RepSpec.ArtMode = 1;
@@ -1636,7 +1637,9 @@ begin
       end;
     end;
   end else begin
-    //MessageBox(200265,"");
+    if (nonblank(errstr)) then begin
+      MessageBox(0,errstr);
+    end;
   end;
 
   return;
@@ -1652,12 +1655,13 @@ begin
   record RcVc RepSpec;
   record IVVc IVr;
   val sum;
+  string 255 errstr;
     
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
 
 
-  if (CanCredManMakePayment(CredManr)) then begin
+  if (CanCredManMakePayment(CredManr,errstr)) then begin
     BlockLoad(CIb);
     if (CIb.ManualInvoiceNumber==1) then begin
       RepSpec.ArtMode = 1;
@@ -1672,7 +1676,9 @@ begin
       end;
     end;
   end else begin
-    //MessageBox(200265,"");
+    if (nonblank(errstr)) then begin
+      MessageBox(0,errstr);
+    end;
   end;
 
   return;

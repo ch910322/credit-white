@@ -12,6 +12,7 @@ external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPa
 external inner function Boolean GetAccName(string,var string,Integer);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 external function Boolean CheckCredManSchedule();
+external function Boolean UseDisburseUntil();
 
 global
 function LongInt CredManVcRecordDefaults(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
@@ -318,6 +319,14 @@ BEGIN
         end;
       end;
     end;  
+  end;
+
+  if (UseDisburseUntil) then begin
+    if (blank(CredManr.DisburseUntil)) then begin
+      RecordCheckError(1058,"",-1,"DisburseUntil");
+      res = -1;
+      goto LCredManVcRecordCheck;
+    end;
   end;
 
   res = inner.CredManVcRecordCheck(CredManr,CredMan2r,stat,long4);
