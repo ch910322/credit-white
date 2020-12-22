@@ -707,6 +707,10 @@ begin
               tint = GetCurMonthInterest(CredManPayPlanr,invdate);
               sum = FIN_PMT(rate, tusemonths, tusesum);
               sum = sum - (extra_diff/(tusemonths)) - tint;
+            end else begin
+              tsum = FIN_PMT(rate, tusemonths, tusesum);
+              tint = GetCurMonthInterest(CredManPayPlanr,invdate);
+              sum = tsum - tint;
             end;
           end;
         end;
