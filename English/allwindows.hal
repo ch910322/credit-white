@@ -70,6 +70,7 @@ external outer function Boolean HasPaymentConditionTexts();
 external outer function Boolean HasOtherConditionTexts();
 external outer function Boolean HasSuretyConditionTexts();
 external outer function Boolean UseDisburseUntil();
+external outer function Boolean UseCompensationInvoices();
 
 //CUST-END
 
@@ -999,6 +1000,9 @@ begin
   EditField(h2,v+=vs,-40,"Bank Name",Normal,BankName,false,0);
   EditField(h2,v+=vs,-40,"Bank Account",Normal,BankAccount,false,BankAccountSClass);
   CheckBox(h2,v+=20,0,"Remaining principle including Last Months Principle",LastPrincipleWithExtraMonth);
+  if (UseCompensationInvoices) then begin
+    CheckBox(h2,v+=16,0,"Use Compensation, not Overdue",UseCompensationInvoices);
+  end;
   vm = v+40;
 //CUST-END
   ButtonFrame(h2,v=vm,150,2,"Late Interest Based On");
@@ -1027,7 +1031,6 @@ begin
 
 //CUST-BEGIN
   CheckBox(h2,v+=30,0,"No Overdue Fees",SkipOverDue);
-
   
   ButtonFrame(h3=h2+120,v=vm,100,6,"Type");
   RadioButton(h3,v,0,0,"Not set",LoanType);
@@ -1627,7 +1630,9 @@ begin
   EditField(h2,v+=40,60,"Language",Normal,LangCode,false,LangSClass);
   EditField(h2,v+=vs,60,"First Invoice Language",Normal,LangCode2,false,LangSClass);
   EditField(h2,v+=vs,60,"Overdue Language",Normal,OverdueLangCode,false,LangSClass);
-
+  if (UseCompensationInvoices) then begin
+    EditField(h2,v+=vs,60,"Compensation Language",Normal,CompensLangCode,false,LangSClass);
+  end;
   if (HasBillOfExchangeShort) then begin
     EditField(h2,v+=vs,40,"BoE Months Separator",Normal,VekselisShortMonths,false,0);
     EditField(h2,v+=vs,40,"BoE Extra Months",Normal,VekselisExtraMonths,false,0);

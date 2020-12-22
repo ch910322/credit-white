@@ -671,6 +671,7 @@ begin
   RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
   RecordField(DaysInMonth,M4Int,0,0);
   RecordField(DisburseUntil,M4Date,0,0);
+  RecordField(UseCompensationInvoices,M4Int,0,0);
   
 
   ArrayField(MinSum,M4Val,0,0);
@@ -852,6 +853,7 @@ begin
   RecordField(SuretyPersonSurety,M4Int,0,0);
   RecordField(SuretyPersonUs,M4Int,0,0);
   RecordField(SuretyPersonLangCode,M4Code,10,0);
+  RecordField(CompensLangCode,M4Code,20,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -1475,6 +1477,7 @@ begin
   RecordField(FirstInvPayDeal,M4Code,5,PDVc);
   RecordField(RealInterestFlag,M4Int,0,0);
   RecordField(SellingItem,M4Code,20,0);
+  RecordField(CompensationItem,M4Code,20,0);
   
   EndBlock;
 
@@ -1499,6 +1502,7 @@ begin
   ArrayField(FirstInvSerie,M4Str,100,0);
   ArrayField(RegularInvSerie,M4Str,100,0);
   ArrayField(OverdueInvSerie,M4Str,100,0);
+  ArrayField(CompensationInvSerie,M4Str,100,0);
   EndArray;
   EndBlock;
   

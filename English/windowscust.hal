@@ -12,6 +12,7 @@ external outer function Boolean SimplifiedSureties();
 external outer function Boolean ShowBuyOutFee();
 external outer function Boolean HasBalloonLoanType();
 external outer function Boolean IsNovitiCustomer;
+external outer function Boolean UseCompensationInvoices();
 
 procedure ShowCredManLClassWindow(Integer type)
 begin
@@ -2058,6 +2059,7 @@ begin
   EditField(h+200,v,140,"with",Normal,ReplaceVATNrWith,false,0);
   EditField(h,v+=vs,100,"Prolong Item",Normal,ProlongItem,false,INSClass);
   EditField(h,v+=vs,100,"Selling Item",Normal,SellingItem,false,INSClass);
+  EditField(h,v+=vs,100,"Compensation Item",Normal,CompensationItem,false,INSClass);
     
   EditField(h,v+=vs,100,"Premature Term. Item",Normal,BuyOutItem,false,INSClass);  
   EditField(h,v+=vs,100,"Default Item Priority",Normal,ItemPriorityCode,false,CMItemPrioritySCLass);  
@@ -2178,9 +2180,12 @@ begin
   MatCol(1,h1+=85,"Selection",0,SelectionType,false,SetSClass);
   Flip(2);
   h1 = hm;
-  MatCol(1,h1+=105,"First Inv. Serie",0,FirstInvSerie,false,InvLegalInvSerieSClass);
-  MatCol(1,h1+=105,"Regular Inv. Serie",0,RegularInvSerie,false,InvLegalInvSerieSClass);
-  MatCol(1,h1+=105,"Overdue Inv. Serie",0,OverdueInvSerie,false,InvLegalInvSerieSClass);
+  MatCol(1,h1+=80,"First Inv. Serie",0,FirstInvSerie,false,InvLegalInvSerieSClass);
+  MatCol(1,h1+=80,"Regular Inv. Serie",0,RegularInvSerie,false,InvLegalInvSerieSClass);
+  MatCol(1,h1+=80,"Overdue Inv. Serie",0,OverdueInvSerie,false,InvLegalInvSerieSClass);
+  if (UseCompensationInvoices) then begin
+    MatCol(1,h1+=80,"Compens. Inv. Serie",0,CompensationInvSerie,false,InvLegalInvSerieSClass);
+  end;
   EndMatrix;
   VTab(-35,v,-16,v+=vs,ToolFlip,1,"A");
   VTab(-35,v,-16,v+=vs,ToolFlip,2,"B");

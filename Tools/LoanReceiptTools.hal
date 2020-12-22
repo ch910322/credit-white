@@ -14,7 +14,7 @@ external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var 
 external inner procedure IPPastePayMode(var record IPVc);
 external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val,array string);
 external procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
-external procedure SetupOverdueLangCode(var record IVVc,string);
+external procedure SetupOverdueLangCode(var record IVVc,record CredManVc);
 external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
 external function Boolean CredManPMCodeMatches(string,Longint,Boolean);
 
@@ -612,7 +612,7 @@ logtext(0,"ReceiptEntryCreateReceipts start");
             //Setup always new invoice
             SetupLoanInvoice(CredManr,CMb,IVr,invdate,sd,invdate,true,false,"",2,true);
             AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
-            SetupOverdueLangCode(IVr,CredManr.Type);
+            SetupOverdueLangCode(IVr,CredManr);
             StoreLoanInvoice(IVr,CredManr);
           end;
         end;
