@@ -1475,6 +1475,8 @@ begin
   EditField(h,v+=vs,100,"Default Item Priority",Normal,ItemPriorityCode,false,CMItemPrioritySCLass);  
   CheckBox(h,v+=16,0,"Remaining principle including Last Months Principle",LastPrincipleWithExtraMonth);
   CheckBox(h,v+=16,0,"Annual Rate",AnnualRate);
+  CheckBox(h,v+=16,0,"Use Compensation, not Overdue",UseCompensationInvoices);
+
   CheckBox(h,v+=16,0,"Closed",Closed);
   vm2 = v;
   EditField(h2+150,v=vm-20,-40,"Minimum Overdue Fee",Normal,MinOverdueFee,false,0);

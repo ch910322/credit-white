@@ -982,6 +982,7 @@ begin
   array string 255 lateformula;
   Boolean addf;
   record CredManTypeVc CMTr;
+  string 255 item;
   
   if (CIb.OverdueIVType==2) then begin
     sd = AddMonth(frdate,-1);
@@ -997,7 +998,11 @@ begin
       end;
     end;
     if (addf) then begin
-      AddCredPayPlanLine(CredManPayPlanr,invdat2,CredManSetb.LateRateItem,"",kEventTypeIssueLateFees,lateamount,0,acumint,calcbal,frdate,todate,-1,-1,0);
+      item = CredManSetb.LateRateItem;
+      if (CredManr.UseCompensationInvoices==1) then begin
+        item = CIb.CompensationItem;
+      end;
+      AddCredPayPlanLine(CredManPayPlanr,invdat2,item,"",kEventTypeIssueLateFees,lateamount,0,acumint,calcbal,frdate,todate,-1,-1,0);
     end;
   end;
 

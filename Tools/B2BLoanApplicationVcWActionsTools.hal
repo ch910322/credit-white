@@ -318,6 +318,7 @@ begin
     CMTr.Code = LAr.Type;
     if (ReadFirstMain(CMTr,1,true)) then begin
       CredManr.AnnualRate = CMTr.AnnualRate;
+      CredManr.UseCompensationInvoices = CMTr.UseCompensationInvoices;
       CredManr.PayDeal = CMTr.PayDeal;
       CredManr.Classifications = CMTr.Classifications;
       CredManr.OverdueRateType = CMTr.OverdueRateType;
