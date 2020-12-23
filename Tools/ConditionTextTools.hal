@@ -113,7 +113,6 @@ begin
     //res = StrReplace(res,chr(13),"\\n");
     feeivno = GetContractFeeInvoice(CredManr);
     res = StrReplace(res,"?feeinvoice?",feeivno);
-    WriteStringToFile(res,"___test." & GetCurTick & type & ".txt",0);
   end;
 
   GetConditionsText2 = res;
