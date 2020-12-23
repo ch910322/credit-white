@@ -101,18 +101,19 @@ global
 function string 255 GetConditionsText2(record CredManVc CredManr,Integer type,string id)
 begin
   record ConditionTextVc CTr;
-  Integer j;
+  Integer j,i;
   string 255 res,feeivno;
   
   if (GetConditionTextRecord(CredManr.SerNr,type,id,CTr)) then begin
     res = "";
     for (j=0;j<LineTextCnt2(CTr);j=j+1) begin
-      res = res & LineTextGet2(CTr,j);
+      res = res & LineTextGet2(CTr,j) & "\\n";
     end;
 
-    res = StrReplace(res,chr(13),"\\n");
+    //res = StrReplace(res,chr(13),"\\n");
     feeivno = GetContractFeeInvoice(CredManr);
     res = StrReplace(res,"?feeinvoice?",feeivno);
+    WriteStringToFile(res,"___test." & GetCurTick & type & ".txt",0);
   end;
 
   GetConditionsText2 = res;
