@@ -57,7 +57,7 @@ remote function Boolean AgreementPaidOut(record CredManVc,var val);
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
   record RcVc RepSpec;
-  val calcfees;
+  val calcfees,paidout;
 /*
   PutWindowString(wn,"annualrate",(CredManr.IntRate*12) & " %");
   calcfees = GetMonthlyFees(CredManr,0);
@@ -76,6 +76,8 @@ begin
   end else begin
     PutWindowString(wn,"HasChanges",0);
   end;
+  AgreementPaidOut(CredManr,paidout);
+  PutWindowString(wn,"topayout",CredManr.InvSum4-paidout);
 
   return;
 end;

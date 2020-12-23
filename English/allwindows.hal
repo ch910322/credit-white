@@ -71,7 +71,7 @@ external outer function Boolean HasOtherConditionTexts();
 external outer function Boolean HasSuretyConditionTexts();
 external outer function Boolean UseDisburseUntil();
 external outer function Boolean UseCompensationInvoices();
-
+external outer function Boolean ShowToDisburse();
 //CUST-END
 
 window CUDClass:14
@@ -906,20 +906,23 @@ begin
   HalPushButton(230,-47,280,-27,"CredManDClassSignAgreement","Open");
   HalPushButton(230,-25,280,-5,"CredManDClassSignSchedule","Open");
 
-  if (SimplifiedSureties==false) then begin
+  if (SimplifiedSureties) then begin
+    CheckBox(285,-41,0,"Bill of Exchange signed",SignVekselis);
+    HalPushButton(430,-47,480,-5,"CredManDClassSignVekselis","Open");
+    if (ShowToDisburse) then begin
+      SoftEditField(410,-21,70,"Not disbursed",ViewOnly,"topayout",true,0,M4Val,0);
+    end;
+  end else begin
     CheckBox(285,-41,0,"Surety signed",SignSurety);
-  end;
-  CheckBox(285,-21,0,"Bill of Exchange signed",SignVekselis);
-
-  if (SimplifiedSureties==false) then begin
     HalPushButton(430,-47,480,-27,"CredManDClassSignSurety","Open");
+    CheckBox(285,-21,0,"Bill of Exchange signed",SignVekselis);
+    HalPushButton(430,-25,480,-5,"CredManDClassSignVekselis","Open");
   end;
-  HalPushButton(430,-25,480,-5,"CredManDClassSignVekselis","Open");
 
   if (GuiType==kGuiWPF) then begin
     RecordList2(10,10,-30,-52,"CredHistVc");//CUST CredManEventVc >> CredManHistVc  
   end else begin
-    RecordList2(10,10,-30,-82,"CredHistVc");//CUST CredManEventVc >> CredManHistVc
+    RecordList2(10,10,-30,-85,"CredHistVc");//CUST CredManEventVc >> CredManHistVc
   end;
   RlColKey(4,4,"Date",TransDate,false,CredManTransDate);
   RlCol(100,100,"Due Date",PayDate,false);
