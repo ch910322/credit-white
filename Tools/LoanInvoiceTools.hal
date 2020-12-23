@@ -2294,6 +2294,30 @@ begin
   return;
 end;
 
+global
+function Boolean AgreementPaidOut2(record CredManVc CredManr,var val paidout)
+begin
+  Boolean res;
+  record CredHistVc CredHistr;
+  val calcbal;
+  record VIVc VIr;
+  record APVc APr;
+
+  paidout = 0;
+  if (GetInterestPaymentType(CredManr)==2) then begin
+    AgreementPaidOut(CredManr,paidout);
+  end else begin
+    APr.SerNr = CredManr.VINr;
+    VIr.SerNr = CredManr.VINr;
+    if (ReadFirstmain(APr,1,true) and ReadFirstmain(VIr,1,true)) then begin
+      paidout = paidout + (VIr.PayVal-APr.RVal);
+    end;
+  end;
+
+  AgreementPaidOut2 = res;
+  return;
+end;
+
 global 
 updating procedure CheckCredManFinished(Longint credmannr)
 begin

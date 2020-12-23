@@ -53,6 +53,7 @@ remote procedure CheckBuyOutAgreementAsync(record CredManVc,Date,Integer);
 remote function Boolean HasCredManChanges(record CredManVc);
 remote function Boolean ContractHasHistory(record CredManVc);
 remote function Boolean AgreementPaidOut(record CredManVc,var val);
+remote function Boolean AgreementPaidOut2(record CredManVc,var val);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -76,7 +77,7 @@ begin
   end else begin
     PutWindowString(wn,"HasChanges",0);
   end;
-  AgreementPaidOut(CredManr,paidout);
+  AgreementPaidOut2(CredManr,paidout);
   PutWindowString(wn,"topayout",CredManr.InvSum4-paidout);
 
   return;
