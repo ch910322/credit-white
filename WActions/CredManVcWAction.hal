@@ -853,9 +853,26 @@ function Boolean CredManDClassOnOpenWindow(Integer wn)
 begin
   Boolean res;
   record CredManVc CredManr;
+  Integer mwn,num;
+  record CMInterfaceSetBlock ISb;
+  string 255 wstr;
 
+  BlockLoad(ISb);
   GetWindowRecord(wn,CredManr);
-  UpdateCredManSoftFields(wn,CredManr,true);
+  if (CredManr.LoanType==0) then begin
+    wstr = GetWindowClass(wn);
+    if (wstr=="CredManDClass") then begin
+      CredManr.LoanType = ISb.DefCredManLoanType;
+    end;
+  end;
+  num = StringToInt(mid(GetWindowClass(wn),7,1));
+  if (num!=CredManr.LoanType and CredManr.LoanType>0) then begin
+    mwn = MotherWindow(wn);
+    CloseWindow(wn);
+    OpenWindow("CredMan" & CredManr.LoanType & "DClass",1,mwn,"","",CredManr);
+  end else begin
+    UpdateCredManSoftFields(wn,CredManr,true);
+  end;
 
   CredManDClassOnOpenWindow = false;
   return;
@@ -2352,13 +2369,12 @@ begin
   record CMInterfaceSetBlock ISb;
   Integer mwn,num;
   string 255 wstr;
-  
+
   BlockLoad(ISb);
   if (CredManr.LoanType==0) then begin
     wstr = GetWindowClass(wn);
     if (wstr=="CredManDClass") then begin
       CredManr.LoanType = ISb.DefCredManLoanType;
-      //RerunWindowDef(wn);//this will not work now
     end else begin
       num = StringToInt(mid(wstr,7,1));
       if (num>0) then begin
