@@ -581,7 +581,7 @@ begin
       ARr.InvoiceNr = IVr.SerNr;
       if (ReadFirstMain(ARr,1,true)) then begin
         days = DateDiff(CurrentDate,IVr.PayDate);
-        res = res "<tr><td>" & IVr.SerNr & "</td><td>" & IVr.InvDate & "</td><td>" & IVr.Sum4 & "</td><td>" & IVr.PayDate & "</td><td>" & days & "</td><td>" & ARr.RVal & "</td></tr>";
+        res = res & "<tr><td>" & IVr.SerNr & "</td><td>" & IVr.InvDate & "</td><td>" & IVr.Sum4 & "</td><td>" & IVr.PayDate & "</td><td>" & days & "</td><td>" & ARr.RVal & "</td></tr>";
         if (IVr.CustCredManNr>0) then begin
           if (SetInSet(IVr.CustCredManNr,agreementlist)==false) then begin
             if (nonblank(agreementlist)) then begin
