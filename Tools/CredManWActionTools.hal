@@ -157,6 +157,33 @@ begin
   return;
 end;
 
+function Boolean HasBOESureties(record CredManVc CredManr)
+begin
+  Integer tnum;
+  string 255 code;
+  record BOESuretyVc BSr;
+  Boolean res;
+
+  tnum = 1;
+  code = GetFieldValueByName(CredManr,"BOE" & tnum & "Code",-1);
+  while (nonblank(code)) begin
+    BSr.CredManNr = CredManr.SerNr;
+    BSr.BOENum = tnum;
+    if (ReadFirstMain(BSr,2,true)) then begin
+      if (nonblank(BSr.SuretyProvider1)) then begin
+        res = true;
+        goto LHasBOESureties;
+      end;
+    end;
+    tnum = tnum + 1;
+    code = GetFieldValueByName(CredManr,"BOE" & tnum & "Code",-1);
+  end;
+
+LHasBOESureties:;
+  HasBOESureties = res;
+  return;
+end;
+
 function string 255 GetDocumentLangCode(record CredManVc CredManr,Integer type,Integer param)
 begin
   string 255 res;
@@ -180,9 +207,17 @@ begin
         end;
       case 4: 
         if (CMTr.VekselisShortMonths>0 and CredManr.InstalmentMonths<CMTr.VekselisShortMonths) then begin
-          res = CMTr.VekselisShortLangCode;
+          if (HasBOESureties(CredManr)) then begin
+            res = CMTr.VekselisShortLangCode;
+          end else begin
+            res = CMTr.VekselisShortLangCode2;
+          end;
         end else begin
-          res = CMTr.VekselisLangCode;
+          if (HasBOESureties(CredManr)) then begin
+            res = CMTr.VekselisLangCode;
+          end else begin
+            res = CMTr.VekselisLangCode2;            
+          end;
         end;
     end;
   end;

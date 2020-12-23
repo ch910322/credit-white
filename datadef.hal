@@ -855,6 +855,8 @@ begin
   RecordField(SuretyPersonLangCode,M4Code,10,0);
   RecordField(CompensLangCode,M4Code,20,0);
   RecordField(UseCompensationInvoices,M4Int,0,0);
+  RecordField(VekselisLangCode2,M4Code,10,0);
+  RecordField(VekselisShortLangCode2,M4Code,10,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
