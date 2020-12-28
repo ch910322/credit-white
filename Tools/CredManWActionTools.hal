@@ -157,16 +157,15 @@ begin
   return;
 end;
 
-function Boolean HasBOESureties(record CredManVc CredManr)
+function Boolean HasBOESureties(record CredManVc CredManr,Integer tnum)
 begin
-  Integer tnum;
   string 255 code;
   record BOESuretyVc BSr;
   Boolean res;
 
-  tnum = 1;
   code = GetFieldValueByName(CredManr,"BOE" & tnum & "Code",-1);
-  while (nonblank(code)) begin
+  if (nonblank(code)) begin
+    ResetLoop(BSr);
     BSr.CredManNr = CredManr.SerNr;
     BSr.BOENum = tnum;
     if (ReadFirstMain(BSr,2,true)) then begin
@@ -175,8 +174,6 @@ begin
         goto LHasBOESureties;
       end;
     end;
-    tnum = tnum + 1;
-    code = GetFieldValueByName(CredManr,"BOE" & tnum & "Code",-1);
   end;
 
 LHasBOESureties:;
@@ -207,13 +204,13 @@ begin
         end;
       case 4: 
         if (CMTr.VekselisShortMonths>0 and CredManr.InstalmentMonths<CMTr.VekselisShortMonths) then begin
-          if (HasBOESureties(CredManr)) then begin
+          if (HasBOESureties(CredManr,param)) then begin
             res = CMTr.VekselisShortLangCode;
           end else begin
             res = CMTr.VekselisShortLangCode2;
           end;
         end else begin
-          if (HasBOESureties(CredManr)) then begin
+          if (HasBOESureties(CredManr,param)) then begin
             res = CMTr.VekselisLangCode;
           end else begin
             res = CMTr.VekselisLangCode2;            
@@ -1028,9 +1025,9 @@ begin
           PrintCredManDocument("SuretyAgreementForm",fn,CredManr,1,(CredManr.MaxMonthlyPayment>0),langcode);
         end;
       end;
-      if (ADr.Type>15 and ADr.Type<20) then begin
+      if (ADr.Type>15 and ADr.Type<20) then begin//bill of exchange
         fn = GetAgreementDocumentName(ADr,"Bill",regenf);
-        langcode = GetDocumentLangCode(CredManr,4,-1);
+        langcode = GetDocumentLangCode(CredManr,4,ADr.Type-15);
         if (ExternalDocumentEnabled("VekselisForm")) then begin
           RepSpec.long1 = CredManr.InstalmentType;
           if (CredManr.MaxMonthlyPayment>0) then begin
