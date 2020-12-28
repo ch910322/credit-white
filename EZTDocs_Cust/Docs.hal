@@ -294,7 +294,7 @@ begin
       tstr = GetConditionsText2(CredManr,0,tnum & ":" & num);
       vVals["ROW" & rw & "_" & strnum & "_F_BOESURCOND"] = tstr;
       AddToList(vVals,"F_BOESURNAME_LIST",GetFieldValueByName(BSr,"Surety" & num & "Name",-1) & " " & SCUr.RegNr1 & " " & GetFieldValueByName(BSr,"Surety" & num & "Phone",-1));
-      AddToList(vVals,"F_SURETYCOND_LIST",tstr);
+      AddToList(vVals,"F_BOESURCOND_LIST",tstr);
 
       gnum = gnum + 1;
     end;
@@ -1386,6 +1386,8 @@ begin
         AddToList(vVals,"F_PROPCOUNTRY_LIST",Propr.Addr1);
         vVals["ROW_" & strnum & "_F_PROPCITY"] = Propr.Addr2;
         AddToList(vVals,"F_PROPCITY_LIST",Propr.Addr2);
+        vVals["ROW_" & strnum & "_F_PROPID"] = Propr.SerialNo;
+        AddToList(vVals,"F_PROPID_LIST",Propr.SerialNo);
         vVals["ROW_" & strnum & "_F_PROPADDRESS"] = Propr.Addr3;
         AddToList(vVals,"F_PROPADDRESS_LIST",Propr.Addr3);
         vVals["ROW_" & strnum & "_F_PROPZIP"] = Propr.Addr4;
