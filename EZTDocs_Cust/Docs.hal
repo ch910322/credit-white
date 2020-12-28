@@ -388,12 +388,11 @@ begin
   record CUVc CUr;
   string 255 tstr;
   val calcfees,fixfees;
-  transaction Longint gSuretyNumber;
   record UserVc Userr;
   string 255 saddr0,saddr1,saddr2,saddr3,saddr4,idcard,iddate;
   string 255 signerphone,signermobile,signeremail,signerid,signeridcard,signeriddate,legalid;
 
-    GetSuretyValues3(CredManr,gSuretyNumber,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,saddr0,saddr1,saddr2,saddr3,saddr4,value,signer,td,idcard,iddate,signerphone,signermobile,signeremail,signerid,signeridcard,signeriddate,legalid);
+    GetSuretyValues3(CredManr,num,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,saddr0,saddr1,saddr2,saddr3,saddr4,value,signer,td,idcard,iddate,signerphone,signermobile,signeremail,signerid,signeridcard,signeriddate,legalid);
     vVals[fs & "F_CONTACTNAME"] = name;
     AddToList(vVals,"F_CONTACTNAME_LIST",name & " " & id & " " & mobile);
     vVals[fs & "F_CONTACTPHONE"] = phone;
@@ -405,7 +404,7 @@ begin
     vVals[fs & "F_CONTACTIDCARD"] = idcard;
     vVals[fs & "F_CONTACTIDCARDDATE"] = iddate;
     vVals[fs & "F_CONTACTLEGALID"] = legalid;
-    tstr = GetConditionsText2(CredManr,0,gSuretyNumber);
+    tstr = GetConditionsText2(CredManr,0,num);
     vVals[fs & "F_SURETYCOND"] = tstr;
     AddToList(vVals,"F_SURETYCOND_LIST",tstr);
 
