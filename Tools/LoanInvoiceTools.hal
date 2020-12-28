@@ -1506,11 +1506,12 @@ begin
     CM_AddPrepayments(IVr,CredManr,CIb);
     if (IVr.SerNr>-1) then begin
       if (IVr.Sum4>0) then begin
+        logtext(0,"DoBuyOutAgreement CIb.OverdueIVType " & CIb.OverdueIVType & ":" & sd);
         if (CIb.OverdueIVType>0) then begin
           GetCredManOverdueInvoices(CredManr,CMb,CurrentDate,sd,latedays,lateamount,lateformula,false,false);
           SetupLoanInvoice(CredManr,CMb,oIVr,CurrentDate,sd,CurrentDate,true,false,"",2,true);
           AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
-          SetupOverdueLangCode(IVr,CredManr);
+          SetupOverdueLangCode(oIVr,CredManr);
           StoreLoanInvoice(oIVr,CredManr);
         end;
 

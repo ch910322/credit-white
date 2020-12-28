@@ -76,6 +76,8 @@ BEGIN
   CredManr.BOE2Signed = 0;
   CredManr.BOE3Signed = 0;
   CredManr.BOE4Signed = 0;
+  CredManr.CancelDate = "";
+  CredManr.DisburseUntil = "";
 /*
   CredManr.FactInvAmount = t;
   CredManr.LoanToValue = t;
@@ -322,7 +324,7 @@ BEGIN
   end;
 
   if (UseDisburseUntil) then begin
-    if (blank(CredManr.DisburseUntil)) then begin
+    if (blank(CredManr.DisburseUntil) and CredMan2r.OKFlag==0 and CredManr.Status!=5) then begin
       RecordCheckError(1058,"",-1,"DisburseUntil");
       res = -1;
       goto LCredManVcRecordCheck;

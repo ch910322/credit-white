@@ -89,6 +89,18 @@ begin
       int_invdat = AddMonth(int_invdat,1);
     end;
   end;
+  if (nonblank(CredManr.CancelDate)) then begin
+    if (invd>CredManr.CancelDate) then begin
+      invd = CredManr.CancelDate;
+    end;
+    if (edp>CredManr.CancelDate) then begin
+      edp = CredManr.CancelDate;
+    end;
+    if (int_edp>CredManr.CancelDate) then begin
+      int_edp = CredManr.CancelDate;
+    end;
+  end;
+  
 
   return;
 end;
@@ -319,6 +331,9 @@ begin
     sendmonthtypef = monthtypef;
     if ((CredManr.ChargeMethod==1) and overridef==false and sendmonthtypef!=kMonthTypeFirst) then begin
       sendmonthtypef = kMonthTypeLast;
+    end;
+    if (nonblank(CredManr.CancelDate) and invdate==CredManr.CancelDate) then begin
+      sendmonthtypef = kMonthTypeFirst;
     end;
     AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.IntRate,sendmonthtypef,frdate,todate,calcbal,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
   end;
@@ -892,7 +907,6 @@ begin
             ReadFirstMain(PrevCredHistr,1,true);
             type = GetCredHistType(PrevCredHistr.ArtCode,-1,true);          
         end;
-        logtext(0,"ddd " & CredHistr.SerNr & ":" & CredHistr.Sum & ":" & type);
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,CredHistr.ArtCode,"",type,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,openamount);
         if (CredHistr.ChargeType==kEventTypePartialBuyout) then begin
           usesum = calcbal;
@@ -1346,6 +1360,9 @@ LCalcSchedule:;
   if (withactuals) then begin
     AddActualsToPlan(inCredManr,CredManPayPlanr,calculatedmonths,acumint,calcbal,firstinvf,CredManSetb,months,buyoutamount,pausebal,prolongbal,int_type,usesum);
   end;
+  if (tCredManr.Status==5) then begin
+    goto LBuildCredManPayPlanCust;
+  end;
   usemonths = months;
   if (buyoutamount>0) then begin
     usesum = usesum - buyoutamount;
@@ -1473,6 +1490,9 @@ LCalcSchedule:;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
       end;
       AddExtraDeposit(inCredManr,CredManPayPlanr,CredManSetb,invdat,acumint,calcbal,frdat,todat,i+1);
+      if (nonblank(inCredManr.CancelDate) and invdat==inCredManr.CancelDate) then begin
+        goto LBuildCredManPayPlanCust;
+      end;
       //if (i==0) then begin
       //  AddDeposit(inCredManr,CredManPayPlanr,CredManSetb,invdat,acumint,calcbal,frdat,todat);
       //end;
@@ -1494,6 +1514,7 @@ logtext(0,"BuildCredManPayPlanCust end2");
   SortRows(CredManPayPlanr,"SortString",true);
   RecordCopy(inCredManr,tCredManr);
 
+LBuildCredManPayPlanCust:;
   return;
 end;
 
