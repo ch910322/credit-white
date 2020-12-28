@@ -993,7 +993,7 @@ begin
 //  EditField(h,v+=vs,40,"Interest Free Days",Normal,FreeDays,false,0);
   EditField(h,v+=vs,40,"Settlement Months",Normal,SettleLimit,false,0);
   EditField(h,v+=vs,100,"Classifications",Normal,Classifications,false,CredManClassSClass);
-  EditField(h,v+=vs,150,"Cancellation Date",ViewOnly,CancelDate,false,PasteCurDate);
+  EditField(h,v+=vs,150,"Cancellation Date",Normal,CancelDate,false,PasteCurDate);
 
 //CUST-BEGIN
   if (type!=2 and type!=3) then begin

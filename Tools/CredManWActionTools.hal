@@ -599,28 +599,30 @@ begin
   return;
 end;
 
-updating procedure CreditAndOKInvoice(Longint ivnr,val prc,var val credval,var vector val vCredVal)
+updating procedure CreditAndOKInvoice(Longint ivnr,val prc,var val credval,var vector val vCredVal,val rval)
 begin
   record IVVc IVr,IVCreditr,oldIVr,IV2r;
   string 255 warning;
   Integer i,rwcnt;
   row IVVc IVrw;
+  val ratio;
 
   IVr.SerNr = ivnr;
   if (ReadFirstMain(IVr,1,true)) then begin
+    ratio = rval/IVr.Sum4;
     if (CreateCreditNoteIV(IVr,kInvoiceTypeCredit,IVCreditr,"",false)==0) then begin
       if (IVr.InvDate>IVCreditr.InvDate) then begin
         IVCreditr.InvDate = IVr.InvDate;
       end;
       IVCreditr.CustCredManNr = IVr.CustCredManNr;
       IVCreditr.SerNr = NextSerNr("IVVc",IVCreditr.InvDate,-1,false,"");
-      if (prc<100) then begin
+      if (prc<100 or ratio!=1) then begin
         rwcnt = MatRowCnt(IVCreditr);
         for (i=0;i<rwcnt;i=i+1) begin
           MatRowGet(IVCreditr,i,IVrw);
           if (nonblank(IVrw.ArtCode)) then begin
             if (IVrw.Price>0) then begin
-              IVrw.Price = IVrw.Price * prc / 100;
+              IVrw.Price = IVrw.Price * ratio * prc / 100;
               MatRowPut(IVCreditr,i,IVrw);
               IVVc_PastePrice(IVCreditr,IV2r,i,warning);
               MatRowGet(IVCreditr,i,IVrw);
@@ -668,7 +670,7 @@ begin
     ARr.InvoiceNr = StringToLongint(invarr[i]);
     if (ReadFirstMain(ARr,1,true)) then begin
       if (ARr.RVal>0) then begin
-        CreditAndOKInvoice(ARr.InvoiceNr,prc,credval,vCredVal);
+        CreditAndOKInvoice(ARr.InvoiceNr,prc,credval,vCredVal,ARr.RVal);
       end;
     end;
   end;
