@@ -393,6 +393,7 @@ begin
   record CMInvoicingBlock CIb;
   Boolean addf;
   record CredManTypeVc CMTr;
+  string 255 item;
   
   if (lateamount>0) then begin
     addf = true;
@@ -403,8 +404,13 @@ begin
       end;
     end;
     if (addf) then begin
-      SetupInvoiceRowAndAdd(CredManr,IVr,CMb.LateFeeItem,"",1,0,0,kEventTypeIssueLateFees,-1);
-      SetupInvoiceRowAndAdd(CredManr,IVr,CMb.LateRateItem,"",1,lateamount,0,kEventTypeIssueLateFees,-1);
+      BlockLoad(CIb);
+      item = CMb.LateRateItem;
+      if (CredManr.UseCompensationInvoices==1) then begin
+        item = CIb.CompensationItem;
+      end;
+      //SetupInvoiceRowAndAdd(CredManr,IVr,CMb.LateFeeItem,"",1,0,0,kEventTypeIssueLateFees,-1);
+      SetupInvoiceRowAndAdd(CredManr,IVr,item,"",1,lateamount,0,kEventTypeIssueLateFees,-1);
       BlockLoad(CIb);
       if (CIb.AddOverdueDetails==1) then begin
         AddOverdueComments(IVr,lateformula);
