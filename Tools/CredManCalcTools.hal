@@ -184,7 +184,12 @@ begin
         res = GetAmount(CredManr)*rate/100*12/GetDaysInYear(CMb,CredManr)*days;
       end;
 */
-        res = calcbal*rate/100*12/GetDaysInYear(CMb,CredManr)*days;//GetAmount(CredManr)
+        if (frdate!=todate and frdate.Day==todate.day) then begin
+          months = MonthDiff(frdate,todate);
+          res = calcbal*months*(rate/100);
+        end else begin
+          res = calcbal*rate/100*12/GetDaysInYear(CMb,CredManr)*days;//GetAmount(CredManr)
+        end;
     case kMonthTypeRegular:
       if (fixeddaysf or GetDaysInMonth(CMb,CredManr)==0) then begin
         res = GetAmount(CredManr)*rate/100;
