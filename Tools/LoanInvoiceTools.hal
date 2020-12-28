@@ -2325,7 +2325,8 @@ begin
   end else begin
     APr.SerNr = CredManr.VINr;
     VIr.SerNr = CredManr.VINr;
-    if (ReadFirstmain(APr,1,true) and ReadFirstmain(VIr,1,true)) then begin
+    ReadFirstmain(APr,1,true)
+    if (ReadFirstmain(VIr,1,true)) then begin
       paidout = paidout + (VIr.PayVal-APr.RVal);
     end;
   end;
