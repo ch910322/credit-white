@@ -1890,7 +1890,7 @@ begin
     CredManr.CancelDate = CurrentDate;
     PutWindowRecord(mwn,CredManr);
     if (WindowDoOK(mwn,0)) then begin
-      TerminateCredMan(CredManr,100,"","");
+      TerminateCredMan(CredManr,100,"",CurrentDate);
       PutWindowPrevRecord(mwn,CredManr);
       PutWindowRecord(mwn,CredManr);
       threadremote.TerminateCredManFinish(CredManr);
