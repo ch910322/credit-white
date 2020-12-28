@@ -23,8 +23,9 @@ enum begin
   kEventTypePaidInstalment = 14,
   kEventTypePaidDeposit = 15,
   kEventTypePaidFees = 16,
-  kEventTypePartialBuyout = 17,
+  kEventTypeSoldAgreement = 17,
   kEventTypePayout = 18,
+  kEventTypePartialBuyout = 19,
 end;
 
 enum begin
@@ -886,19 +887,18 @@ begin
           case 0: 
             type = GetCredHistType(CredHistr.ArtCode,CredHistr.ChargeType,false); 
             openamount = GetCredHistOpenAmount(CredHistr);
-          case 4: 
-            type = kEventTypePartialBuyout;
-            buyoutamount = buyoutamount + CredHistr.Sum;
           otherwise
             PrevCredHistr.SerNr = CredHistr.PreviousNr;
             ReadFirstMain(PrevCredHistr,1,true);
             type = GetCredHistType(PrevCredHistr.ArtCode,-1,true);          
         end;
+        logtext(0,"ddd " & CredHistr.SerNr & ":" & CredHistr.Sum & ":" & type);
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,CredHistr.ArtCode,"",type,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,openamount);
-        if (CredHistr.RecordType==4) then begin
+        if (CredHistr.ChargeType==kEventTypePartialBuyout) then begin
           usesum = calcbal;
+          buyoutamount = buyoutamount + CredHistr.Sum;
         end;
-        if (CredHistr.RecordType==0) then begin
+        if (CredHistr.RecordType==0 and CredHistr.ChargeType!=kEventTypePartialBuyout) then begin
           if (IsInitialInvoice(CredManr,CredHistr.TransDate,lastrecnr,vFirstInv[CredHistr.RecordNr])) then begin
             firstinvf = true;
             vFirstInv[CredHistr.RecordNr] = true;//we can have multiple records for single invoice. so we need to store that this invoice is the initial invoice

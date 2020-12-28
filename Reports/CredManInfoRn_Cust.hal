@@ -259,6 +259,10 @@ begin
           deposit = deposit + IVrw.Sum;
         end;
         addf = true;
+      case 19: //buyout
+        inst = inst + IVrw.Sum; 
+        calcbal = calcbal - IVrw.Sum;
+        addf = true;
       case 2: 
         intrate = intrate + IVrw.Sum;
         addf = true;

@@ -55,7 +55,14 @@ enum begin
   kEventTypeIssueInterest = 6,
   kEventTypeIssueDeposit = 7,
   kEventTypeIssueFees = 8,
-  kEventTypeIssueLateFees = 9
+  kEventTypeIssueLateFees = 9,
+  kEventTypePaidInterest = 13,
+  kEventTypePaidInstalment = 14,
+  kEventTypePaidDeposit = 15,
+  kEventTypePaidFees = 16,
+  kEventTypeSoldAgreement = 17,
+  kEventTypePayout = 18,
+  kEventTypePartialBuyout = 19,
 end;
 
 enum begin
@@ -1567,7 +1574,7 @@ begin
       if (res>CredManPayrw.Bal) then begin
         res = CredManPayrw.Bal;
       end;
-      if (CredManPayrw.PlanType==kEventTypeIssueInstalment) then begin
+      if (CredManPayrw.PlanType==kEventTypeIssueInstalment or CredManPayrw.PlanType==kEventTypePartialBuyout) then begin
         openamount = openamount + CredManPayrw.OpenAmount;
       end;
     end;
@@ -1709,6 +1716,8 @@ begin
     case 15: res = type;//extra fee
     case 16: res = type;//payment made
     case 17: res = type;//sold agreement
+    case 18: res = type;//pay out
+    case 19: res = type;//partial buyout
     otherwise
       res = type + 4;
   end;
@@ -2089,7 +2098,7 @@ begin
       if (firstf==true and (CredHistr.RecordType!=prevCredHistr.RecordType or CredHistr.RecordNr!=prevCredHistr.RecordNr)) then begin
         AddCredHistToArray(ORr,prevCredHistr,balance);
       end;
-      if (CredHistr.RecordType==kCredHistRecTypeInvoice and (CredHistr.ChargeType==kEventTypeIssueInstalment or CredHistr.ChargeType==kEventTypeIssueDeposit)) then begin
+      if (CredHistr.RecordType==kCredHistRecTypeInvoice and (CredHistr.ChargeType==kEventTypeIssueInstalment or CredHistr.ChargeType==kEventTypeIssueDeposit or CredHistr.ChargeType==kEventTypePartialBuyout)) then begin
         balance = balance - CredHistr.Sum;
       end;
       if (CredHistr.RecordType==4) then begin//partial buyout
