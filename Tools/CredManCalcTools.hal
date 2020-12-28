@@ -40,7 +40,7 @@ enum begin
   kMonthTypeLast = 2
 end;
 
-procedure CalcCredManCurrentPeriod(record CredManVc CredManr,record CMInvoicingBlock CIb,Integer paymentnr,var Date sdp,var Date edp,var Date int_sdp,var Date int_edp,var Date invd,var Date int_invdat)
+procedure CalcCredManCurrentPeriod(record CredManVc CredManr,record CMInvoicingBlock CIb,Integer paymentnr,Date payoutdate,var Date sdp,var Date edp,var Date int_sdp,var Date int_edp,var Date invd,var Date int_invdat)
 begin
   record PDVc PDr;
   Date bd,nint_sdp;
@@ -77,6 +77,9 @@ begin
     end;
     if (CredManr.MoneyTransferDate>int_sdp) then begin
       nint_sdp = CredManr.MoneyTransferDate;
+    end;
+    if (nonblank(payoutdate) and paymentnr==-1) then begin
+      nint_sdp = payoutdate;
     end;
   //end;
   if (nint_sdp>int_sdp) then begin
@@ -1285,7 +1288,7 @@ begin
   return;
 end;
 
-procedure UpdateAgreementBalance(var record CredManPayPlanVc CredManPayPlanr,record CredManVc CredManr,var val calcbal,var val acumint,Date frdate,Date todate,var val usesum,Integer int_type,var val addbal)
+procedure UpdateAgreementBalance(var record CredManPayPlanVc CredManPayPlanr,record CredManVc CredManr,var val calcbal,var val acumint,Date frdate,Date todate,var val usesum,Integer int_type,var val addbal,var Date payoutdate)
 begin
   record CredHistVc CredHistr;
   Boolean TrHs;
@@ -1303,6 +1306,9 @@ begin
           AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,"","",kEventTypePayout,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,0);
           usesum = calcbal;
           addbal = addbal + CredHistr.Sum;
+          if (blank(payoutdate) and CredHistr.TransDate<CredManr.FirstInvDate) then begin
+            payoutdate = CredHistr.TransDate;
+          end;
         end;
       end;
     end;
@@ -1331,6 +1337,7 @@ begin
   Integer tries,int_type;
   record CredManVc tCredManr;
   val totint,addbal,int_calcbal;
+  Date payoutdate;
 
 /*should we calculate VAT here?
   if CredManr.VATSum > 0 and nonblank(CredManr.VATAddMonths) then begin
@@ -1377,17 +1384,21 @@ LCalcSchedule:;
   LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths);
   for(i=calculatedmonths;i<months;i=i+1) begin
     if (calcbal>0 or int_type==2) then begin
-      CalcCredManCurrentPeriod(inCredManr,CIb,i-1,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
+      CalcCredManCurrentPeriod(inCredManr,CIb,i-1,payoutdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
       LoadAgreementChangesMonthly(inCredManr,invdat);
       //if (i!=0) then begin
-        UpdateAgreementBalance(CredManPayPlanr,inCredManr,calcbal,acumint,frdat,todat,usesum,int_type,addbal);
+        UpdateAgreementBalance(CredManPayPlanr,inCredManr,calcbal,acumint,frdat,todat,usesum,int_type,addbal,payoutdate);
+        if (nonblank(payoutdate)) then begin
+          frdat = payoutdate;
+          int_todat = payoutdate;
+        end;
         if (addbal>0) then begin
           usemonths = months - i;
         end;
       //end;
       int_calcbal = calcbal - addbal;
       if (GetDay(invdat)!=inCredManr.MonthlyPaymentDay) then begin
-        CalcCredManCurrentPeriod(inCredManr,CIb,i-1,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates,   frdat, todat and invdat
+        CalcCredManCurrentPeriod(inCredManr,CIb,i-1,payoutdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates,   frdat, todat and invdat
       end;
 
       if (i==0 and firstinvf==false and inCredManr.InstalmentType!=4) then begin//Not for factoring

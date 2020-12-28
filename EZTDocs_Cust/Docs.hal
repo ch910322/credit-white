@@ -885,6 +885,9 @@ begin
     if (i==0 and SMrw.TransDate<CredManr.FirstInvDate) then begin
       goto LNextRow;
     end;
+    if (SMrw.RowSimStat==5) then begin
+      goto LNextRow;
+    end;
     num = num + 1;
     M4PadString(i,3,"0",true,strnum);
     vVals["ROW_" & strnum & "_F_TRANSDATUM"] = SMrw.TransDate;//Transaction Date (transdate
