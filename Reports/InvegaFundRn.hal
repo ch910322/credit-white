@@ -90,7 +90,7 @@ begin
   return;
 end;
 
-function string 255 GetCredManTransactionList(record CredManVc CredManr,Date sd,Date ed,var val paid,var val princ,var val interest,var val overdues)
+function string 255 GetCredManTransactionList(record CredManVc CredManr,Date sd,Date ed,var val paid,var val princ,var val interest,var val overdues,Boolean invegaf)
 begin
   string 255 res;
   record CredHistVc CredHistr,tCredHistr;
@@ -175,9 +175,16 @@ begin
       if (OPrsr.VINr!=CredManr.VINr or OPrsr.TransType!=kOPrsTransTypePayment) then begin
         TrHs = false;
       end else begin
-        if (DateInRange(OPrsr.TransDate,sd,ed)) then begin
-          vDates[OPrsr.TransDate] = true;
-          paid = paid + FindInvoicePaidAmount_OP(OPrsr.VINr,OPrsr.TransNr);
+        if (invegaf) then begin
+          if (DateInRange(OPrsr.TransDate,sd,ed)) then begin
+            vDates[OPrsr.TransDate] = true;
+            paid = paid + FindInvoicePaidAmount_OP(OPrsr.VINr,OPrsr.TransNr);
+          end;
+        end else begin
+          if (OPrsr.TransDate<=ed) then begin
+            vDates[OPrsr.TransDate] = true;
+            paid = paid + FindInvoicePaidAmount_OP(OPrsr.VINr,OPrsr.TransNr);
+          end;          
         end;
       end;
     end;
@@ -274,7 +281,7 @@ begin
     if (CredHistr.CredManNr!=CredManr.SerNr or CredHistr.ChargeType!=chargetype) then begin
       TrHs = false;
     end else begin
-      if (CredHistr.RecordType==0 and CredHistr.TransDate<ed) then begin
+      if (CredHistr.RecordType==0 and CredHistr.PayDate<ed) then begin
         latedays = GetLateDaysInPeriod(CredHistr,sd,ed,dueamount);
         maxlatedays = MAX(maxlatedays,latedays);
       end;
@@ -440,7 +447,7 @@ begin
       end;
       startbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.sStartDate);
       endbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.sEndDate);
-      translist = GetCredManTransactionList(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,paidval,princ,interest,overdues);
+      translist = GetCredManTransactionList(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,paidval,princ,interest,overdues,true);
       GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,5,principlelatedays,principlelateamount);
       GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,6,interestlatedays,interestlateamount);
       GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,9,overdueslatedays,overdueslateamount);
@@ -634,6 +641,9 @@ begin
     if (nonblank(RepSpec.f5) and SetInSet2(RepSpec.f5,vClass[CredManr.Type])) then begin
       testf = false;
     end;
+    if (CredManr.TransDate>RepSpec.sEndDate) then begin
+      testf = false;
+    end;
     
     if (testf) then begin
       CUr.Code = CredManr.CustCode;
@@ -643,8 +653,12 @@ begin
       end;
       startbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.sStartDate);
       endbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.sEndDate);
-      translist = GetCredManTransactionList(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,paidval,princ,interest,overdues);
+      translist = GetCredManTransactionList(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,paidval,princ,interest,overdues,false);
       GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,5,principlelatedays,principlelateamount);
+      unpaidstartbal = 0;
+      periodbal = 0;
+      paidstartbal = 0;
+      paidperiodbal = 0;
       GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,6,interestlatedays,interestlateamount);
       GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,9,overdueslatedays,overdueslateamount);
       GetPeriodBalances(CredManr,CredManSetb,RepSpec.sStartDate,RepSpec.sEndDate,unpaidstartbal,periodbal,paidstartbal,paidperiodbal);
