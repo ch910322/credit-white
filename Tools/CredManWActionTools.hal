@@ -1838,7 +1838,6 @@ begin
   if (ReadFirstKey("CredManDate",Changer,1,true)) then begin
     res = true;
   end;
-
   HasCredManChanges = res;
   return;
 end;

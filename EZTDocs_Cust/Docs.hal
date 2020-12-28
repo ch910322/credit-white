@@ -133,7 +133,7 @@ begin
   return;
 end;
 
-function string 255 AddToList(string tstr,string astr)
+function string 255 AddToListAddr(string tstr,string astr)
 begin
   string 255 res;
   
@@ -145,7 +145,7 @@ begin
     res = res & astr;
   end;
 
-  AddToList = res;
+  AddToListAddr = res;
   return;
 end;
 
@@ -157,17 +157,17 @@ begin
   Cur.Code = custcode;
   if (ReadFirstMain(CUr,1,true)) then begin
     if (blank(CUr.DelAddr0)) then begin
-      res = AddToList(res,CUr.InvAddr0);
-      res = AddToList(res,CUr.InvAddr1);
-      res = AddToList(res,CUr.InvAddr2);
-      res = AddToList(res,CUr.InvAddr3);
-      res = AddToList(res,CUr.InvAddr4);
+      res = AddToListAddr(res,CUr.InvAddr0);
+      res = AddToListAddr(res,CUr.InvAddr1);
+      res = AddToListAddr(res,CUr.InvAddr2);
+      res = AddToListAddr(res,CUr.InvAddr3);
+      res = AddToListAddr(res,CUr.InvAddr4);
     end else begin
-      res = AddToList(res,CUr.DelAddr0);
-      res = AddToList(res,CUr.DelAddr1);
-      res = AddToList(res,CUr.DelAddr2);
-      res = AddToList(res,CUr.DelAddr3);
-      res = AddToList(res,CUr.DelAddr4);
+      res = AddToListAddr(res,CUr.DelAddr0);
+      res = AddToListAddr(res,CUr.DelAddr1);
+      res = AddToListAddr(res,CUr.DelAddr2);
+      res = AddToListAddr(res,CUr.DelAddr3);
+      res = AddToListAddr(res,CUr.DelAddr4);
     end;
   end;
 

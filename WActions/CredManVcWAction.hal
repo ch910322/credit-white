@@ -872,6 +872,7 @@ begin
   end;
 */
 
+  GetWindowRecord(wn,CredManr);
   UpdateCredManSoftFields(wn,CredManr,true);
 
   CredManDClassOnOpenWindow = false;
