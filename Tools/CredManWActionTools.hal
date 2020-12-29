@@ -603,6 +603,8 @@ begin
   Integer i,rwcnt;
   row IVVc IVrw;
   val ratio;
+  record LocalMachineBlock LMb;
+  Integer err1,err2;
 
   IVr.SerNr = ivnr;
   if (ReadFirstMain(IVr,1,true)) then begin
@@ -610,6 +612,7 @@ begin
     if (CreateCreditNoteIV(IVr,kInvoiceTypeCredit,IVCreditr,"",false)==0) then begin
       if (IVr.InvDate>IVCreditr.InvDate) then begin
         IVCreditr.InvDate = IVr.InvDate;
+        IVVc_PasteInvDate(IVCreditr,LMb,err1,err2);
       end;
       IVCreditr.CustCredManNr = IVr.CustCredManNr;
       IVCreditr.SerNr = NextSerNr("IVVc",IVCreditr.InvDate,-1,false,"");
@@ -1868,7 +1871,7 @@ begin
   BlockLoad(CIb);
 
   if (nonblank(selldate)) then begin
-    CreateSingleAgreementInvoice(CredManr,CredManr.endDate,IVr,"");
+    CreateSingleAgreementInvoice(CredManr,selldate,IVr,"");
   end else begin
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
     GetBuyOutData(CredManr,CredManPayPlanr,CMb,lastinv,balance);

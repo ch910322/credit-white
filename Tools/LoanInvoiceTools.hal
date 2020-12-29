@@ -1127,7 +1127,7 @@ end;
 updating function Boolean CreateInvoiceBasedOnSchedule(record CredManVc CredManr,Date ed,var record IVVc firstIVr)
 begin
   record CredManSchedVc CSr,oldCSr;
-  row CredManSchedVc CSrw;
+  row CredManSchedVc CSrw,lastCSrw;
   Integer i,rwcnt,rw;
   record IVVc IVr,oldIVr;
   record CredManSetBlock CMb;
@@ -1137,6 +1137,9 @@ begin
   Boolean firstf;
   Boolean res;
   record CredManTypeVc CMTr;
+  val totdays,useddays;
+  val ratio;
+  Boolean testf;
 
   Date ted,sd,invdat2;
   Integer latedays;
@@ -1154,7 +1157,23 @@ begin
     rwcnt = MatRowCnt(CSr);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CSr,i,CSrw);
+      testf = false;
       if (CSrw.InvDate<=ed and CSrw.Invoiced==0 and CanInvoiceDate(CredManr,InvoiceTypeFromSchedule(CredManr,CSrw))) then begin
+        testf = true;
+      end;
+      if (nonblank(CredManr.CancelDate) and CSrw.Invoiced==0) then begin
+        if (lastCSrw.InvDate<ed and CSrw.InvDate>=ed) then begin
+          testf = true;
+          useddays = DateDiff(ed,CSrw.FromDate) + 1;
+          totdays = DateDiff(CSrw.ToDate,CSrw.FromDate) + 1;
+          ratio = useddays/totdays;
+          CSrw.Principle = CSrw.Principle*ratio;
+          CSrw.Interest = CSrw.Interest*ratio;
+          CSrw.ToDate = ed;
+          CSrw.InvDate = ed;
+        end;
+      end;      
+      if (testf) then begin
         BuildInvoiceBasedOnSchedule(CredManr,CSrw,CMb,ASb,lastd,IVr,true,true);
         if (IVr.SerNr>-1) then begin
           StoreLoanInvoice(IVr,CredManr);
@@ -1170,6 +1189,7 @@ begin
         end;
       end;
       lastd = AddDay(CSrw.InvDate,1);
+      CopyRow(CSr,CSrw,lastCSrw);
     end;
     if (CIb.OverdueIVType==2 and GetDay(CurrentDate)==CIb.OverdueIVDay) then begin
       ted = CurrentDate;
