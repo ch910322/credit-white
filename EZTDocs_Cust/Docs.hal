@@ -738,11 +738,12 @@ begin
   vVals["F_OTHERCONDITIONS"] = CredManr.OtherConditions;
 
   surnum = 1;
-  sc = GetFieldValueByName(CredManr,"Surety" & surnum & "Code",-1);
+  sc = GetFieldValueByName(CredManr,"SuretyProvider" & surnum,-1);
   while (nonblank(sc)) begin
     M4PadString(surnum-1,3,"0",true,strnum);
     PrintCredManSureties(vVals,CredManr,surnum,"ROW2_" & strnum);
-    sc = GetFieldValueByName(CredManr,"Surety" & surnum & "Code",-1);
+    surnum = surnum + 1;
+    sc = GetFieldValueByName(CredManr,"SuretyProvider" & surnum,-1);
   end;
 
   surnum = 1;
