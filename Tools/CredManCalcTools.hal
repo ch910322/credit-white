@@ -430,20 +430,33 @@ begin
   val sum;
   Date td;
   Integer invtype;
+  Boolean testf;
 
   rwcnt = MatRowCnt(CredManr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManr,i,CredManrw);
-    if ((type==kPlannedFeesMonthly and MonthlyChargeType(CredManrw.ChargeType)) or 
-        (type==kPlannedFeesOneTime and MonthlyChargeType(CredManrw.ChargeType)==false)) then begin
-
+    testf = true;
+    if (type==kPlannedFeesMonthly and MonthlyChargeType(CredManrw.ChargeType)==false) then begin
+      testf = false;
+    end;
+    if (type==kPlannedFeesOneTime and MonthlyChargeType(CredManrw.ChargeType)) then begin
+      testf = false;
+    end else begin
+      if (blank(frdate) and CredManrw.InvDate>CredManr.FirstInvDate) then begin
+        testf = false;
+      end;
+    end;
+    
+    if (nonblank(frdate) and nonblank(CredManrw.InvDate) and DateInRange(CredManrw.InvDate,frdate,todate) and CredManrw.InvDate>=CredManr.FirstInvDate) then begin
+      testf = true;
+    end;
+    if (testf) then begin
       td = invdate;
-      if (type==kPlannedFeesOneTime and nonblank(CredManrw.InvDate)) then begin
+      invtype = 0;
+      if (nonblank(CredManrw.InvDate)) then begin
         td = CredManrw.InvDate;
       end;
       if (ContractFeef) then begin
-        invtype = 0;
-      end else begin
         invtype = 1;
       end;
       if (CalculatedChargeType(CredManrw.ChargeType)) then begin
