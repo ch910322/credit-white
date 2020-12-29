@@ -891,7 +891,7 @@ begin
   return;
 end;
 
-procedure AddActualsToPlan(record CredManVc CredManr,var record CredmanPayPlanVc CredManPayPlanr,var Integer calculatedmonths,var val acumint,var val calcbal,var Boolean firstinvf,record CredManSetBlock CredManSetb,var Integer months,var val buyoutamount,var val pausebal,var val prolongbal,Integer int_type,var val usesum)
+procedure AddActualsToPlan(record CredManVc CredManr,var record CredmanPayPlanVc CredManPayPlanr,var Integer calculatedmonths,var val acumint,var val calcbal,var Boolean firstinvf,record CredManSetBlock CredManSetb,var Integer months,var val buyoutamount,var val pausebal,var val prolongbal,Integer int_type,var val usesum,var Integer usemonths)
 begin
   record CredHistVc CredHistr,PrevCredHistr;
   Boolean TrHs;
@@ -954,6 +954,7 @@ begin
       monthlypayment = (CredManr.InvSum4-CredManr.DepositSum)/(CredManr.InstalmentMonths-CredManr.PrincipleDelayMonths);
       reducemonths = buyoutamount/monthlypayment;
       months = months - reducemonths;
+      usemonths = months - calculatedmonths;
     //end;
   end;
 
@@ -1376,16 +1377,19 @@ LCalcSchedule:;
   waspausedf = false; pausefrom = ""; pauseuntil = ""; pausemonths = 0; pausestartmonths = 0;
   prolongf = false; prolongstartmonths = 0;prolongbal = 0;
   calculatedmonths = 0;
+  usemonths = 0;
 
   if (withactuals) then begin
-    AddActualsToPlan(inCredManr,CredManPayPlanr,calculatedmonths,acumint,calcbal,firstinvf,CredManSetb,months,buyoutamount,pausebal,prolongbal,int_type,usesum);
+    AddActualsToPlan(inCredManr,CredManPayPlanr,calculatedmonths,acumint,calcbal,firstinvf,CredManSetb,months,buyoutamount,pausebal,prolongbal,int_type,usesum,usemonths);
   end;
   if (tCredManr.Status==5) then begin
     goto LBuildCredManPayPlanCust;
   end;
-  usemonths = months;
+  if (usemonths==0) then begin
+    usemonths = months;
+  end;
   if (buyoutamount>0) then begin
-    usesum = usesum - buyoutamount;
+    //usesum = usesum - buyoutamount;
   end;
 
   delaymonths = inCredManr.PrincipleDelayMonths;

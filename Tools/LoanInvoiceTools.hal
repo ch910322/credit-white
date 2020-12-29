@@ -1421,7 +1421,7 @@ begin
       SetupInvoiceRowAndAdd(CredManr,IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
     end;
     AddBuyOutFee(CredManr,IVr);
-    GetCredManOverdueInvoices(CredManr,CMb,td,AddDay(lastinv,1),latedays,lateamount,lateformula,false,false);
+    GetCredManOverdueInvoices(CredManr,CMb,td,AddDay(lastinv,1),latedays,lateamount,lateformula,true,false);
     BlockLoad(CIb);
     if (testf or CIb.OverdueIVType==0) then begin
       AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
@@ -1514,7 +1514,7 @@ begin
       if (IVr.Sum4>0) then begin
         logtext(0,"DoBuyOutAgreement CIb.OverdueIVType " & CIb.OverdueIVType & ":" & sd);
         if (CIb.OverdueIVType>0) then begin
-          GetCredManOverdueInvoices(CredManr,CMb,CurrentDate,sd,latedays,lateamount,lateformula,false,false);
+          GetCredManOverdueInvoices(CredManr,CMb,CurrentDate,sd,latedays,lateamount,lateformula,true,false);
           SetupLoanInvoice(CredManr,CMb,oIVr,CurrentDate,sd,CurrentDate,true,false,"",2,true);
           AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
           SetupOverdueLangCode(oIVr,CredManr);
