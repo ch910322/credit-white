@@ -309,12 +309,11 @@ begin
   return;
 end;
 
-
 function Boolean ShouldAddInvoiceToIP(record IPVc IPr,record ARVc ARr,Date untildate,val remsum)
 begin
   Boolean res;
 
-  if (remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate) and CredManPMCodeMatches(IPr.PayMode,ARr.InvoiceNr,false)) then begin
+  if (remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate) and CredManPMCodeMatches(IPr.PayMode,ARr.InvoiceNr,false) and ARr.InvDate<=IPr.TransDate) then begin
     res = true;
   end;
 

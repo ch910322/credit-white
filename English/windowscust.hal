@@ -2066,6 +2066,7 @@ begin
   EditField(h,v+=vs,100,"First Invoice Paym. Term",Normal,FirstInvPayDeal,false,PDSClass);  
 
   EditField(h,v+=vs,100,"Period Delimiter",Normal,PeriodDelimiter,false,0);  
+  EditField(h,v+=vs,100,"Max overpaid Amount %",Normal,MaxOverpaidPrc,false,0);
   
   ButtonFrame(h,v+=40,400,4,"Interest Invoicing");
   RadioButton(h,v,0,0,"With Principle, same Invoice",InterestIVType);

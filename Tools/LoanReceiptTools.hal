@@ -269,6 +269,24 @@ begin
 end;
 
 /*main function*/
+function Boolean CredManAmountNotOverpaid(record CredManVc CredManr,val remsum)
+begin
+  Boolean res;
+  val maxamount;
+  
+  res = false;
+  if (CredManr.LoanType==8) then begin
+    if (CredManr.MaxOverpaidPrc>0) then begin
+      maxamount = CredManr.InvSum4*CredManr.MaxOverpaidPrc/100;
+      if (maxamount>remsum) then begin
+        res = true;
+      end;
+    end;
+  end;
+
+  CredManAmountNotOverpaid = res;
+  return;
+end;
 
 updating procedure CheckAndRemoveCreditLineBalance(var record IPVc IPr,string cucode,var val remsum,Longint credmannr)
 begin
@@ -300,6 +318,9 @@ begin
     end;
     if (TrHs) then begin
       if (CredManr.OKFlag==1 and CredManr.Approved==1 and (CredManr.LoanType==7 or CredManr.LoanType==8)) then begin
+        if (CredManAmountNotOverpaid(CredManr,remsum)) then begin//
+          goto LNext_CheckAndRemoveCreditLineBalance;
+        end;
         SetupLoanInvoice(CredManr,CMb,IVr,IPr.TransDate,"","",true,false,"",1,true);
         GetItemName(CMb.InstalmentItem,spec);
         SetupInvoiceRowAndAdd(CredManr,IVr,CMb.InstalmentItem,spec,1,remsum,blankval,19,-1);
@@ -321,6 +342,7 @@ begin
         TrHs = false;
         remsum = 0;
       end;
+LNext_CheckAndRemoveCreditLineBalance:;
     end;
   end;
 

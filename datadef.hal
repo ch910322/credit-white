@@ -673,6 +673,7 @@ begin
   RecordField(DisburseUntil,M4Date,0,0);
   RecordField(UseCompensationInvoices,M4Int,0,0);
   RecordField(CancelDate,M4Date,0,0);
+  RecordField(MaxOverpaidPrc,M4Val,0,0);
   
 
   ArrayField(MinSum,M4Val,0,0);
@@ -1482,6 +1483,7 @@ begin
   RecordField(RealInterestFlag,M4Int,0,0);
   RecordField(SellingItem,M4Code,20,0);
   RecordField(CompensationItem,M4Code,20,0);
+  RecordField(MaxOverpaidPrc,M4Val,0,0);
   
   EndBlock;
 

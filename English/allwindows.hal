@@ -994,6 +994,7 @@ begin
   EditField(h,v+=vs,40,"Settlement Months",Normal,SettleLimit,false,0);
   EditField(h,v+=vs,100,"Classifications",Normal,Classifications,false,CredManClassSClass);
   EditField(h,v+=vs,150,"Cancellation Date",Normal,CancelDate,false,PasteCurDate);
+  EditField(h,v+=vs,100,"Max overpaid Amt %",Normal,MaxOverpaidPrc,false,0);
 
 //CUST-BEGIN
   if (type!=2 and type!=3) then begin

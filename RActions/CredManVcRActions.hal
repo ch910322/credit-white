@@ -21,14 +21,17 @@ BEGIN
   record BaseCurBlock BCb;
   record CredManSetBlock CMb;
   record CMOrderClassBlock OCb;
+  record CMInvoicingBlock CIb;
 
   BlockLoad(BCb);
   BlockLoad(CMb);
   BlockLoad(OCb);
+  BlockLoad(CIb);
   CredManr.CurncyCode = BCb.BaseCur1;
   CredManr.MonthlyPaymentDay = CMb.InvDay;
   CredManr.FirstIntDate = CurrentDate;
   CredManr.Status = 0;
+  CredManr.MaxOverpaidPrc = CIb.MaxOverpaidPrc;
 
   res = inner.CredManVcRecordDefaults(CredManr,CredMan2r,stat,long4);
   CredManVc_PasteType(CredManr);
