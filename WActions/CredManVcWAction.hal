@@ -1715,7 +1715,7 @@ begin
   mwn = MotherWindow(wn);
   GetWindowRecord(mwn,CredManr);
 
-  if (CredManr.LoanType==8) then begin
+  if (CredManr.LoanType==8 or CredManr.LoanType==7) then begin
     AgreementPaidOut(CredManr,paidout);
     if (paidout+RepSpec.vals1>CredManr.InvSum4) then begin
       MessageBox(200112,"");

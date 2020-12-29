@@ -1,6 +1,6 @@
 //<halrule>server-only</halrule>
 external inner procedure IPPastePayMode(var record IPVc);
-external procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
+external updating procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
 external updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc,string);
 
 procedure GetReceipts(record IVVc IVr,var array record IPVc aIPr)

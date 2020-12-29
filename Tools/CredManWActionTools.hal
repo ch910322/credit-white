@@ -41,7 +41,7 @@ external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlan
 external updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
 external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean,Boolean);
 external function Boolean FindCEOContact(string,var record CUVc);
-external procedure GetCustomerLoanAmounts2(var record IPVc,var integer,string,var string,var val,string,boolean,string,string,var vector Boolean,Date,Longint);
+external updating procedure GetCustomerLoanAmounts2(var record IPVc,var integer,string,var string,var val,string,boolean,string,string,var vector Boolean,Date,Longint);
 external function string 255 CM_GetCredManTypePurchItemAccount2(record CredManVc,string,Boolean);
 external updating procedure CreatePauseRecord(Longint,Date,val,val,val,Integer);
 external updating procedure CreateProlongRecord(Longint,Date,val,Integer);
@@ -1600,7 +1600,7 @@ begin
     //CM_AddPrepayments(IVr,CredManr,CIb);
     StoreLoanInvoice(IVr,CredManr);
 
-    IVr.Sum4 = buyoutval;//a little hack for this to work
+    //IVr.Sum4 = buyoutval;//a little hack for this to work
     CreatePaymentFakeReceipt(CredManr,IVr);
 
     if (updf) then begin

@@ -1034,7 +1034,7 @@ begin
   return;
 end;
 
-
+global
 procedure GetItemName(string code,var string spec)
 begin
   record INVc INr;
