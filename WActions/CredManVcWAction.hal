@@ -845,41 +845,6 @@ begin
 end;
 
 global
-function Boolean CredManDClassOnOpenWindow(Integer wn)
-begin
-  Boolean res;
-  record CredManVc CredManr;
-  Integer mwn,num;
-  record CMInterfaceSetBlock ISb;
-  string 255 wstr;
-
-/*
-  BlockLoad(ISb);
-  GetWindowRecord(wn,CredManr);
-  if (CredManr.LoanType==0) then begin
-    wstr = GetWindowClass(wn);
-    if (wstr=="CredManDClass") then begin
-      CredManr.LoanType = ISb.DefCredManLoanType;
-    end;
-  end;
-  num = StringToInt(mid(GetWindowClass(wn),7,1));
-  if (num!=CredManr.LoanType and CredManr.LoanType>0) then begin
-    mwn = MotherWindow(wn);
-    CloseWindow(wn);
-    OpenWindow("CredMan" & CredManr.LoanType & "DClass",1,mwn,"","",CredManr);
-  end else begin
-    UpdateCredManSoftFields(wn,CredManr,true);
-  end;
-*/
-
-  GetWindowRecord(wn,CredManr);
-  UpdateCredManSoftFields(wn,CredManr,true);
-
-  CredManDClassOnOpenWindow = false;
-  return;
-end;
-
-global
 procedure ReopenCredManTask(string wstr)
 begin
   Integer wn;
@@ -908,6 +873,48 @@ begin
 end;
 
 global
+function Boolean CredManDClassOnOpenWindow(Integer wn)
+begin
+  Boolean res;
+  record CredManVc CredManr;
+  Integer mwn,num;
+  record CMInterfaceSetBlock ISb;
+  string 255 wstr;
+
+/*
+  BlockLoad(ISb);
+  GetWindowRecord(wn,CredManr);
+  if (CredManr.LoanType==0) then begin
+    wstr = GetWindowClass(wn);
+    if (wstr=="CredManDClass") then begin
+      CredManr.LoanType = ISb.DefCredManLoanType;
+    end;
+  end;
+  num = StringToInt(mid(GetWindowClass(wn),7,1));
+  if (num!=CredManr.LoanType and CredManr.LoanType>0) then begin
+    mwn = MotherWindow(wn);
+    CloseWindow(wn);
+    OpenWindow("CredMan" & CredManr.LoanType & "DClass",1,mwn,"","",CredManr);
+  end else begin
+    UpdateCredManSoftFields(wn,CredManr,true);
+  end;
+*/
+
+  GetWindowRecord(wn,CredManr);
+
+  num = StringToInt(mid(GetWindowClass(wn),7,1));
+  if (num!=CredManr.LoanType and CredManr.LoanType>0) then begin
+    ScheduleReopenCredManWindow(wn);
+  end;
+
+
+  UpdateCredManSoftFields(wn,CredManr,true);
+
+  CredManDClassOnOpenWindow = false;
+  return;
+end;
+
+global
 function Boolean CredManDClassBeforeEditField(Integer wn,string fieldname,Integer fn, Integer rownr)
 begin
   Boolean res;
@@ -920,6 +927,7 @@ begin
     if (num!=CredManr.LoanType and CredManr.LoanType>0) then begin
       ScheduleReopenCredManWindow(wn);
     end;
+    PutWindowString(wn,"checktype",1);
   end;
 
   CredManDClassBeforeEditField = true;
