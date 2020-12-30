@@ -84,6 +84,7 @@ begin
   //end;
   if (nint_sdp>int_sdp) then begin
     int_sdp = nint_sdp;
+    sdp = int_sdp;
   end;
   int_invdat = invd;
   if (CIb.InterestIVType>=2) then begin
