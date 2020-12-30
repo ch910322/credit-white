@@ -37,7 +37,8 @@ remote procedure CheckBuyOutAgreementCallBack(record RcVc,Integer);
 enum begin
   kCredHistRecTypeInvoice = 0,
   kCredHistRecTypeReceipt = 1,
-  kCredHistRecTypePrepayment = 2
+  kCredHistRecTypePrepayment = 2,
+  kCredHistRecTypeCreditNote = 3
 end;
 
 enum begin
@@ -1919,7 +1920,7 @@ begin
   return;
 end;
 
-function Boolean FindMatchingRow(record IVVc credIVr,Longint histnr,var row IVVc tIVrw)
+function Boolean FindMatchingRow(record IVVc credIVr,Longint histnr,string item,var row IVVc tIVrw)
 begin
   Integer i,rwcnt;
   row IVVc IVrw;
@@ -1932,6 +1933,16 @@ begin
       res = true;
       MatRowGet(credIVr,i,tIVrw);
       i = rwcnt;
+    end;
+  end;
+  if (res==false) then begin
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(credIVr,i,IVrw);
+      if (IVrw.ArtCode==item) then begin
+        res = true;
+        MatRowGet(credIVr,i,tIVrw);
+        i = rwcnt;
+      end;
     end;
   end;
 
@@ -1961,7 +1972,7 @@ begin
           for (i=0;i<rwcnt;i=i+1) begin
             MatRowGet(IVr,i,IVrw);
             if (IVrw.ChargeType>0) then begin
-              if (FindMatchingRow(credIVr,IVrw.CredHistNr,tIVrw)) then begin
+              if (FindMatchingRow(credIVr,IVrw.CredHistNr,IVrw.ArtCode,tIVrw)) then begin
                 CreateCredHist(IVr.SerNr,10,IVr.CustCode,CalculateRowSumWithVAT(IVr,IVrw),3,"",IVr.TransDate,IVr.CustCredManNr,IVr.TransDate,histnr,"","",0,tIVrw.CredHistNr,IVrw.Sum,-1,0);
 
                 IVrw.CredHistNr = histnr;
@@ -1972,6 +1983,9 @@ begin
           end;
         end;
       end;
+    end;
+    if (IVr.OKFlag==0 and IV2r.OKFlag!=0) then begin
+      RemoveCredHist(IVr.SerNr,kCredHistRecTypeCreditNote);
     end;
   end else begin
     if (IVr.OKFlag==0 and IV2r.OKFlag!=0) then begin
