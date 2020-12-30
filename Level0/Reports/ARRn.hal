@@ -54,6 +54,7 @@ external outer procedure SumAgedNewWithItems(record IVVc,Date,Date,Date,Boolean,
 external outer procedure PrintAgedLineWithItems(val,vector val,vector val,vector val,vector val,vector val,vector val,vector val,vector val,val,val,Integer,Integer,vector Boolean,vector Boolean,record RcVc);
 external outer  function val GetCredHistOpenValue(Longint);
 external outer function Boolean CheckInvoiceDebtorsAC(string,record IVVc,var val);
+external outer function Boolean CheckInvoiceDebtorsACOnDate(string,record IVVc,var val,Date);
 //CUST-END
 
 global
@@ -465,7 +466,7 @@ L22:;
             end;
 //CUST-BEGIN
             if (nonblank(RepSpec.AccStr)) then begin
-              CheckInvoiceDebtorsAC(RepSpec.AccStr,IVr,rvalb1);//just to get rvalb1
+              CheckInvoiceDebtorsACOnDate(RepSpec.AccStr,IVr,rvalb1,RepSpec.d1);//just to get rvalb1
             end;
 //CUST-END
             if (IVr.InvType==kInvoiceTypeCredit or IVr.InvType==kInvoiceTypeCreditSpecialSales) then begin
