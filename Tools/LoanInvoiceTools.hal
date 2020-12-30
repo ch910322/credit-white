@@ -1962,7 +1962,7 @@ begin
             MatRowGet(IVr,i,IVrw);
             if (IVrw.ChargeType>0) then begin
               if (FindMatchingRow(credIVr,IVrw.CredHistNr,tIVrw)) then begin
-                CreateCredHist(IVr.SerNr,10,IVr.CustCode,tIVrw.Sum,3,"",IVr.TransDate,IVr.CustCredManNr,IVr.TransDate,histnr,"","",0,tIVrw.CredHistNr,IVrw.Sum,-1,0);
+                CreateCredHist(IVr.SerNr,10,IVr.CustCode,CalculateRowSumWithVAT(IVr,IVrw),3,"",IVr.TransDate,IVr.CustCredManNr,IVr.TransDate,histnr,"","",0,tIVrw.CredHistNr,IVrw.Sum,-1,0);
 
                 IVrw.CredHistNr = histnr;
                 MatRowPut(IVr,i,IVrw);
