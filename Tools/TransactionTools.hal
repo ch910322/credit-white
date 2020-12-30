@@ -95,17 +95,29 @@ end;
 
 
 global
-function string 255 CM_GetCredManTypePurchItemAccount(Longint sernr,string fallback,Boolean debitf)
+function string 255 CM_GetCredManTypePurchItemAccount(Longint sernr,Longint credmannr,string fallback,Boolean debitf)
 begin
   record CredManVc CredManr;
   record CredManAccVc CredManAccr;
   string 255 res;
   record CMInvoicingBlock CIb;
+  Boolean foundf;
 
   BlockLoad(CIb);
   if (CIb.UseTypeAccounts==1) then begin
-    CredManr.VINr = sernr;
-    if (ReadFirstKey("VINr",CredManr,1,true)) then begin
+    if (credmannr>0) then begin
+      CredManr.SerNr = credmannr;
+      if (ReadFirstMain(CredManr,1,true)) then begin
+        foundf = true;
+      end;
+    end else begin
+      CredManr.VINr = sernr;
+      if (ReadFirstKey("VINr",CredManr,1,true)) then begin
+        foundf = true;
+      end;
+    end;
+
+    if (foundf) then begin
       CredManAccr.CredManType = CredManr.Type;
       if (ReadFirstMain(CredManAccr,1,true)) then begin
         if (debitf) then begin
