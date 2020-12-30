@@ -436,8 +436,10 @@ begin
       if (CredPayr.PreviousNr!=CredHistr.SerNr) then begin
         TrHs = false;
       end else begin
-        if (CredPayr.RecordType==1 or CredPayr.RecordType==2 or CredPayr.RecordType==3) then begin
-          res = res - CredPayr.Sum;
+        if (CredPayr.TransDate<=td) then begin
+          if (CredPayr.RecordType==1 or CredPayr.RecordType==2 or CredPayr.RecordType==3) then begin
+            res = res - CredPayr.Sum;
+          end;
         end;
       end;
     end;
