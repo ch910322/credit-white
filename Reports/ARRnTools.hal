@@ -429,6 +429,7 @@ begin
 
   CredHistr.SerNr = sernr;
   if (ReadFirstMain(CredHistr,1,true)) then begin
+    res = CredHistr.Sum;
     TrHs = true;
     CredPayr.PreviousNr = CredHistr.SerNr;
     while (LoopKey("PreviousNr",CredPayr,1,TrHs)) begin
@@ -436,7 +437,7 @@ begin
         TrHs = false;
       end else begin
         if (CredPayr.RecordType==1 or CredPayr.RecordType==2 or CredPayr.RecordType==3) then begin
-          res = res + CredPayr.Sum;
+          res = res - CredPayr.Sum;
         end;
       end;
     end;
