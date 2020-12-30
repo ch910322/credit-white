@@ -21,7 +21,7 @@ external function LongInt CalcARRnColumnSpacing(LongInt,Integer,var LongInt,var 
 external function string 255 GetHRVOfficialInvoiceNo(string);
 external procedure OutEmpty(record RcVc,Integer);
 //CUST-BEGIN
-external outer function Boolean CheckInvoiceDebtorsAC(string,record IVVc,var val);
+external outer function Boolean CheckInvoiceDebtorsACOnDate(string,record IVVc,var val,Date);
 //CUST-END
 
 global
@@ -62,7 +62,7 @@ begin
 */
     begin
       val rs;
-      if (CheckInvoiceDebtorsAC(RepSpec.AccStr,IVr,rs)==false) then begin
+      if (CheckInvoiceDebtorsACOnDate(RepSpec.AccStr,IVr,rs,RepSpec.d1)==false) then begin
         testf = false;
       end;
     end;
