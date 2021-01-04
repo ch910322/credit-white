@@ -61,6 +61,7 @@ external procedure DistributeCredHistValues(var record IPVc,Integer);
 external procedure AddInstalmentFixed(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,val,Date,var val,var val,Date,Date);
 external procedure GetBuyOutData(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var Date,var val);
 external inner procedure IVVc_PastePrice(var record IVVc,record IVVc,Integer,var string);
+external procedure MergeItemsInInvoice(var record IVVc,record CredManVc);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -1849,13 +1850,29 @@ begin
   return;
 end;
 
+procedure RemoveHiddenLine(var record IVVc IVr)
+begin
+  Integer i,rwcnt;
+  row IVVc IVrw;
+
+  rwcnt = MatRowCnt(IVr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    if (IVrw.stp==kInvoiceRowTypeHidden) then begin
+      MatRowDelete(IVr,i);
+      i = rwcnt;
+    end;
+  end;
+  return;
+end;
+
 global
 updating procedure TerminateCredMan(var record CredManVc CredManr,val prc,string custcode,Date selldate)
 begin
   val calcbal,balance,cumint;
   Date lastinv,td;
   Integer i,rwcnt;
-  record IVVc IVr;
+  record IVVc IVr,oldIVr;
   record CredManSetBlock CMb;
   row CredManPayPlanVc CredManPayPlanrw;
   record CredManPayPlanVc CredManPayPlan2r;
@@ -1870,22 +1887,27 @@ begin
   BlockLoad(CMb);
   BlockLoad(CIb);
 
-  if (nonblank(selldate)) then begin
-    CreateSingleAgreementInvoice(CredManr,selldate,IVr,"");
-  end else begin
+  CreateSingleAgreementInvoice(CredManr,selldate,IVr,"");
+  //recalculate schedule if there is one
+  //unok the invoice
+  RecordCopy(oldIVr,IVr);
+  IVr.OKFlag = 0;
+  if (RecordUpdate(oldIVr,IVr,true)==0) then begin
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
     GetBuyOutData(CredManr,CredManPayPlanr,CMb,lastinv,balance);
     td = CurrentDate;
     if (balance>0) then begin
-      SetupLoanInvoice(CredManr,CMb,IVr,CurrentDate,lastinv,CurrentDate,true,false,"",1,true);
       AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,CurrentDate);
       rwcnt = MatRowCnt(CredManPayPlan2r);
       for (i=0;i<rwcnt;i=i+1) begin
         MatRowGet(CredManPayPlan2r,i,CredManPayPlanrw);
         SetupInvoiceRowAndAdd(CredManr,IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
       end;
-      StoreLoanInvoice(IVr,CredManr);
     end;
+    MergeItemsInInvoice(IVr,CredManr);
+    RemoveHiddenLine(IVr);
+    IVr.OKFlag = 1;
+    RecordUpdate(oldIVr,IVr,true);
   end;
 
   CreditCredManInvoices(CredManr,prc,credval,vCredVal);

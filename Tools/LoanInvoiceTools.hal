@@ -673,6 +673,7 @@ begin
   return;
 end;
 
+global
 procedure MergeItemsInInvoice(var record IVVc IVr,record CredManVc CredManr)
 begin
   Integer i,rwcnt,chargetype;
