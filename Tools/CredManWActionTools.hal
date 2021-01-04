@@ -194,12 +194,20 @@ begin
       case 1: res = CMTr.CredManLangCode;
       case 2: res = CMTr.ScheduleLangCode;
       case 3: 
-        res = CMTr.SuretyLangCode;
+        if (blank(GetFieldValueByName(CredManr,"Surety" & param & "Signer",-1))) then begin
+          res = CMTr.SuretyLangCode;
+        end else begin
+          res = CMTr.SuretyLangCode2;
+        end;
         if (HasSuretyPerson) then begin
           CUr.Code = GetFieldValueByName(CredManr,"SuretyProvider" & param,-1);
           if (ReadFirstmain(CUr,1,true))then begin
             if (CUr.CustType==1) then begin
-              res = CMTr.SuretyPersonLangCode;
+              if (blank(GetFieldValueByName(CredManr,"Surety" & param & "Signer",-1))) then begin
+                res = CMTr.SuretyPersonLangCode;
+              end else begin
+                res = CMTr.SuretyPersonLangCode2;
+              end;
             end;
           end;
         end;

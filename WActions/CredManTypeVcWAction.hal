@@ -108,7 +108,7 @@ begin
   Integer res,rownr;
   record CredManTypeVc CMTr;
   
-  res = 2001;
+  res = -1;
   GetWindowRecord(wn,CMTr);
   switch (fieldname) begin
     case "InstalmentType":

@@ -453,12 +453,12 @@ begin
     end;
     if (testf) then begin
       td = invdate;
-      invtype = 0;
+      invtype = 1;
       if (nonblank(CredManrw.InvDate)) then begin
         td = CredManrw.InvDate;
       end;
       if (ContractFeef) then begin
-        invtype = 1;
+        invtype = 0;
       end;
       if (CalculatedChargeType(CredManrw.ChargeType)) then begin
         sum = AdjustFees(GetRateAmount(CredManr,CredManrw.vRebate,monthtypef,frdate,todate,calcbal,true,true),CredManrw.MinSum,CredManrw.MaxSum);

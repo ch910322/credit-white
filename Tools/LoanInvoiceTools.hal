@@ -1116,7 +1116,7 @@ begin
   Integer res;
 
   res = 1;
-  if (CredManr.FirstInvDate<CSrw.InvDate) then begin
+  if (CredManr.FirstInvDate>CSrw.InvDate) then begin
     if (CSrw.Deposit==0 and CSrw.Interest==0 and CSrw.Principle==0 and CSrw.Fees!=0) then begin
       res = 0;
     end;

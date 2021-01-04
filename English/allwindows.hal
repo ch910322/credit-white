@@ -1595,6 +1595,9 @@ begin
   CheckBox(h4,v,0,"Surety",SuretySurety);
   CheckBox(h5,v,0,"Us",SuretyUs);
   EditField(h6,v,40,"Language",Normal,SuretyLangCode,false,LangSClass);
+    if (SimplifiedSureties) then begin  
+      EditField(h6+60,v,40,"",Normal,SuretyLangCode2,false,LangSClass);
+    end;
 
   v = v + vs;
 
@@ -1605,6 +1608,9 @@ begin
     CheckBox(h4,v,0,"Surety",SuretyPersonSurety);
     CheckBox(h5,v,0,"Us",SuretyPersonUs);
     EditField(h6,v,40,"Language",Normal,SuretyPersonLangCode,false,LangSClass);
+    if (SimplifiedSureties) then begin  
+      EditField(h6+60,v,40,"",Normal,SuretyPersonLangCode2,false,LangSClass);
+    end;
   end;
 
   v = v + vs;
