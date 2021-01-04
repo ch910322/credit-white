@@ -374,6 +374,8 @@ begin
   Boolean novitif;
   vector string 255 vClass;
   record CredManTypeVc CMTr;
+  string 255 tmp;
+  Longint pos;
 
 
   num = 0;
@@ -485,7 +487,10 @@ begin
       OutVal(p[11],0,Round(rate,SetRoundModeD(2)),M4Val,false);
       OutString(p[12],0,CredManr.endDate,false);
       OutString(p[13],0,startbal,false);
-      OutString(p[14],0,translist,false);
+      pos = 0;
+      if (GetNextSubString(translist,pos,",",tmp)) begin
+        OutString(p[14],0,tmp,false);
+      end;
       OutString(p[15],0,paidval,false);
       OutString(p[16],0,princ,false);
       OutString(p[17],0,interest,false);
@@ -500,6 +505,15 @@ begin
 
       EndFormat;
       cnt = cnt + 1;
+      if (GetNextSubString(translist,pos,",",tmp)) begin
+        StartFormat(15);       
+        for (i=0;i<14;i=i+1) begin  
+          OutString(p[i],0,"",false);
+        end;
+        StripSpace(tmp,tmp);
+        OutString(p[14],0,tmp,false);
+        EndFormat;
+      end;
     end;
   end; 
 
