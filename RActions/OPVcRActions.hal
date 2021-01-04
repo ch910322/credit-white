@@ -61,9 +61,9 @@ begin
               CredManr.MoneyTransferDate = OPr.PayDate;
             end;
           end;
-          //if (checkf==false or AgreementPaidOut(CredManr)) then begin
-          CredManr.Status = 4;
-          //end;
+          if (int_type<2 or APr.RVal==0) then begin
+            CredManr.Status = 4;
+          end;
           RecordUpdate(oldCredManr,CredManr,true);
           CSr.CredManNr = CredManr.SerNr;
           if (ReadFirstMain(CSr,1,true)) then begin

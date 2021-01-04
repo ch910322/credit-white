@@ -882,7 +882,7 @@ begin
   rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(SMr,i,SMrw);
-    if (i==0 and SMrw.TransDate<CredManr.FirstInvDate) then begin
+    if (SMrw.TransDate<CredManr.FirstInvDate) then begin//i==0 and 
       goto LNextRow;
     end;
     if (SMrw.RowSimStat==5) then begin
