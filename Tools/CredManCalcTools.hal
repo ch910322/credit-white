@@ -1379,6 +1379,7 @@ LCalcSchedule:;
   prolongf = false; prolongstartmonths = 0;prolongbal = 0;
   calculatedmonths = 0;
   usemonths = 0;
+  delaymonths = inCredManr.PrincipleDelayMonths;
 
   if (withactuals) then begin
     AddActualsToPlan(inCredManr,CredManPayPlanr,calculatedmonths,acumint,calcbal,firstinvf,CredManSetb,months,buyoutamount,pausebal,prolongbal,int_type,usesum,usemonths);
@@ -1388,13 +1389,12 @@ LCalcSchedule:;
   end;
   if (usemonths==0) then begin
     usemonths = months;
+    usemonths = usemonths - delaymonths;
   end;
   if (buyoutamount>0) then begin
     //usesum = usesum - buyoutamount;
   end;
 
-  delaymonths = inCredManr.PrincipleDelayMonths;
-  usemonths = usemonths - delaymonths;
   basemonths = usemonths;
   substractmonths = delaymonths;
 //logtext(0,"start dev");
