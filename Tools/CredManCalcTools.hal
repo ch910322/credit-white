@@ -926,11 +926,13 @@ begin
             type = GetCredHistType(PrevCredHistr.ArtCode,-1,true);          
         end;
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,CredHistr.ArtCode,"",type,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,openamount);
-        if (CredHistr.ChargeType==kEventTypePartialBuyout) then begin
+        if (CredHistr.RecordType==0 and (CredManr.InstalmentType!=0 or CredHistr.ChargeType==kEventTypePartialBuyout)) then begin
           usesum = calcbal;
+        end;
+        if (CredHistr.ChargeType==kEventTypePartialBuyout) then begin
           buyoutamount = buyoutamount + CredHistr.Sum;
         end;
-        if (CredHistr.RecordType==0 and CredHistr.ChargeType!=kEventTypePartialBuyout) then begin
+        if (CredHistr.RecordType==0 and CredHistr.ChargeType!=kEventTypePartialBuyout and CredHistr.ChargeType!=kEventTypeIssueLateFees) then begin
           if (IsInitialInvoice(CredManr,CredHistr.TransDate,lastrecnr,vFirstInv[CredHistr.RecordNr])) then begin
             firstinvf = true;
             vFirstInv[CredHistr.RecordNr] = true;//we can have multiple records for single invoice. so we need to store that this invoice is the initial invoice
