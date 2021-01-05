@@ -62,6 +62,8 @@ external procedure AddInstalmentFixed(record CredManVc,record CredManPayPlanVc,r
 external procedure GetBuyOutData(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var Date,var val);
 external inner procedure IVVc_PastePrice(var record IVVc,record IVVc,Integer,var string);
 external procedure MergeItemsInInvoice(var record IVVc,record CredManVc);
+external function Boolean AgreementPaidOut2(record CredManVc,var val);
+external function Integer GetInterestPaymentType(record CredManVc);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -961,6 +963,8 @@ begin
   area filearea;
   transaction Longint gSuretyNumber;
   transaction Longint gBOENumber;
+  Boolean skipf;
+  val paidout;
   
   ArchiveExistingDocument(ADr,oldname);
 
@@ -981,7 +985,15 @@ begin
       end;
     case 2://schedule
       fn = GetAgreementDocumentName(ADr,"Schedule",regenf);
-      GenerateAgreementSchedule(CredManr,false);
+      if (GetInterestPaymentType(CredManr)==2) then begin
+        AgreementPaidOut2(CredManr,paidout);
+        if (paidout==0) then begin
+          skipf = true;
+        end;
+      end;
+      if (skipf==false) then begin
+        GenerateAgreementSchedule(CredManr,false);
+      end;
       langcode = GetDocumentLangCode(CredManr,2,-1);
       if (ExternalDocumentEnabled("CredManScheduleForm")) then begin
         RepSpec.long1 = CredManr.InstalmentType;

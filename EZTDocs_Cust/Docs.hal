@@ -55,6 +55,8 @@ external function string 255 DateInWords(Date,string,Integer);
 external function string 255 GetConditionsText(record CredManVc,Integer);
 external function string 255 GetConditionsText2(record CredManVc,Integer,string);
 external function val AdjustFees(val,val,val);
+external function Boolean AgreementPaidOut2(record CredManVc,var val);
+external function Integer GetInterestPaymentType(record CredManVc);
 
 procedure GetCredManCustContact(record CredManVc CredManr,var string contactid,var string contactname)
 begin
@@ -862,16 +864,26 @@ begin
   record CUVc CUr;
   Integer num;
   string 255 strnum,tstr;
-  val topay2,openamount;
+  val topay2,openamount,paidout;
   record IVVc IVr;
+  Integer int_type;
  
   CUr.Code = CredManr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
   end;
   BlockLoad(CredManSetb);
+  int_type = GetInterestPaymentType(CredManr);
+  if (int_type==2) then begin//to get preliminary schedule for partial disbursement agreements
+    AgreementPaidOut2(CredManr,paidout);
+    if (paidout==0) then begin
+      int_type = 1;
+      CredManr.RealInterestFlag = int_type;
+    end;
+  end;
   if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
     ReadFirstMain(CredManr,1,true);
+    CredManr.RealInterestFlag = int_type;
     BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
   end;
   
