@@ -1910,11 +1910,14 @@ begin
   CreateSingleAgreementInvoice(CredManr,selldate,IVr,"",false);
   //recalculate schedule if there is one
   //unok the invoice
+  RecordCopy(tCredManr,CredManr);
+  tCredManr.CancelDate = "";
+  BuildCredManPayPlanCust(tCredManr,CredManPayPlanr,CMb,true,false);
+  GetBuyOutData(tCredManr,CredManPayPlanr,CMb,lastinv,balance);
+
   RecordCopy(oldIVr,IVr);
   IVr.OKFlag = 0;
   if (RecordUpdate(oldIVr,IVr,true)==0) then begin
-    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
-    GetBuyOutData(CredManr,CredManPayPlanr,CMb,lastinv,balance);
     td = CurrentDate;
     if (balance>0) then begin
       AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,CurrentDate);

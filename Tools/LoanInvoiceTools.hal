@@ -925,6 +925,13 @@ begin
               SetupOverdueLangCode(IVr,CredManr);
               AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
               StoreLoanInvoice(oIVr,CredManr);
+            case 2:
+              if (nonblank(CredManr.CancelDate)) then begin
+                SetupLoanInvoice(CredManr,CMb,oIVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno,2,true);
+                SetupOverdueLangCode(IVr,CredManr);
+                AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
+                StoreLoanInvoice(oIVr,CredManr);
+              end;
           end;
           CM_AddPrepayments(IVr,CredManr,CIb);
           if (IVr.SerNr>-1) then begin
@@ -933,10 +940,10 @@ begin
               IVr.ManualInvoice = 1;
             end;
             StoreLoanInvoice(IVr,CredManr);
-            if (firstf==false) then begin
+            //if (firstf==false) then begin
               RecordCopy(firstIVr,IVr);
-              firstf = true;
-            end;
+            //  firstf = true;
+            //end;
           end else begin
             LogText(0,"Failed to store Invoice. No Serial Number. Check Number Series. Not continuing to generate invoices");  
             goto lout;    
@@ -979,9 +986,9 @@ begin
         IVr.ManualInvoice = 1;
       end;
       StoreLoanInvoice(IVr,CredManr);
-      if (firstf==false) then begin
+      //if (firstf==false) then begin
         RecordCopy(firstIVr,IVr);
-      end;
+      //end;
     end else begin
       LogText(0,"Failed to store Invoice. No Serial Number. Check Number Series");
     end;
@@ -1106,6 +1113,15 @@ begin
         if (updf) then begin
           qupdating.StoreLoanInvoice(oIVr,CredManr);
         end;
+      case 2:
+        if (nonblank(CredManr.CancelDate)) then begin
+          SetupLoanInvoice(CredManr,CMb,oIVr,CSrw.InvDate,CSrw.FromDate,CSrw.ToDate,true,false,"",2,true);
+          SetupOverdueLangCode(IVr,CredManr);
+          AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
+          if (updf) then begin
+            qupdating.StoreLoanInvoice(oIVr,CredManr);
+          end;
+        end;
     end;
   end;
   
@@ -1189,10 +1205,10 @@ begin
           end;
           StoreLoanInvoice(IVr,CredManr);
 
-          if (firstf==false) then begin
+          //if (firstf==false) then begin
             RecordCopy(firstIVr,IVr);
-            firstf = true;
-          end;
+          //  firstf = true;
+          //end;
         end;
       end else begin
         if (CSrw.InvDate>ed) then begin
@@ -1221,10 +1237,10 @@ begin
         SetupOverdueLangCode(IVr,CredManr);
         AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
         StoreLoanInvoice(IVr,CredManr);
-        if (firstf==false) then begin
+        //if (firstf==false) then begin
           RecordCopy(firstIVr,IVr);
-          firstf = true;
-        end;
+        //  firstf = true;
+        //end;
       end;
     end;
   end;
