@@ -951,6 +951,7 @@ begin
   RecordField(CustCredManNr,M4Long,0,0);
   RecordField(CredFromDate,M4Date,0,0);
   RecordField(CredToDate,M4Date,0,0);
+  RecordField(ManualInvoice,M4Int,0,0);
   ArrayField(ChargeType,M4Set,2010,0);
   ArrayField(CredHistNr,M4Long,0,CredHistVc);
   ArrayField(FactoringInvoice,M4Long,0,CredManFactInvoiceVc);  
@@ -1897,6 +1898,7 @@ begin
   RecordField(InsuranceYes,M4Str,255,0);
   RecordField(InsuranceNo,M4Str,255,0);
   RecordField(InsuranceYes2,M4Str,255,0);
+  RecordField(InvoiceText,M4Str,255,0);
   EndBlock;
  
 

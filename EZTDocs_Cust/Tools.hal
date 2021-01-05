@@ -255,6 +255,7 @@ begin
   Integer debcnt;
   Array string 10 debaccs;
   val rval,rval2;
+  record CMPrintConstantsBlock PCb;
 
   Ext_PrintInvoiceSigner(vVals);
 
@@ -386,6 +387,12 @@ begin
     vVals["F_TOTALBRUTO"] = GetContactTotalPaidAmount(CredManr);
   end;
   vVals["F_KUNDMOMSNR2"] = vatnr;
+   
+  if (IVr.ManualInvoice==1) then begin
+    BlockLoad(PCb);
+    vVals["F_NETTINGTEXT"] = PCb.InvoiceText;
+  end;
+
 
   return;
 end;

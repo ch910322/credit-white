@@ -17,7 +17,7 @@ external inner function Boolean VIVc_PasteVECode(var record VIVc,Integer,Boolean
 external inner procedure VIVc_PastePayDeal(var record VIVc);
 external inner procedure VICalcVals(var record VIVc);
 external inner procedure VISumup(record VIVc,var val);
-external updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc,string);
+external updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc,string,Boolean);
 external inner procedure IVVc_PasteInvDate(var record IVVc,record LocalMachineBlock,var Integer,var Integer);
 external updating procedure ReceiptEntryCreateReceipts(record SMVc,Boolean,var val);
 external updating procedure CreateCredHist(Longint,Integer,string,val,Integer,string,Date,Longint,Date,var Longint,Date,Date,Integer,Longint,val,Longint,val);
@@ -1447,7 +1447,7 @@ begin
 
 
   if (CredManr.InstalmentType!=4 and CredManr.InstalmentType!=5) then begin
-    CreateSingleAgreementInvoice(CredManr,AddDay(CredManr.FirstInvDate,-1),IVr,invno);
+    CreateSingleAgreementInvoice(CredManr,AddDay(CredManr.FirstInvDate,-1),IVr,invno,true);
     CheckAndCreateAutoMailFromInvoice(IVr);
     RecordCopy(tIVr,IVr);
     
@@ -1895,7 +1895,7 @@ begin
   BlockLoad(CMb);
   BlockLoad(CIb);
 
-  CreateSingleAgreementInvoice(CredManr,selldate,IVr,"");
+  CreateSingleAgreementInvoice(CredManr,selldate,IVr,"",false);
   //recalculate schedule if there is one
   //unok the invoice
   RecordCopy(oldIVr,IVr);

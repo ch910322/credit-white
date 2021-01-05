@@ -2776,6 +2776,7 @@ begin
   TileButton(2,"BOE");  
   TileButton(3,"Properties");  
   TileButton(4,"Schedule");  
+  TileButton(5,"Invoices");  
 
   Tile(1,700,false,"1",SuretyYes);
   EditField(h,v=6,140,"Yes",Normal,SuretyYes,false,0);
@@ -2798,6 +2799,8 @@ begin
   EditField(h,v=6,140,"Yes",Normal,ScheduleYes,false,0);
   EditField(h,v+=vs,140,"No",Normal,ScheduleNo,false,0);
   EditField(h,v+=vs,140,"If Yes, then",Normal,ScheduleYes2,false,0);
+  Tile(5,50,false,"5",InvoiceText);
+  EditField(h,v=6,140,"Netting Text",Normal,InvoiceText,false,0);
   EndWindow;
 end;
 

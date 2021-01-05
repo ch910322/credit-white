@@ -4,7 +4,7 @@ external inner procedure PasteFromSysList(Integer,Integer);
 remote updating procedure GenerateSLAndPLInvoices(record CredManFactInvoiceVc);
 remote procedure FillCredManBuyers(var record CredManFactVc,var val);
 remote procedure CredManFactInsertCustCode(var record CredManFactVc,Integer);
-remote updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc,string);
+remote updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc,string,Boolean);
 remote inner procedure SendScanDocFile2(record DummyAttachVc,record RcVc,Integer);
 external inner function Date DateFromString(string,string);
 
@@ -36,7 +36,7 @@ begin
   if (GetWindowFileName(wn)=="CredManVc") then begin
     GetWindowRecord(wn,CredManr);
     
-    CreateSingleAgreementInvoice(CredManr,CurrentDate,IVr,"");
+    CreateSingleAgreementInvoice(CredManr,CurrentDate,IVr,"",false);
     if (IVr.SerNr>-1) then begin
       OpenWindow("IVDClass",1,CurWindow,"","",IVr);
     end;

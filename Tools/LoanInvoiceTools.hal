@@ -893,7 +893,7 @@ begin
   return;
 end;  
 
-updating procedure CreateInvoicesFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date ed,var record IVVc firstIVr,string ivno)
+updating procedure CreateInvoicesFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date ed,var record IVVc firstIVr,string ivno,Boolean manualf)
 begin
   Integer i,rwcnt;
   row CredManPayPlanVc CredManPayPlanrw;
@@ -929,6 +929,9 @@ begin
           CM_AddPrepayments(IVr,CredManr,CIb);
           if (IVr.SerNr>-1) then begin
             CheckAndAddHiddenPrinciple(IVr,CIb);
+            if (manualf) then begin
+              IVr.ManualInvoice = 1;
+            end;
             StoreLoanInvoice(IVr,CredManr);
             if (firstf==false) then begin
               RecordCopy(firstIVr,IVr);
@@ -972,6 +975,9 @@ begin
     CM_AddPrepayments(IVr,CredManr,CIb);
     if (IVr.SerNr>-1) then begin
       CheckAndAddHiddenPrinciple(IVr,CIb);
+      if (manualf) then begin
+        IVr.ManualInvoice = 1;
+      end;
       StoreLoanInvoice(IVr,CredManr);
       if (firstf==false) then begin
         RecordCopy(firstIVr,IVr);
@@ -1126,7 +1132,7 @@ begin
   return;
 end;
 
-updating function Boolean CreateInvoiceBasedOnSchedule(record CredManVc CredManr,Date ed,var record IVVc firstIVr)
+updating function Boolean CreateInvoiceBasedOnSchedule(record CredManVc CredManr,Date ed,var record IVVc firstIVr,Boolean manualf)
 begin
   record CredManSchedVc CSr,oldCSr;
   row CredManSchedVc CSrw,lastCSrw;
@@ -1178,6 +1184,9 @@ begin
       if (testf) then begin
         BuildInvoiceBasedOnSchedule(CredManr,CSrw,CMb,ASb,lastd,IVr,true,true);
         if (IVr.SerNr>-1) then begin
+          if (manualf) then begin
+            IVr.ManualInvoice = 1;
+          end;
           StoreLoanInvoice(IVr,CredManr);
 
           if (firstf==false) then begin
@@ -1280,7 +1289,7 @@ end;
 
 
 global
-updating procedure CreateSingleAgreementInvoice(record CredManVc CredManr,Date ed,var record IVVc IVr,string ivno)
+updating procedure CreateSingleAgreementInvoice(record CredManVc CredManr,Date ed,var record IVVc IVr,string ivno,Boolean manualf)
 begin
   record CredManSetBlock CMb;
   record CredManPayPlanVc CredManPayPlanr;
@@ -1289,10 +1298,10 @@ begin
   //if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
   if (CanCreateSingleAgreementInvoice(CredManr,ed)) then begin
     oldlang = CM_SetCompanyLanguage;
-    if (CreateInvoiceBasedOnSchedule(CredManr,ed,IVr)==false) then begin
+    if (CreateInvoiceBasedOnSchedule(CredManr,ed,IVr,manualf)==false) then begin
       BlockLoad(CMb);
       BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
-      CreateInvoicesFromPlan(CredManr,CMb,CredManPayPlanr,ed,IVr,ivno);
+      CreateInvoicesFromPlan(CredManr,CMb,CredManPayPlanr,ed,IVr,ivno,manualf);
     end;
     CM_ResetCompanyLanguage(oldlang);
   end;
