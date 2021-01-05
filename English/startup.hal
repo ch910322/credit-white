@@ -205,6 +205,7 @@ begin
   SString(200112,"Credit Limit reached");
   SString(200113,"Payment Date later than Disburse Until Date");
   SString(200114,"Bill of Exchange");
+  SString(200115,"Invoice already created with Number ");
 
 /*Web Codes 200200-200230*/
   SString(200200,"Banner with this type already registered in these days");
