@@ -1315,9 +1315,9 @@ begin
 
   BlockLoad(CIb);
   RecordNew(VIr);
-  VIr.SerNr = NextSerNr("VIVc",CurrentDate,-1,false,"");
   VIr.TransDate = CredManr.startDate;
   VIr.InvDate = CredManr.startDate;
+  VIr.SerNr = NextSerNr("VIVc",VIr.InvDate,-1,false,"");
   VIVc_PasteInvDate(VIr);    
   VIr.VECode = CredManr.CustCode;
   VIVc_PasteVECode(VIr,0,true,true,warning)
