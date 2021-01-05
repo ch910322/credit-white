@@ -675,6 +675,7 @@ begin
             sum = CredManr.MaxMonthlyPayment-(curpayment-sum);
           end;
         end;
+
         if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
           sum = usesum-CredManr.LastMonthPrinc;
           if (CredManr.LastPrincipleWithExtraMonth==1) then begin
@@ -1411,7 +1412,9 @@ LCalcSchedule:;
           int_todat = payoutdate;
         end;
         if (addbal>0) then begin
-          usemonths = months - i;
+          if (i>delaymonths) then begin
+            usemonths = months - i;
+          end;
         end;
       //end;
       int_calcbal = calcbal - addbal;
