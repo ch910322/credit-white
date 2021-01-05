@@ -627,18 +627,18 @@ begin
       end;
       IVCreditr.CustCredManNr = IVr.CustCredManNr;
       IVCreditr.SerNr = NextSerNr("IVVc",IVCreditr.InvDate,-1,false,"");
-      if (prc<100 or ratio!=1) then begin
-        rwcnt = MatRowCnt(IVCreditr);
-        for (i=0;i<rwcnt;i=i+1) begin
-          MatRowGet(IVCreditr,i,IVrw);
-          if (nonblank(IVrw.ArtCode)) then begin
-            if (IVrw.Price>0) then begin
+      rwcnt = MatRowCnt(IVCreditr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(IVCreditr,i,IVrw);
+        if (nonblank(IVrw.ArtCode)) then begin
+          if (IVrw.Price>0) then begin
+            if (prc<100 or ratio!=1) then begin
               IVrw.Price = IVrw.Price * ratio * prc / 100;
               MatRowPut(IVCreditr,i,IVrw);
               IVVc_PastePrice(IVCreditr,IV2r,i,warning);
               MatRowGet(IVCreditr,i,IVrw);
-              vCredVal[IVrw.ArtCode] = vCredVal[IVrw.ArtCode] + IVrw.Sum;
             end;
+            vCredVal[IVrw.ArtCode] = vCredVal[IVrw.ArtCode] + IVrw.Sum;
           end;
         end;
       end;
@@ -1943,7 +1943,6 @@ begin
     tCredManr.CustCode = custcode;
     SetupLoanInvoice(tCredManr,CMb,IVr,CurrentDate,"","",true,false,"",1,true);
     GetVectorTags(vCredVal,aCredVal);
-
     for (i=0;i<aCredVal.length;i=i+1) begin
       GetItemName(aCredVal[i],spec);
       SetupInvoiceRowAndAdd(CredManr,IVr,aCredVal[i],spec,1,vCredVal[aCredVal[i]],blankval,17,-1);
