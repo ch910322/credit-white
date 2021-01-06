@@ -2181,11 +2181,11 @@ begin
   MatCol(1,h1+=85,"Selection",0,SelectionType,false,SetSClass);
   Flip(2);
   h1 = hm;
-  MatCol(1,h1+=80,"First Inv. Serie",0,FirstInvSerie,false,InvLegalInvSerieSClass);
-  MatCol(1,h1+=80,"Regular Inv. Serie",0,RegularInvSerie,false,InvLegalInvSerieSClass);
-  MatCol(1,h1+=80,"Overdue Inv. Serie",0,OverdueInvSerie,false,InvLegalInvSerieSClass);
+  MatCol(1,h1+=80,"First Inv. Serie",0,FirstInvSerie,false,0);//InvLegalInvSerieSClass
+  MatCol(1,h1+=80,"Regular Inv. Serie",0,RegularInvSerie,false,0);
+  MatCol(1,h1+=80,"Overdue Inv. Serie",0,OverdueInvSerie,false,0);
   if (UseCompensationInvoices) then begin
-    MatCol(1,h1+=80,"Compens. Inv. Serie",0,CompensationInvSerie,false,InvLegalInvSerieSClass);
+    MatCol(1,h1+=80,"Compens. Inv. Serie",0,CompensationInvSerie,false,0);
   end;
   EndMatrix;
   VTab(-35,v,-16,v+=vs,ToolFlip,1,"A");
