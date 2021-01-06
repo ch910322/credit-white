@@ -158,9 +158,7 @@ begin
           serie = LegalInvNrrw.OverdueInvSerie;
         end;
     end;
-    logtext(0,"check offic " & serie);
     if (FindInvLegalNrLine(IVr.InvDate,serie,LINrbrw)) then begin
-
       res = NextLegalSerNr("IVVc",IVr.SerNr,IVr.InvDate,LINrbrw.Serie,LINrbrw.TSerStart,LINrbrw.TSerEnd);
     end;
   end;
