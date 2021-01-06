@@ -457,6 +457,8 @@ begin
     AddInvoiceToList(IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate,CMb);
   end;
 
+  SortRows(SMr,"TransDate",true);
+
   return;
 end;
 

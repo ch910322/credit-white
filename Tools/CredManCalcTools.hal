@@ -363,7 +363,7 @@ begin
         if (CredHistr.RecordType==5) then begin
           AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.IntRate,0,CredHistr.TransDate,todate,CredHistr.Sum,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
           if (CredManr.BuyoutFeePrc>0) then begin
-            AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.BuyoutFeePrc,0,frdate,CredHistr.TransDate,CredHistr.Sum,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
+           AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.BuyoutFeePrc,0,frdate,CredHistr.TransDate,CredHistr.Sum,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
           end;
         end;
       end;
@@ -1401,7 +1401,6 @@ LCalcSchedule:;
   basemonths = usemonths;
   substractmonths = delaymonths;
 //logtext(0,"start dev");
-
   LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths);
   for(i=calculatedmonths;i<months;i=i+1) begin
     if (calcbal>0 or int_type==2) then begin
@@ -1474,10 +1473,10 @@ LCalcSchedule:;
           end else begin
             if (ispausedf) then begin
               AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1,false);
-              AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat, acumint,addbal,int_frdat,int_todat,-1,false,int_type);
            end else begin
-              AddInterestDelay(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,calcbal,int_frdat,int_todat,-1);
+              AddInterestDelay(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1);
             end;
+            AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat, acumint,addbal,int_frdat,int_todat,-1,false,int_type);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
         case 1://linear with delay
@@ -1493,10 +1492,10 @@ LCalcSchedule:;
           end else begin
             if (ispausedf) then begin
               AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype2,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1,false);
-              AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,addbal,int_frdat,int_todat,-1,false,int_type);
             end else begin
-              AddInterestDelay(inCredManr,CredManPayPlanr,CredManSetb,monthtype2,int_invdat,acumint,calcbal,int_frdat,int_todat,-1);
+              AddInterestDelay(inCredManr,CredManPayPlanr,CredManSetb,monthtype2,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1);
             end;
+            AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,addbal,int_frdat,int_todat,-1,false,int_type);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
         case 3://Bullet
