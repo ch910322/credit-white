@@ -565,7 +565,7 @@ begin
     ValToText(GetYear(td)-tmp,M4Val,yc,ylmin,yearstr2);
     ValToText(GetMonth(td),M4Val,mc,ml,monthstr);
     ValToText(GetDay(td),M4Val,dc,dl,daystr);
-    tres = yearstr & LowerCase(yearstr2) & monthstr & LowerCase(daystr);
+    tres = LowerCase(yearstr) & LowerCase(yearstr2) & LowerCase(monthstr) & LowerCase(daystr);
     foundf = true;
     while (GetNextSubString(tres,pos2," ",tstr)) begin
       if (nonblank(tstr)) then begin
