@@ -678,6 +678,7 @@ begin
 
   CheckBox(h,v+=vs,0,"Bank Holidays",BankHolidays);
   CheckBox(h,v+=30,0,"Send Reminder per Bank Account",PerBankAcc);
+  CheckBox(h,v+=vs,0,"Include only overdue Invoices",OnlyOverdueInvoices);
 
   ButtonFrame(h,v=v+40,320,4,"Failed Reminders");
   CheckBox(h,v,0,"Create Activity if Reminder can not be sent",CreateActivity);
