@@ -353,6 +353,20 @@ begin
   return;
 end;
 
+function Boolean CredManDClassSubordSignerEFAfter(Integer wn,Boolean changedf,Integer num)
+begin
+  record CredManVc CredManr;
+  record CUVc CUr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,CredManr);
+    //InsertCredManSubordSignerName(CredManr,num);
+    PutWindowRecord(wn,CredManr);   
+  end; 
+  CredManDClassSubordSignerEFAfter = true;
+  return;
+end;
+
 function Boolean CredManDClassBOEEFAfter(Integer wn,Boolean changedf,Integer num)
 begin
   record CredManVc CredManr;
@@ -501,7 +515,7 @@ begin
           num = StringToInt(mid(fieldname,3,1));
           res = CredManDClassBOEEFAfter(wn,changed!=0,num);
         end;
-        if (left(fieldname,13)=="Subordination") then begin
+        if (left(fieldname,13)=="Subordination" and len(fieldname)==14)) then begin
           num = StringToInt(mid(fieldname,13,1));
           res = CredManDClassSubordEFAfter(wn,changed!=0,num);
         end;
@@ -513,6 +527,10 @@ begin
         if (left(fieldname,6)=="Surety" and right(fieldname,6)=="Signer") then begin
           num = StringToInt(mid(fieldname,6,1));
           res = CredManDClassSuretySignerEFAfter(wn,changed!=0,num);
+        end;
+        if (left(fieldname,13)=="Subordination" and right(fieldname,6)=="Signer") then begin
+          num = StringToInt(mid(fieldname,6,1));
+          res = CredManDClassSubordSignerEFAfter(wn,changed!=0,num);
         end;
       end else begin
         res = inner.CredManDClassAfterEditField(wn,fieldname,fn,rownr,changed);
