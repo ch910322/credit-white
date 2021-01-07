@@ -1333,7 +1333,7 @@ end;
 global
 procedure ExternalPrintCredManForm(record CredManVc CredManr,var vector string vVals)
 begin
-  Integer i,rwcnt;
+  Integer i,rwcnt,j;
   row CredManVc CredManrw;
   string 255 tstr,strnum;
   record SysFormatBlock SysFormatRec;
@@ -1425,13 +1425,12 @@ begin
           AddToList(vVals,"F_PROPINSURANCETYPE_LIST",ITr.Comment);
         end;
         tstr = "";
-        for (i=0;i<LineTextCnt2(Propr);i=i+1) begin
-          tstr = tstr & LineTextGet2(Propr,i);
+        for (j=0;j<LineTextCnt2(Propr);j=j+1) begin
+          tstr = tstr & LineTextGet2(Propr,j);
         end;
         tstr = StrReplace(tstr,chr(13),"\\n");
         vVals["ROW_" & strnum & "_F_PROPCOMMENT"] = tstr;
         AddToList(vVals,"F_PROPCOMMENT_LIST",tstr);
-        logtext(0,"add property");
 
       end;
     end;
