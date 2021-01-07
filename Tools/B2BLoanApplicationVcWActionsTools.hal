@@ -255,6 +255,23 @@ begin
 end;
 
 global
+procedure PasteSubordinationInCredMan(var record CredManVc CredManr,string code,Integer num)
+begin
+  record CUVc CUr;
+  
+  CUr.Code = code;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    SetFieldValueByName(CredManr,"Subordination" & num & "Name",CUr.Name,-1);
+    SetFieldValueByName(CredManr,"Subordination" & num & "Position",CUr.JobDesc,-1);
+    SetFieldValueByName(CredManr,"Subordination" & num & "Phone",CUr.Phone,-1);
+    SetFieldValueByName(CredManr,"Subordination" & num & "eMail",CUr.eMail,-1);
+  end;
+
+  return;
+end;
+
+
+global
 procedure PasteBOESignerInCredMan(var record CredManVc CredManr,string code,Integer num)
 begin
   record CUVc CUr;
