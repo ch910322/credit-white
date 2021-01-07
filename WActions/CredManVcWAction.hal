@@ -515,7 +515,7 @@ begin
           num = StringToInt(mid(fieldname,3,1));
           res = CredManDClassBOEEFAfter(wn,changed!=0,num);
         end;
-        if (left(fieldname,13)=="Subordination" and len(fieldname)==14)) then begin
+        if (left(fieldname,13)=="Subordination" and len(fieldname)==14) then begin
           num = StringToInt(mid(fieldname,13,1));
           res = CredManDClassSubordEFAfter(wn,changed!=0,num);
         end;

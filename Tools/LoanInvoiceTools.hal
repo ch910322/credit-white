@@ -876,11 +876,34 @@ begin
   return;
 end;
 
+global
+function Integer GetInterestPaymentType(record CredManVc CredManr)
+begin
+  record CMInvoicingBlock CIb;
+  record CredManTypeVc CMTr;
+  Integer res;
+
+  res = CredManr.RealInterestFlag-1;
+  if (res==-1) then begin
+    CMTr.Code = CredManr.Type;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      res = CMTr.RealInterestFlag-1;
+    end;
+  end;
+
+  if (res==-1) then begin
+    BlockLoad(CIb);
+    res = CIb.RealInterestFlag;
+  end;
+  GetInterestPaymentType = res;
+  return;
+end;
+
 function Boolean CanInvoiceDate(record CredManVc CredManr,Integer invtype)
 begin
   Boolean res;
   
-  if (invtype==1 and CredManr.OKFlag==1) then begin
+  if ((invtype==1 and CredManr.OKFlag==1) or GetInterestPaymentType(CredManr)==2) then begin
     res = true;
   end else begin
     if (invtype==0) then begin
@@ -2117,28 +2140,6 @@ begin
   return;
 end;
 
-global
-function Integer GetInterestPaymentType(record CredManVc CredManr)
-begin
-  record CMInvoicingBlock CIb;
-  record CredManTypeVc CMTr;
-  Integer res;
-
-  res = CredManr.RealInterestFlag-1;
-  if (res==-1) then begin
-    CMTr.Code = CredManr.Type;
-    if (ReadFirstMain(CMTr,1,true)) then begin
-      res = CMTr.RealInterestFlag-1;
-    end;
-  end;
-
-  if (res==-1) then begin
-    BlockLoad(CIb);
-    res = CIb.RealInterestFlag;
-  end;
-  GetInterestPaymentType = res;
-  return;
-end;
 
 global
 procedure GetCredManEventList(record CredManVc CredManr,var record ORVc ORr)
