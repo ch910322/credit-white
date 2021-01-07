@@ -58,6 +58,7 @@ external outer function Boolean CanEditCredManCreateDate();
 external outer function Boolean UseCredManStatus();
 external outer function Boolean HasPaymentWithoutRecons();
 external outer function Boolean SimplifiedSureties();
+external outer function Boolean HasSubordinations();
 external outer function Boolean UseBuyOutMonths();
 external outer function Boolean HideLeasingSeller();
 external outer function Boolean HideLoanPledges();
@@ -654,6 +655,7 @@ begin
   Integer n;
   Boolean statusf;
   record CMInterfaceSetBlock ISb;
+  Integer tilenr;
 
   BlockLoad(ISb);
 
@@ -879,7 +881,13 @@ begin
   TileButton(4,"Terms");
 //CUST-BEGIN
   TileButton(5,"Surety");
-  TileButton(6,"Bill of Exchange");
+  tilenr = 6;
+  if (SimplifiedSureties) then begin
+    TileButton(tilenr,"Bill of Exchange");tilenr = tilenr + 1;
+  end;
+  if (HasSubordinations) then begin
+    TileButton(tilenr,"Subordination"); tilenr = tilenr + 1;
+  end;
 /*
   if (type!=1 and type!=2 and type!=3 and type!=4 and type!=5) then begin
     TileButton(6,"Factoring");
@@ -1214,9 +1222,9 @@ begin
     EditField(h3,v+=vs,130,label4,Normal,Surety3Addr3,false,0);
     EditField(h3,v+=vs,130,label5,Normal,Surety3Addr4,false,0);
   end;
-  
+  tilenr = 6;
   if (SimplifiedSureties) then begin
-    Tile(6,290,true,"6",BOE1Code); 
+    Tile(tilenr,290,true,"6",BOE1Code); tilenr = tilenr + 1;
   
     StaticText(h=40,v=15,"Contact Code",false);
     StaticText(h+110,v,"Name",false);
@@ -1280,6 +1288,63 @@ begin
     HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignBOESimplified","Open","4");
     v = v + 30;
 
+  end;
+
+  if (HasSubordinations) then begin
+    Tile(tilenr,290,true,"6",Subordination1); tilenr = tilenr + 1;
+    StaticText(h=110,v=15,"Contact Code",false);
+    StaticText(h+110,v,"Name",false);
+    StaticText(h+200,v,"Amount",false);
+    StaticText(h+290,v,"Date",false);
+    StaticText(h+360,v,"Due Date",false);
+    StaticText(h+440,v,"Signing Pers.",false);
+    StaticText(h+550,v,"Position",false);
+    v = v + 30;
+
+    EditField(h=120,v,60,"Subordination 1",Normal,Subordination1,false,B2BLoanApp_CUSClass);
+    EditField(h+70,v,100,"",Normal,Subordination1Name,false,0);
+    EditField(h+180,v,70,"",Normal,Subordination1Amount,true,0);
+    EditField(h+260,v,70,"",Normal,Subordination1Date,false,PasteCurDate);
+    EditField(h+340,v,70,"",Normal,Subordination1DueDate,false,PasteCurDate);
+    EditField(h+420,v,100,"",Normal,Subordination1Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+530,v,80,"",Normal,Subordination1Position,false,JobTitleSClass);
+    v = v + 30;
+
+    EditField(h,v,60,"Subordination 2",Normal,Subordination2,false,B2BLoanApp_CUSClass);
+    EditField(h+70,v,100,"",Normal,Subordination2Name,false,0);
+    EditField(h+180,v,70,"",Normal,Subordination2Amount,true,0);
+    EditField(h+260,v,70,"",Normal,Subordination2Date,false,PasteCurDate);
+    EditField(h+340,v,70,"",Normal,Subordination2DueDate,false,PasteCurDate);
+    EditField(h+420,v,100,"",Normal,Subordination2Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+530,v,80,"",Normal,Subordination2Position,false,JobTitleSClass);
+    v = v + 30;
+
+    EditField(h,v,60,"Subordination 3",Normal,Subordination3,false,B2BLoanApp_CUSClass);
+    EditField(h+70,v,100,"",Normal,Subordination3Name,false,0);
+    EditField(h+180,v,70,"",Normal,Subordination3Amount,true,0);
+    EditField(h+260,v,70,"",Normal,Subordination3Date,false,PasteCurDate);
+    EditField(h+340,v,70,"",Normal,Subordination3DueDate,false,PasteCurDate);
+    EditField(h+420,v,100,"",Normal,Subordination3Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+530,v,80,"",Normal,Subordination3Position,false,JobTitleSClass);
+    v = v + 30;
+
+    EditField(h,v,60,"Subordination 4",Normal,Subordination4,false,B2BLoanApp_CUSClass);
+    EditField(h+70,v,100,"",Normal,Subordination4Name,false,0);
+    EditField(h+180,v,70,"",Normal,Subordination4Amount,true,0);
+    EditField(h+260,v,70,"",Normal,Subordination4Date,false,PasteCurDate);
+    EditField(h+340,v,70,"",Normal,Subordination4DueDate,false,PasteCurDate);
+    EditField(h+420,v,100,"",Normal,Subordination4Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+530,v,80,"",Normal,Subordination4Position,false,JobTitleSClass);
+    v = v + 30;
+
+    EditField(h,v,60,"Subordination 4",Normal,Subordination5,false,B2BLoanApp_CUSClass);
+    EditField(h+70,v,100,"",Normal,Subordination5Name,false,0);
+    EditField(h+180,v,70,"",Normal,Subordination5Amount,true,0);
+    EditField(h+260,v,70,"",Normal,Subordination5Date,false,PasteCurDate);
+    EditField(h+340,v,70,"",Normal,Subordination5DueDate,false,PasteCurDate);
+    EditField(h+420,v,100,"",Normal,Subordination5Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+530,v,80,"",Normal,Subordination5Position,false,JobTitleSClass);
+    v = v + 30;
   end;
 
 /*

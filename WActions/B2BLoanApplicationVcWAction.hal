@@ -539,13 +539,19 @@ begin
       if (left(fn,6)=="Surety") then begin
         num = mid(fn,6,1);
         custcode = GetFieldValueByName(CredManr,"SuretyProvider" & num,-1);
-      end else begin
-        if (left(fn,3)=="BOE") then begin
-          num = mid(fn,3,1);
-          custcode = GetFieldValueByName(CredManr,"BOE" & num & "Code",-1);
-        end else begin
-          custcode = CredManr.CustCode;
-        end;
+      end;
+
+      if (blank(custcode) and left(fn,3)=="BOE") then begin
+        num = mid(fn,3,1);
+        custcode = GetFieldValueByName(CredManr,"BOE" & num & "Code",-1);
+      end;
+      if (blank(custcode) and left(fn,13)=="Subordination") then begin
+        num = mid(fn,13,1);
+        custcode = GetFieldValueByName(CredManr,"Subordination" & num,-1);
+      end;
+
+      if (blank(custcode)) then begin
+        custcode = CredManr.CustCode;
       end;
     case "B2BLoanApplicationVc":
       GetWindowRecord(mwn,LAr);

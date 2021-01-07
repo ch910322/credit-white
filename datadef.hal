@@ -674,7 +674,57 @@ begin
   RecordField(UseCompensationInvoices,M4Int,0,0);
   RecordField(CancelDate,M4Date,0,0);
   RecordField(MaxOverpaidPrc,M4Val,0,0);
+
   
+  RecordField(Subordination1,M4Str,200,0);
+  RecordField(Subordination1Name,M4Str,200,0);
+  RecordField(Subordination1Position,M4Str,200,0);
+  RecordField(Subordination1Phone,M4Str,200,0);
+  RecordField(Subordination1eMail,M4Str,200,0);
+  RecordField(Subordination1Date,M4Date,0,0);
+  RecordField(Subordination1Amount,M4Val,0,0);
+  RecordField(Subordination1Signer,M4Str,255,0);
+  RecordField(Subordination1DueDate,M4Date,0,0);
+
+  RecordField(Subordination2,M4Str,200,0);
+  RecordField(Subordination2Name,M4Str,200,0);
+  RecordField(Subordination2Position,M4Str,200,0);
+  RecordField(Subordination2Phone,M4Str,200,0);
+  RecordField(Subordination2eMail,M4Str,200,0);
+  RecordField(Subordination2Date,M4Date,0,0);
+  RecordField(Subordination2Amount,M4Val,0,0);
+  RecordField(Subordination2Signer,M4Str,255,0);
+  RecordField(Subordination2DueDate,M4Date,0,0);
+
+  RecordField(Subordination3,M4Str,200,0);
+  RecordField(Subordination3Name,M4Str,200,0);
+  RecordField(Subordination3Position,M4Str,200,0);
+  RecordField(Subordination3Phone,M4Str,200,0);
+  RecordField(Subordination3eMail,M4Str,200,0);
+  RecordField(Subordination3Date,M4Date,0,0);
+  RecordField(Subordination3Amount,M4Val,0,0);
+  RecordField(Subordination3Signer,M4Str,255,0);
+  RecordField(Subordination3DueDate,M4Date,0,0);
+
+  RecordField(Subordination4,M4Str,200,0);
+  RecordField(Subordination4Name,M4Str,200,0);
+  RecordField(Subordination4Position,M4Str,200,0);
+  RecordField(Subordination4Phone,M4Str,200,0);
+  RecordField(Subordination4eMail,M4Str,200,0);
+  RecordField(Subordination4Date,M4Date,0,0);
+  RecordField(Subordination4Amount,M4Val,0,0);
+  RecordField(Subordination4Signer,M4Str,255,0);
+  RecordField(Subordination4DueDate,M4Date,0,0);
+
+  RecordField(Subordination5,M4Str,200,0);
+  RecordField(Subordination5Name,M4Str,200,0);
+  RecordField(Subordination5Position,M4Str,200,0);
+  RecordField(Subordination5Phone,M4Str,200,0);
+  RecordField(Subordination5eMail,M4Str,200,0);
+  RecordField(Subordination5Date,M4Date,0,0);
+  RecordField(Subordination5Amount,M4Val,0,0);
+  RecordField(Subordination5Signer,M4Str,255,0);
+  RecordField(Subordination5DueDate,M4Date,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
