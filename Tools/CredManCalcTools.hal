@@ -362,7 +362,7 @@ begin
       end else begin
         if (CredHistr.RecordType==5) then begin
           AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.IntRate,0,CredHistr.TransDate,todate,CredHistr.Sum,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
-          if (CredManr.BuyoutFeePrc>0) then begin
+          if (CredManr.BuyoutFeePrc>0 and (CredManr.LoanType==7 or CredManr.LoanType==8)) then begin
            AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.BuyoutFeePrc,0,frdate,CredHistr.TransDate,CredHistr.Sum,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
           end;
         end;
