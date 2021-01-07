@@ -713,9 +713,11 @@ LkInvoiceRowTypeNormal:;
       case kInvoiceRowTypeSwishPayment:
         MatRowDelete(CreditIVr,i);
         rwcnt = MatRowCnt(CreditIVr);
+/* CUST REMOVED because of omega old version
       case kInvoiceRowTypeMPesaPayment:
         MatRowDelete(CreditIVr,i);
         rwcnt = MatRowCnt(CreditIVr);
+*/
       case kInvoiceRowTypeQRPayment:
         MatRowDelete(CreditIVr,i);
         rwcnt = MatRowCnt(CreditIVr);
