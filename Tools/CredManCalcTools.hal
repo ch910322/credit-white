@@ -152,7 +152,7 @@ begin
   res = -1;
   if (ISb.UseCredManDaysInMonth==1) then begin
     if (CredManr.DaysInMonth>0) then begin
-      res = CMTr.DaysInMonth-1;
+      res = CredManr.DaysInMonth-1;
     end;
   end;
   if (res==-1) then begin
