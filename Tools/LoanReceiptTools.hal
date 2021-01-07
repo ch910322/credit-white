@@ -640,13 +640,17 @@ function Date GetLastInvoiceDate(record CredManVc CredManr,Date td)
 begin
   Date res;
   record CredHistVc CredHistr;
+  record CMInvoicingBlock CIb;
 
+  BlockLoad(CIb);
   res = CredManr.FirstInvDate;
   CredHistr.TransDate = td;  
   while (LoopBackKey("CredManTransDate:" & CredManr.SerNr,CredHistr,2,true)) begin
     if (CredHistr.RecordType==0) then begin
-      res = CredHistr.TransDate;
-      goto LGetLastInvoiceDate;
+      if (CIb.OverdueIVType==0 or CredHistr.ChargeType==9) then begin
+        res = CredHistr.TransDate;
+        goto LGetLastInvoiceDate;
+      end;
     end;
   end;
 

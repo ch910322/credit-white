@@ -1546,14 +1546,6 @@ begin
 
   CredManr.SerNr = sernr;
   if (ReadFirstMain(CredManr,1,true)) then begin
-    RecordCopy(oldCredManr,CredManr);
-    if (CredManr.VersionNo<0) then begin
-      CredManr.VersionNo = 0;
-    end;
-    CredManr.VersionNo = CredManr.VersionNo + 1;
-    if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
-      updf = true;
-    end;
 /*
     BlockLoad(BCb);
     SMr.RegDate = td;
@@ -1575,6 +1567,7 @@ begin
     lateamount = 0;
     invdate = td;
     sd = GetLastInvoiceDate(CredManr,invdate);
+    BlockLoad(CMb);
     GetCredManOverdueInvoices(CredManr,CMb,invdate,sd,latedays,lateamount,lateformula,true,false);
     if (latedays>0 or lateamount>0) then begin
       //Setup always new invoice
@@ -1606,6 +1599,14 @@ begin
       err = USetStr(200111);
       goto LCredManPartialBuyoutDo;
     end;
+    RecordCopy(oldCredManr,CredManr);
+    if (CredManr.VersionNo<0) then begin
+      CredManr.VersionNo = 0;
+    end;
+    CredManr.VersionNo = CredManr.VersionNo + 1;
+    if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
+      updf = true;
+    end;
 
     if (MatRowCnt(IPr)>0) then begin
       if (RecordStore(IPr,true)) then begin
@@ -1621,6 +1622,7 @@ begin
     SetupLoanInvoice(CredManr,CMb,IVr,td,"","",true,false,"",1,true);
     GetItemName(CMb.InstalmentItem,spec);
     SetupInvoiceRowAndAdd(CredManr,IVr,CMb.InstalmentItem,spec,1,buyoutval-tval,blankval,19,-1);
+
     //CM_AddPrepayments(IVr,CredManr,CIb);
     StoreLoanInvoice(IVr,CredManr);
 
