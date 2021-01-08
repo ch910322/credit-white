@@ -567,10 +567,12 @@ begin
         while (GetNextSubString(CUr.JobDesc,pos,",",tmp)) begin
           if (SetInSet(tmp,title)) then begin
             aCUr[aCUr.length] = CUr;
+            goto LFindAllContactsWithJobTitle_Next;
           end;
         end;
       end;
     end;
+LFindAllContactsWithJobTitle_Next:;
   end;
 
   return;
