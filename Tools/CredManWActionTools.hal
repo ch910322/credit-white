@@ -1461,7 +1461,7 @@ begin
 
 
   if (CredManr.InstalmentType!=4 and CredManr.InstalmentType!=5) then begin
-    CreateSingleAgreementInvoice(CredManr,AddDay(CredManr.FirstInvDate,-1),IVr,invno,true);
+    CreateSingleAgreementInvoice(CredManr,AddDay(CredManr.FirstInvDate,-1),IVr,invno,receiptf);//marking it as manual only if we make a receipt
     CheckAndCreateAutoMailFromInvoice(IVr);
     RecordCopy(tIVr,IVr);
     
