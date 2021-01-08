@@ -634,8 +634,8 @@ begin
         MatRowGet(IVCreditr,i,IVrw);
         if (nonblank(IVrw.ArtCode)) then begin
           if (IVrw.Price>0) then begin
-            if (prc<100 or ratio!=1) then begin
-              IVrw.Price = IVrw.Price * ratio * prc / 100;
+            if (ratio!=1) then begin
+              IVrw.Price = IVrw.Price * ratio;
               MatRowPut(IVCreditr,i,IVrw);
               IVVc_PastePrice(IVCreditr,IV2r,i,warning);
               MatRowGet(IVCreditr,i,IVrw);
@@ -1970,7 +1970,7 @@ begin
     GetVectorTags(vCredVal,aCredVal);
     for (i=0;i<aCredVal.length;i=i+1) begin
       GetItemName(aCredVal[i],spec);
-      SetupInvoiceRowAndAdd(CredManr,IVr,aCredVal[i],spec,1,vCredVal[aCredVal[i]],blankval,17,-1);
+      SetupInvoiceRowAndAdd(CredManr,IVr,aCredVal[i],spec,1,vCredVal[aCredVal[i]] * prc / 100,blankval,17,-1);
     end;
     StoreLoanInvoice(IVr,CredManr);
   end;
