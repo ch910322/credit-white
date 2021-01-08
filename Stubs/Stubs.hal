@@ -81,3 +81,12 @@ begin
   UseDisburseUntil = false;
   return;
 end;
+
+
+global
+function Boolean UseFullBuyoutProcedure()
+begin
+  UseFullBuyoutProcedure = true;
+  return;
+end;
+

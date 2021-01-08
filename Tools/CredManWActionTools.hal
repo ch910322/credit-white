@@ -64,6 +64,8 @@ external inner procedure IVVc_PastePrice(var record IVVc,record IVVc,Integer,var
 external procedure MergeItemsInInvoice(var record IVVc,record CredManVc);
 external function Boolean AgreementPaidOut2(record CredManVc,var val);
 external function Integer GetInterestPaymentType(record CredManVc);
+external function Boolean UseFullBuyoutProcedure();
+external procedure AddBuyOutFee(record CredManVc,var record IVVc);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -1543,26 +1545,10 @@ begin
   Integer i,rwcnt;
   array string 255 lateformula;
   string 255 spec;
+  Boolean fullf;
 
   CredManr.SerNr = sernr;
   if (ReadFirstMain(CredManr,1,true)) then begin
-/*
-    BlockLoad(BCb);
-    SMr.RegDate = td;
-    SMr.Sign = GetDefaultPayMode;
-    ClearRow(SMr,SMrw,1);
-    SMrw.Objects = CredManr.CustCode;
-    SMrw.DebVal = buyoutval;
-    SMrw.CurncyCode = BCb.BaseCur1;
-    MatRowPut(SMr,0,SMrw);
-
-    ReceiptEntryCreateReceipts(SMr,false,tval);
-    if (tval>0) then begin
-      CreateCredHist(-1,11,CredManr.CustCode,tval,4,"",td,CredManr.SerNr,td,histnr,"","",1,CredManr.SerNr,tval,-1,tval);
-      UpdateCredHistBalancePartialBuyout(CredManr.SerNr,histnr);
-    end;
-*/
-
     latedays = 0;
     lateamount = 0;
     invdate = td;
@@ -1577,21 +1563,25 @@ begin
       StoreLoanInvoice(IVr,CredManr);
     end;
 
-    IPr.TransDate = td;
-    IPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
-    IPr.RegDate = td;
-    IPr.OKFlag = 0;
-    IPr.PayMode = CIb.PaymentMode;
-    IPPastePayMode(IPr);
+    fullf = UseFullBuyoutProcedure;
 
-    remsum = buyoutval;
-    GetCustomerLoanAmounts2(IPr,k,CredManr.Addr0,CredManr.CurncyCode,remsum,CredManr.CustCode,true,"","",invused,td,CredManr.SerNr);
-    
-    rwcnt = MatRowCnt(IPr);
-    for (i=0;i<rwcnt;i=i+1) begin
-      MatRowGet(IPr,i,IPrw);
-      if (IPrw.InvoiceNr>0) then begin
-        tval = tval + IPrw.RecVal;
+    if (fullf) then begin
+      IPr.TransDate = td;
+      IPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
+      IPr.RegDate = td;
+      IPr.OKFlag = 0;
+      IPr.PayMode = CIb.PaymentMode;
+      IPPastePayMode(IPr);
+
+      remsum = buyoutval;
+      GetCustomerLoanAmounts2(IPr,k,CredManr.Addr0,CredManr.CurncyCode,remsum,CredManr.CustCode,true,"","",invused,td,CredManr.SerNr);
+      
+      rwcnt = MatRowCnt(IPr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(IPr,i,IPrw);
+        if (IPrw.InvoiceNr>0) then begin
+          tval = tval + IPrw.RecVal;
+        end;
       end;
     end;
 
@@ -1622,12 +1612,17 @@ begin
     SetupLoanInvoice(CredManr,CMb,IVr,td,"","",true,false,"",1,true);
     GetItemName(CMb.InstalmentItem,spec);
     SetupInvoiceRowAndAdd(CredManr,IVr,CMb.InstalmentItem,spec,1,buyoutval-tval,blankval,19,-1);
+    if (fullf==false) then begin
+      AddBuyoutFee(CredManr,IVr);
+    end;
 
     //CM_AddPrepayments(IVr,CredManr,CIb);
     StoreLoanInvoice(IVr,CredManr);
 
     //IVr.Sum4 = buyoutval;//a little hack for this to work
-    CreatePaymentFakeReceipt(CredManr,IVr);
+    if (fullf) then begin
+      CreatePaymentFakeReceipt(CredManr,IVr);
+    end;
 
     if (updf) then begin
       ADr.RecordType = 0;

@@ -1402,6 +1402,7 @@ begin
   return;
 end;
 
+global
 procedure AddBuyOutFee(record CredManVc CredManr,var record IVVc IVr)
 begin
   record CMInvoicingBlock CIb;
