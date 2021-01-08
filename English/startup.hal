@@ -267,6 +267,7 @@ begin
   SString(200270,"Schedule Type");
   SString(200271,"Can't update becauce there is an Invoice already created");
   SString(200272,"Agreement schedule is not matching with Fixed schedule");
+  SString(200273,"Schedule doesn't exist");
 
 /*CreditAgreementsRn*/
   SString(200280,"Credit Agreements");

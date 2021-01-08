@@ -1914,8 +1914,13 @@ begin
   wn = CurWindow;
   if (WindowState(wn)==Rs_Normal) then begin
     GetWindowRecord(wn,CredManr);
-    RepSpec.long1 = CredManr.SerNr;
-    OpenWindow("TerminateYesNoWClass",0,wn,"","",RepSpec);
+    CSr.CredManNr = CredManr.SerNr;
+    if (ReadFirstMain(CSr,1,true)==false) then begin
+      MessageBox(200273,"");
+    end else begin
+      RepSpec.long1 = CredManr.SerNr;
+      OpenWindow("TerminateYesNoWClass",0,wn,"","",RepSpec);
+    end;
   end;
 
   return;
@@ -1962,9 +1967,14 @@ begin
   wn = CurWindow;
   if (WindowState(wn)==Rs_Normal) then begin
     GetWindowRecord(wn,CredManr);
-    RepSpec.long1 = CredManr.SerNr;
-    RepSpec.vals0 = 100;
-    OpenWindow("SellAgreementWClass",0,wn,"","",RepSpec);
+    CSr.CredManNr = CredManr.SerNr;
+    if (ReadFirstMain(CSr,1,true)==false) then begin
+      MessageBox(200273,"");
+    end else begin
+      RepSpec.long1 = CredManr.SerNr;
+      RepSpec.vals0 = 100;
+      OpenWindow("SellAgreementWClass",0,wn,"","",RepSpec);
+    end;
   end;
 
   return;
