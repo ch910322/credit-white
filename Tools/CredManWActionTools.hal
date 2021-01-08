@@ -1359,6 +1359,8 @@ begin
     RecordCopy(oldVIr,VIr);
     VIr.OKFlag = 1;
     RecordUpdate(oldVIr,VIr,true);
+    CreateRecordLink(CredManr,CurrentCompany,VIr,CurrentCompany);
+    CreateRecordLink(VIr,CurrentCompany,CredManr,CurrentCompany);
   end; 
 
   return;
@@ -1955,7 +1957,7 @@ begin
       StoreLoanInvoice(IVr,CredManr);
     end;
   end;
-  
+
   CreditCredManInvoices(CredManr,prc,credval,vCredVal);
   ReadFirstMain(CredManr,1,true);
 
