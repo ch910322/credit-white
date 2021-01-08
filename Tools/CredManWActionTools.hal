@@ -1905,11 +1905,28 @@ begin
   string 255 spec;
   vector val vCredVal;
   array string 255 aCredVal;
+  Date sd;
+  Integer latedays;
+  val lateamount;
+  array string 255 lateformula;
 
   BlockLoad(CMb);
   BlockLoad(CIb);
 
+  latedays = 0;
+  lateamount = 0;
+  sd = GetLastInvoiceDate(CredManr,selldate);
+  GetCredManOverdueInvoices(CredManr,CMb,selldate,sd,latedays,lateamount,lateformula,true,false);
+  if (latedays>0 or lateamount>0) then begin
+    //Setup always new invoice
+    SetupLoanInvoice(CredManr,CMb,IVr,selldate,sd,selldate,true,false,"",2,true);
+    AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
+    SetupOverdueLangCode(IVr,CredManr);
+    StoreLoanInvoice(IVr,CredManr);
+  end;
+  RecordClear(IVr);
   CreateSingleAgreementInvoice(CredManr,selldate,IVr,"",false);
+
   //recalculate schedule if there is one
   //unok the invoice
   RecordCopy(tCredManr,CredManr);
