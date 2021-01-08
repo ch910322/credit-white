@@ -223,7 +223,7 @@ begin
   return;
 end;
 
-procedure PrintSingleContactLine(var vector string vVals,string fname,record CUVc CUr)
+function string 255 GetSingleContactLine(record CUVc CUr)
 begin
   string 255 tstr;
   
@@ -235,6 +235,16 @@ begin
     tstr = AddValue(tstr,CUr.Mobile);
   end;
   tstr = AddValue(tstr,CUr.eMail);
+
+  GetSingleContactLine = tstr;
+  return;
+end;
+
+procedure PrintSingleContactLine(var vector string vVals,string fname,record CUVc CUr)
+begin
+  string 255 tstr;
+
+  tstr = GetSingleContactLine(CUr);
   vVals[fname] = tstr;
 
   return;
@@ -541,6 +551,48 @@ begin
   return;
 end;
 
+procedure FindAllContactsWithJobTitle(string custcode,var array record CUVc aCUr,string title)
+begin
+  record ContactRelVc CRr;
+  Boolean res;
+  Longint pos;
+  string 255 tmp;
+  record CUVc CUr;
+ 
+  while (LoopKey("CustContactCode:" & custcode,CRr,1,true)) begin
+    if (CRr.Invalid==0) then begin
+      CUr.Code = CRr.ContactCode;
+      if (ReadFirstMain(CUr,1,true)) then begin
+        pos = 0;
+        while (GetNextSubString(CUr.JobDesc,pos,",",tmp)) begin
+          if (SetInSet(tmp,title)) then begin
+            aCUr[aCUr.length] = CUr;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+
+procedure GetListOfContacts(string custcode,Integer type,var array record CUVc aCUr)
+begin
+  record CMApplicationSetBlock ASb;
+
+  ClearArray(aCUr);
+  BlockLoad(ASb);
+  if (type==0 and nonblank(ASb.CEOTitle)) then begin
+    FindAllContactsWithJobTitle(custcode,aCUr,ASb.CEOTitle);
+  end;  
+  if (type==1 and nonblank(ASb.CFOTitle)) then begin
+    FindAllContactsWithJobTitle(custcode,aCUr,ASb.CFOTitle);
+  end;  
+
+  return;
+end;
+
 procedure CredManHeader(var vector string vVals,record CredManVc CredManr)
 begin
   record CUVc CUr;
@@ -560,6 +612,7 @@ begin
   Integer surnum;
   string 255 sc,strnum;
   Integer gnum;
+  array record CUVc aCUr;
   
   BlockLoad(CMb);
   CUr.Code = CredManr.CustCode;
@@ -814,6 +867,11 @@ begin
   if (blank(vVals["F_CEODETAILS"])) then begin
     vVals["F_CEODETAILS"] = "-";
   end;
+  GetListOfContacts(CredManr.CustCode,0,aCUr);
+  for (i=0;i<aCUr.length;i=i+1) begin
+    CUr = aCUr[i];
+    AddToList(vVals,"F_CEOLIST",GetSingleContactLine(CUr));
+  end;
 
   RecordCLear(CUr);
   if (FindCFOContact(CredManr.CustCode,CUr)) then begin
@@ -826,6 +884,12 @@ begin
   if (blank(vVals["F_CFODETAILS"])) then begin
     vVals["F_CFODETAILS"] = "-";
   end;
+  GetListOfContacts(CredManr.CustCode,1,aCUr);
+  for (i=0;i<aCUr.length;i=i+1) begin
+    CUr = aCUr[i];
+    AddToList(vVals,"F_CFOLIST",GetSingleContactLine(CUr));
+  end;
+
   if (GetCredManCustContactRecord(CredManr,CUr)) then begin
     PrintSingleContactLine(vVals,"F_CONTACTDETAILS",CUr);
   end;
