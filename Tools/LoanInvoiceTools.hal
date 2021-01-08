@@ -591,10 +591,10 @@ begin
   Date res,td;
 
   TrHs = true;
-  CredHistr.ArtCode = item;
   CredHistr.CredManNr = sernr;
-  while (LoopKey("ArtCode",CredHistr,2,TrHs)) begin
-    if (CredHistr.ArtCode!=item or CredHistr.CredManNr!=sernr) then begin
+  CredHistr.ChargeType = 9;
+  while (LoopKey("CredManChargeType",CredHistr,2,TrHs)) begin
+    if (CredHistr.ChargeType!=9 or CredHistr.CredManNr!=sernr) then begin
       TrHs = false;
     end else begin
       td = GetInvoiceEndPeriod(CredHistr.RecordNr);
