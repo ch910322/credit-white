@@ -249,6 +249,7 @@ begin
   return;
 end;
 
+global
 function Boolean TypeAffectsBalance(Integer type)
 begin
   Boolean res;

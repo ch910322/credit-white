@@ -33,6 +33,7 @@ external inner procedure IPPastePayMode(var record IPVc);
 external inner updating procedure CreateInvoicePdfFile(record IVVc);
 external function Boolean CredManPMCodeMatches2(string,record CredManVc,Boolean);
 remote procedure CheckBuyOutAgreementCallBack(record RcVc,Integer);
+external function Boolean TypeAffectsBalance(Integer);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -1426,7 +1427,14 @@ begin
   Boolean foundf;
   Integer i,rwcnt;
   row CredManPayPlanVc CredManPayPlanrw;
+  val curbal;
  
+  if (GetInterestPaymentType(CredManr)==2) then begin
+    curbal = 0;
+  end else begin
+    curbal = CredManr.InvSum4;
+  end;
+
   lastinv = CredManr.startDate;
   rwcnt = MatRowCnt(CredManPayPlanr);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -1436,11 +1444,15 @@ begin
     end else begin
       CredHistr.SerNr = CredManPayPlanrw.IssuedNr;
       if (ReadFirstMain(CredHistr,1,true)) then begin
-        if (CredManPayPlanrw.ArtCode!=CMb.LateFeeItem and CredManPayPlanrw.ArtCode!=CMb.LateRateItem and (CredHistr.RecordType==0 or CredHistr.RecordType==4)) then begin
-          if (CredManPayPlanrw.Bal<balance or balance==0) then begin
-            balance = CredManPayPlanrw.Bal;
-            foundf = true;
+        if (CredManPayPlanrw.ArtCode!=CMb.LateFeeItem and CredManPayPlanrw.ArtCode!=CMb.LateRateItem and (CredHistr.RecordType==0 or CredHistr.RecordType==4 or CredHistr.RecordType==5)) then begin
+          if (TypeAffectsBalance(CredHistr.ChargeType)) then begin
+            curbal = curbal - CredHistr.Sum;
           end;
+          if (CredHistr.ChargeType==kEventTypePayout) then begin
+            curbal = curbal + CredHistr.Sum;
+          end;
+          balance = curbal;
+          foundf = true;
           if (CredHistr.RecordType==0 and CredHistr.CredToDate>lastinv) then begin
             lastinv = AddDay(CredHistr.CredToDate,1);
           end;
@@ -1638,18 +1650,25 @@ end;
 
 function val GetActualBalance(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,Boolean openf)
 begin
-  val res;
+  val res,curbal;
 	row CredManPayPlanVc CredManPayrw;
 	Integer rwcnt,i;
   val openamount;
 
-	res = CredManr.InvSum4;
+  if (GetInterestPaymentType(CredManr)==2) then begin
+    curbal = 0;
+  end else begin
+    curbal = CredManr.InvSum4;
+  end;
 	rwcnt = MatRowCnt(CredManPayPlanr);
 	for (i=0;i<rwcnt;i=i+1) begin
 		MatRowGet(CredManPayPlanr,i,CredManPayrw);
     if (CredManPayrw.PlanType>=5 and CredManPayrw.PlanType!=9) then begin
-      if (res>CredManPayrw.Bal) then begin
-        res = CredManPayrw.Bal;
+      if (TypeAffectsBalance(CredManPayrw.PlanType)) then begin
+        curbal = curbal - CredManPayrw.Sum;
+      end;
+      if (CredManPayrw.PlanType==kEventTypePayout) then begin
+        curbal = curbal + CredManPayrw.Sum;
       end;
       if (CredManPayrw.PlanType==kEventTypeIssueInstalment or CredManPayrw.PlanType==kEventTypePartialBuyout) then begin
         openamount = openamount + CredManPayrw.OpenAmount;
@@ -1666,10 +1685,10 @@ begin
 	end;
 
   if (openf) then begin
-    res = res + openamount;
+    curbal = curbal + openamount;
   end;
 
-	GetActualBalance = res;
+	GetActualBalance = curbal;
 	return;
 end;
 
@@ -1755,7 +1774,6 @@ logtext(0,"CheckBuyOutAgreement start");
   end;
   RepSpec.vals4 = dueamount;
   RepSpec.f12 = lateamount;//(RepSpec.vals2-RepSpec.vals3-RepSpec.vals4);
-  
   //BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
   
   RepSpec.vals3 = GetActualBalance(CredManr,CredManPayPlanr,false);
