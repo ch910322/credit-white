@@ -246,6 +246,7 @@ begin
   bankacc = XmlGet(xdata,"Document/BkToCstmrStmt/Stmt/Acct/Id/IBAN");
 
   if (GetBankAccPMRow(PMb,"",bankacc,PMbrw)==false) then begin
+    MessageBox(200116,"");
     goto LImpSwedBankLTU;
   end;
 
@@ -393,6 +394,7 @@ begin
   bankacc = XmlGet(xdata,"Document/BkToCstmrStmt/Stmt/Acct/Id/IBAN");
 
   if (GetBankAccPMRow(PMb,"",bankacc,PMbrw)==false) then begin
+    MessageBox(200116,"");
     goto LImpSEBLTU;
   end;
 

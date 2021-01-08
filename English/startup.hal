@@ -206,6 +206,7 @@ begin
   SString(200113,"Payment Date later than Disburse Until Date");
   SString(200114,"Bill of Exchange");
   SString(200115,"Invoice already created with Number ");
+  SString(200116,"Importing of Bank Account Statement from an unrecognized Account is not allowed");
 
 /*Web Codes 200200-200230*/
   SString(200200,"Banner with this type already registered in these days");
