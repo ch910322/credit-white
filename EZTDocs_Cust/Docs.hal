@@ -615,6 +615,7 @@ begin
   string 255 sc,strnum;
   Integer gnum;
   array record CUVc aCUr;
+  val tval;
   
   BlockLoad(CMb);
   CUr.Code = CredManr.CustCode;
@@ -663,7 +664,12 @@ begin
   vVals["F_STARTDATUM"] = CredManr.startDate;
   vVals["F_LASTINVDATE"] = CredManr.InvUntil;
   vVals["F_ENDDATE"] = CredManr.endDate;
-  vVals["F_SUMMA"] = CredManr.InvSum4;
+  if (GetInterestPaymentType(CredManr)==2) then begin
+    AgreementPaidOut2(CredManr,tval);
+    vVals["F_SUMMA"] = tval;
+  end else begin
+    vVals["F_SUMMA"] = CredManr.InvSum4;
+  end;
   GetFullCurncyRateText(true,tstr,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2);  
   vVals["F_RATE"] = tstr;
   GetFullCurncyRateText(false,tstr,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2);  
