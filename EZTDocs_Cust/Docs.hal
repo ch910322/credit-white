@@ -1508,23 +1508,6 @@ begin
     end;
   end;
 
-  GetCFOContacts(CredManr.CustCode,aCUr);
-  for (i=0;i<aCUr.length;i=i+1) begin
-    CUr = aCUr[i];
-    tstr = "";
-    tstr = AddValue(tstr,CUr.Name);
-    if (nonblank(CUr.Phone)) then begin
-      tstr = AddValue(tstr,CUr.Phone);
-    end else begin
-      tstr = AddValue(tstr,CUr.Mobile);
-    end;
-    tstr = AddValue(tstr,CUr.eMail);
-    if (nonblank(vVals["F_CFOLIST"])) then begin
-      vVals["F_CFOLIST"] = vVals["F_CFOLIST"] & "\\n";
-    end;
-    vVals["F_CFOLIST"] = vVals["F_CFOLIST"] & tstr;
-  end;
-
   return;   
 end;
 
