@@ -1780,6 +1780,7 @@ begin
   RecordField(ExtraDepositMonths,M4Str,50,0);
   RecordField(CustCode,M4Str,50,0);
   RecordField(MoneyTransferDate,M4Date,0,0);
+  RecordField(BasedOn,M4Long,0,0);
   ArrayBegin(Math,-,1);
   ArrayField(InvDate,M4Date,0,0);
   ArrayField(Principle,M4Val,0,0);
