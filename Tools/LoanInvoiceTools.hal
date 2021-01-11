@@ -382,10 +382,26 @@ begin
       end;
     end;
   end;
-  
 
   return;
 end;
+
+global
+procedure SetupBuyoutLangCode(var record IVVc IVr,record CredManVc CredManr)
+begin
+  record CredManTypeVc CMTr;
+
+  CMTr.Code = CredManr.Type;
+  if (ReadFirstMain(CMTr,1,true)) then begin
+    if (nonblank(CMTr.BuyOutLangCode)) then begin
+      IVr.LangCode = CMTr.BuyOutLangCode;
+    end;
+  end;
+
+  return;
+end;
+
+
 
 global
 procedure AddLateFees(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Integer latedays,val lateamount,array string lateformula)
@@ -1602,7 +1618,7 @@ begin
           SetupOverdueLangCode(oIVr,CredManr);
           StoreLoanInvoice(oIVr,CredManr);
         end;
-
+        SetupBuyoutLangCode(IVr,CredManr);
         StoreLoanInvoice(IVr,CredManr);
         GenerateAgreementSchedule(CredManr,true);
         RecordCopy(firstIVr,IVr);

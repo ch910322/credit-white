@@ -911,6 +911,7 @@ begin
   RecordField(VekselisShortLangCode2,M4Code,10,0);
   RecordField(SuretyLangCode2,M4Code,10,0);
   RecordField(SuretyPersonLangCode2,M4Code,10,0);
+  RecordField(BuyOutLangCode,M4Code,10,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);

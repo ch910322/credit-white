@@ -1714,6 +1714,8 @@ begin
   EditField(h2,v+=40,60,"Language",Normal,LangCode,false,LangSClass);
   EditField(h2,v+=vs,60,"First Invoice Language",Normal,LangCode2,false,LangSClass);
   EditField(h2,v+=vs,60,"Overdue Language",Normal,OverdueLangCode,false,LangSClass);
+  EditField(h2,v+=vs,60,"Buyout Language",Normal,BuyOutLangCode,false,LangSClass);
+  
   if (UseCompensationInvoices) then begin
     EditField(h2,v+=vs,60,"Compensation Language",Normal,CompensLangCode,false,LangSClass);
   end;
