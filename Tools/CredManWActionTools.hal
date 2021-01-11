@@ -1329,8 +1329,12 @@ begin
 
   BlockLoad(CIb);
   RecordNew(VIr);
-  VIr.TransDate = CredManr.startDate;
-  VIr.InvDate = CredManr.startDate;
+  if (CredManr.LoanType==7 or CredManr.LoanType==8) then begin
+    VIr.TransDate = CurrentDate;
+  end else begin
+    VIr.TransDate = CredManr.startDate;
+  end;
+  VIr.InvDate = VIr.TransDate;
   VIr.SerNr = NextSerNr("VIVc",VIr.InvDate,-1,false,"");
   VIVc_PasteInvDate(VIr);    
   VIr.VECode = CredManr.CustCode;
