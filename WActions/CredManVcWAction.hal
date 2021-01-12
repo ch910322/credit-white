@@ -2954,7 +2954,6 @@ function Boolean CredManDClassOKFlagButtonAction(Integer wn,Integer value)
 BEGIN
   Boolean res;
   record CredManVc CredManr;
-  Integer normalmode,updatemode;
  
   res = inner.CredManDClassOKFlagButtonAction(wn,value);
   if (res and WindowState(wn)==Rs_update) then begin
@@ -2965,5 +2964,23 @@ BEGIN
   end;
 
   CredManDClassOKFlagButtonAction = res;
+  RETURN;
+END;
+
+global
+function Boolean CredManDClassApprovedButtonAction(Integer wn,Integer value)
+BEGIN
+  Boolean res;
+  record CredManVc CredManr;
+ 
+  res = inner.CredManDClassApprovedButtonAction(wn,value);
+  if (res and WindowState(wn)==Rs_update) then begin
+    GetWindowRecord(wn,CredManr);
+    if (CredManr.OKFlag==1) then begin
+      res = false;
+    end;
+  end;
+
+  CredManDClassApprovedButtonAction = res;
   RETURN;
 END;

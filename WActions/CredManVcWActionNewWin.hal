@@ -10,6 +10,7 @@ external function Integer CredManDClassSelectSetToPaste(Integer,string);
 external procedure CredManDClassButtonFlags(Integer,var Boolean,var Boolean,var Boolean,var Boolean);
 external function Boolean CredManDClassHasChangesButtonAction(Integer,Integer);
 external function Boolean CredManDClassOKFlagButtonAction(Integer,Integer);
+external function Boolean CredManDClassApprovedButtonAction(Integer,Integer);
 
 /*CredManDClassAfterEditField*/
 global
@@ -712,5 +713,63 @@ begin
   CredMan8DClassOKFlagButtonAction = CredManDClassOKFlagButtonAction(wn,value);
   return;
 end;
+
+/*CredManDClassOKFlagButtonAction*/
+global
+function Boolean CredMan1DClassApprovedButtonAction(Integer wn,Integer value)
+begin
+  CredMan1DClassApprovedButtonAction = CredManDClassApprovedButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan2DClassApprovedButtonAction(Integer wn,Integer value)
+begin
+  CredMan2DClassApprovedButtonAction = CredManDClassApprovedButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan3DClassApprovedButtonAction(Integer wn,Integer value)
+begin
+  CredMan3DClassApprovedButtonAction = CredManDClassApprovedButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan4DClassApprovedButtonAction(Integer wn,Integer value)
+begin
+  CredMan4DClassApprovedButtonAction = CredManDClassApprovedButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan5DClassApprovedButtonAction(Integer wn,Integer value)
+begin
+  CredMan5DClassApprovedButtonAction = CredManDClassApprovedButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan6DClassApprovedButtonAction(Integer wn,Integer value)
+begin
+  CredMan6DClassApprovedButtonAction = CredManDClassApprovedButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan7DClassApprovedButtonAction(Integer wn,Integer value)
+begin
+  CredMan7DClassApprovedButtonAction = CredManDClassApprovedButtonAction(wn,value);
+  return;
+end;
+
+global
+function Boolean CredMan8DClassApprovedButtonAction(Integer wn,Integer value)
+begin
+  CredMan8DClassApprovedButtonAction = CredManDClassApprovedButtonAction(wn,value);
+  return;
+end;
+
 
 
