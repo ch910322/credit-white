@@ -109,7 +109,8 @@ begin
   return;
 end;
 
-function val GetAmount(record CredManVc CredManr)
+global
+function val GetAgreementAmount(record CredManVc CredManr)
 begin
   val res;
 
@@ -118,7 +119,7 @@ begin
     res = res - CredManr.ExtraDepositSum;
   end; 
   
-  GetAmount = res;
+  GetAgreementAmount = res;
   return;
 end;
 
@@ -195,23 +196,23 @@ begin
       end;
       if (months>0 and (fixeddaysf or GetDaysInMonth(CMb,CredManr)==0)) then begin
         days = DateDiff(todate,AddMonth(frdate,months))+1;
-        res = GetAmount(CredManr)*(rate/100)*months;
-        res = res + (GetAmount(CredManr)*rate/100*12/GetDaysInYear(CMb,CredManr)*days);
+        res = GetAgreementAmount(CredManr)*(rate/100)*months;
+        res = res + (GetAgreementAmount(CredManr)*rate/100*12/GetDaysInYear(CMb,CredManr)*days);
       end else begin
-        res = GetAmount(CredManr)*rate/100*12/GetDaysInYear(CMb,CredManr)*days;
+        res = GetAgreementAmount(CredManr)*rate/100*12/GetDaysInYear(CMb,CredManr)*days;
       end;
 */
         if (frdate!=todate and frdate.Day==todate.day) then begin
           months = MonthDiff(frdate,todate);
           res = calcbal*months*(rate/100);
         end else begin
-          res = calcbal*rate/100*12/GetDaysInYear(CMb,CredManr)*days;//GetAmount(CredManr)
+          res = calcbal*rate/100*12/GetDaysInYear(CMb,CredManr)*days;//GetAgreementAmount(CredManr)
         end;
     case kMonthTypeRegular:
       if (fixeddaysf or GetDaysInMonth(CMb,CredManr)==0) then begin
-        res = GetAmount(CredManr)*rate/100;
+        res = GetAgreementAmount(CredManr)*rate/100;
       end else begin
-        res = GetAmount(CredManr)*rate/100*12/GetDaysInYear(CMb,CredManr)*days;
+        res = GetAgreementAmount(CredManr)*rate/100*12/GetDaysInYear(CMb,CredManr)*days;
       end;   
     case kMonthTypeLast:
       if (fixeddaysf or GetDaysInMonth(CMb,CredManr)==0) then begin
@@ -386,7 +387,7 @@ begin
     if ((CredManr.ChargeMethod==1) and overridef==false and sendmonthtypef!=kMonthTypeFirst) then begin
       sendmonthtypef = kMonthTypeLast;
     end;
-    AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.BuyoutFeePrc,sendmonthtypef,frdate,todate,GetAmount(CredManr)-calcbal,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
+    AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.BuyoutFeePrc,sendmonthtypef,frdate,todate,GetAgreementAmount(CredManr)-calcbal,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
   end;
 
   return;
@@ -1406,7 +1407,7 @@ LCalcSchedule:;
     calcbal = 0;
   end else begin
     calcbal = inCredManr.InvSum4;
-    usesum = GetAmount(inCredManr);
+    usesum = GetAgreementAmount(inCredManr);
   end;
   buyoutamount = 0;
   pausebal = 0;
