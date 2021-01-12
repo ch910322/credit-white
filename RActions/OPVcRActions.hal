@@ -21,6 +21,7 @@ begin
   Longint histnr,credmannr;
   Integer int_type;
   record CredManSchedVc CSr;
+  val paidval;
 
   BlockLoad(CIb);
   rwcnt = MatRowCnt(OPr);
@@ -58,6 +59,12 @@ begin
           RecordCopy(oldCredManr,CredManr);
           if (int_type==1) then begin
             if (blank(CredManr.MoneyTransferDate)) then begin
+              CredManr.MoneyTransferDate = OPr.PayDate;
+            end;
+          end;
+          if (int_type==2) then begin
+            AgreementPaidOut(CredManr,paidval);
+            if (paidval==CredManr.InvSum4) then begin
               CredManr.MoneyTransferDate = OPr.PayDate;
             end;
           end;
