@@ -1366,7 +1366,7 @@ begin
   return;
 end;
 
-function val GetBuyOutFee(record CredManVc CredManr,Date td)
+function val GetBuyOutFee(record CredManVc CredManr,Date td,val balance)
 begin
   val res;
   val rate;
@@ -1379,7 +1379,7 @@ begin
   row SMVc SMrw;
 
   rate = CredManr.BuyoutFeePrc;
-  res = (CredManr.InvSum4 - CredManr.DepositSum) *(rate/100);
+  res = (balance) *(rate/100);
   res = res + CredManr.BuyoutFeeFixed;
 
   if (CredManr.BuyoutFeeMonths>0) then begin
@@ -1422,14 +1422,14 @@ begin
 end;
 
 global
-procedure AddBuyOutFee(record CredManVc CredManr,var record IVVc IVr)
+procedure AddBuyOutFee(record CredManVc CredManr,var record IVVc IVr,val balance)
 begin
   record CMInvoicingBlock CIb;
   string 255 spec;
   val buyoutfee;
   
   BlockLoad(CIb);
-  buyoutfee = GetBuyOutFee(CredManr,IVr.InvDate);
+  buyoutfee = GetBuyOutFee(CredManr,IVr.InvDate,balance);
   GetItemName(CIb.BuyOutItem,spec);
   if (nonblank(CIb.BuyOutItem) and buyoutfee>0) then begin
     SetupInvoiceRowAndAdd(CredManr,IVr,CIb.BuyOutItem,spec,1,buyoutfee,blankval,15,-1);
@@ -1524,7 +1524,7 @@ begin
       MatRowGet(CredManPayPlan2r,i,CredManPayPlanrw);
       SetupInvoiceRowAndAdd(CredManr,IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
     end;
-    AddBuyOutFee(CredManr,IVr);
+    AddBuyOutFee(CredManr,IVr,balance);
     GetCredManOverdueInvoices(CredManr,CMb,td,AddDay(lastinv,1),latedays,lateamount,lateformula,true,false);
     BlockLoad(CIb);
     if (testf or CIb.OverdueIVType==0) then begin
@@ -1671,6 +1671,7 @@ begin
   return;
 end;
 
+global
 function val GetActualBalance(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,Boolean openf)
 begin
   val res,curbal;
@@ -1785,9 +1786,10 @@ logtext(0,"CheckBuyOutAgreement start");
   CheckUnpaidInvoices(CredManr,dueamount,openamount);
   sd = GetLastInvoiceDate(CredManr,RepSpec.d1);
   GetCredManOverdueInvoices(CredManr,CMb,RepSpec.d1,sd,latedays,lateamount,lateformula,false,false);
+  RepSpec.vals3 = GetActualBalance(CredManr,CredManPayPlanr,false);
 
   prepayval = GetPrepaymentValue(CredManr);
-  buyoutfee = GetBuyOutFee(CredManr,RepSpec.d1);
+  buyoutfee = GetBuyOutFee(CredManr,RepSpec.d1,RepSpec.vals3);
   RepSpec.vals1 = IVr.Sum4;
   RepSpec.vals0 = dueamount;//should this be openamount?
   RepSpec.vals2 = openamount + IVr.Sum4 - prepayval;
@@ -1799,7 +1801,6 @@ logtext(0,"CheckBuyOutAgreement start");
   RepSpec.f12 = lateamount;//(RepSpec.vals2-RepSpec.vals3-RepSpec.vals4);
   //BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
   
-  RepSpec.vals3 = GetActualBalance(CredManr,CredManPayPlanr,false);
   RepSpec.f13 = GetActualBalance(CredManr,CredManPayPlanr,true);
   gSilenceIVOpenPrepExists = false;
 

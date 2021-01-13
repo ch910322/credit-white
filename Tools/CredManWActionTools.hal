@@ -65,8 +65,9 @@ external procedure MergeItemsInInvoice(var record IVVc,record CredManVc);
 external function Boolean AgreementPaidOut2(record CredManVc,var val);
 external function Integer GetInterestPaymentType(record CredManVc);
 external function Boolean UseFullBuyoutProcedure();
-external procedure AddBuyOutFee(record CredManVc,var record IVVc);
+external procedure AddBuyOutFee(record CredManVc,var record IVVc,val);
 external procedure CheckAndAddHiddenPrinciple(var record IVVc,record CMInvoicingBlock);
+external function val GetActualBalance(record CredManVc,record CredManPayPlanVc,Boolean);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -1553,6 +1554,8 @@ begin
   array string 255 lateformula;
   string 255 spec;
   Boolean fullf;
+  record CredManPayPlanVc CredManPayPlanr;
+  val balance;
 
   CredManr.SerNr = sernr;
   if (ReadFirstMain(CredManr,1,true)) then begin
@@ -1620,7 +1623,9 @@ begin
     GetItemName(CMb.InstalmentItem,spec);
     SetupInvoiceRowAndAdd(CredManr,IVr,CMb.InstalmentItem,spec,1,buyoutval-tval,blankval,19,-1);
     if (fullf==false) then begin
-      AddBuyoutFee(CredManr,IVr);
+      BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
+      balance = GetActualBalance(CredManr,CredManPayPlanr,false);
+      AddBuyoutFee(CredManr,IVr,balance);
     end;
     CheckAndAddHiddenPrinciple(IVr,CIb);
     //CM_AddPrepayments(IVr,CredManr,CIb);
