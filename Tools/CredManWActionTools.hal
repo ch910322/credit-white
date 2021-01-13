@@ -629,6 +629,8 @@ begin
         IVCreditr.InvDate = IVr.InvDate;
         IVVc_PasteInvDate(IVCreditr,LMb,err1,err2);
       end;
+      IVCreditr.NoEmailFlag = 1;
+      IVCreditr.ExcludeFromExports = 1;
       IVCreditr.CustCredManNr = IVr.CustCredManNr;
       IVCreditr.SerNr = NextSerNr("IVVc",IVCreditr.InvDate,-1,false,"");
       rwcnt = MatRowCnt(IVCreditr);

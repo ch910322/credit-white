@@ -2737,6 +2737,9 @@ if (true) then begin
   if (HasLocalization("LTU")) then begin
     CheckBox(h3+130,v+=16,0,"Exclude from Exports",ExcludeFromExports);
   end;
+//CUST-BEGIN
+  CheckBox(h3+130,v+=16,0,"Don't include in Mass Emails",NoEmailFlag);
+//CUST-END
 //    CheckBox(h3,v+=16,0,"Including VAT",InclVAT);
   //  CheckBox(h3,v+=16,0,"E-Invoice Exported",EInvExpFlag);
   Tile(6,150,false,"6",PriceList); vs = 20; h3=550;

@@ -207,6 +207,11 @@ begin
       if (testf) then begin
         testf = IVTestApprovalStatus(IVr)==0;
       end;
+//CUST-BEGIN
+      if (testf and IVr.NoEmailFlag==1) then begin
+        testf = false;
+      end;
+//CUST-END
       if (testf) then begin
         if (RepSpec.flags[7]!=0) then begin
           AddInvoiceToArea(IVr,custcodes,custindexes,custinvcnt,invoices);
