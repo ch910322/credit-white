@@ -830,6 +830,7 @@ begin
   return;
 end;
 
+global
 procedure CheckAndAddHiddenPrinciple(var record IVVc IVr,record CMInvoicingBlock CIb)
 begin
   row IVVc IVrw,hiddenIVrw;
@@ -1611,6 +1612,7 @@ begin
 
     CM_AddPrepayments(IVr,CredManr,CIb);
     if (IVr.SerNr>-1) then begin
+      CheckAndAddHiddenPrinciple(IVr,CIb);
       if (IVr.Sum4>0) then begin
         logtext(0,"DoBuyOutAgreement CIb.OverdueIVType " & CIb.OverdueIVType & ":" & sd);
         if (CIb.OverdueIVType>0) then begin

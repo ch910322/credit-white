@@ -66,6 +66,7 @@ external function Boolean AgreementPaidOut2(record CredManVc,var val);
 external function Integer GetInterestPaymentType(record CredManVc);
 external function Boolean UseFullBuyoutProcedure();
 external procedure AddBuyOutFee(record CredManVc,var record IVVc);
+external procedure CheckAndAddHiddenPrinciple(var record IVVc,record CMInvoicingBlock);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -1621,7 +1622,7 @@ begin
     if (fullf==false) then begin
       AddBuyoutFee(CredManr,IVr);
     end;
-
+    CheckAndAddHiddenPrinciple(IVr,CIb);
     //CM_AddPrepayments(IVr,CredManr,CIb);
     StoreLoanInvoice(IVr,CredManr);
 
