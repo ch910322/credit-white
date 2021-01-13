@@ -1036,16 +1036,17 @@ begin
   return;
 end;
 
-procedure GetBOEValues3(record CredManVc CredManr,Integer num,var string name,var string phone,var string email,var string addr0,var string addr1,var string addr2,var string addr3,var string addr4,var string value,var string signer,var string td)
+procedure GetBOEValues3(record CredManVc CredManr,Integer num,var string name,var string phone,var string email,var string addr0,var string addr1,var string addr2,var string addr3,var string addr4,var val value,var string signer,var string contactid,var Date td,var Date duedate)
 begin
   record CUVc CUr;
   
   name = GetFieldValueByName(CredManr,"BOE" & num & "Name",-1);
   email = GetFieldValueByName(CredManr,"BOE" & num & "eMail",-1);
   phone = GetFieldValueByName(CredManr,"BOE" & num & "Phone",-1);
-  value = GetFieldValueByName(CredManr,"BOE" & num & "Value",-1);
+  value = StringToVal(GetFieldValueByName(CredManr,"BOE" & num & "Value",-1),M4Val);
   signer = GetFieldValueByName(CredManr,"BOE" & num & "Signer",-1);
-  td = GetFieldValueByName(CredManr,"BOE" & num & "Date",-1);
+  td = StringToDate(GetFieldValueByName(CredManr,"BOE" & num & "Date",-1));
+  duedate = StringToDate(GetFieldValueByName(CredManr,"BOE" & num & "DueDate",-1));
   if (blank(td)) then begin
     td = CredManr.TransDate;
   end;
@@ -1056,6 +1057,7 @@ begin
     addr2 = CUr.InvAddr2;
     addr3 = CUr.InvAddr3;
     addr4 = CUr.InvAddr4;
+    contactid = CUr.RegNr1;
   end else begin
     addr0 = ""; addr1 = ""; addr2 = ""; addr3 = ""; addr4 = ""; 
   end;
@@ -1213,32 +1215,41 @@ end;
 global
 procedure ExternalPrintVekselisForm(record CredManVc CredManr,var vector string vVals)
 begin
-  string 255 name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,signer,value,td;
+  string 255 name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,signer,contactid;
   record CUVc CUr,tCUr,SCUr;
   string 255 tstr;
+  val value;
   record CYBlock CYb;
   transaction Longint gBOENumber;
   record BOESuretyVc BSr;
   Integer num;
   string 255 strnum;
   record CredManTypeVc CMTr;
-  Date enddate;
+  Date enddate,duedate,td;
   Integer gnum;
+  record CMApplicationSetBlock CMb;
 
 
   Ext_CommonDocumentFields(vVals);
 
   if (gBOENumber>0) then begin
-    GetBOEValues3(CredManr,gBOENumber,name,phone,email,addr0,addr1,addr2,addr3,addr4,value,signer,td);
+    BlockLoad(CMb);
+    GetBOEValues3(CredManr,gBOENumber,name,phone,email,addr0,addr1,addr2,addr3,addr4,value,signer,contactid,td,duedate);
     vVals["F_CONTACTNAME"] = name;
     vVals["F_CONTACTPHONE"] = phone;
     vVals["F_CONTACTMAIL"] = email;
+    vVals["F_CONTACTID"] = contactid;
     vVals["F_CONTACTVALUE"] = value;
+    ValToText(value,M4Val,CredManr.CurncyCode,CMb.NumberLangCode,tstr);
+    vVals["F_CONTACTVALUEINWORDS"] = tstr;
     vVals["F_CONTACTSIGNER"] = signer;
-    vVals["F_CONTACTDATE"] = td;
     vVals["F_CONTACTDATE"] = td;
     tstr = DateInWords(td,CredManr.LangCode,2);
     vVals["F_CONTACTDATEINWORDS"] = tstr;
+    vVals["F_CONTACTDUEDATE"] = duedate;
+    tstr = DateInWords(duedate,CredManr.LangCode,2);
+    vVals["F_CONTACTDUEDATEINWORDS"] = tstr;
+    Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
 
     PrintBOESureties(vVals,CredManr,gBOENumber,"",gnum);
   end else begin
