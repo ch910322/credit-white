@@ -1043,7 +1043,7 @@ begin
   name = GetFieldValueByName(CredManr,"BOE" & num & "Name",-1);
   email = GetFieldValueByName(CredManr,"BOE" & num & "eMail",-1);
   phone = GetFieldValueByName(CredManr,"BOE" & num & "Phone",-1);
-  value = StringToVal(GetFieldValueByName(CredManr,"BOE" & num & "Value",-1),M4Val);
+  value = StringToVal(GetFieldValueByName(CredManr,"BOE" & num & "Amount",-1),M4Val);
   signer = GetFieldValueByName(CredManr,"BOE" & num & "Signer",-1);
   td = StringToDate(GetFieldValueByName(CredManr,"BOE" & num & "Date",-1));
   duedate = StringToDate(GetFieldValueByName(CredManr,"BOE" & num & "DueDate",-1));
