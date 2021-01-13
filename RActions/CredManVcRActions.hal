@@ -732,18 +732,18 @@ begin
     res = -1;
     goto LCredManAccVcRecordCheck;
   end;
-  if (nonblank(CMAr.ControlAcc) and GetAccName(CMAr.ControlAcc,tstr,60)==false) then begin
-    RecordCheckError(1120,CMAr.ControlAcc,-1,"ControlAcc");
+  if (nonblank(CMAr.ControlAccShort) and GetAccName(CMAr.ControlAccShort,tstr,60)==false) then begin
+    RecordCheckError(1120,CMAr.ControlAccShort,-1,"ControlAccShort");
     res = -1;
     goto LCredManAccVcRecordCheck;
   end;
-  if (nonblank(CMAr.DebtorsAccShort) and GetAccName(CMAr.DebtorsAccShort,tstr,60)==false) then begin
-    RecordCheckError(1120,CMAr.DebtorsAccShort,-1,"DebtorsAccShort");
+  if (nonblank(CMAr.ControlAccLong) and GetAccName(CMAr.ControlAccLong,tstr,60)==false) then begin
+    RecordCheckError(1120,CMAr.ControlAccLong,-1,"ControlAccLong");
     res = -1;
     goto LCredManAccVcRecordCheck;
   end;
-  if (nonblank(CMAr.DebtorsAccLong) and GetAccName(CMAr.DebtorsAccLong,tstr,60)==false) then begin
-    RecordCheckError(1120,CMAr.DebtorsAccLong,-1,"DebtorsAccLong");
+  if (nonblank(CMAr.DebtorsAcc) and GetAccName(CMAr.DebtorsAcc,tstr,60)==false) then begin
+    RecordCheckError(1120,CMAr.DebtorsAcc,-1,"DebtorsAcc");
     res = -1;
     goto LCredManAccVcRecordCheck;
   end;

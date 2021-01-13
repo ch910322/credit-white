@@ -1,5 +1,5 @@
 //<halrule>server-only</halrule>
-external procedure AddCMTransactionDebtorsAccounts(record CredManVc,var string,var string,var val,var val);
+external procedure AddCMTransactionControlAccounts(record CredManVc,var string,var string,var val,var val);
 external inner function Boolean CheckTTRPerRow(string,string,string,Boolean,var string,Integer);
 external inner procedure AddEuroTrRow(record TRVc,string,string,string,string,val,val,val,Boolean,Boolean,var val,Boolean,string,string,string);
 external inner function Integer GetIntYc(Date);
@@ -74,7 +74,7 @@ begin
       base1 = BERr.Rate1;
       base2 = BERr.Rate2;
     end;  
-    AddCMTransactionDebtorsAccounts(CredManr,shortacc,longacc,shortval,longval);
+    AddCMTransactionControlAccounts(CredManr,shortacc,longacc,shortval,longval);
 
     if (nonblank(shortacc) and nonblank(longacc)) then begin
       if (GetAccName(shortacc,accname,60)) then begin

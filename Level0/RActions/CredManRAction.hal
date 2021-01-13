@@ -16,7 +16,8 @@ external function Integer CashSerNumberTest(string,val,string,LongInt,var Boolea
 external procedure AddCredManTypeMatrix(var record CredManVc,record CredManTypeVc);
 external function val GetIntRate(string,Date);
 external outer function string 255 CM_GetTransactionControlAcc(record CredManVc,string);
-external outer procedure AddCMTransactionDebtorsAccounts(record CredManVc,var string,var string,var val,var val);
+external outer procedure AddCMTransactionControlAccounts(record CredManVc,var string,var string,var val,var val);
+external outer function string 255 CM_GetTransactionDebtorsAcc(record CredManVc,string);
 
 
 global
@@ -176,7 +177,18 @@ BEGIN
   end;
   otxt = CredManr.Objects;
 //CUST-BEGIN
-  controlacc = CM_GetTransactionControlAcc(CredManr,controlacc);
+  AddCMTransactionControlAccounts(CredManr,shortacc,longacc,shortval,longval);
+  if (nonblank(shortacc) and shortval>0) then begin
+    rs = shortval;
+    controlacc = shortacc;
+  end else begin
+    if (nonblank(longacc) and longval>0) then begin
+      rs = longval;
+      controlacc = longacc;
+      addf = true;
+    end;
+  end;
+LAddAccount:;
 //CUST-END
   Accr.AccNumber = controlacc;
   if (ReadFirstMain(Accr,1,true)==false) then begin
@@ -193,6 +205,16 @@ BEGIN
   end;
   if (CheckTTRPerRow("CredManVc",controlacc,otxt,dc1,taccnumber,1)) then begin end;
   AddEuroCurncyTrRow(gTRp,controlacc,otxt,"",ftxt,rs,false,dc1,totsum,CredManr.CurncyCode,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2,v,blankval,-1,false,taccnumber);
+//CUST-BEGIN
+  if (addf==false and nonblank(longacc) and longval>0) then begin
+    rs = longval;
+    controlacc = longacc;
+    addf = true;
+    goto LAddAccount;
+  end;
+//CUST-END
+  rs = MulRateToBase1(CredManr.CurncyCode,v,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2,DefaultCurRoundOff);
+
   aracc = CredManr.ARAcc;
   if (blank(controlacc)) then begin
     controlacc = CredManSetb.ARAcc;
@@ -202,18 +224,7 @@ BEGIN
     ftxt = "" & CredManr.IVNr & " " & CredManr.Addr0;
   end;
 //CUST-BEGIN
-  AddCMTransactionDebtorsAccounts(CredManr,shortacc,longacc,shortval,longval);
-  if (nonblank(shortacc) and shortval>0) then begin
-    rs = shortval;
-    aracc = shortacc;
-  end else begin
-    if (nonblank(longacc) and longval>0) then begin
-      rs = longval;
-      aracc = longacc;
-      addf = true;
-    end;
-  end;
-LAddAccount:;
+  aracc = CM_GetTransactionDebtorsAcc(CredManr,aracc);
 //CUST-END
   Accr.AccNumber = aracc;
   if (ReadFirstMain(Accr,1,true)==false) then begin
@@ -230,14 +241,6 @@ LAddAccount:;
   end;
   if (CheckTTRPerRow("CredManVc",aracc,otxt,dc2,taccnumber,1)) then begin end;
   AddEuroCurncyTrRow(gTRp,aracc,otxt,"",ftxt,rs,false,dc2,totsum,Accr.Curncy,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2,v,blankval,-1,false,taccnumber);
-//CUST-BEGIN
-  if (addf==false and nonblank(longacc) and longval>0) then begin
-    rs = longval;
-    aracc = longacc;
-    addf = true;
-    goto LAddAccount;
-  end;
-//CUST-END
   TRSumup(gTRp,t);
   AddTransAutoTransRows(gTRp);
   res = 0;

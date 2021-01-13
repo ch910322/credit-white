@@ -1809,9 +1809,12 @@ begin
   RecordField(Math,M4Matrix,0,0);
   RecordField(PLCreditAcc,M4Code,20,AccVc);
   RecordField(PLDebitAcc,M4Code,20,AccVc);
-  RecordField(ControlAcc,M4Code,20,AccVc);
-  RecordField(DebtorsAccShort,M4Code,20,AccVc);
-  RecordField(DebtorsAccLong,M4Code,20,AccVc);
+  RecordField(xControlAcc,M4Code,20,AccVc);
+  RecordField(xDebtorsAccShort,M4Code,20,AccVc);
+  RecordField(xDebtorsAccLong,M4Code,20,AccVc);
+  RecordField(DebtorsAcc,M4Code,20,AccVc);
+  RecordField(ControlAccShort,M4Code,20,AccVc);
+  RecordField(ControlAccLong,M4Code,20,AccVc);
   ArrayBegin(Math,-,1);
   ArrayField(ArtCode,M4Code,20,INVc);
   ArrayField(CreditAcc,M4Code,20,AccVc);

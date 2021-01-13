@@ -3025,9 +3025,9 @@ begin
   EditField(h,v+=vs,-40,"Name",Normal,Comment,false,0);
   EditField(h,v+=vs,100,"P/L Debit Account",Normal,PLDebitAcc,false,AccSClass);
   EditField(h,v+=vs,100,"P/L Credit Account",Normal,PLCreditAcc,false,AccSClass);
-  EditField(h,v+=vs,100,"Control Account",Normal,ControlAcc,false,AccSClass);
-  EditField(h,v+=vs,100,"Debtors Account - short",Normal,DebtorsAccShort,false,AccSClass);
-  EditField(h,v+=vs,100,"Debtors Account - long",Normal,DebtorsAccLong,false,AccSClass);
+  EditField(h,v+=vs,100,"Control Account - short",Normal,ControlAccShort,false,AccSClass);
+  EditField(h,v+=vs,100,"Control Account - long",Normal,ControlAccLong,false,AccSClass);
+  EditField(h,v+=vs,100,"Debtors Account",Normal,DebtorsAcc,false,AccSClass);
 
   MatrixBegin(4,v=v+40,-32,420,-,99);
   MatCol(1,24,"Item",0,ArtCode,false,INSClass);
