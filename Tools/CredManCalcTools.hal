@@ -876,6 +876,7 @@ begin
   Date res;
   Boolean TrHs;
   record CredHistVc CredHistr;
+  Date td;
   
   TrHs = true;
   CredHistr.CredManNr = CredManr.SerNr;
@@ -884,8 +885,12 @@ begin
       TrHs = false;
     end else begin
       if (CredHistr.RecordType==0 and (CredHistr.ChargeType==kEventTypeIssueInstalment or CredHistr.ChargeType==kEventTypeIssueInterest)) then begin
-        if (CredHistr.TransDate>res) then begin
-          res = CredHistr.TransDate;
+        td = CredHistr.CredToDate;
+        if (blank(td)) then begin
+          td = CredHistr.TransDate;
+        end;
+        if (td>res) then begin
+          res = td;
         end;
       end;
     end;

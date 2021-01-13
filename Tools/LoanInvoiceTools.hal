@@ -1446,6 +1446,7 @@ begin
   Integer i,rwcnt;
   row CredManPayPlanVc CredManPayPlanrw;
   val curbal;
+  Boolean stopf;
  
   if (GetInterestPaymentType(CredManr)==2) then begin
     curbal = 0;
@@ -1458,21 +1459,23 @@ begin
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
     if (CredManPayPlanrw.PlanType<=4) then begin
-      i = rwcnt;
+      stopf = true;
     end else begin
-      CredHistr.SerNr = CredManPayPlanrw.IssuedNr;
-      if (ReadFirstMain(CredHistr,1,true)) then begin
-        if (CredManPayPlanrw.ArtCode!=CMb.LateFeeItem and CredManPayPlanrw.ArtCode!=CMb.LateRateItem and (CredHistr.RecordType==0 or CredHistr.RecordType==4 or CredHistr.RecordType==5)) then begin
-          if (TypeAffectsBalance(CredHistr.ChargeType)) then begin
-            curbal = curbal - CredHistr.Sum;
-          end;
-          if (CredHistr.ChargeType==kEventTypePayout) then begin
-            curbal = curbal + CredHistr.Sum;
-          end;
-          balance = curbal;
-          foundf = true;
-          if (CredHistr.RecordType==0 and CredHistr.CredToDate>lastinv) then begin
-            lastinv = AddDay(CredHistr.CredToDate,1);
+      if (stopf==false or CredManPayPlanrw.PlanType==18) then begin
+        CredHistr.SerNr = CredManPayPlanrw.IssuedNr;
+        if (ReadFirstMain(CredHistr,1,true)) then begin
+          if (CredManPayPlanrw.ArtCode!=CMb.LateFeeItem and CredManPayPlanrw.ArtCode!=CMb.LateRateItem and (CredHistr.RecordType==0 or CredHistr.RecordType==4 or CredHistr.RecordType==5)) then begin
+            if (TypeAffectsBalance(CredHistr.ChargeType)) then begin
+              curbal = curbal - CredHistr.Sum;
+            end;
+            if (CredHistr.ChargeType==kEventTypePayout) then begin
+              curbal = curbal + CredHistr.Sum;
+            end;
+            balance = curbal;
+            foundf = true;
+            if (CredHistr.RecordType==0 and CredHistr.CredToDate>lastinv) then begin
+              lastinv = AddDay(CredHistr.CredToDate,1);
+            end;
           end;
         end;
       end;
