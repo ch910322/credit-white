@@ -147,8 +147,8 @@ begin
       TrHs = false;
     end else begin
       if (CredHistr.RecordType==1 or CredHistr.RecordType==2) then begin
-        if (CredHistr.RecordType==1) then begin
-          vDates[DateToString(CredHistr.TransDate,"YYYY-MM-DD")] = true;
+        if (invegaf and CredHistr.RecordType==1) then begin
+          //vDates[DateToString(CredHistr.TransDate,"YYYY-MM-DD")] = true;
         end;
         tCredHistr.SerNr = CredHistr.PreviousNr;
         if (ReadFirstMain(tCredHistr,1,true)) then begin
@@ -163,14 +163,14 @@ begin
                   i = rwcnt;
                 end;
               end else begin
-                if (IVrw.stp==kInvoiceRowTypePrepayment) then begin
+                if (invegaf and IVrw.stp==kInvoiceRowTypePrepayment) then begin
                   ARPayHistr.CUPNr = IVrw.CUPNr;  
                   ARPayHistr.FileName = "IPVc";  
                   if (ReadFirstMain(ARPayHistr,2,true)) then begin
                     IPr.SerNr = ARPayHistr.SerNr;
                     if (ReadFirstMain(IPr,1,true)) then begin
                       if (DateInRange(IPr.TransDate,sd,ed)) then begin
-                        vDates[DateToString(IPr.TransDate,"YYYY-MM-DD")] = true;
+                        //vDates[DateToString(IPr.TransDate,"YYYY-MM-DD")] = true;
                       end;
                     end;
                   end;
@@ -251,8 +251,8 @@ begin
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(IVr,i,IVrw);
       if (IVrw.CredHistNr==CredHistr.SerNr) then begin
-        InvVat(1,1,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,CredHistr.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
-        paysum = paysum - vatval;
+        //InvVat(1,1,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,CredHistr.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+        //paysum = paysum - vatval;
         vatcode = IVrw.VATCode;
         i = rwcnt;
       end;
@@ -267,12 +267,17 @@ begin
     end else begin
       if (CredPayr.TransDate<=ed) then begin
         InvVat(1,1,IVr.NoTAXonVAT,IVr.ExportFlag,vatcode,CredPayr.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
-        paysum = paysum - (CredPayr.Sum - vatval);
+        paysum = paysum - (CredPayr.Sum/* - vatval*/);
       end;
     end;
   end;
+  if (paysum<0) then begin
+    paysum = 0;
+  end;
   if (paysum>0) then begin
     res = DateDiff(ed,CredHistr.PayDate);
+    InvVat(1,1,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,paysum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+    paysum = paysum - vatval;
   end;
   dueamount = dueamount + paysum;
 
@@ -310,7 +315,7 @@ begin
     if (CredHistr.CredManNr!=CredManr.SerNr or CredHistr.ChargeType!=chargetype) then begin
       TrHs = false;
     end else begin
-      if (CredHistr.RecordType==0 and CredHistr.PayDate<ed) then begin
+      if (CredHistr.RecordType==0 and CredHistr.PayDate<=ed) then begin
         latedays = GetLateDaysInPeriod(CredHistr,sd,ed,dueamount);
         maxlatedays = MAX(maxlatedays,latedays);
       end;
