@@ -1,8 +1,31 @@
 remote procedure TestInvoiceBasedOnScheduleRow(record CredManSchedVc,row CredManSchedVc,var record IVVc);
 remote procedure CredManSchedRecalcInterestRemote(var record CredManSchedVc,var val);
+remote function Boolean AgreementPaidOut(record CredManVc,var val);
+remote function Integer GetInterestPaymentType(record CredManVc);
+
+function val GetScheduleTotalVal(record CredManSchedVc CSr)
+begin
+  record CredManVc CredManr;
+  Integer int_type;
+  val res,paidval;
+  
+  CredManr.SerNr = CSr.CredManNr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    int_type = GetInterestPaymentType(CredManr);
+    if (int_type==2) then begin
+      AgreementPaidOut(CredManr,paidval);
+      res = paidval;
+    end else begin
+      res = CredManr.InvSum4;
+    end;
+  end;
+
+  GetScheduleTotalVal = res;
+  return;
+end;
 
 global
-procedure GetScheduleTotals(record CredManSchedVc CSr,var val princ,var val interest,var val fees,var val total,var val vat,var Date sd,var Date ed)
+procedure GetScheduleTotals(record CredManSchedVc CSr,var val princ,var val interest,var val fees,var val total,var val vat,var val credtotal,var Date sd,var Date ed)
 begin  
   Integer rwcnt,i;
   row CredManSchedVc CSrw;
@@ -12,22 +35,25 @@ begin
   fees = 0;
   total = 0;
   vat = 0;
+  credtotal = GetScheduleTotalVal(CSr);
 
   rwcnt = MatRowCnt(CSr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CSr,i,CSrw);
-    princ = princ + CSrw.Principle + CSrw.Deposit;
-    interest = interest + CSrw.Interest;
-    fees = fees + CSrw.Fees;
-    total = total + CSrw.Total;
-    if (CSrw.Type==4) then begin
-      princ = princ + CSrw.Total;
-    end;
-    if (i==0) then begin
-      sd = CSrw.InvDate;
-    end;
-    if (i==rwcnt-1) then begin
-      ed = CSrw.InvDate;
+    if (CSrw.Type!=5) then begin
+      princ = princ + CSrw.Principle + CSrw.Deposit;
+      interest = interest + CSrw.Interest;
+      fees = fees + CSrw.Fees;
+      total = total + CSrw.Total;
+      if (CSrw.Type==4) then begin
+        princ = princ + CSrw.Total;
+      end;
+      if (i==0) then begin
+        sd = CSrw.InvDate;
+      end;
+      if (i==rwcnt-1) then begin
+        ed = CSrw.InvDate;
+      end;
     end;
     //vat = vat + CSrw.;
   end;
@@ -38,12 +64,12 @@ end;
 procedure UpdateCredManSchedSoftFields(Integer wn)
 begin
   record CredManSchedVc CSr;
-  val princ,interest,fees,total,vat;
+  val princ,interest,fees,total,vat,credtotal;
   Date sd,ed;
   record CredManVc CredManr;
 
   GetWindowRecord(wn,CSr);
-  GetScheduleTotals(CSr,princ,interest,fees,total,vat,sd,ed);
+  GetScheduleTotals(CSr,princ,interest,fees,total,vat,credtotal,sd,ed);
 
   PutWindowString(wn,"period",sd & ":" & ed);
   PutWindowString(wn,"totprinc",princ);
@@ -52,8 +78,8 @@ begin
   PutWindowString(wn,"tot",total);
   CredManr.SerNr = CSr.CredManNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
-    PutWindowString(wn,"totrealprinc",CredManr.InvSum4);  
-    PutWindowString(wn,"diff",CredManr.InvSum4-princ);
+    PutWindowString(wn,"totrealprinc",credtotal);  
+    PutWindowString(wn,"diff",credtotal-princ);
   end;
 
   return;

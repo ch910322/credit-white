@@ -663,7 +663,7 @@ begin
 
   switch (type) begin
     case 0:
-      AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,CredManr.InvSum4,0,acumint,calcbal,frdate,todate,-1,-1,0);
+      AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,calcbal,0,acumint,calcbal,frdate,todate,-1,-1,0);
     case 1:
       if (monthtypef==kMonthTypeLast) then begin
         AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,calcbal,0,acumint,calcbal,frdate,todate,-1,-1,0);
