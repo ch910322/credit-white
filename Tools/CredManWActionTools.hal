@@ -611,7 +611,7 @@ begin
   return;
 end;
 
-updating procedure CreditAndOKInvoice(Longint ivnr,val prc,var val credval,var vector val vCredVal,val rval)
+updating procedure CreditAndOKInvoice(Longint ivnr,val prc,var val credval,var vector val vCredVal,val rval,string replaceitem,string replaceitemname)
 begin
   record IVVc IVr,IVCreditr,oldIVr,IV2r;
   string 255 warning;
@@ -644,6 +644,11 @@ begin
               IVVc_PastePrice(IVCreditr,IV2r,i,warning);
               MatRowGet(IVCreditr,i,IVrw);
             end;
+            if (nonblank(replaceitem) and IVrw.ChargeType!=1) then begin
+              //IVrw.ArtCode = replaceitem;
+              //IVrw.Spec = replaceitemname;
+              //MatRowPut(IVCreditr,i,IVrw);
+            end;
             vCredVal[IVrw.ArtCode] = vCredVal[IVrw.ArtCode] + IVrw.Sum;
           end;
         end;
@@ -660,7 +665,18 @@ begin
   return;
 end;
 
-updating procedure CreditCredManInvoices(record CredManVc CredManr,val prc,var val credval,var vector val vCredVal)
+procedure GetItemName(string code,var string spec)
+begin
+  record INVc INr;
+
+  INr.Code = code;
+  ReadFirstMain(INr,1,true);
+  spec = INr.Name;
+
+  return;
+end;
+
+updating procedure CreditCredManInvoices(record CredManVc CredManr,val prc,var val credval,var vector val vCredVal,Boolean sellf)
 begin
   Boolean TrHs;
   record CredHistVc CredHistr;
@@ -668,6 +684,16 @@ begin
   array string 255 invarr;
   record ARVc ARr;
   Integer i;
+  record CMInvoicingBlock CIb;
+  string 255 replaceitem,replaceitemname;
+
+  if (sellf) then begin
+    BlockLoad(CIb);
+    replaceitem = CIb.SellingItem;
+    if (nonblank(replaceitem)) then begin
+      GetItemName(replaceitem,replaceitemname);
+    end;
+  end;
 
   credval = 0;
   TrHs = true;
@@ -687,7 +713,7 @@ begin
     ARr.InvoiceNr = StringToLongint(invarr[i]);
     if (ReadFirstMain(ARr,1,true)) then begin
       if (ARr.RVal>0) then begin
-        CreditAndOKInvoice(ARr.InvoiceNr,prc,credval,vCredVal,ARr.RVal);
+        CreditAndOKInvoice(ARr.InvoiceNr,prc,credval,vCredVal,ARr.RVal,replaceitem,replaceitemname);
       end;
     end;
   end;
@@ -713,7 +739,7 @@ begin
     if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
       CreateRefinCredMan(RepSpec,nCredManr,CredManr);
       DoBuyOutAgreement(CredManr,IVr);
-      CreditCredManInvoices(CredManr,100,credval,vCredVal);
+      CreditCredManInvoices(CredManr,100,credval,vCredVal,false);
       res = true;
     end;
   end;
@@ -1519,17 +1545,6 @@ begin
   return;
 end;
 
-procedure GetItemName(string code,var string spec)
-begin
-  record INVc INr;
-
-  INr.Code = code;
-  ReadFirstMain(INr,1,true);
-  spec = INr.Name;
-
-  return;
-end;
-
 global
 updating procedure CredManPartialBuyoutDo(Date td,val buyoutval,Longint sernr,var string err)
 begin
@@ -1898,7 +1913,7 @@ begin
 end;
 
 global
-updating procedure TerminateCredMan(var record CredManVc CredManr,val prc,string custcode,Date selldate)
+updating procedure TerminateCredMan(var record CredManVc CredManr,val prc,string custcode,Date selldate,Boolean sellf)
 begin
   val calcbal,balance,cumint;
   Date lastinv,td;
@@ -1970,7 +1985,7 @@ begin
     end;
   end;
 
-  CreditCredManInvoices(CredManr,prc,credval,vCredVal);
+  CreditCredManInvoices(CredManr,prc,credval,vCredVal,sellf);
   ReadFirstMain(CredManr,1,true);
 
   if (nonblank(custcode) and credval>0) then begin

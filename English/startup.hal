@@ -269,6 +269,7 @@ begin
   SString(200271,"Can't update becauce there is an Invoice already created");
   SString(200272,"Agreement schedule is not matching with Fixed schedule");
   SString(200273,"Schedule doesn't exist");
+  SString(200274,"Date can't be blank or earlier than last Invoice Date");
 
 /*CreditAgreementsRn*/
   SString(200280,"Credit Agreements");
