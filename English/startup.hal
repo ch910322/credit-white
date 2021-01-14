@@ -270,6 +270,8 @@ begin
   SString(200272,"Agreement schedule is not matching with Fixed schedule");
   SString(200273,"Schedule doesn't exist");
   SString(200274,"Date can't be blank or earlier than last Invoice Date");
+  SString(200275,"Netaikomas");
+  SString(200276,"proc.");
 
 /*CreditAgreementsRn*/
   SString(200280,"Credit Agreements");

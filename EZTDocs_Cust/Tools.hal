@@ -19,6 +19,8 @@ external inner procedure CustAged(record CUVc,Date,Date,Date,var val,var val,var
 external inner procedure GetOnAccBalance(record RcVc,string,string,Boolean,Integer,var val,var val,var val,var val,var val,var val,var val,record SMVc,
                    Array string,Array val,var Integer);
 external inner  procedure GetMonthText(string,Date,var string);
+external inner procedure StripLeadingSpaces(var string);
+external inner procedure StripEndingSpaces(var string);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -605,7 +607,7 @@ begin
   record LangNrVc LangNrr;
   
   BlockLoad(PCb);
-  LangNrr.LangCode = PCb.ValCrncyCode;
+  LangNrr.LangCode = PCb.FullValText;
   ReadFirstMain(LangNrr,1,true);
   intval = tval;
   if (intval>0) then begin
@@ -616,11 +618,16 @@ begin
 
   if (decval>0) then begin
     ValToText(decval,M4Int,PCb.ValCrncyCode,PCb.DecValText,decstr);
-    res = res & LangNrr.DeciPart & " " & decstr;
+    if (nonblank(res)) then begin
+      res = res & LangNrr.DeciPart & " ";
+    end;
+    res = res & decstr;
   end;
 
   res = StrReplace(res,"  "," ");
   res = StrReplace(res,"  "," ");
+  StripLeadingSpaces(res);
+  StripEndingSpaces(res);
 
   AgreementValToText = res;
   return;
