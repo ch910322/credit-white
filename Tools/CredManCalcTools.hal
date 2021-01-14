@@ -971,8 +971,8 @@ LAddActualsToPlan_Next:;
         monthlypayment = (CredManr.InvSum4-CredManr.DepositSum)/(CredManr.InstalmentMonths-CredManr.PrincipleDelayMonths);
         reducemonths = buyoutamount/monthlypayment+1;
         months = months - reducemonths;
-        usemonths = months - calculatedmonths;
       end;
+      usemonths = months - calculatedmonths;
 
     //end;
   end;
@@ -1370,8 +1370,8 @@ begin
           monthlypayment = (CredManr.InvSum4-CredManr.DepositSum)/(CredManr.InstalmentMonths-CredManr.PrincipleDelayMonths);
           reducemonths = CredHistr.Sum/monthlypayment+1;
           months = months - reducemonths;
-          usemonths = months - curmonth;
         end;
+        usemonths = months - curmonth;
       end;
     end;
   end;
