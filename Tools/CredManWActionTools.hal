@@ -1636,8 +1636,10 @@ begin
     BlockLoad(CMb);
     BlockLoad(CIb);
     SetupLoanInvoice(CredManr,CMb,IVr,td,"","",true,false,"",1,true);
-    IVr.OfficialSerNr = "";
-    IVr.NoEmailFlag = 1;
+    if (fullf==false) then begin
+      IVr.OfficialSerNr = "";
+      IVr.NoEmailFlag = 1;
+    end;
     GetItemName(CMb.InstalmentItem,spec);
     SetupInvoiceRowAndAdd(CredManr,IVr,CMb.InstalmentItem,spec,1,buyoutval-tval,blankval,19,-1);
     CheckAndAddHiddenPrinciple(IVr,CIb);
