@@ -937,7 +937,7 @@ begin
           goto LAddActualsToPlan_Next;
         end;
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,CredHistr.ArtCode,"",type,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,openamount);
-        if (CredHistr.RecordType==0 and (CredManr.InstalmentType!=0 or CredHistr.ChargeType==kEventTypePartialBuyout)) then begin
+        if (CredHistr.RecordType==0 and (CredHistr.ChargeType==kEventTypePartialBuyout)) then begin
           usesum = calcbal;
         end;
         if (CredHistr.ChargeType==kEventTypePartialBuyout) then begin

@@ -298,7 +298,7 @@ begin
     SMrw.Objects = fromdate;
     SMrw.Comment = todate;
     SMrw.FrRate = IVr.Sum3;
-    SMrw.ToRateB2 = IVr.Sum2;
+    SMrw.ToRateB2 = IVr.Sum1;
     SMrw.ToRateB1 = deposit;
     if (MatRowCnt(FMr)>0) then begin
       PackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
