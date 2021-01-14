@@ -2779,6 +2779,7 @@ begin
   TileButton(4,"Schedule");  
   TileButton(5,"Invoices");  
   TileButton(6,"Subordination");  
+  TileButton(7,"Agreements");  
 
   Tile(1,700,false,"1",SuretyYes);
   EditField(h,v=6,140,"Yes",Normal,SuretyYes,false,0);
@@ -2808,6 +2809,14 @@ begin
   EditField(h,v=6,140,"Yes",Normal,SubordinationYes,false,0);
   EditField(h,v+=vs,140,"No",Normal,SubordinationNo,false,0);
 
+  Tile(7,60,false,"7",FullValText);
+  EditField(h,v=6,140,"Full Value Text",Normal,FullValText,false,LangNrSClass);
+  EditField(h,v+=vs,140,"Separator",Normal,Separator,false,LangNrSClass);
+  EditField(h,v+=vs,140,"Decimal Value Text",Normal,DecValText,false,LangNrSClass);
+  EditField(h,v+=vs,140,"Currency",Normal,ValCrncyCode,false,CurncyCodeSClass);
+
+  EditField(h,v+=vs,140,"Company Prefix",Normal,CompPrefix,false,0);
+  EditField(h,v+=vs,140,"Person Prefix",Normal,PersPrefix,false,0);
 
   EndWindow;
 end;
@@ -3228,5 +3237,20 @@ begin
   UseView(ConditionTextVc);
   vs=20; h=120; vs2=16; hm=-100;
   TextField(20,v=6,-20,-20,Text,0);
+  EndWindow;
+end;
+
+window LangNrSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Values in Text",LangNrSClass,CGslist,LangNrView);
+  SetWRect(64,80,509,298);
+  SpawnClass(LangNrDClass);
+  Sizeable(-1,-1,0,0);
+  UseView(LangNrVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Language",LangCode,false,LangCode);
+  RlCol(121,121,"Comment",Comment,false);
+  SearchField("Search");
   EndWindow;
 end;

@@ -1936,6 +1936,8 @@ begin
   EndRecord;
 
   BlockBegin(CMPrintConstantsBlock,-,"");
+  LoadBlockOnStartup;
+  CacheBlockInClient;
   RecordField(SuretyYes,M4Str,255,0);
   RecordField(SuretyNo,M4Str,255,0);
   RecordField(SuretyYes2,M4Str,255,0);
@@ -1958,6 +1960,17 @@ begin
   RecordField(InvoiceText,M4Str,255,0);
   RecordField(SubordinationYes,M4Str,255,0);
   RecordField(SubordinationNo,M4Str,255,0);
+
+  RecordField(FullValText,M4Code,10,0);
+  RecordField(Separator,M4Str,30,0);
+  RecordField(DecValText,M4Code,10,0);
+
+  RecordField(CompPrefix,M4Str,30,0);
+  RecordField(PersPrefix,M4Str,30,0);
+
+  RecordField(ValCrncyCode,M4Code,20,0);
+
+
   EndBlock;
  
 

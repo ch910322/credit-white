@@ -590,3 +590,31 @@ begin
   DateInWords = res;
   return;
 end;
+
+global
+function string 255 AgreementValToText(val tval)
+begin
+  Integer intval;
+  val decval;
+  string 255 res,intstr,decstr;
+  record CMPrintConstantsBlock PCb;
+  
+  BlockLoad(PCb);
+  intval = tval;
+  //if (intval>0) then begin
+    ValToText(intval,M4Int,PCb.ValCrncyCode,PCb.FullValText,intstr);
+    res = intstr;
+  //end;
+  decval = (tval - intval) * 100;
+
+  if (decval>0) then begin
+    ValToText(decval,M4Int,PCb.ValCrncyCode,PCb.DecValText,decstr);
+    res = res & PCb.Separator & " " & decstr;
+  end;
+
+  res = StrReplace(res,"  "," ");
+  res = StrReplace(res,"  "," ");
+
+  AgreementValToText = res;
+  return;
+end;

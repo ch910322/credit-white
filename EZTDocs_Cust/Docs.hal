@@ -57,6 +57,7 @@ external function string 255 GetConditionsText2(record CredManVc,Integer,string)
 external function val AdjustFees(val,val,val);
 external function Boolean AgreementPaidOut2(record CredManVc,var val);
 external function Integer GetInterestPaymentType(record CredManVc);
+external function string 255 AgreementValToText(val);
 
 procedure GetCredManCustContact(record CredManVc CredManr,var string contactid,var string contactname)
 begin
@@ -281,11 +282,14 @@ end;
 function string 255 BuildCompRegNrString(Integer comptype,string id)
 begin
   string 255 res;
+  record CMPrintConstantsBlock PCb;
+
+  BlockLoad(PCb);
   
   if (comptype==0) then begin
-    res = "(" chr(303) & ".k " & id & ")";
+    res = "(" & PCb.CompPrefix & " " & id & ")";
   end else begin
-    res = "(a.k " & id & ")";
+    res = "(" & PCb.PersPrefix & " " & id & ")";
   end;
 
   BuildCompRegNrString = res;
@@ -333,7 +337,7 @@ begin
       
       tstr = GetConditionsText2(CredManr,0,tnum & ":" & num);
       vVals["ROW" & rw & "_" & strnum & "_F_BOESURCOND"] = tstr;
-      AddToList(vVals,"F_BOESURNAME_LIST",GetFieldValueByName(BSr,"Surety" & num & "Name",-1) & " " & BuildCompRegNrString(SCUr.CUType,SCUr.RegNr1));
+      AddToList(vVals,"F_BOESURNAME_LIST",GetFieldValueByName(BSr,"Surety" & num & "Name",-1) & " " & BuildCompRegNrString(SCUr.CustType,SCUr.RegNr1));
       AddToList(vVals,"F_BOESURCOND_LIST",tstr);
 
       gnum = gnum + 1;
@@ -356,7 +360,7 @@ begin
 
   tstr = name;
   if (nonblank(id)) then begin
-    tstr = USetStr(200114) & " " & tstr & " " & BuildCompRegNrString(CUr.CUType,id);
+    tstr = USetStr(200114) & " " & tstr & " " & BuildCompRegNrString(CUr.CustType,id);
   end;
 
   AddToList(vVals,"F_BOENAME_LIST",tstr);
@@ -415,7 +419,7 @@ begin
     phone = CUr.Phone;
     email = CUr.eMail;
     id = CUr.RegNr1;
-    comptype = CUr.CUType;
+    comptype = CUr.CustType;
   end else begin
     addr0 = ""; addr1 = ""; addr2 = ""; addr3 = ""; addr4 = ""; 
   end;
@@ -566,7 +570,9 @@ begin
   
   if (yesf) then begin
     tstr = GetFieldValueByName(PCb,blockfn & "Yes",-1);
-    tmp = GetFieldValueByName(PCb,blockfn & "Yes2",-1);
+    if (blockfn!="Subordination") then begin
+      tmp = GetFieldValueByName(PCb,blockfn & "Yes2",-1);
+    end;
     if (nonblank(tmp)) then begin
       tstr = tstr;
       if (nonblank(tmp)) then begin
@@ -756,6 +762,8 @@ begin
   vVals["F_BASERATE"] = tstr;
   vVals["F_PERIODLENGTH"] = ValToString(CredManr.InstalmentMonths + GetProlongMonths(CredManr),M4Val,"",".",1);
   vVals["F_RANTASATS"] = CredManr.IntRate;
+  tstr = AgreementValToText(CredManr.IntRate);
+  vVals["F_RANTASATSINWORDS"] = tstr;
   if (blank(IVr.ShipAddr0)) then begin
     tstr = IVr.Addr0;
   end else begin
@@ -869,11 +877,13 @@ begin
   ValToText(prolong,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
   vVals["F_PROLONGINTEXT"] = tstr;
   vVals["F_OVERDUEPRC"] = CredManr.OverduePercentage;
-  ValToText(CredManr.OverduePercentage,M4Val,CredManr.CurncyCode,CMb.NumberLangCode,tstr);
+  //ValToText(CredManr.OverduePercentage,M4Val,CredManr.CurncyCode,CMb.NumberLangCode,tstr);
+  tstr = AgreementValToText(CredManr.OverduePercentage);
   vVals["F_OVERDUEPRCINWORDS"] = tstr;
   vVals["F_BUYOUTFEEPRC"] = CredManr.BuyoutFeePrc;
   if (CredManr.BuyoutFeePrc>0) then begin
-    ValToText(CredManr.BuyoutFeePrc,M4Val,CredManr.CurncyCode,CMb.NumberLangCode,tstr);
+    //ValToText(CredManr.BuyoutFeePrc,M4Val,CredManr.CurncyCode,CMb.NumberLangCode,tstr);
+    tstr = AgreementValToText(CredManr.BuyoutFeePrc);
     vVals["F_BUYOUTFEEPRCINWORDS"] = tstr;
   end else begin
     vVals["F_BUYOUTFEEPRCINWORDS"] = "Netaikoma";
@@ -1602,7 +1612,7 @@ begin
         tstr = "";
         MatRowGet(Propr,0,defProprw);
         vVals["ROW_" & strnum & "_F_PROPOWNER"] = defProprw.OwnerName;
-        for (s=0;i<MatRowCnt(Propr);s=s+1) begin
+        for (s=0;s<MatRowCnt(Propr);s=s+1) begin
           MatRowGet(Propr,s,Proprw);
           if (nonblank(Proprw.OwnerName)) then begin
             if (nonblank(tstr)) then begin
@@ -1610,7 +1620,7 @@ begin
             end;
             tCUr.Code = Proprw.OwnerCode;
             if (ReadFirstMain(tCur,1,true)) then begin
-              tstr = tstr & Proprw.OwnerName & " " & BuildCompRegNrString(tCUr.CUType,tCUr.RegNr1);
+              tstr = tstr & Proprw.OwnerName & " " & BuildCompRegNrString(tCUr.CustType,tCUr.RegNr1);
             end;
           end;
         end;
@@ -1639,8 +1649,6 @@ begin
   vVals["F_LOANHIPSUM"] = (CredManr.InvSum4*1.3);
   ValToText((CredManr.InvSum4*1.3),M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
   vVals["F_LOANHIPSUMTEXT"] = tstr;
-
-  
 
   return;   
 end;
