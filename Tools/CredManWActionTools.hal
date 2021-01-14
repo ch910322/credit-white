@@ -644,11 +644,13 @@ begin
               IVVc_PastePrice(IVCreditr,IV2r,i,warning);
               MatRowGet(IVCreditr,i,IVrw);
             end;
+/* not used, because we can't change items on credit note
             if (nonblank(replaceitem) and IVrw.ChargeType!=1) then begin
-              //IVrw.ArtCode = replaceitem;
-              //IVrw.Spec = replaceitemname;
-              //MatRowPut(IVCreditr,i,IVrw);
+              IVrw.ArtCode = replaceitem;
+              IVrw.Spec = replaceitemname;
+              MatRowPut(IVCreditr,i,IVrw);
             end;
+*/
             vCredVal[IVrw.ArtCode] = vCredVal[IVrw.ArtCode] + IVrw.Sum;
           end;
         end;
@@ -686,12 +688,20 @@ begin
   Integer i;
   record CMInvoicingBlock CIb;
   string 255 replaceitem,replaceitemname;
+  transaction Boolean gCreditSellerf;
+  transaction string 255 gCreditSellerAccount;
 
   if (sellf) then begin
     BlockLoad(CIb);
+/* not used, because we can't change items on credit notes
     replaceitem = CIb.SellingItem;
     if (nonblank(replaceitem)) then begin
       GetItemName(replaceitem,replaceitemname);
+    end;
+*/
+    if (nonblank(CIb.SellingSalesAccount)) then begin
+      gCreditSellerAccount = CIb.SellingSalesAccount;
+      gCreditSellerf = true;
     end;
   end;
 
@@ -716,6 +726,11 @@ begin
         CreditAndOKInvoice(ARr.InvoiceNr,prc,credval,vCredVal,ARr.RVal,replaceitem,replaceitemname);
       end;
     end;
+  end;
+
+  if (gCreditSellerf) then begin
+    gCreditSellerAccount = "";
+    gCreditSellerf = false;
   end;
   
   return;

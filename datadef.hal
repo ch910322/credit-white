@@ -1541,6 +1541,7 @@ begin
   RecordField(SellingItem,M4Code,20,0);
   RecordField(CompensationItem,M4Code,20,0);
   RecordField(MaxOverpaidPrc,M4Val,0,0);
+  RecordField(SellingSalesAccount,M4Code,20,0);
   
   EndBlock;
 
