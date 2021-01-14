@@ -1579,20 +1579,19 @@ begin
     latedays = 0;
     lateamount = 0;
     invdate = td;
-    sd = GetLastInvoiceDate(CredManr,invdate);
     BlockLoad(CMb);
-    GetCredManOverdueInvoices(CredManr,CMb,invdate,sd,latedays,lateamount,lateformula,true,false);
-    if (latedays>0 or lateamount>0) then begin
-      //Setup always new invoice
-      SetupLoanInvoice(CredManr,CMb,IVr,invdate,sd,invdate,true,false,"",2,true);
-      AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
-      SetupOverdueLangCode(IVr,CredManr);
-      StoreLoanInvoice(IVr,CredManr);
-    end;
-
     fullf = UseFullBuyoutProcedure;
-
     if (fullf) then begin
+      sd = GetLastInvoiceDate(CredManr,invdate);
+      GetCredManOverdueInvoices(CredManr,CMb,invdate,sd,latedays,lateamount,lateformula,true,false);
+      if (latedays>0 or lateamount>0) then begin
+        //Setup always new invoice
+        SetupLoanInvoice(CredManr,CMb,IVr,invdate,sd,invdate,true,false,"",2,true);
+        AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
+        SetupOverdueLangCode(IVr,CredManr);
+        StoreLoanInvoice(IVr,CredManr);
+      end;
+
       IPr.TransDate = td;
       IPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
       IPr.RegDate = td;
@@ -1637,21 +1636,23 @@ begin
     BlockLoad(CMb);
     BlockLoad(CIb);
     SetupLoanInvoice(CredManr,CMb,IVr,td,"","",true,false,"",1,true);
+    IVr.OfficialSerNr = "";
+    IVr.NoEmailFlag = 1;
     GetItemName(CMb.InstalmentItem,spec);
     SetupInvoiceRowAndAdd(CredManr,IVr,CMb.InstalmentItem,spec,1,buyoutval-tval,blankval,19,-1);
-    if (fullf==false) then begin
-      BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
-      balance = GetActualBalance(CredManr,CredManPayPlanr,false);
-      AddBuyoutFee(CredManr,IVr,balance);
-    end;
     CheckAndAddHiddenPrinciple(IVr,CIb);
     //CM_AddPrepayments(IVr,CredManr,CIb);
     StoreLoanInvoice(IVr,CredManr);
 
     //IVr.Sum4 = buyoutval;//a little hack for this to work
-    if (fullf) then begin
-      CreatePaymentFakeReceipt(CredManr,IVr);
-    end;
+    CreatePaymentFakeReceipt(CredManr,IVr);
+
+    if (fullf==false) then begin
+      SetupLoanInvoice(CredManr,CMb,IVr,td,"","",true,false,"",1,true);
+      GetItemName(CMb.InstalmentItem,spec);
+      AddBuyoutFee(CredManr,IVr,buyoutval-tval);
+      StoreLoanInvoice(IVr,CredManr);
+    end;    
 
     if (updf) then begin
       ADr.RecordType = 0;

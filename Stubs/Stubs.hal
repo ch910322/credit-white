@@ -90,3 +90,9 @@ begin
   return;
 end;
 
+global
+function Boolean PartiaBuyoutShortensPeriod()
+begin
+  PartiaBuyoutShortensPeriod = true;
+  return;
+end;

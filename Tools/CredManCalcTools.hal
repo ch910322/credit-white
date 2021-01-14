@@ -7,6 +7,7 @@ external inner function val AbsoluteVal(val);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 forward procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
 external function Integer GetInterestPaymentType(record CredManVc);
+external function Boolean PartiaBuyoutShortensPeriod();
 
 enum begin
   kEventTypeNone = 0,
@@ -966,10 +967,12 @@ LAddActualsToPlan_Next:;
   end;
   if (buyoutamount>0) then begin
     //if (CredManr.InstalmentType==2 or CredManr.InstalmentType==6 or CredManr.InstalmentType==7) then begin
-      monthlypayment = (CredManr.InvSum4-CredManr.DepositSum)/(CredManr.InstalmentMonths-CredManr.PrincipleDelayMonths);
-      reducemonths = buyoutamount/monthlypayment+1;
-      months = months - reducemonths;
-      usemonths = months - calculatedmonths;
+      if (PartiaBuyoutShortensPeriod) then begin
+        monthlypayment = (CredManr.InvSum4-CredManr.DepositSum)/(CredManr.InstalmentMonths-CredManr.PrincipleDelayMonths);
+        reducemonths = buyoutamount/monthlypayment+1;
+        months = months - reducemonths;
+        usemonths = months - calculatedmonths;
+      end;
 
     //end;
   end;
@@ -1362,11 +1365,12 @@ begin
       if (CredHistr.ChargeType==kEventTypePartialBuyout) then begin//partial buyout
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,"","",kEventTypePartialBuyout,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,0);
         usesum = calcbal;
-
-        monthlypayment = (CredManr.InvSum4-CredManr.DepositSum)/(CredManr.InstalmentMonths-CredManr.PrincipleDelayMonths);
-        reducemonths = CredHistr.Sum/monthlypayment+1;
-        months = months - reducemonths;
-        usemonths = months - curmonth;
+        if (PartiaBuyoutShortensPeriod) then begin
+          monthlypayment = (CredManr.InvSum4-CredManr.DepositSum)/(CredManr.InstalmentMonths-CredManr.PrincipleDelayMonths);
+          reducemonths = CredHistr.Sum/monthlypayment+1;
+          months = months - reducemonths;
+          usemonths = months - curmonth;
+        end;
       end;
     end;
   end;
