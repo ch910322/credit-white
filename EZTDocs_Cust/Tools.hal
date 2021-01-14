@@ -309,8 +309,12 @@ begin
   vVals["F_ABOVEHIDDENVAT"] = abovehiddenvat;
   if (IVr.InvType==kInvoiceRowTypeCredit) then begin
     vVals["F_ABOVEHIDDENFULL"] = -(abovehiddenbase + abovehiddenvat);
+    ValToText(-(abovehiddenbase + abovehiddenvat),M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
+    vVals["F_ABOVEHIDDENFULLINWORDS"] = tstr;
   end else begin
     vVals["F_ABOVEHIDDENFULL"] = abovehiddenbase + abovehiddenvat;
+    ValToText(abovehiddenbase + abovehiddenvat,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
+    vVals["F_ABOVEHIDDENFULLINWORDS"] = tstr;
   end;
   vVals["F_NUMMER"] = GetCredManNr(IVr.CustCredManNr);
   CredManr.SerNr = IVr.CustCredManNr;
