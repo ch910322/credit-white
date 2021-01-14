@@ -2814,7 +2814,7 @@ begin
 
   Tile(7,60,false,"7",FullValText);
   EditField(h,v=6,140,"Full Value Text",Normal,FullValText,false,LangNrSClass);
-  EditField(h,v+=vs,140,"Separator",Normal,Separator,false,LangNrSClass);
+//  EditField(h,v+=vs,140,"Separator",Normal,Separator,false,LangNrSClass);
   EditField(h,v+=vs,140,"Decimal Value Text",Normal,DecValText,false,LangNrSClass);
   EditField(h,v+=vs,140,"Currency",Normal,ValCrncyCode,false,CurncyCodeSClass);
 

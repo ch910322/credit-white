@@ -602,18 +602,21 @@ begin
   val decval;
   string 255 res,intstr,decstr;
   record CMPrintConstantsBlock PCb;
+  record LangNrVc LangNrr;
   
   BlockLoad(PCb);
+  LangNrr.LangCode = PCb.ValCrncyCode;
+  ReadFirstMain(LangNrr,1,true);
   intval = tval;
-  //if (intval>0) then begin
+  if (intval>0) then begin
     ValToText(intval,M4Int,PCb.ValCrncyCode,PCb.FullValText,intstr);
     res = intstr;
-  //end;
+  end;
   decval = (tval - intval) * 100;
 
   if (decval>0) then begin
     ValToText(decval,M4Int,PCb.ValCrncyCode,PCb.DecValText,decstr);
-    res = res & PCb.Separator & " " & decstr;
+    res = res & LangNrr.DeciPart & " " & decstr;
   end;
 
   res = StrReplace(res,"  "," ");

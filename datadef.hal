@@ -1969,9 +1969,11 @@ begin
   RecordField(PersPrefix,M4Str,30,0);
 
   RecordField(ValCrncyCode,M4Code,20,0);
-
-
   EndBlock;
+
+  RecordAddBegin(LangNrVc,"LangNrVc_Cust");
+  ChangeMatrixField(ValText,M4Str,255,0);
+  EndRecordAdd;
  
 
   SourceFile("halcust\\LoanApp\\English", 0);
