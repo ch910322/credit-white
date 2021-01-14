@@ -1340,13 +1340,13 @@ begin
     vVals["F_CONTACTMAIL"] = email;
     vVals["F_CONTACTID"] = contactid;
     vVals["F_CONTACTVALUE"] = value;
-    ValToText(value,M4Val,CredManr.CurncyCode,CMb.NumberLangCode,tstr);
+    ValToText(value,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
     tstr = StrReplace(tstr,"  "," ");
     tstr = StrReplace(tstr,"  "," ");
     vVals["F_CONTACTVALUEINWORDS"] = tstr;
     vVals["F_CONTACTSIGNER"] = signer;
     vVals["F_CONTACTDATE"] = td;
-    tstr = DateInWords(td,CredManr.LangCode,2);
+    tstr = DateInWords(td,CredManr.LangCode,1);
     vVals["F_CONTACTDATEINWORDS"] = tstr;
     vVals["F_CONTACTDUEDATE"] = duedate;
     tstr = DateInWords(duedate,CredManr.LangCode,2);
