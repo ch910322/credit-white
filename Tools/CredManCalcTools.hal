@@ -2,7 +2,7 @@ external inner function val GetCredManRate(Integer,string,val,Date);
 external inner function LongInt DateDiff(Date,Date);
 external inner function roundmode SetRoundModeD(Integer);
 external inner function LongInt MonthDiff(Date,Date);
-external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string,Boolean,Boolean);
+external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string,Boolean,Boolean,var Date);
 external inner function val AbsoluteVal(val);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 forward procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
@@ -1038,13 +1038,14 @@ begin
   Boolean addf;
   record CredManTypeVc CMTr;
   string 255 item;
+  Date calcsd;
   
   if (CIb.OverdueIVType==2) then begin
     sd = AddMonth(frdate,-1);
     ed = AddDay(AddMonth(sd,1),-1);
     invdat2 = invdat;
     invdat2.Day = CIb.OverdueIVDay;
-    GetCredManOverdueInvoices(CredManr,CredManSetb,ed,sd,latedays,lateamount,lateformula,false,false);
+    GetCredManOverdueInvoices(CredManr,CredManSetb,ed,sd,latedays,lateamount,lateformula,false,false,calcsd);
     addf = true;
     CMTr.Code = CredManr.Type;
     if (ReadFirstMain(CMTr,1,true)) then begin

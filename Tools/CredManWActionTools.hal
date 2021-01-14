@@ -48,7 +48,7 @@ external updating procedure CreateProlongRecord(Longint,Date,val,Integer);
 external function Integer GetProlongMonths(record CredManVc);
 external updating procedure CreateRateChangeRecord(Longint,Date,val,Integer);
 external function Date GetLastInvoiceDate(record CredManVc,Date);
-external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string,Boolean,Boolean);
+external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string,Boolean,Boolean,var Date);
 external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var record IVVc,Date,Date,Date,Boolean,Boolean,string,Integer,Boolean);
 external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val,array string);
 external procedure SetupOverdueLangCode(var record IVVc,record CredManVc);
@@ -1573,6 +1573,7 @@ begin
   Boolean fullf;
   record CredManPayPlanVc CredManPayPlanr;
   val balance;
+  Date calcsd;
 
   CredManr.SerNr = sernr;
   if (ReadFirstMain(CredManr,1,true)) then begin
@@ -1583,10 +1584,10 @@ begin
     fullf = UseFullBuyoutProcedure;
     if (fullf) then begin
       sd = GetLastInvoiceDate(CredManr,invdate);
-      GetCredManOverdueInvoices(CredManr,CMb,invdate,sd,latedays,lateamount,lateformula,true,false);
+      GetCredManOverdueInvoices(CredManr,CMb,invdate,sd,latedays,lateamount,lateformula,true,false,calcsd);
       if (latedays>0 or lateamount>0) then begin
         //Setup always new invoice
-        SetupLoanInvoice(CredManr,CMb,IVr,invdate,sd,invdate,true,false,"",2,true);
+        SetupLoanInvoice(CredManr,CMb,IVr,invdate,calcsd,invdate,true,false,"",2,true);
         AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
         SetupOverdueLangCode(IVr,CredManr);
         StoreLoanInvoice(IVr,CredManr);
@@ -1937,6 +1938,7 @@ begin
   val lateamount;
   array string 255 lateformula;
   Boolean updf;
+  Date calcsd;
 
   BlockLoad(CMb);
   BlockLoad(CIb);
@@ -1944,10 +1946,10 @@ begin
   latedays = 0;
   lateamount = 0;
   sd = GetLastInvoiceDate(CredManr,selldate);
-  GetCredManOverdueInvoices(CredManr,CMb,selldate,sd,latedays,lateamount,lateformula,true,false);
+  GetCredManOverdueInvoices(CredManr,CMb,selldate,sd,latedays,lateamount,lateformula,true,false,calcsd);
   if (latedays>0 or lateamount>0) then begin
     //Setup always new invoice
-    SetupLoanInvoice(CredManr,CMb,IVr,selldate,sd,selldate,true,false,"",2,true);
+    SetupLoanInvoice(CredManr,CMb,IVr,selldate,calcsd,selldate,true,false,"",2,true);
     AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
     SetupOverdueLangCode(IVr,CredManr);
     StoreLoanInvoice(IVr,CredManr);

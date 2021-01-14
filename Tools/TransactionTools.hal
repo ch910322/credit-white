@@ -20,23 +20,34 @@ begin
   string 255 res;
   Integer i,rwcnt;
   record CMInvoicingBlock CIb;
+  record CUVc CUr;
 
   BlockLoad(CIb);
   if (CIb.UseTypeAccounts==1) then begin
     CredManr.SerNr = sernr;
     if (ReadFirstMain(CredManr,1,true)) then begin
-      CredManAccr.CredManType = CredManr.Type;
-      if (ReadFirstMain(CredManAccr,1,true)) then begin
-        rwcnt = MatRowcnt(CredManAccr);
-        for (i=0;i<rwcnt;i=i+1) begin
-          MatRowGet(CredManAccr,i,CredManAccrw);
-          if (CredManAccrw.ArtCode==artcode) then begin
-            if (debitf) then begin
-              res = CredManAccrw.DebitAcc;
-            end else begin
-              res = CredManAccrw.CreditAcc;
+      if (debitf) then begin
+        CUr.Code = CredManr.CustCode;
+        if (ReadFirstMain(CUr,1,true)) then begin
+          if (nonblank(CUr.DebtorsAcc)) then begin
+            res = CUr.DebtorsAcc;
+          end;
+        end;
+      end;
+      if (blank(res)) then begin
+        CredManAccr.CredManType = CredManr.Type;
+        if (ReadFirstMain(CredManAccr,1,true)) then begin
+          rwcnt = MatRowcnt(CredManAccr);
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(CredManAccr,i,CredManAccrw);
+            if (CredManAccrw.ArtCode==artcode) then begin
+              if (debitf) then begin
+                res = CredManAccrw.DebitAcc;
+              end else begin
+                res = CredManAccrw.CreditAcc;
+              end;
+              i = rwcnt;
             end;
-            i = rwcnt;
           end;
         end;
       end;

@@ -387,6 +387,9 @@ begin
   v = VATZoneButtonsLabelsENG(h5+30,v,170,16);
   Tile(tilenr,130,false,tilenr,AccAP); tilenr = tilenr + 1;
   EditField(h,v=6,80,"Creditor A/C",Normal,AccAP,false,AccSClass);
+//CUST-BEGIN
+  EditField(h,v+=vs,80,"Debitor A/C",Normal,DebtorsAcc,false,AccSClass);
+//CUST-END
   EditField(h,v+=vs,80,"Cost A/C",Normal,AccCost,false,AccSClass);
   EditField(h,v+=vs,80,"Cred. On Acc. A/C",Normal,OnAccAccAP,false,AccSClass);
   EditField(h,v+=vs,120,"Sales Tags/Objects",Normal,Objects,false,ObjSClass);
