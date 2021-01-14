@@ -1337,6 +1337,8 @@ begin
     vVals["F_CONTACTID"] = contactid;
     vVals["F_CONTACTVALUE"] = value;
     ValToText(value,M4Val,CredManr.CurncyCode,CMb.NumberLangCode,tstr);
+    tstr = StrReplace(tstr,"  "," ");
+    tstr = StrReplace(tstr,"  "," ");
     vVals["F_CONTACTVALUEINWORDS"] = tstr;
     vVals["F_CONTACTSIGNER"] = signer;
     vVals["F_CONTACTDATE"] = td;
