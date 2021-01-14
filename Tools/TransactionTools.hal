@@ -12,7 +12,7 @@ external function val GetCredHistOpenValueOnDate(Longint,Date);
 
 
 global
-function string 255 CM_GetCredManTypeSalesItemAccount(Longint sernr,string artcode,string fallback,Boolean debitf)
+function string 255 CM_GetCredManTypeSalesItemAccount(Longint sernr,string custcode,string artcode,string fallback,Boolean debitf)
 begin
   record CredManVc CredManr;
   record CredManAccVc CredManAccr;
@@ -27,7 +27,7 @@ begin
     CredManr.SerNr = sernr;
     if (ReadFirstMain(CredManr,1,true)) then begin
       if (debitf) then begin
-        CUr.Code = CredManr.CustCode;
+        CUr.Code = custcode;
         if (ReadFirstMain(CUr,1,true)) then begin
           if (nonblank(CUr.DebtorsAcc)) then begin
             res = CUr.DebtorsAcc;
@@ -295,7 +295,7 @@ begin
       MatRowGet(tIVr,i,IVrw);
       InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
 
-      acc = CM_GetCredManTypeSalesItemAccount(IVr.CustCredManNr,IVrw.ArtCode,IVr.ARAcc,debitf);
+      acc = CM_GetCredManTypeSalesItemAccount(IVr.CustCredManNr,IVr.CustCode,IVrw.ArtCode,IVr.ARAcc,debitf);
       sum = IVrw.Sum;
 
       if (IVr.InclVAT==0) then begin

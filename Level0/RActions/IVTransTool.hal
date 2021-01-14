@@ -42,7 +42,7 @@ external function Boolean GetAccName(string,var string,Integer);
 external procedure ConvertSalesAcc(var string,Integer);
 external procedure GetItemSalesAcc(string,Integer,var string);
 //CUST-BEGIn
-external outer function string 255 CM_GetCredManTypeSalesItemAccount(Longint,string,string,Boolean);
+external outer function string 255 CM_GetCredManTypeSalesItemAccount(Longint,string,string,string,Boolean);
 external outer function val GetCredManPeriodAmount(record IVVc,val,Integer);
 //CUST-END
 
@@ -260,7 +260,7 @@ begin
     otherwise
     //CUST-BEGIN
       //revacc = IVrw.SalesAcc;
-      revacc = CM_GetCredManTypeSalesItemAccount(IVp.CustCredManNr,IVrw.ArtCode,IVrw.SalesAcc,false);
+      revacc = CM_GetCredManTypeSalesItemAccount(IVp.CustCredManNr,IVp.CustCode,IVrw.ArtCode,IVrw.SalesAcc,false);
     //CUST-END
   end;
 /*

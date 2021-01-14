@@ -59,7 +59,6 @@ external procedure GetFullCurncyRateText(Boolean,var string,val,val,val,val,val)
 external function Integer AddIVPrePayRow(var record TRVc,record IVVc,Integer,string,val,val,val,val,val,
                                          Boolean,Boolean,var string,var val,record SMVc,Integer,record TRGenBlock,record AccBlock);
 //CUST-BEGIn
-external outer function string 255 CM_GetCredManTypeSalesItemAccount(Longint,string,string,Boolean);
 external outer function Boolean CM_GetInvoiceItemOrder(record IVVc,val,var vector val,Boolean);
 //CUST-END
 
