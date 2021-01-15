@@ -830,7 +830,7 @@ begin
     if (ARr.CustCode!=IVr.CustCode) then begin
       TrHs = false;
     end else begin
-      if (ARr.InvDate<IVr.InvDate) then begin
+      if (ARr.DueDate<IVr.PayDate) then begin
         res = true;
         TrHs = false;
       end;
@@ -958,7 +958,7 @@ LFindAndSendInvoiceReminders_overdue:;
               if (SMSReminder.OnlyOverdueInvoices==0 or ARr.DueDate<CurrentDate) then begin
                 IVr.SerNr = ARr.InvoiceNr;
                 if (ReadFirstMain(IVr,1,true)) begin
-                AddInvoiceToReminderArr(IVr,arrORr,SMSReminder.PerBankAcc);
+                  AddInvoiceToReminderArr(IVr,arrORr,SMSReminder.PerBankAcc);
                 end;
               end;
             end;
