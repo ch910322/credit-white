@@ -343,6 +343,9 @@ begin
       gnum = gnum + 1;
     end;
   end;
+  if (blank(vVals["F_BOESURNAME_LIST"])) then begin
+    vVals["F_BOESURNAME_LIST"] = USetStr(200275);
+  end;
 
   return;
 end;
@@ -580,6 +583,12 @@ begin
         tstr = tstr & tmp;
       end;
       if (nonblank(extratext)) then begin
+        if (blockfn=="Surety") then begin
+          if (right(tstr,1)==".") then begin
+            tstr = left(tstr,len(tstr)-1);
+          end;
+          tstr = tstr & " Nr. ";
+        end;
         tstr = tstr & extratext;
       end;
     end;
@@ -1532,6 +1541,7 @@ begin
   array record CUVc aCUr;
   record CUVc CUr,tCUr;
   string 255 numstring,propid;
+  Boolean haspropf;
   
   GetLangNr(CredManr.LangCode,LangNrr);      
   Ext_CommonDocumentFields(vVals);
@@ -1647,14 +1657,18 @@ begin
         tstr = StrReplace(tstr,chr(13),"\\n");
         vVals["ROW_" & strnum & "_F_PROPCOMMENT"] = tstr;
         AddToList(vVals,"F_PROPCOMMENT_LIST",tstr);
-
+        haspropf = true;
       end;
     end;
   end;
   tstr = "";
-  vVals["F_LOANHIPSUM"] = (CredManr.InvSum4*1.3);
-  ValToText((CredManr.InvSum4*1.3),M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
-  vVals["F_LOANHIPSUMTEXT"] = tstr;
+  if (haspropf) then begin
+    vVals["F_LOANHIPSUM"] = (CredManr.InvSum4*1.3) & " Eur";
+    ValToText((CredManr.InvSum4*1.3),M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+    vVals["F_LOANHIPSUMTEXT"] = "(" & tstr & ")";
+  end else begin
+    vVals["F_LOANHIPSUM"] = "-";  
+  end;
 
   return;   
 end;
