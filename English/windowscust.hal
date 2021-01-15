@@ -2061,7 +2061,7 @@ begin
   EditField(h,v+=vs,100,"Prolong Item",Normal,ProlongItem,false,INSClass);
   EditField(h,v+=vs,100,"Compensation Item",Normal,CompensationItem,false,INSClass);
   //EditField(h,v+=vs,100,"Selling Item",Normal,SellingItem,false,INSClass);
-  EditField(h,v+=vs,100,"Dad Debt Sales A/C",Normal,SellingSalesAccount,false,AccSClass);
+  EditField(h,v+=vs,100,"Bad Debt Sales A/C",Normal,SellingSalesAccount,false,AccSClass);
   
     
   EditField(h,v+=vs,100,"Premature Term. Item",Normal,BuyOutItem,false,INSClass);  
