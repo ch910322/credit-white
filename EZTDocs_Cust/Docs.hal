@@ -888,7 +888,7 @@ begin
   if (CredManr.BuyoutFeePrc>0) then begin
     //ValToText(CredManr.BuyoutFeePrc,M4Val,CredManr.CurncyCode,CMb.NumberLangCode,tstr);
     tstr = AgreementValToText(CredManr.BuyoutFeePrc);
-    vVals["F_BUYOUTFEEPRCINWORDS"] = tstr & " " & USetStr(200276);
+    vVals["F_BUYOUTFEEPRCINWORDS"] = "(" & tstr & " " & USetStr(200276) & ")";
   end else begin
     vVals["F_BUYOUTFEEPRCINWORDS"] = USetStr(200275);
   end;
