@@ -460,7 +460,7 @@ begin
   paysum = CredHistr.Sum;
   tempsd = sd;//this is the start date when this item should have been paid since
   if (nonblank(overduetd)) then begin
-    tempsd = AddDay(overduetd,1);
+    tempsd = overduetd;
   end;
   if (tempsd<=CredHistr.PayDate) then begin
     tempsd = AddDay(CredHistr.PayDate,1);
@@ -547,7 +547,7 @@ begin
     end else begin
       if (blank(mindate) or CredHistr.TransDate>=mindate) then begin
         //Construct an array of days with amount that is over due starting with the first day of period
-        GetLatePaymentPlan(CredManr,CredHistr,AddDay(prevtd,1),invdate,overduetd,amounts,daycnt);
+        GetLatePaymentPlan(CredManr,CredHistr,prevtd,invdate,overduetd,amounts,daycnt);
         lastamount = 0;
         odays = 0;
         for (i=0;i<amounts.length;i=i+1) begin
@@ -622,6 +622,10 @@ begin
     end;
   end;
 
+  if (nonblank(res)) then begin
+    res = AddDay(res,1);
+  end;
+
   GetLastOverdueInvoiceDate = res;
   return;
 end;
@@ -679,7 +683,7 @@ begin
         overduetd = GetLastOverdueInvoiceDate(CredManr.SerNr,CMb.LateFeeItem);
       end;
       if (nonblank(overduetd)) then begin
-        calcsd = AddDay(overduetd,1);
+        calcsd = overduetd;
       end else begin
         calcsd = prevtd;
       end;
