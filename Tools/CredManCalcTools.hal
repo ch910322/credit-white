@@ -972,7 +972,9 @@ LAddActualsToPlan_Next:;
         reducemonths = buyoutamount/monthlypayment+1;
         months = months - reducemonths;
       end;
-      usemonths = months - calculatedmonths;
+      if (calculatedmonths>CredManr.PrincipleDelayMonths) then begin
+        usemonths = months - calculatedmonths;
+      end;
 
     //end;
   end;
