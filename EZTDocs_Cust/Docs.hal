@@ -883,7 +883,7 @@ begin
   if (CredManr.BuyoutFeePrc>0) then begin
     vVals["F_BUYOUTFEEPRC"] = CredManr.BuyoutFeePrc & " %";
   end else begin
-    vVals["F_BUYOUTFEEPRC"] = USetStr(200275);
+    vVals["F_BUYOUTFEEPRC"] = "";
   end;
   if (CredManr.BuyoutFeePrc>0) then begin
     //ValToText(CredManr.BuyoutFeePrc,M4Val,CredManr.CurncyCode,CMb.NumberLangCode,tstr);
