@@ -611,7 +611,7 @@ begin
   return;
 end;
 
-updating procedure CreditAndOKInvoice(Longint ivnr,val prc,var val credval,var vector val vCredVal,val rval,string replaceitem,string replaceitemname)
+updating procedure CreditAndOKInvoice(Longint ivnr,val prc,var val credval,var vector val vCredVal,val rval,Boolean sellf)
 begin
   record IVVc IVr,IVCreditr,oldIVr,IV2r;
   string 255 warning;
@@ -644,6 +644,11 @@ begin
               IVVc_PastePrice(IVCreditr,IV2r,i,warning);
               MatRowGet(IVCreditr,i,IVrw);
             end;
+            if (sellf) then begin
+              IVrw.PeriodCode = "";
+            end;
+            MatRowPut(IVCreditr,i,IVrw);
+
 /* not used, because we can't change items on credit note
             if (nonblank(replaceitem) and IVrw.ChargeType!=1) then begin
               IVrw.ArtCode = replaceitem;
@@ -687,23 +692,6 @@ begin
   record ARVc ARr;
   Integer i;
   record CMInvoicingBlock CIb;
-  string 255 replaceitem,replaceitemname;
-  transaction Boolean gCreditSellerf;
-  transaction string 255 gCreditSellerAccount;
-
-  if (sellf) then begin
-    BlockLoad(CIb);
-/* not used, because we can't change items on credit notes
-    replaceitem = CIb.SellingItem;
-    if (nonblank(replaceitem)) then begin
-      GetItemName(replaceitem,replaceitemname);
-    end;
-*/
-    if (nonblank(CIb.SellingSalesAccount)) then begin
-      gCreditSellerAccount = CIb.SellingSalesAccount;
-      gCreditSellerf = true;
-    end;
-  end;
 
   credval = 0;
   TrHs = true;
@@ -723,14 +711,9 @@ begin
     ARr.InvoiceNr = StringToLongint(invarr[i]);
     if (ReadFirstMain(ARr,1,true)) then begin
       if (ARr.RVal>0) then begin
-        CreditAndOKInvoice(ARr.InvoiceNr,prc,credval,vCredVal,ARr.RVal,replaceitem,replaceitemname);
+        CreditAndOKInvoice(ARr.InvoiceNr,prc,credval,vCredVal,ARr.RVal,sellf);
       end;
     end;
-  end;
-
-  if (gCreditSellerf) then begin
-    gCreditSellerAccount = "";
-    gCreditSellerf = false;
   end;
   
   return;
@@ -1954,6 +1937,8 @@ begin
   array string 255 lateformula;
   Boolean updf;
   Date calcsd;
+  transaction Boolean gCreditSellerf;
+  transaction string 255 gCreditSellerAccount;
 
   BlockLoad(CMb);
   BlockLoad(CIb);
@@ -2005,6 +1990,13 @@ begin
     end;
   end;
 
+  if (sellf) then begin
+    if (nonblank(CIb.SellingSalesAccount)) then begin
+      gCreditSellerAccount = CIb.SellingSalesAccount;
+      gCreditSellerf = true;
+    end;
+  end;
+
   CreditCredManInvoices(CredManr,prc,credval,vCredVal,sellf);
   ReadFirstMain(CredManr,1,true);
 
@@ -2021,6 +2013,12 @@ begin
     end;
     StoreLoanInvoice(IVr,CredManr);
   end;
+
+  if (gCreditSellerf) then begin
+    gCreditSellerAccount = "";
+    gCreditSellerf = false;
+  end;
+
 
   return;
 end;

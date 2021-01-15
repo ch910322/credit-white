@@ -36,11 +36,9 @@ begin
           end;
         end;
       end else begin
-        if (IVr.InvType==kInvoiceTypeCredit) then begin
-          if (gCreditSellerf) then begin
-            if (IVrw.ChargeType!=1) then begin
-              res = gCreditSellerAccount;
-            end;
+        if (gCreditSellerf) then begin
+          if (IVrw.ChargeType!=1) then begin
+            res = gCreditSellerAccount;
           end;
         end;
       end;
