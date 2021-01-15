@@ -1,4 +1,4 @@
-external procedure GenerateAgreementSchedule(record CredManVc,Boolean);
+external procedure GenerateAgreementSchedule(record CredManVc,Boolean,Boolean);
 
 global
 procedure CreateCredManScheduleMn(record RcVc RepSpec)
@@ -11,7 +11,7 @@ begin
       ResetLoop(CSr);
       CSr.CredManNr = CredManr.SerNr;
       if (ReadFirstMain(CSr,1,true)==false) then begin
-        GenerateAgreementSchedule(CredManr,false);
+        GenerateAgreementSchedule(CredManr,false,true);
       end;
     end;
   end;

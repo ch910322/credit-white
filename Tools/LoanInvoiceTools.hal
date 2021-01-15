@@ -19,7 +19,7 @@ external inner procedure SumNoDownPay(record IVVc,var val,var val,var val,var va
 external function string 255 GetCredManNr(Longint);
 external procedure GetHiddenInvoiceValues(record IVVc,var val,var val);
 external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
-external procedure GenerateAgreementSchedule(record CredManVc,Boolean);
+external procedure GenerateAgreementSchedule(record CredManVc,Boolean,Boolean);
 external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,record CredManSetBlock,var record SMVc);
 external function Boolean GetCredLegalNrLine(string,string,Date,string,string,var row CredLegalInvNrBlock,Integer);
 external inner function string 50 NextLegalSerNr(string,LongInt,Date,string,string,string);
@@ -1637,7 +1637,7 @@ begin
         end;
         SetupBuyoutLangCode(IVr,CredManr);
         StoreLoanInvoice(IVr,CredManr);
-        GenerateAgreementSchedule(CredManr,true);
+        GenerateAgreementSchedule(CredManr,true,true);
         RecordCopy(firstIVr,IVr);
       end else begin
         LogText(0,"Failed to store Invoice. Sum is 0");
@@ -2312,7 +2312,7 @@ begin
 end;
 
 global
-procedure GenerateAgreementSchedule(record CredManVc CredManr,Boolean forcef)
+procedure GenerateAgreementSchedule(record CredManVc CredManr,Boolean forcef,Boolean fullf)
 begin
   record CredManSetBlock CMb;
   record CredManPayPlanVc CredManPayPlanr;
@@ -2321,7 +2321,7 @@ begin
   record CredManSchedVc CSr,oldCSr;
   row CredManSchedVc CSrw;
   Integer i,rwcnt,rw;
-  Boolean updf;
+  Boolean updf,intf;
   record CredFeesMatrixVc FMr;
   val bal;
   transaction Boolean gSilenceIVOpenPrepExists;
@@ -2333,8 +2333,10 @@ logtext(0,"GenerateAgreementSchedule1");
   if (ReadFirstMain(CSr,1,true)) then begin
     RecordCopy(oldCSr,CSr);
     rwcnt = MatRowCnt(CSr);
-    for (i=rwcnt-1;i>=0;i=i-1) begin
-      MatRowDelete(CSr,i);
+    if (fullf) then begin
+      for (i=rwcnt-1;i>=0;i=i-1) begin
+        MatRowDelete(CSr,i);
+      end;
     end;
     updf = true;
   end else begin
@@ -2360,40 +2362,45 @@ logtext(0,"GenerateAgreementSchedule1");
   rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(SMr,i,SMrw);
-    ClearRow(CSr,CSrw,1);
-    CSrw.InvDate = SMrw.TransDate;
-    CSrw.PayDate = SMrw.DueDate;
-    CSrw.Type = SMrw.RowSimStat;
-    switch (CSrw.Type) begin
-      case 4:
-        CSrw.Total = SMrw.CurDebVal;
-        CSrw.Invoiced = 1;
-        bal = bal - CSrw.Total;
-        CSrw.Balance = bal;
-      case 5:
-        CSrw.Principle = SMrw.DebVal;
-        bal = bal + CSrw.Principle;
-        CSrw.Invoiced = 1;
-        CSrw.Balance = bal;
-      otherwise
-        CSrw.FromDate = SMrw.Objects;
-        CSrw.ToDate = SMrw.Comment;
-        CSrw.Principle = SMrw.DebVal - SMrw.ToRateB1;
-        CSrw.Deposit = SMrw.ToRateB1;
-        bal = bal - CSrw.Principle - CSrw.Deposit;
-        CSrw.Balance = bal;
-        CSrw.Interest = SMrw.CredVal;
-        CSrw.Fees = SMrw.DebVal2;
-        UnpackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
-        PackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
-        CSrw.Total = SMrw.CurDebVal;
-        if (nonblank(SMrw.ExtraComment)) then begin
+    if (fullf or (intf==false) or updf==false) then begin
+      ClearRow(CSr,CSrw,1);
+      CSrw.InvDate = SMrw.TransDate;
+      CSrw.PayDate = SMrw.DueDate;
+      CSrw.Type = SMrw.RowSimStat;
+      switch (CSrw.Type) begin
+        case 4:
+          CSrw.Total = SMrw.CurDebVal;
           CSrw.Invoiced = 1;
-          CSrw.InvoiceNr = SMrw.ExtraComment;
-        end;
+          bal = bal - CSrw.Total;
+          CSrw.Balance = bal;
+        case 5:
+          CSrw.Principle = SMrw.DebVal;
+          bal = bal + CSrw.Principle;
+          CSrw.Invoiced = 1;
+          CSrw.Balance = bal;
+        otherwise
+          CSrw.FromDate = SMrw.Objects;
+          CSrw.ToDate = SMrw.Comment;
+          CSrw.Principle = SMrw.DebVal - SMrw.ToRateB1;
+          CSrw.Deposit = SMrw.ToRateB1;
+          bal = bal - CSrw.Principle - CSrw.Deposit;
+          CSrw.Balance = bal;
+          CSrw.Interest = SMrw.CredVal;
+          CSrw.Fees = SMrw.DebVal2;
+          UnpackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
+          PackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
+          CSrw.Total = SMrw.CurDebVal;
+          if (nonblank(SMrw.ExtraComment)) then begin
+            CSrw.Invoiced = 1;
+            CSrw.InvoiceNr = SMrw.ExtraComment;
+          end;
+      end;
+      if (CSrw.Interest>0) then begin
+        intf = true;
+      end;
+      MatRowPut(CSr,rw,CSrw);
+      rw = rw + 1;
     end;
-    MatRowPut(CSr,rw,CSrw);
-    rw = rw + 1;
   end;
   qupdating.StoreCredManSchedRecord(CSr);
 

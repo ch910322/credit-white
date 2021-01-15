@@ -6,7 +6,7 @@ external updating procedure UpdateCredHistBalance(Longint,Longint,Integer);
 external updating procedure RemoveCredHist(Longint,Integer);
 external function Integer GetInterestPaymentType(record CredManVc);
 external function Boolean AgreementPaidOut(record CredManVc,var val);
-external procedure GenerateAgreementSchedule(record CredManVc,Boolean);
+external procedure GenerateAgreementSchedule(record CredManVc,Boolean,Boolean);
 external function Boolean UseDisburseUntil();
 
 updating procedure UpdateCredManPaymentDate(record OPVc OPr)
@@ -74,7 +74,7 @@ begin
           RecordUpdate(oldCredManr,CredManr,true);
           CSr.CredManNr = CredManr.SerNr;
           if (ReadFirstMain(CSr,1,true)) then begin
-            threadasync.GenerateAgreementSchedule(CredManr,true);
+            threadasync.GenerateAgreementSchedule(CredManr,true,int_type==2);
           end;
         end;
       end;

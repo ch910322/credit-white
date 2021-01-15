@@ -29,7 +29,7 @@ external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var 
 external inner procedure IPPastePayMode(var record IPVc);
 external inner procedure OPVc_PasteRecVal(var record OPVc,Integer);
 external updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
-external procedure GenerateAgreementSchedule(record CredManVc,Boolean);
+external procedure GenerateAgreementSchedule(record CredManVc,Boolean,Boolean);
 external inner function Boolean ExternalDocumentEnabled(string);
 external updating procedure PrintCredManDocument(string,string,record CredManVc,Integer,Boolean,string);
 external inner procedure GetCurUser(var record UserVc);
@@ -347,7 +347,7 @@ begin
     if (RecordUpdate(oldADr,ADr,true)==0) then begin
       //should move this out to a function
       fn = "Schedule" & CredManr.SerNr & ".pdf";
-      GenerateAgreementSchedule(CredManr,true);
+      GenerateAgreementSchedule(CredManr,true,true);
       langcode = GetDocumentLangCode(CredManr,2,-1);
       if (ExternalDocumentEnabled("CredManScheduleForm")) then begin
         RepSpec.long1 = CredManr.InstalmentType;
@@ -372,7 +372,7 @@ updating procedure RecreateAgreementSchedule2(record CredManVc CredManr,Boolean 
 begin
   record AgreementDocVc ADr;
 
-  GenerateAgreementSchedule(CredManr,true);
+  GenerateAgreementSchedule(CredManr,true,true);
   if (fullf) then begin
     ADr.RecordType = 0;
     ADr.RecordNr = CredManr.SerNr;
@@ -449,7 +449,7 @@ begin
         end;
         CredManSetDatesCust(CredManr,false);
         /*
-        GenerateAgreementSchedule(CredManr,true);
+        GenerateAgreementSchedule(CredManr,true,true);
         if (RepSpec.flags[1]==1) then begin
           ADr.RecordType = 0;
           ADr.RecordNr = CredManr.SerNr;
@@ -1039,7 +1039,7 @@ begin
         end;
       end;
       if (skipf==false) then begin
-        GenerateAgreementSchedule(CredManr,false);
+        GenerateAgreementSchedule(CredManr,false,true);
       end;
       langcode = GetDocumentLangCode(CredManr,2,-1);
       if (ExternalDocumentEnabled("CredManScheduleForm")) then begin
@@ -1677,7 +1677,7 @@ begin
       ADr.RecordNr = CredManr.SerNr;
       ADr.Type = 2;
       if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
-        GenerateAgreementSchedule(CredManr,true);
+        GenerateAgreementSchedule(CredManr,true,true);
         RecreateAgreementDocument(ADr,false);
       end;
     end;

@@ -19,7 +19,7 @@ external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
 external function Boolean CredManPMCodeMatches(string,Longint,Boolean);
 external procedure GetItemName(string,var string);
 external procedure SetupInvoiceRowAndAdd(record CredManVc,var record IVVc,string,string,val,val,val,Integer,Longint);
-external procedure GenerateAgreementSchedule(record CredManVc,Boolean);
+external procedure GenerateAgreementSchedule(record CredManVc,Boolean,Boolean);
 external updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
 
 /*Invoicing tools*/
@@ -330,7 +330,7 @@ begin
         ADr.RecordNr = CredManr.SerNr;
         ADr.Type = 2;
         if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
-          GenerateAgreementSchedule(CredManr,true);
+          GenerateAgreementSchedule(CredManr,true,true);
           RecreateAgreementDocument(ADr,false);
         end;
 
