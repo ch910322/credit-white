@@ -3,6 +3,9 @@ external function Integer IVTestApprovalStatus(record IVVc);
 external updating function Integer CreateMailFromIVD(record IVVc,var record MailVc,var string,Boolean,string);
 external updating function Integer CreateMailFromIVArray(array LongInt,var record MailVc,var string,Boolean,string);
 external updating procedure IVCreateHtmlFile(record IVVc,record MailVc,Boolean);
+//CUST-BEGIN
+external function Date DateFromString(string,string);
+//CUST-END
 
 procedure AddInvoiceToArea(record IVVc IVr,var array string custcodes,var vector LongInt custindexes,var vector LongInt custinvcnt,var area invoices)
 begin
@@ -121,7 +124,7 @@ end;
 //CUST-END
 
 global
-procedure IVToMailMn(record RcVc RepSpec)//CUST updating
+procedure IVToMailMnRun(record RcVc RepSpec)//CUST updating
 begin
   record IVVc IVr;
   record IVVc oldIVr;
@@ -204,6 +207,11 @@ begin
       if (testf) then begin
         testf = IVTestApprovalStatus(IVr)==0;
       end;
+//CUST-BEGIN
+      if (testf and IVr.NoEmailFlag==1) then begin
+        testf = false;
+      end;
+//CUST-END
       if (testf) then begin
         if (RepSpec.flags[7]!=0) then begin
           AddInvoiceToArea(IVr,custcodes,custindexes,custinvcnt,invoices);
@@ -232,3 +240,55 @@ begin
   end;
   return;
 end;
+
+//CUST-BEGIN
+global
+procedure IVToMailMnTask(string args)
+begin
+  Longint pos;
+  string 255 arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12,arg13;
+  record RcVc RepSpec;
+  
+  GetNextSubString(args,pos,"|",arg1);
+  GetNextSubString(args,pos,"|",arg13);
+  
+  GetNextSubString(args,pos,"|",arg2);
+  GetNextSubString(args,pos,"|",arg3);
+  GetNextSubString(args,pos,"|",arg4);
+  GetNextSubString(args,pos,"|",arg5);
+  GetNextSubString(args,pos,"|",arg6);
+  GetNextSubString(args,pos,"|",arg7);
+  GetNextSubString(args,pos,"|",arg8);
+  GetNextSubString(args,pos,"|",arg9);
+  GetNextSubString(args,pos,"|",arg10);
+  GetNextSubString(args,pos,"|",arg11);
+  GetNextSubString(args,pos,"|",arg12);
+
+
+  RepSpec.sStartDate = DateFromString(arg1,"YYYY-MM-DD");
+  RepSpec.sEndDate = DateFromString(arg13,"YYYY-MM-DD");
+  RepSpec.f1 = arg2;
+  RepSpec.f2 = arg3;
+  RepSpec.flags[0] = StringToInt(arg4);
+  RepSpec.flags[1] = StringToInt(arg5);
+  RepSpec.flags[2] = StringToInt(arg6);
+  RepSpec.flags[3] = StringToInt(arg7);
+  RepSpec.flags[4] = StringToInt(arg8);
+  RepSpec.flags[5] = StringToInt(arg9);
+  RepSpec.flags[6] = StringToInt(arg10);
+  RepSpec.flags[7] = StringToInt(arg11);
+  RepSpec.flags[8] = StringToInt(arg12);
+  IVToMailMnRun(RepSpec);
+
+  return;
+end;
+
+global
+procedure IVToMailMn(record RcVc RepSpec)
+begin
+  
+  NewTimedTask2("IVToMailMnTask","IVToMailMnTask","IVToMailMnTask",DateToString(RepSpec.sStartDate,"YYYY-MM-DD") & "|" & DateToString(RepSpec.sEndDate,"YYYY-MM-DD") & "|" & RepSpec.f1 & "|" & RepSpec.f2 & "|" & RepSpec.flags[0] & "|" & RepSpec.flags[1] & "|" & RepSpec.flags[2] & "|" & RepSpec.flags[3] & "|" & RepSpec.flags[4] & "|" & RepSpec.flags[5] & "|" & RepSpec.flags[6] & "|" & RepSpec.flags[7] & "|" & RepSpec.flags[8],CurrentDate,AddSeconds(CurrentTime,1),"","");
+
+  return;
+end;
+//CUST-END

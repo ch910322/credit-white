@@ -245,7 +245,10 @@ begin
   sortcode = XmlGet(xdata,"Document/BkToCstmrStmt/Stmt/Acct/Svcr/FinInstnId/BIC");
   bankacc = XmlGet(xdata,"Document/BkToCstmrStmt/Stmt/Acct/Id/IBAN");
 
-  GetBankAccPMRow(PMb,"",bankacc,PMbrw);
+  if (GetBankAccPMRow(PMb,"",bankacc,PMbrw)==false) then begin
+    MessageBox(200116,"");
+    goto LImpSwedBankLTU;
+  end;
 
   acctkey = "Document/BkToCstmrStmt/Stmt/Acct/";
   balkey = "Document/BkToCstmrStmt/Stmt/Bal/";
@@ -390,7 +393,11 @@ begin
   sortcode = XmlGet(xdata,"Document/BkToCstmrStmt/Stmt/Acct/Svcr/FinInstnId/BIC");
   bankacc = XmlGet(xdata,"Document/BkToCstmrStmt/Stmt/Acct/Id/IBAN");
 
-  GetBankAccPMRow(PMb,"",bankacc,PMbrw);
+  if (GetBankAccPMRow(PMb,"",bankacc,PMbrw)==false) then begin
+    MessageBox(200116,"");
+    goto LImpSEBLTU;
+  end;
+
 
   acctkey = "Document/BkToCstmrStmt/Stmt/Acct/";
   balkey = "Document/BkToCstmrStmt/Stmt/Bal/";
@@ -865,6 +872,8 @@ begin
       case "UNLA": RepSpec.flags[20] = kReceiptBankSEBLithuania;
       case "EEUH": RepSpec.flags[20] = kReceiptBankSEBLithuania;
       case "LHVB": RepSpec.flags[20] = kReceiptBankSEBLithuania;
+      otherwise
+        RepSpec.flags[20] = kReceiptBankSEBLithuania;
     end;
   end;
 //CUST-END

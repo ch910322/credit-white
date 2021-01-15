@@ -52,7 +52,9 @@ external function Boolean ReportMediaIsFile(record RcVc);
 //CUST-BEGIN
 external outer procedure SumAgedNewWithItems(record IVVc,Date,Date,Date,Boolean,Integer,Integer,var val,var val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector val,var vector Boolean,var vector Boolean);
 external outer procedure PrintAgedLineWithItems(val,vector val,vector val,vector val,vector val,vector val,vector val,vector val,vector val,val,val,Integer,Integer,vector Boolean,vector Boolean,record RcVc);
-
+external outer  function val GetCredHistOpenValue(Longint);
+external outer function Boolean CheckInvoiceDebtorsAC(string,record IVVc,var val);
+external outer function Boolean CheckInvoiceDebtorsACOnDate(string,record IVVc,var val,Date);
 //CUST-END
 
 global
@@ -296,8 +298,27 @@ L22:;
           if (CUr.Code>tocc) then begin
             CUs = false;
           end;
-        end;    
+        end; 
       end;
+//CUST-BEGIN
+        if (nonblank(RepSpec.f15)) then begin
+          begin
+            Longint pos2;
+            string 255 tmp;
+            record CredManVc CredManr;
+            pos2 = -1;
+            while (GetNextSubstring(RepSpec.f15,pos2,",",tmp)) begin
+              CredManr.SerNr = StringToLongint(tmp);
+              if (ReadFirstMain(CredManr,1,true)) then begin
+                if (CredManr.CustCode!=CUr.Code) then begin
+                  testf = false;
+                  pos2 = 2000;
+                end;
+              end;
+            end;
+          end;
+        end;
+//CUST-END
     end;
   if (CUs==false) then begin goto L88; end;
   if (testf==false) then begin goto L22; end;
@@ -487,6 +508,11 @@ L22:;
               if (IVr.InvType!=kInvoiceTypeCash and IVr.InvType!=kInvoiceTypeCashInvoiceReceiptPRT) then begin
                 SubCashRows_IVVc(IVr,false,rval,rvalb1);
               end;
+//CUST-BEGIN
+              if (nonblank(RepSpec.AccStr)) then begin
+                CheckInvoiceDebtorsACOnDate(RepSpec.AccStr,IVr,rvalb1,RepSpec.d1);//just to get rvalb1
+              end;
+//CUST-END
               rs = rvalb1;
 //                rs = MulRateToBase1(IVr.CurncyCode,rval,IVr.FrRate,IVr.ToRateB1,IVr.ToRateB2,IVr.BaseRate1,IVr.BaseRate2,DefaultCurRoundOff);
   //            rs2 = MulRateToBase2(IVr.CurncyCode,rval,IVr.FrRate,IVr.ToRateB1,IVr.ToRateB2,IVr.BaseRate1,IVr.BaseRate2,DefaultCurRoundOff);
@@ -614,11 +640,20 @@ L22:;
                testf = false;
             end;
           end;
+//CUST-BEGIN
           if (nonblank(RepSpec.AccStr)) then begin
+/*
             if (RepSpec.AccStr!=IVr.ARAcc) then begin
               testf = false;
             end;
+*/
+            if (CheckInvoiceDebtorsAC(RepSpec.AccStr,IVr,rs)==false) then begin
+              testf = false;
+            end;
+
           end;
+
+//CUST-END
           if (nonblank(RepSpec.f5)) then begin
             if (testf) then begin
               testf = false;
@@ -676,6 +711,13 @@ L22:;
               if (RepSpec.f14==IVrw.ArtCode) then begin
                 testf = true;
                 i = rwcnt;
+              end;
+            end;
+          end;
+          if (testf) then begin
+            if (nonblank(RepSpec.f15)) then begin
+              if (SetInSet(IVr.CustCredManNr,RepSpec.f15)==false) then begin
+                testf = false;
               end;
             end;
           end;

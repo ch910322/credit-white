@@ -13,6 +13,7 @@ external procedure TestCredManInvoicesFromPlan(record CredManVc,record CredManSe
 external procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 external procedure TestInvoiceBasedOnSchedule(record CredManVc,record CredManSchedVc,Date,var array record IVVc);
 external function Boolean CMShowVATColumn();
+external function Integer GetInterestPaymentType(record CredManVc);
 
 procedure PrintLeft(string col1str,string col1val,string col2str,string col2val)
 begin
@@ -213,7 +214,7 @@ begin
   CheckBuyOutAgreement(CredManr,RepSpec2);
   settlesum = RepSpec2.vals2;
 
-  CalcCredManSums(CredManr,CredManPayPlanr,CredManSetb,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,d,v,cursuginst,l);
+  //CalcCredManSums(CredManr,CredManPayPlanr,CredManSetb,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,d,v,cursuginst,l);
 
   PrintLeft(USetStr(17317),CredManr.SerNr,USetStr(200270),StringFromSet(2001,CredManr.InstalmentType));
   PrintLeft2("Customer",CredManr.CustCode,CredManr.Addr0,USetStr(17315),CredManr.startDate);
@@ -258,8 +259,12 @@ begin
           deposit = deposit + IVrw.Sum;
         end;
         addf = true;
+      case 19: //buyout
+        inst = inst + IVrw.Sum; 
+        calcbal = calcbal - IVrw.Sum;
+        addf = true;
       case 2: 
-        intrate = IVrw.Sum;
+        intrate = intrate + IVrw.Sum;
         addf = true;
       case 3: 
         calcbal = calcbal - IVrw.Sum;
@@ -293,7 +298,7 @@ begin
     SMrw.Objects = fromdate;
     SMrw.Comment = todate;
     SMrw.FrRate = IVr.Sum3;
-    SMrw.ToRateB2 = IVr.Sum2;
+    SMrw.ToRateB2 = IVr.Sum1;
     SMrw.ToRateB1 = deposit;
     if (MatRowCnt(FMr)>0) then begin
       PackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
@@ -323,6 +328,23 @@ begin
   SMrw.DebVal2 = fees;
   SMrw.CredVal2 = pen;
   SMrw.CurDebVal = sum;
+  SMrw.CurCredVal = calcbal;
+  MatRowPut(SMr,MatRowCnt(SMr),SMrw);
+
+  return;
+end;
+
+procedure AddPayOutToList(val sum,Date td,var record SMVc SMr,var val calcbal)
+begin
+  Integer i,rwcnt;
+  row IVVc IVrw;
+  row SMVc SMrw;
+  
+  calcbal = calcbal + sum;
+  ClearRow(SMr,SMrw,1);
+  SMrw.TransDate = td;
+  SMrw.RowSimStat = 5;//type
+  SMrw.DebVal = sum;
   SMrw.CurCredVal = calcbal;
   MatRowPut(SMr,MatRowCnt(SMr),SMrw);
 
@@ -391,15 +413,21 @@ begin
   row CredManPayPlanVc CredManPayPlanrw;
   val calcbal;
   vector Boolean vRec;
+  Integer int_type;
 
-  calcbal = CredManr.InvSum4;
+  int_type = GetInterestPaymentType(CredManr);
+  if (int_type==2) then begin
+    calcbal = 0;
+  end else begin
+    calcbal = CredManr.InvSum4;
+  end;
   rwcnt = MatRowCnt(CredManPayPlanr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
     if (CredManPayPlanrw.PlanType>=5) then begin
       CredHistr.SerNr = CredManPayPlanrw.IssuedNr;
       if (ReadFirstMain(CredHistr,1,true)) then begin
-        if (vRec[CredHistr.RecordType & ":" & CredHistr.RecordNr]==false or CredHistr.RecordType==4 and CredManPayPlanrw.PlanType!=9) then begin
+        if ((vRec[CredHistr.RecordType & ":" & CredHistr.RecordNr]==false or CredHistr.RecordType==4 or CredHistr.RecordType==5) and CredManPayPlanrw.PlanType!=9) then begin
           vRec[CredHistr.RecordType & ":" & CredHistr.RecordNr] = true;
           switch (CredHistr.RecordType) begin//invoice
             case 0:
@@ -409,6 +437,10 @@ begin
               end;
             case 4:
               AddBuyOutToList(CredHistr.Sum,CredHistr.TransDate,SMr,calcbal);
+            case 5:
+              if (int_type==2) then begin
+                AddPayOutToList(CredHistr.Sum,CredHistr.TransDate,SMr,calcbal);
+              end;
             otherwise
               IPr.SerNr = CredHistr.RecordNr;
               if (ReadFirstMain(IPr,1,true)) then begin
@@ -425,6 +457,8 @@ begin
     AddInvoiceToList(IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate,CMb);
   end;
 
+  SortRows(SMr,"TransDate",true);
+
   return;
 end;
 
@@ -439,21 +473,30 @@ begin
   array record IVVc aIVr;
   record IVVc IVr;
   transaction Boolean gSilenceIVOpenPrepExists;
+  Integer int_type;
   
   gSilenceIVOpenPrepExists = true;
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin
     res = true;
-    calcbal = CredManr.InvSum4;
+    int_type = GetInterestPaymentType(CredManr);
+    if (int_type==2) then begin
+      calcbal = 0;
+    end else begin
+      calcbal = CredManr.InvSum4;
+    end;
     rwcnt = MatRowCnt(CSr);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CSr,i,CSrw);
-      if (CSrw.Type==0) then begin
-        if (CSrw.Invoiced==1) then begin
-          AddScheduleToList(CSrw,SMr,calcbal);
-        end;
-      end else begin
-        AddBuyOutToList(CSrw.Total,CSrw.InvDate,SMr,calcbal);
+      switch (CSrw.Type) begin
+        case 0:
+          if (CSrw.Invoiced==1) then begin
+            AddScheduleToList(CSrw,SMr,calcbal);
+          end;
+        case 4:
+          AddBuyOutToList(CSrw.Total,CSrw.InvDate,SMr,calcbal);
+        case 5:
+          AddPayOutToList(CSrw.Principle,CSrw.InvDate,SMr,calcbal);
       end;
     end;
     TestInvoiceBasedOnSchedule(CredManr,CSr,CredManr.endDate,aIVr);
@@ -480,7 +523,7 @@ begin
   record SMVc SMr;
   row SMVc SMrw;
   val princ;
-  Integer c10,c11;
+  Integer c10,c11,int_type;
   val totprinc,totdep,totint,totfees,totoverdues,total,totvat;
 
   BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,withactuals,true);
@@ -517,7 +560,12 @@ begin
   Gray_Divider(0,1);
   StartFormat(15);
   OutString(0,0,USetStr(17303),false);
-  OutVal(1,0,CredManr.InvSum4,M4Val,true);
+  int_type = GetInterestPaymentType(CredManr);
+  if (int_type==2) then begin
+    OutVal(1,0,0,M4Val,true);
+  end else begin
+    OutVal(1,0,CredManr.InvSum4,M4Val,true);
+  end;
   EndFormat;
   Gray_Divider(0,1);
 
@@ -529,7 +577,7 @@ begin
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(SMr,i,SMrw);
     StartFormat(15);
-    if (CMb.CMInfoReportDate==0) then begin
+    if (CMb.CMInfoReportDate==0 or SMrw.RowSimStat==5) then begin
       OutString(0,0,SMrw.TransDate,false);
     end else begin
       OutString(0,0,SMrw.DueDate,false);
@@ -554,7 +602,9 @@ begin
     OutString(9,0,SMrw.CurDebVal,true);
     OutString(1,0,SMrw.CurCredVal,true);
 
-    totprinc = totprinc + princ;
+    if (SMrw.RowSimStat!=5) then begin
+      totprinc = totprinc + princ;
+    end;
     totdep = totdep + SMrw.ToRateB1;
     totint = totint + SMrw.CredVal;
     totfees = totfees + SMrw.DebVal2;

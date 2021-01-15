@@ -286,12 +286,10 @@ begin
   SetText(-1,"-");
   SetText(0,"Annuity");
   SetText(1,"Linear");
-//  SetText(2,"Linear with Service Fee");
   SetText(3,"Bullet Loan");
   SetText(4,"Factoring");
   SetText(5,"Payment Guarantee");
-//  SetText(6,"Linear with Delay");
-//  SetText(7,"Annuity with Delay");
+  SetText(6,"Balloon");
   EndSet;
 
   SetBegin(2002);
@@ -366,6 +364,7 @@ begin
   SetText(2,"Prepayment");
   SetText(3,"Credit Note");
   SetText(4,"Partial Buy-out");
+  SetText(5,"Made Payment");
   EndSet;
 
   SetBegin(2012);

@@ -1,4 +1,5 @@
 //defining here fallback functions
+external function Integer GetInterestPaymentType(record CredManVc);
 
 global
 function Boolean CheckForActiveAgreement(record CredManVc CredManr)
@@ -10,7 +11,7 @@ begin
 end;
 
 global
-function Boolean CanCredManMakePayment(record CredManVc CredManr)
+function Boolean CanCredManMakePayment(record CredManVc CredManr,var string errstr)
 begin
   Boolean res;
 
@@ -29,6 +30,10 @@ begin
 
   if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
     res = true;
+  end else begin
+    if (CredManr.Approved==1 and GetInterestPaymentType(CredManr)==2) then begin
+      res = true;
+    end;
   end;
 
   CanCreateSingleAgreementInvoice = res;
@@ -50,3 +55,44 @@ begin
   return;
 end;
 
+global
+function Boolean HasSuretyPerson()
+begin
+  HasSuretyPerson = false;
+  return;
+end;
+
+global
+function string 255 NovitiGetEmailSender()
+begin
+  string 255 res;
+  record MailSettingsBlock MSb;
+
+  BlockLoad(MSb);
+  res = MSb.FromSystem;
+
+  NovitiGetEmailSender = res;
+  return;
+end;
+
+global
+function Boolean UseDisburseUntil()
+begin
+  UseDisburseUntil = false;
+  return;
+end;
+
+
+global
+function Boolean UseFullBuyoutProcedure()
+begin
+  UseFullBuyoutProcedure = true;
+  return;
+end;
+
+global
+function Boolean PartiaBuyoutShortensPeriod()
+begin
+  PartiaBuyoutShortensPeriod = true;
+  return;
+end;

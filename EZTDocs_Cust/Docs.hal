@@ -51,7 +51,13 @@ external function string 255 GetCredManNr(Longint);
 external inner function string 255 StrReplace(string,string,string);
 external function val GetCustomerOpenAmount(string,record IVVc);
 external function Integer GetProlongMonths(record CredManVc);
-external function string 255 DateInWords(Date,string);
+external function string 255 DateInWords(Date,string,Integer);
+external function string 255 GetConditionsText(record CredManVc,Integer);
+external function string 255 GetConditionsText2(record CredManVc,Integer,string);
+external function val AdjustFees(val,val,val);
+external function Boolean AgreementPaidOut2(record CredManVc,var val);
+external function Integer GetInterestPaymentType(record CredManVc);
+external function string 255 AgreementValToText(val);
 
 procedure GetCredManCustContact(record CredManVc CredManr,var string contactid,var string contactname)
 begin
@@ -64,6 +70,44 @@ begin
     end;
   end;
 
+  return;
+end;
+
+function val GetTotalFromCredManInfoMatrix(record SMVc SMr)
+begin
+  Integer i,rwcnt;
+  row SMVc SMrw;
+  val res;
+
+  rwcnt = MatRowCnt(SMr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(SMr,i,SMrw);
+    res = res + SMrw.DebVal + SMrw.CredVal + SMrw.DebVal2;
+  end;
+
+  GetTotalFromCredManInfoMatrix = res;
+  return;
+end;
+
+global
+function val GetContactTotalPaidAmount(record CredManVc CredManr)
+begin
+  val res;
+  record CredManSetBlock CredManSetb;
+  record CredManPayPlanVc CredManPayPlanr;
+  row CredManPayPlanVc CredManPayPlanrw;
+  record SMVc SMr;
+ 
+  BlockLoad(CredManSetb);
+  
+  if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+    BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+  end;
+
+  res = GetTotalFromCredManInfoMatrix(SMr);
+
+  GetContactTotalPaidAmount = res;
   return;
 end;
 
@@ -92,7 +136,7 @@ begin
   return;
 end;
 
-function string 255 AddToList(string tstr,string astr)
+function string 255 AddToListAddr(string tstr,string astr)
 begin
   string 255 res;
   
@@ -104,7 +148,7 @@ begin
     res = res & astr;
   end;
 
-  AddToList = res;
+  AddToListAddr = res;
   return;
 end;
 
@@ -116,17 +160,17 @@ begin
   Cur.Code = custcode;
   if (ReadFirstMain(CUr,1,true)) then begin
     if (blank(CUr.DelAddr0)) then begin
-      res = AddToList(res,CUr.InvAddr0);
-      res = AddToList(res,CUr.InvAddr1);
-      res = AddToList(res,CUr.InvAddr2);
-      res = AddToList(res,CUr.InvAddr3);
-      res = AddToList(res,CUr.InvAddr4);
+      res = AddToListAddr(res,CUr.InvAddr0);
+      res = AddToListAddr(res,CUr.InvAddr1);
+      res = AddToListAddr(res,CUr.InvAddr2);
+      res = AddToListAddr(res,CUr.InvAddr3);
+      res = AddToListAddr(res,CUr.InvAddr4);
     end else begin
-      res = AddToList(res,CUr.DelAddr0);
-      res = AddToList(res,CUr.DelAddr1);
-      res = AddToList(res,CUr.DelAddr2);
-      res = AddToList(res,CUr.DelAddr3);
-      res = AddToList(res,CUr.DelAddr4);
+      res = AddToListAddr(res,CUr.DelAddr0);
+      res = AddToListAddr(res,CUr.DelAddr1);
+      res = AddToListAddr(res,CUr.DelAddr2);
+      res = AddToListAddr(res,CUr.DelAddr3);
+      res = AddToListAddr(res,CUr.DelAddr4);
     end;
   end;
 
@@ -158,7 +202,7 @@ begin
       i = rwcnt;
     end;
   end;
-
+  vVals["F_TOTALBRUTO"] = GetTotalFromCredManInfoMatrix(SMr);
   vVals["F_INSTALMENTDUEDATE"] = res;
 
   return;
@@ -180,7 +224,7 @@ begin
   return;
 end;
 
-procedure PrintSingleContactLine(var vector string vVals,string fname,record CUVc CUr)
+function string 255 GetSingleContactLine(record CUVc CUr)
 begin
   string 255 tstr;
   
@@ -192,7 +236,456 @@ begin
     tstr = AddValue(tstr,CUr.Mobile);
   end;
   tstr = AddValue(tstr,CUr.eMail);
+
+  GetSingleContactLine = tstr;
+  return;
+end;
+
+procedure PrintSingleContactLine(var vector string vVals,string fname,record CUVc CUr)
+begin
+  string 255 tstr;
+
+  tstr = GetSingleContactLine(CUr);
   vVals[fname] = tstr;
+
+  return;
+end;
+
+procedure AddToList(var vector string vVals,string name,string nval)
+begin
+  string 255 tval;
+
+  tval = vVals[name];
+  if (nonblank(tval)) then begin
+    tval = tval & "\\n";
+  end;
+  tval = tval & nval;
+  vVals[name] = tval;
+
+  return;
+end;
+
+procedure AddToList2(var vector string vVals,string name,string nval)
+begin
+  string 255 tval;
+
+  tval = vVals[name];
+  if (nonblank(tval)) then begin
+    tval = tval & ", ";
+  end;
+  tval = tval & nval;
+  vVals[name] = tval;
+
+  return;
+end;
+
+function string 255 BuildCompRegNrString(Integer comptype,string id)
+begin
+  string 255 res;
+  record CMPrintConstantsBlock PCb;
+
+  BlockLoad(PCb);
+  
+  if (comptype==0) then begin
+    res = "(" & PCb.CompPrefix & " " & id & ")";
+  end else begin
+    res = "(" & PCb.PersPrefix & " " & id & ")";
+  end;
+
+  BuildCompRegNrString = res;
+  return;
+end;
+
+function Boolean GetNextSurety(record BOESuretyVc BSr,var record CUVc CUr,var Integer num)
+begin
+  Boolean res;
+  string 255 code;
+  
+  num = num + 1;
+  code = GetFieldValueByName(BSr,"SuretyProvider" & num,-1);
+  if (nonblank(code)) then begin
+    CUr.Code = code;
+    if (ReadFirstMain(CUr,1,true)) then begin end;
+    res = true;
+  end;
+
+  GetNextSurety = res;
+  return;
+end;
+
+procedure PrintBOESureties(var vector string vVals,record CredManVc CredManr,Integer tnum,string rw,var Integer gnum)
+begin
+  record BOESuretyVc BSr;
+  Integer num;
+  string 255 strnum,tstr;
+  record CUVc SCUr;
+  
+  
+  BSr.CredManNr = CredManr.SerNr;
+  BSr.BOENum = tnum;
+  if (ReadFirstMain(BSr,2,true)) then begin
+    while (GetNextSurety(BSr,SCUr,num)) begin
+      M4PadString(gnum,3,"0",true,strnum);
+      vVals["ROW" & rw & "_" & strnum & "_F_BOESURNAME"] = GetFieldValueByName(BSr,"Surety" & num & "Name",-1);
+      vVals["ROW" & rw & "_" & strnum & "_F_BOESURID"] = SCUr.RegNr1;
+      Ext_OutAddress(vVals,"ROW" & rw & "_" & strnum & "_F_BOESURADDRESS",SCUr.Name,SCUr.InvAddr0,SCUr.InvAddr1,SCUr.InvAddr2,SCUr.InvAddr3,SCUr.InvAddr4);
+      vVals["ROW" & rw & "_" & strnum & "_F_BOESURPHONE"] = GetFieldValueByName(BSr,"Surety" & num & "Phone",-1);
+      vVals["ROW" & rw & "_" & strnum & "_F_BOESUREMAIL"] = GetFieldValueByName(BSr,"Surety" & num & "eMail",-1);
+      vVals["ROW" & rw & "_" & strnum & "_F_BOESURVALUE"] = GetFieldValueByName(BSr,"Surety" & num & "Amount",-1);
+      vVals["ROW" & rw & "_" & strnum & "_F_BOESURSIGNER"] = GetFieldValueByName(BSr,"Surety" & num & "Signer",-1);
+      vVals["ROW" & rw & "_" & strnum & "_F_BOESURDATE"] = GetFieldValueByName(BSr,"Surety" & num & "Date",-1);
+      
+      tstr = GetConditionsText2(CredManr,0,tnum & ":" & num);
+      vVals["ROW" & rw & "_" & strnum & "_F_BOESURCOND"] = tstr;
+      AddToList(vVals,"F_BOESURNAME_LIST",GetFieldValueByName(BSr,"Surety" & num & "Name",-1) & " " & BuildCompRegNrString(SCUr.CustType,SCUr.RegNr1));
+      AddToList(vVals,"F_BOESURCOND_LIST",tstr);
+
+      gnum = gnum + 1;
+    end;
+  end;
+  if (blank(vVals["F_BOESURNAME_LIST"])) then begin
+    vVals["F_BOESURNAME_LIST"] = USetStr(200275);
+  end;
+
+  return;
+end;
+
+procedure PrintCredManBOE(var vector string vVals,record CredManVc CredManr,Integer num)
+begin
+  string 255 name,id,tstr;
+  record CUVc CUr;
+   
+  name = GetFieldValueByName(CredManr,"BOE" & num & "Name",-1);
+  CUr.Code = GetFieldValueByName(CredManr,"BOE" & num & "Code",-1);
+  if (ReadFirstMain(CUr,1,true)) then begin
+    id = CUr.RegNr1;
+  end;
+
+  tstr = name;
+  if (nonblank(id)) then begin
+    tstr = USetStr(200114) & " " & tstr & " " & BuildCompRegNrString(CUr.CustType,id);
+  end;
+
+  AddToList(vVals,"F_BOENAME_LIST",tstr);
+
+  return;
+end;
+
+
+procedure GetSuretyValues3(record CredManVc CredManr,Integer num,var string name,var string phone,var string mobile,var string email,var string id,var string addr0,var string addr1,var string addr2,var string addr3,var string addr4,var string saddr0,var string saddr1,var string saddr2,var string saddr3,var string saddr4,var string value,var string signer,var string td,var string idcard,var string iddate,var string signerphone,var string signermobile,var string signeremail,var string signerid,var string signeridcard,var string signeriddate,var string legalid,var Integer comptype)
+begin
+  record CUVc CUr,SCUr;
+  string 255 signercode,signername;
+  record CredManVc tCredManr;
+  
+  name = GetFieldValueByName(CredManr,"Surety" & num & "Name",-1);
+  email = GetFieldValueByName(CredManr,"Surety" & num & "eMail",-1);
+  phone = GetFieldValueByName(CredManr,"Surety" & num & "Phone",-1);
+  mobile = GetFieldValueByName(CredManr,"Surety" & num & "Mobile",-1);
+  //id = GetFieldValueByName(CredManr,"Surety" & num & "ID",-1);
+  value = GetFieldValueByName(CredManr,"Surety" & num & "Amount",-1);
+  signername = GetFieldValueByName(CredManr,"Surety" & num & "Signer",-1);
+  legalid = GetFieldValueByName(CredManr,"Surety" & num & "OfficialSerNr",-1);
+  if (nonblank(signername)) then begin
+    RecordCopy(tCredManr,CredManr);
+    tCredManr.ClientContact = signername;
+    tCredManr.CustCode = GetFieldValueByName(tCredManr,"SuretyProvider" & num,-1);
+    if (GetCredManCustContactRecord(tCredManr,SCUr)) then begin
+      signer = SCUr.Name;
+      signerid = SCUr.RegNr1;
+      signeridcard = SCUr.UserStr1;
+      signeriddate = SCUr.UserStr2;
+      signermobile = SCUr.Mobile;
+      signerphone = SCUr.Phone;
+      signeremail = SCUr.eMail;
+      saddr0 = SCUr.InvAddr0;
+      saddr1 = SCUr.InvAddr1;
+      saddr2 = SCUr.InvAddr2;
+      saddr3 = SCUr.InvAddr3;
+      saddr4 = SCUr.InvAddr4;
+    end;
+  end;
+  td = GetFieldValueByName(CredManr,"Surety" & num & "Date",-1);
+  if (blank(td)) then begin
+    td = CredManr.TransDate;
+  end;
+  CUr.Code = GetFieldValueByName(CredManr,"SuretyProvider" & num,-1);
+  if (ReadFirstMain(CUr,1,true)) then begin
+    idcard = CUr.UserStr1;
+    iddate = CUr.UserStr2;
+    addr0 = CUr.InvAddr0;
+    addr1 = CUr.InvAddr1;
+    addr2 = CUr.InvAddr2;
+    addr3 = CUr.InvAddr3;
+    addr4 = CUr.InvAddr4;
+    mobile = CUr.Mobile;
+    phone = CUr.Phone;
+    email = CUr.eMail;
+    id = CUr.RegNr1;
+    comptype = CUr.CustType;
+  end else begin
+    addr0 = ""; addr1 = ""; addr2 = ""; addr3 = ""; addr4 = ""; 
+  end;
+
+  return;
+end;
+
+procedure PrintCredManSureties(var vector string vVals,record CredManVc CredManr,Integer num,string fs)
+begin
+  string 255 name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,signer,value,td;
+  record CUVc CUr;
+  string 255 tstr;
+  val calcfees,fixfees;
+  record UserVc Userr;
+  string 255 saddr0,saddr1,saddr2,saddr3,saddr4,idcard,iddate;
+  string 255 signerphone,signermobile,signeremail,signerid,signeridcard,signeriddate,legalid,idstring;
+  Integer comptype;
+
+    GetSuretyValues3(CredManr,num,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,saddr0,saddr1,saddr2,saddr3,saddr4,value,signer,td,idcard,iddate,signerphone,signermobile,signeremail,signerid,signeridcard,signeriddate,legalid,comptype);
+    vVals[fs & "F_CONTACTNAME"] = name;
+    idstring = BuildCompRegNrString(comptype,id);
+    AddToList2(vVals,"F_CONTACTNAME_LIST",name & " " & idstring);
+    vVals[fs & "F_CONTACTPHONE"] = phone;
+    vVals[fs & "F_CONTACTMOBILE"] = mobile;
+    vVals[fs & "F_CONTACTMAIL"] = email;
+    vVals[fs & "F_CONTACTID"] = id;
+    vVals[fs & "F_CONTACTVALUE"] = value;
+    vVals[fs & "F_CONTACTDATE"] = td;
+    vVals[fs & "F_CONTACTIDCARD"] = idcard;
+    vVals[fs & "F_CONTACTIDCARDDATE"] = iddate;
+    vVals[fs & "F_CONTACTLEGALID"] = legalid;
+    tstr = GetConditionsText2(CredManr,0,num);
+    vVals[fs & "F_SURETYCOND"] = tstr;
+    AddToList(vVals,"F_SURETYCOND_LIST",tstr);
+
+    Ext_OutAddress(vVals,fs & "F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
+
+    vVals[fs & "F_CONTACTSIGNER"] = signer;
+    vVals[fs & "F_CONTACTSIGNERPHONE"] = signerphone;
+    vVals[fs & "F_CONTACTSIGNERMOBILE"] = signermobile;
+    vVals[fs & "F_CONTACTSIGNERMAIL"] = signeremail;
+    vVals[fs & "F_CONTACTSIGNERID"] = signerid;
+    vVals[fs & "F_CONTACTSIGNERIDCARD"] = signeridcard;
+    vVals[fs & "F_CONTACTSIGNERIDCARDDATE"] = signeriddate;
+    Ext_OutAddress(vVals,fs & "F_CONTACTSIGNERADRESS",name,saddr0,saddr1,saddr2,saddr3,saddr4);
+
+  return;
+end;
+
+function Boolean HasSureties(record CredManVc CredManr)
+begin
+  Boolean res;
+  
+  if (nonblank(GetFieldValueByName(CredManr,"SuretyProvider1",-1))) then begin
+    res = true;
+  end;
+
+  HasSureties = res;
+  return;
+end;
+
+function Boolean HasBOE(record CredManVc CredManr)
+begin
+  Boolean res;
+  
+  if (nonblank(GetFieldValueByName(CredManr,"BOE1Code",-1))) then begin
+    res = true;
+  end;
+
+  HasBOE = res;
+  return;
+end;
+
+function Boolean HasSubordinations(record CredManVc CredManr)
+begin
+  Boolean res;
+  
+  if (nonblank(GetFieldValueByName(CredManr,"Subordination1",-1))) then begin
+    res = true;
+  end;
+
+  HasSubordinations = res;
+  return;
+end;
+
+function Boolean HasProperties(record CredManVc CredManr)
+begin
+  Boolean res;
+  record CredManPropertiesVc CMPr;
+  
+  CMPr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CMPr,1,true)) then begin
+    if (MatRowCnt(CMPr)>0) then begin
+      res = true;
+    end;
+  end;
+
+  HasProperties = res;
+  return;
+end;
+
+function Boolean HasSchedule(record CredManVc CredManr)
+begin
+  Boolean res;
+  record AgreementDocVc ADr;
+  
+  ADr.RecordNr = CredManr.SerNr;
+  ADr.RecordType = 0;
+  ADr.Type = 2;
+  if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
+    res = true;
+  end;
+
+  HasSchedule = res;
+  return;
+end;
+
+function Boolean HasInsurance(record CredManVc CredManr)
+begin
+  record CredManPropertiesVc CMPr;
+  row CredManPropertiesVc CMPrw;
+  record CMPropertyVc Propr;
+  Integer rwcnt,i;
+  Boolean res;
+  
+  CMPr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CMPr,1,true)) then begin
+    rwcnt = MatRowCnt(CMPr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(CMPr,i,CMPrw);
+      Propr.SerNr = CMPrw.Property;
+      if (ReadFirstMain(Propr,1,true)) then begin
+        if (nonblank(Propr.InsuranceType)) then begin
+          res = true;
+          i = rwcnt;
+        end;
+      end;
+    end;
+  end;
+
+  HasInsurance = res;
+  return;
+end;
+
+procedure PrintSingleConstant(var vector string vVals,string fn,record CMPrintConstantsBlock PCb,string blockfn,Boolean yesf,string extratext)
+begin
+  string 255 tstr,tmp;
+  
+  if (yesf) then begin
+    tstr = GetFieldValueByName(PCb,blockfn & "Yes",-1);
+    if (blockfn!="Subordination") then begin
+      tmp = GetFieldValueByName(PCb,blockfn & "Yes2",-1);
+    end;
+    if (nonblank(tmp)) then begin
+      tstr = tstr;
+      if (nonblank(tmp)) then begin
+        tstr = tstr & "\\n";
+        tstr = tstr & tmp;
+      end;
+      if (nonblank(extratext)) then begin
+        if (blockfn=="Surety") then begin
+          if (right(tstr,1)==".") then begin
+            tstr = left(tstr,len(tstr)-1);
+          end;
+          tstr = tstr & " Nr. ";
+        end;
+        tstr = tstr & extratext;
+      end;
+    end;
+    vVals[fn] = tstr;
+  end else begin
+    vVals[fn] = GetFieldValueByName(PCb,blockfn & "No",-1);
+  end;
+
+  return;
+end;
+
+function string 255 GetSuretyLegalNr(record CredManVc CredManr)
+begin
+  string 255 res,tstr;
+  Integer i;
+  
+  for (i=1;i<7;i=i+1) begin
+    tstr = GetFieldValueByName(CredManr,"Surety" & i & "OfficialSerNr",-1);
+    if (nonblank(tstr)) then begin
+      if (nonblank(res)) then begin
+        res = res & ", ";
+      end;
+      res = res & tstr;
+    end;
+  end;
+
+  GetSuretyLegalNr = res;
+  return;
+end;
+
+procedure PrintCMConstants(var vector string vVals,record CredManVc CredManr)
+begin
+  record CMPrintConstantsBlock PCb;
+  Boolean haspropf;
+
+  BlockLoad(PCb);
+
+  haspropf = HasProperties(CredManr);
+
+  PrintSingleConstant(vVals,"F_SURETYCONST",PCb,"Surety",HasSureties(CredManr),GetSuretyLegalNr(CredManr));
+  PrintSingleConstant(vVals,"F_BOECONST",PCb,"BOE",HasBOE(CredManr),"");
+  PrintSingleConstant(vVals,"F_PROPCONST",PCb,"Property",haspropf,"");
+  if (haspropf==false) then begin
+    vVals["F_PROPNAME_LIST"] = "-";
+    vVals["F_PROPID_LIST"] = "-";
+    vVals["F_PROPADDRESS_LIST"] = "-";
+    vVals["F_PROPOWNER_LIST"] = "-";
+    vVals["F_PROPEVAL_LIST"] = "-";
+    vVals["F_PROPCOMMENT_LIST"] = "-";
+  end;
+  PrintSingleConstant(vVals,"F_PROPINSCONST",PCb,"Insurance",HasInsurance(CredManr),"");
+  PrintSingleConstant(vVals,"F_SCHEDULECONST",PCb,"Schedule",HasSchedule(CredManr),"");
+  PrintSingleConstant(vVals,"F_SUBORDCONST",PCb,"Subordination",HasSubordinations(CredManr),"");
+
+  return;
+end;
+
+procedure FindAllContactsWithJobTitle(string custcode,var array record CUVc aCUr,string title)
+begin
+  record ContactRelVc CRr;
+  Boolean res;
+  Longint pos;
+  string 255 tmp;
+  record CUVc CUr;
+ 
+  while (LoopKey("CustContactCode:" & custcode,CRr,1,true)) begin
+    if (CRr.Invalid==0) then begin
+      CUr.Code = CRr.ContactCode;
+      if (ReadFirstMain(CUr,1,true)) then begin
+        pos = 0;
+        while (GetNextSubString(CUr.JobDesc,pos,",",tmp)) begin
+          if (SetInSet(tmp,title)) then begin
+            aCUr[aCUr.length] = CUr;
+            goto LFindAllContactsWithJobTitle_Next;
+          end;
+        end;
+      end;
+    end;
+LFindAllContactsWithJobTitle_Next:;
+  end;
+
+  return;
+end;
+
+
+procedure GetListOfContacts(string custcode,Integer type,var array record CUVc aCUr)
+begin
+  record CMApplicationSetBlock ASb;
+
+  ClearArray(aCUr);
+  BlockLoad(ASb);
+  if (type==0 and nonblank(ASb.CEOTitle)) then begin
+    FindAllContactsWithJobTitle(custcode,aCUr,ASb.CEOTitle);
+  end;  
+  if (type==1 and nonblank(ASb.CFOTitle)) then begin
+    FindAllContactsWithJobTitle(custcode,aCUr,ASb.CFOTitle);
+  end;  
 
   return;
 end;
@@ -210,9 +703,16 @@ begin
   record CUVc ContactCUr,CEOCUr;
   record B2BLoanApplicationVc LAr;
   record RLinkVc RLr;
+  record CMApplicationSetBlock CMb;
   Boolean foundf;
   record UserVc Userr;
+  Integer surnum;
+  string 255 sc,strnum;
+  Integer gnum;
+  array record CUVc aCUr;
+  val tval;
   
+  BlockLoad(CMb);
   CUr.Code = CredManr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
   end;
@@ -225,7 +725,7 @@ begin
   vVals["F_KUNDNAMN"] = CredManr.Addr0;
   vVals["F_NUMMER"] = CredManr.SerNr;
   vVals["F_NUMMER2"] = GetCredManNr(CredManr.SerNr);
-  vVals["F_CREDMANCREATEDATE"] = CredManr.CreatedDate;
+  vVals["F_CREDMANCREATEDATE"] = CredManr.TransDate;
   
   //Ext_OutAddress("F_ADRESS",IVr.Addr0,IVr.Addr1,IVr.Addr2,IVr.Addr3,IVr.InvAddr3,IVr.InvAddr4);//CUST-REMOVED
   vVals["F_ADDR2"] = IVr.Addr1;
@@ -259,13 +759,20 @@ begin
   vVals["F_STARTDATUM"] = CredManr.startDate;
   vVals["F_LASTINVDATE"] = CredManr.InvUntil;
   vVals["F_ENDDATE"] = CredManr.endDate;
-  vVals["F_SUMMA"] = CredManr.InvSum4;
+  if (GetInterestPaymentType(CredManr)==2) then begin
+    AgreementPaidOut2(CredManr,tval);
+    vVals["F_SUMMA"] = tval;
+  end else begin
+    vVals["F_SUMMA"] = CredManr.InvSum4;
+  end;
   GetFullCurncyRateText(true,tstr,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2);  
   vVals["F_RATE"] = tstr;
   GetFullCurncyRateText(false,tstr,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2);  
   vVals["F_BASERATE"] = tstr;
   vVals["F_PERIODLENGTH"] = ValToString(CredManr.InstalmentMonths + GetProlongMonths(CredManr),M4Val,"",".",1);
   vVals["F_RANTASATS"] = CredManr.IntRate;
+  tstr = AgreementValToText(CredManr.IntRate);
+  vVals["F_RANTASATSINWORDS"] = tstr;
   if (blank(IVr.ShipAddr0)) then begin
     tstr = IVr.Addr0;
   end else begin
@@ -364,9 +871,9 @@ begin
     MatRowGet(CredManr,i,CredManrw);
     if (CredManrw.ChargeType==0 or CredManrw.ChargeType==2) then begin
       if (CredManrw.ChargeType==2) then begin
-        fees = fees + ((CredManr.InvSum4-CredManr.DepositSum) * (CredManrw.vRebate/100));
+        fees = fees + AdjustFees(((CredManr.InvSum4-CredManr.DepositSum) * (CredManrw.vRebate/100)),CredManrw.MinSum,CredManrw.MaxSum);
       end else begin
-        fees = fees + CredManrw.Price;
+        fees = fees + AdjustFees(CredManrw.Price,CredManrw.MinSum,CredManrw.MaxSum);
       end;
     end;
   end;
@@ -379,7 +886,47 @@ begin
   ValToText(prolong,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
   vVals["F_PROLONGINTEXT"] = tstr;
   vVals["F_OVERDUEPRC"] = CredManr.OverduePercentage;
+  //ValToText(CredManr.OverduePercentage,M4Val,CredManr.CurncyCode,CMb.NumberLangCode,tstr);
+  tstr = AgreementValToText(CredManr.OverduePercentage);
+  vVals["F_OVERDUEPRCINWORDS"] = tstr;
+  if (CredManr.BuyoutFeePrc>0) then begin
+    vVals["F_BUYOUTFEEPRC"] = CredManr.BuyoutFeePrc & " %";
+  end else begin
+    vVals["F_BUYOUTFEEPRC"] = "";
+  end;
+  if (CredManr.BuyoutFeePrc>0) then begin
+    //ValToText(CredManr.BuyoutFeePrc,M4Val,CredManr.CurncyCode,CMb.NumberLangCode,tstr);
+    tstr = AgreementValToText(CredManr.BuyoutFeePrc);
+    vVals["F_BUYOUTFEEPRCINWORDS"] = "(" & tstr & " " & USetStr(200276) & ")";
+  end else begin
+    vVals["F_BUYOUTFEEPRCINWORDS"] = USetStr(200275);
+  end;
   vVals["F_OTHERCONDITIONS"] = CredManr.OtherConditions;
+
+  surnum = 1;
+  sc = GetFieldValueByName(CredManr,"SuretyProvider" & surnum,-1);
+  while (nonblank(sc)) begin
+    M4PadString(surnum-1,3,"0",true,strnum);
+    PrintCredManSureties(vVals,CredManr,surnum,"ROW2_" & strnum);
+    surnum = surnum + 1;
+    sc = GetFieldValueByName(CredManr,"SuretyProvider" & surnum,-1);
+  end;
+  if (blank(vVals["F_CONTACTNAME_LIST"])) then begin
+    vVals["F_CONTACTNAME_LIST"] = "-";
+  end;
+  if (blank(vVals["F_SURETYCOND_LIST"])) then begin
+    vVals["F_SURETYCOND_LIST"] = "-";
+  end;
+
+  surnum = 1;
+  gnum = 0;
+  sc = GetFieldValueByName(CredManr,"BOE" & surnum & "Code",-1);
+  while (nonblank(sc)) begin
+    PrintBOESureties(vVals,CredManr,surnum,"3",gnum);
+    PrintCredManBOE(vVals,CredManr,surnum);
+    surnum = surnum + 1;
+    sc = GetFieldValueByName(CredManr,"BOE" & surnum & "Code",-1);
+  end;
 
   Ext_OutAddress(vVals,"F_ADRESS",CUr.Name,CUr.InvAddr0,CUr.InvAddr1,CUr.InvAddr2,CUr.InvAddr3,CUr.InvAddr4);
 
@@ -437,6 +984,11 @@ begin
   if (blank(vVals["F_CEODETAILS"])) then begin
     vVals["F_CEODETAILS"] = "-";
   end;
+  GetListOfContacts(CredManr.CustCode,0,aCUr);
+  for (i=0;i<aCUr.length;i=i+1) begin
+    CUr = aCUr[i];
+    AddToList(vVals,"F_CEOLIST",GetSingleContactLine(CUr));
+  end;
 
   RecordCLear(CUr);
   if (FindCFOContact(CredManr.CustCode,CUr)) then begin
@@ -449,6 +1001,12 @@ begin
   if (blank(vVals["F_CFODETAILS"])) then begin
     vVals["F_CFODETAILS"] = "-";
   end;
+  GetListOfContacts(CredManr.CustCode,1,aCUr);
+  for (i=0;i<aCUr.length;i=i+1) begin
+    CUr = aCUr[i];
+    AddToList(vVals,"F_CFOLIST",GetSingleContactLine(CUr));
+  end;
+
   if (GetCredManCustContactRecord(CredManr,CUr)) then begin
     PrintSingleContactLine(vVals,"F_CONTACTDETAILS",CUr);
   end;
@@ -465,8 +1023,11 @@ begin
   end;
 
   vVals["F_FIRSTINVDATE"] = CredManr.FirstInvDate;
+  vVals["F_OTHERCONDITIONS"] = GetConditionsText(CredManr,0);
+  vVals["F_PMTCONDITIONS"] = GetConditionsText(CredManr,1);
 
   PrintFirstPrincipleDueDate(vVals,CredManr);
+  PrintCMConstants(vVals,CredManr);
 
   return;
 end;
@@ -484,16 +1045,26 @@ begin
   record CUVc CUr;
   Integer num;
   string 255 strnum,tstr;
-  val topay2,openamount;
+  val topay2,openamount,paidout;
   record IVVc IVr;
+  Integer int_type;
  
   CUr.Code = CredManr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
   end;
   BlockLoad(CredManSetb);
+  int_type = GetInterestPaymentType(CredManr);
+  if (int_type==2) then begin//to get preliminary schedule for partial disbursement agreements
+    AgreementPaidOut2(CredManr,paidout);
+    if (paidout==0) then begin
+      int_type = 1;
+      CredManr.RealInterestFlag = int_type;
+    end;
+  end;
   if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
     ReadFirstMain(CredManr,1,true);
+    CredManr.RealInterestFlag = int_type;
     BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
   end;
   
@@ -504,7 +1075,10 @@ begin
   rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(SMr,i,SMrw);
-    if (i==0 and SMrw.TransDate<CredManr.FirstInvDate) then begin
+    if (SMrw.TransDate<CredManr.FirstInvDate and SMrw.DebVal==0 and SMrw.CredVal==0) then begin//i==0 and 
+      goto LNextRow;
+    end;
+    if (SMrw.RowSimStat==5) then begin
       goto LNextRow;
     end;
     num = num + 1;
@@ -571,70 +1145,17 @@ begin
   return;
 end;
 
-procedure GetSuretyValues3(record CredManVc CredManr,Integer num,var string name,var string phone,var string mobile,var string email,var string id,var string addr0,var string addr1,var string addr2,var string addr3,var string addr4,var string saddr0,var string saddr1,var string saddr2,var string saddr3,var string saddr4,var string value,var string signer,var string td,var string idcard,var string iddate,var string signerphone,var string signermobile,var string signeremail,var string signerid,var string signeridcard,var string signeriddate,var string legalid)
-begin
-  record CUVc CUr,SCUr;
-  string 255 signercode,signername;
-  
-  name = GetFieldValueByName(CredManr,"Surety" & num & "Name",-1);
-  email = GetFieldValueByName(CredManr,"Surety" & num & "eMail",-1);
-  phone = GetFieldValueByName(CredManr,"Surety" & num & "Phone",-1);
-  mobile = GetFieldValueByName(CredManr,"Surety" & num & "Mobile",-1);
-  //id = GetFieldValueByName(CredManr,"Surety" & num & "ID",-1);
-  value = GetFieldValueByName(CredManr,"Surety" & num & "Amount",-1);
-  signername = GetFieldValueByName(CredManr,"Surety" & num & "Signer",-1);
-  legalid = GetFieldValueByName(CredManr,"Surety" & num & "OfficialSerNr",-1);
-  if (nonblank(signername)) then begin
-    CredManr.ClientContact = signername;
-    CredManr.CustCode = GetFieldValueByName(CredManr,"SuretyProvider" & num,-1);
-    if (GetCredManCustContactRecord(CredManr,SCUr)) then begin
-      signer = SCUr.Name;
-      signerid = SCUr.RegNr1;
-      signeridcard = SCUr.UserStr1;
-      signeriddate = SCUr.UserStr2;
-      signermobile = SCUr.Mobile;
-      signerphone = SCUr.Phone;
-      signeremail = SCUr.eMail;
-      saddr0 = SCUr.InvAddr0;
-      saddr1 = SCUr.InvAddr1;
-      saddr2 = SCUr.InvAddr2;
-      saddr3 = SCUr.InvAddr3;
-      saddr4 = SCUr.InvAddr4;
-    end;
-  end;
-  td = GetFieldValueByName(CredManr,"Surety" & num & "Date",-1);
-  if (blank(td)) then begin
-    td = CredManr.TransDate;
-  end;
-  CUr.Code = GetFieldValueByName(CredManr,"SuretyProvider" & num,-1);
-  if (ReadFirstMain(CUr,1,true)) then begin
-    idcard = CUr.UserStr1;
-    iddate = CUr.UserStr2;
-    addr0 = CUr.InvAddr0;
-    addr1 = CUr.InvAddr1;
-    addr2 = CUr.InvAddr2;
-    addr3 = CUr.InvAddr3;
-    addr4 = CUr.InvAddr4;
-    mobile = CUr.Mobile;
-    phone = CUr.Phone;
-    email = CUr.eMail;
-  end else begin
-    addr0 = ""; addr1 = ""; addr2 = ""; addr3 = ""; addr4 = ""; 
-  end;
-
-  return;
-end;
-
-procedure GetBOEValues3(record CredManVc CredManr,Integer num,var string name,var string phone,var string email,var string addr0,var string addr1,var string addr2,var string addr3,var string addr4,var string value,var string signer,var string td)
+procedure GetBOEValues3(record CredManVc CredManr,Integer num,var string name,var string phone,var string email,var string addr0,var string addr1,var string addr2,var string addr3,var string addr4,var val value,var string signer,var string contactid,var Date td,var Date duedate)
 begin
   record CUVc CUr;
   
   name = GetFieldValueByName(CredManr,"BOE" & num & "Name",-1);
   email = GetFieldValueByName(CredManr,"BOE" & num & "eMail",-1);
   phone = GetFieldValueByName(CredManr,"BOE" & num & "Phone",-1);
-  value = GetFieldValueByName(CredManr,"BOE" & num & "Value",-1);
+  value = StringToVal(GetFieldValueByName(CredManr,"BOE" & num & "Amount",-1),M4Val);
   signer = GetFieldValueByName(CredManr,"BOE" & num & "Signer",-1);
-  td = GetFieldValueByName(CredManr,"BOE" & num & "Date",-1);
+  td = StringToDate(GetFieldValueByName(CredManr,"BOE" & num & "Date",-1));
+  duedate = StringToDate(GetFieldValueByName(CredManr,"BOE" & num & "DueDate",-1));
   if (blank(td)) then begin
     td = CredManr.TransDate;
   end;
@@ -645,6 +1166,7 @@ begin
     addr2 = CUr.InvAddr2;
     addr3 = CUr.InvAddr3;
     addr4 = CUr.InvAddr4;
+    contactid = CUr.RegNr1;
   end else begin
     addr0 = ""; addr1 = ""; addr2 = ""; addr3 = ""; addr4 = ""; 
   end;
@@ -716,29 +1238,7 @@ begin
     vVals["F_CONTACT3ID"] = id;
     Ext_OutAddress(vVals,"F_CONTACT3ADRESS",name,addr0,addr1,addr2,addr3,addr4);
   end else begin
-    GetSuretyValues3(CredManr,gSuretyNumber,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,saddr0,saddr1,saddr2,saddr3,saddr4,value,signer,td,idcard,iddate,signerphone,signermobile,signeremail,signerid,signeridcard,signeriddate,legalid);
-    vVals["F_CONTACTNAME"] = name;
-    vVals["F_CONTACTPHONE"] = phone;
-    vVals["F_CONTACTMOBILE"] = mobile;
-    vVals["F_CONTACTMAIL"] = email;
-    vVals["F_CONTACTID"] = id;
-    vVals["F_CONTACTVALUE"] = value;
-    vVals["F_CONTACTDATE"] = td;
-    vVals["F_CONTACTIDCARD"] = idcard;
-    vVals["F_CONTACTIDCARDDATE"] = iddate;
-    vVals["F_CONTACTLEGALID"] = legalid;
-    
-    Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
-
-    vVals["F_CONTACTSIGNER"] = signer;
-    vVals["F_CONTACTSIGNERPHONE"] = signerphone;
-    vVals["F_CONTACTSIGNERMOBILE"] = signermobile;
-    vVals["F_CONTACTSIGNERMAIL"] = signeremail;
-    vVals["F_CONTACTSIGNERID"] = signerid;
-    vVals["F_CONTACTSIGNERIDCARD"] = signeridcard;
-    vVals["F_CONTACTSIGNERIDCARDDATE"] = signeriddate;
-    Ext_OutAddress(vVals,"F_CONTACTSIGNERADRESS",name,saddr0,saddr1,saddr2,saddr3,saddr4);
-
+    PrintCredManSureties(vVals,CredManr,gSuretyNumber,"");
     
   end;
   
@@ -778,7 +1278,7 @@ begin
 
   ExtPrintOwnBankDetails(vVals,CredManr.SerNr);
   vVals["F_NUMMER2"] = GetCredManNr(CredManr.SerNr);
-  vVals["F_CREDMANCREATEDATE"] = CredManr.CreatedDate;
+  vVals["F_CREDMANCREATEDATE"] = CredManr.TransDate;
   if (CredManr.AnnualRate==1) then begin
     vVals["F_ANNUALRATE"] = Round(CredManr.IntRate,SetRoundModeD(2)) & " %";
   end else begin
@@ -797,6 +1297,9 @@ begin
     vVals["F_SALESMANEMAIL"] = Userr.emailAddr;
     vVals["F_SALESMANJOB"] = Userr.Job;
   end;
+  vVals["F_OTHERCONDITIONS"] = GetConditionsText(CredManr,0);
+  vVals["F_PMTCONDITIONS"] = GetConditionsText(CredManr,1);
+
 
   return;
 end;
@@ -818,64 +1321,48 @@ begin
   return;
 end;
 
-function Boolean GetNextSurety(record BOESuretyVc BSr,var record CUVc CUr,var Integer num)
-begin
-  Boolean res;
-  string 255 code;
-  
-  num = num + 1;
-  code = GetFieldValueByName(BSr,"SuretyProvider" & num,-1);
-  if (nonblank(code)) then begin
-    CUr.Code = code;
-    if (ReadFirstMain(CUr,1,true)) then begin end;
-    res = true;
-  end;
-
-  GetNextSurety = res;
-  return;
-end;
-
 global
 procedure ExternalPrintVekselisForm(record CredManVc CredManr,var vector string vVals)
 begin
-  string 255 name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,signer,value,td;
+  string 255 name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,signer,contactid;
   record CUVc CUr,tCUr,SCUr;
   string 255 tstr;
+  val value;
   record CYBlock CYb;
   transaction Longint gBOENumber;
   record BOESuretyVc BSr;
   Integer num;
   string 255 strnum;
   record CredManTypeVc CMTr;
-  Date enddate;
+  Date enddate,duedate,td;
+  Integer gnum;
+  record CMApplicationSetBlock CMb;
 
 
   Ext_CommonDocumentFields(vVals);
 
   if (gBOENumber>0) then begin
-    GetBOEValues3(CredManr,gBOENumber,name,phone,email,addr0,addr1,addr2,addr3,addr4,value,signer,td);
+    BlockLoad(CMb);
+    GetBOEValues3(CredManr,gBOENumber,name,phone,email,addr0,addr1,addr2,addr3,addr4,value,signer,contactid,td,duedate);
     vVals["F_CONTACTNAME"] = name;
     vVals["F_CONTACTPHONE"] = phone;
     vVals["F_CONTACTMAIL"] = email;
+    vVals["F_CONTACTID"] = contactid;
     vVals["F_CONTACTVALUE"] = value;
+    ValToText(value,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+    tstr = StrReplace(tstr,"  "," ");
+    tstr = StrReplace(tstr,"  "," ");
+    vVals["F_CONTACTVALUEINWORDS"] = tstr;
     vVals["F_CONTACTSIGNER"] = signer;
     vVals["F_CONTACTDATE"] = td;
+    tstr = DateInWords(td,CredManr.LangCode,2);
+    vVals["F_CONTACTDATEINWORDS"] = tstr;
+    vVals["F_CONTACTDUEDATE"] = duedate;
+    tstr = DateInWords(duedate,CredManr.LangCode,1);
+    vVals["F_CONTACTDUEDATEINWORDS"] = tstr;
+    Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
 
-    BSr.CredManNr = CredManr.SerNr;
-    BSr.BOENum = gBOENumber;
-    if (ReadFirstMain(BSr,2,true)) then begin
-      while (GetNextSurety(BSr,SCUr,num)) begin
-        M4PadString(num,3,"0",true,strnum);
-        vVals["ROW_" & strnum & "_F_BOESURNAME"] = GetFieldValueByName(BSr,"Surety" & num & "Name",-1);
-        vVals["ROW_" & strnum & "_F_BOESURID"] = SCUr.RegNr1;
-        Ext_OutAddress(vVals,"ROW_" & strnum & "_F_BOESURADDRESS",SCUr.Name,SCUr.InvAddr0,SCUr.InvAddr1,SCUr.InvAddr2,SCUr.InvAddr3,SCUr.InvAddr4);
-        vVals["ROW_" & strnum & "_F_BOESURPHONE"] = GetFieldValueByName(BSr,"Surety" & num & "Phone",-1);
-        vVals["ROW_" & strnum & "_F_BOESUREMAIL"] = GetFieldValueByName(BSr,"Surety" & num & "eMail",-1);
-        vVals["ROW_" & strnum & "_F_BOESURVALUE"] = GetFieldValueByName(BSr,"Surety" & num & "Value",-1);
-        vVals["ROW_" & strnum & "_F_BOESURSIGNER"] = GetFieldValueByName(BSr,"Surety" & num & "Singer",-1);
-        vVals["ROW_" & strnum & "_F_BOESURDATE"] = GetFieldValueByName(BSr,"Surety" & num & "Date",-1);
-      end;
-    end;
+    PrintBOESureties(vVals,CredManr,gBOENumber,"",gnum);
   end else begin
     GetSuretyValues2(CredManr,1,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
     vVals["F_CONTACTNAME"] = name;
@@ -946,7 +1433,7 @@ begin
     vVals["F_CFOEMAIL"] = CUr.eMail;
   end;
   vVals["F_NUMMER2"] = GetCredManNr(CredManr.SerNr);
-  vVals["F_CREDMANCREATEDATE"] = CredManr.CreatedDate;
+  vVals["F_CREDMANCREATEDATE"] = CredManr.TransDate;
   if (CredManr.AnnualRate==1) then begin
     vVals["F_ANNUALRATE"] = Round(CredManr.IntRate,SetRoundModeD(2)) & " %";
   end else begin
@@ -962,11 +1449,14 @@ begin
     enddate = AddMonth(enddate,CMTr.VekselisExtraMonths);
   end;
 
-  tstr = DateInWords(enddate,CredManr.LangCode);
+  tstr = DateInWords(enddate,CredManr.LangCode,1);
   vVals["F_ENDDATE2"] = enddate;
   vVals["F_ENDDATE2INWORDS"] = tstr;
 
   Ext_PrintDocumentSigner(vVals);
+
+  vVals["F_OTHERCONDITIONS"] = GetConditionsText(CredManr,0);
+  vVals["F_PMTCONDITIONS"] = GetConditionsText(CredManr,1);
 
   return;
 end;
@@ -1020,8 +1510,10 @@ begin
       if (CRr.Invalid==0) then begin
         ContactCUr.Code = CRr.ContactCode;
         if (ReadFirstMain(ContactCUr,1,true)) then begin
-          if (SetInSet(ContactCUr.JobDesc,CMb.CFOTitle)) then begin
-            aCUr[aCUr.length] = ContactCur;
+          if (nonblank(ContactCUr.JobDesc)) then begin
+            if (SetInSet(ContactCUr.JobDesc,CMb.CFOTitle)) then begin
+              aCUr[aCUr.length] = ContactCur;
+            end;
           end;
         end;
       end;
@@ -1032,10 +1524,11 @@ begin
   return;
 end;
 
+
 global
 procedure ExternalPrintCredManForm(record CredManVc CredManr,var vector string vVals)
 begin
-  Integer i,rwcnt;
+  Integer i,rwcnt,j,s;
   row CredManVc CredManrw;
   string 255 tstr,strnum;
   record SysFormatBlock SysFormatRec;
@@ -1043,10 +1536,12 @@ begin
   record CredManPropertiesVc CMPr;
   row CredManPropertiesVc CMPrw;
   record CMPropertyVc Propr;
-  row CMPropertyVc Proprw;
+  row CMPropertyVc Proprw,defProprw;
   record CMInsuranceTypeVc ITr;
   array record CUVc aCUr;
-  record CUVc CUr;
+  record CUVc CUr,tCUr;
+  string 255 numstring,propid;
+  Boolean haspropf;
   
   GetLangNr(CredManr.LangCode,LangNrr);      
   Ext_CommonDocumentFields(vVals);
@@ -1083,57 +1578,96 @@ begin
     vVals["ROW_" & strnum & "_F_FAKTURANUMMER"] = CredManrw.InvoicedOn;
   end;
 */
-
   CMPr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CMPr,1,true)) then begin
     rwcnt = MatRowCnt(CMPr);
     for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(CMPr,i,CMPrw);
       Propr.SerNr = CMPrw.Property;
       if (ReadFirstMain(Propr,1,true)) then begin
         M4PadString(i,3,"0",true,strnum);
-        MatRowGet(Propr,0,Proprw);
         vVals["ROW_" & strnum & "_F_PROPNAME"] = CMPrw.Addr0;
+        numstring = "";
+        if (rwcnt>1) then begin
+          numstring = (i+1) & ". ";
+        end;
+        AddToList(vVals,"F_PROPNAME_LIST",numstring & CMPrw.Addr0);
         vVals["ROW_" & strnum & "_F_PROPOFFICIALNR"] = CMPrw.OfficialSerNr;
+        AddToList(vVals,"F_PROPOFFICIALNR_LIST",CMPrw.OfficialSerNr);
         vVals["ROW_" & strnum & "_F_PROPCOUNTRY"] = Propr.Addr1;
+        AddToList(vVals,"F_PROPCOUNTRY_LIST",Propr.Addr1);
         vVals["ROW_" & strnum & "_F_PROPCITY"] = Propr.Addr2;
+        AddToList(vVals,"F_PROPCITY_LIST",Propr.Addr2);
+        vVals["ROW_" & strnum & "_F_PROPID"] = Propr.SerialNo;
+        tstr = Propr.SerialNo;
+        if (blank(tstr)) then begin
+          tstr = "-";
+        end;
+        AddToList(vVals,"F_PROPID_LIST",numstring & tstr);
         vVals["ROW_" & strnum & "_F_PROPADDRESS"] = Propr.Addr3;
+        tstr = Propr.Addr3;
+        if (blank(tstr)) then begin
+          tstr = "-";
+        end;
+        AddToList(vVals,"F_PROPADDRESS_LIST",numstring & tstr);
         vVals["ROW_" & strnum & "_F_PROPZIP"] = Propr.Addr4;
-        vVals["ROW_" & strnum & "_F_PROPTYPE"] = Propr.Addr4;
-        vVals["ROW_" & strnum & "_F_PROPRVAL"] = Propr.Addr4;
-        vVals["ROW_" & strnum & "_F_PROPEVAL"] = Propr.Addr4;
+        AddToList(vVals,"F_PROPZIP_LIST",Propr.Addr4);
+        vVals["ROW_" & strnum & "_F_PROPTYPE"] = Propr.RepVal;
+        AddToList(vVals,"F_PROPTYPE_LIST",Propr.RepVal);
+        vVals["ROW_" & strnum & "_F_PROPRVAL"] = Propr.RepVal;
+        AddToList(vVals,"F_PROPRVAL_LIST",Propr.RepVal);
+        vVals["ROW_" & strnum & "_F_PROPEVAL"] = Propr.EvalVal;
+        AddToList(vVals,"F_PROPEVAL_LIST",Propr.EvalVal);
         vVals["ROW_" & strnum & "_F_PROPINSCOMPNAME"] = Propr.InsuranceName;
+        AddToList(vVals,"F_PROPINSCOMPNAME_LIST",Propr.InsuranceName);
         vVals["ROW_" & strnum & "_F_PROPINSUNTIL"] = Propr.InsuredUntil;
+        AddToList(vVals,"F_PROPINSUNTIL_LIST",Propr.InsuredUntil);
         vVals["ROW_" & strnum & "_F_PROPINSVAL"] = Propr.InsuredVal;
-        vVals["ROW_" & strnum & "_F_PROPOWNER"] = Proprw.OwnerName;
+        AddToList(vVals,"F_PROPINSVAL_LIST",Propr.InsuredVal);
+        
+        tstr = "";
+        MatRowGet(Propr,0,defProprw);
+        vVals["ROW_" & strnum & "_F_PROPOWNER"] = defProprw.OwnerName;
+        for (s=0;s<MatRowCnt(Propr);s=s+1) begin
+          MatRowGet(Propr,s,Proprw);
+          if (nonblank(Proprw.OwnerName)) then begin
+            if (nonblank(tstr)) then begin
+              tstr = tstr & ", ";
+            end;
+            tCUr.Code = Proprw.OwnerCode;
+            if (ReadFirstMain(tCur,1,true)) then begin
+              tstr = tstr & Proprw.OwnerName & " " & BuildCompRegNrString(tCUr.CustType,tCUr.RegNr1);
+            end;
+          end;
+        end;
+        if (blank(tstr)) then begin
+          tstr = "-";
+        end;
+        AddToList(vVals,"F_PROPOWNER_LIST",numstring & tstr);
+        
         ITr.Code = Propr.InsuranceType;
         if (ReadFirstMain(ITr,1,true)) then begin
           vVals["ROW_" & strnum & "_F_PROPINSURANCETYPE"] = ITr.Comment;
+          AddToList(vVals,"F_PROPINSURANCETYPE_LIST",ITr.Comment);
         end;
         tstr = "";
-        for (i=0;i<LineTextCnt2(Propr);i=i+1) begin
-          tstr = tstr & LineTextGet2(Propr,i);
+        for (j=0;j<LineTextCnt2(Propr);j=j+1) begin
+          tstr = tstr & LineTextGet2(Propr,j);
         end;
-        vVals["ROW_" & strnum & "_F_PROPCOMMENT"] = StrReplace(tstr,chr(13),"\\n");;
-
+        tstr = StrReplace(tstr,chr(13),"\\n");
+        vVals["ROW_" & strnum & "_F_PROPCOMMENT"] = tstr;
+        AddToList(vVals,"F_PROPCOMMENT_LIST",tstr);
+        haspropf = true;
       end;
     end;
   end;
-
-  GetCFOContacts(CredManr.CustCode,aCUr);
-  for (i=0;i<aCUr.length;i=i+1) begin
-    CUr = aCUr[i];
-    tstr = "";
-    tstr = AddValue(tstr,CUr.Name);
-    if (nonblank(CUr.Phone)) then begin
-      tstr = AddValue(tstr,CUr.Phone);
-    end else begin
-      tstr = AddValue(tstr,CUr.Mobile);
-    end;
-    tstr = AddValue(tstr,CUr.eMail);
-    if (nonblank(vVals["F_CFOLIST"])) then begin
-      vVals["F_CFOLIST"] = vVals["F_CFOLIST"] & "\\n";
-    end;
-    vVals["F_CFOLIST"] = vVals["F_CFOLIST"] & tstr;
+  tstr = "";
+  if (haspropf) then begin
+    vVals["F_LOANHIPSUM"] = (CredManr.InvSum4*1.3) & " Eur";
+    ValToText((CredManr.InvSum4*1.3),M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+    vVals["F_LOANHIPSUMTEXT"] = "(" & tstr & ")";
+  end else begin
+    vVals["F_LOANHIPSUM"] = "-";  
   end;
 
   return;   

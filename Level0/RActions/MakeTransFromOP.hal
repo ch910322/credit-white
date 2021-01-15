@@ -53,7 +53,7 @@ external function string 255 GetSplitVATAcc(string,var string);
 external function Boolean IsEnterprise();
 external procedure GetVATCodePrelVATAccPurch(string,var string);
 //CUST-BEGIN
-external outer function string 255 CM_GetCredManTypePurchItemAccount(Longint,string,Boolean);
+external outer function string 255 CM_GetCredManTypePurchItemAccount(Longint,Longint,string,Boolean);
 //CUST-END
                
 function string 255 FindOPChequeNumber(string oppaymode,string oprowpaymode,LongInt chequenr)
@@ -1371,7 +1371,13 @@ begin
             brd2 = brd2 - rd2;
 
 //CUST-BEGIN
-      accstr = CM_GetCredManTypePurchItemAccount(OPrw.VISerNr,accstr,true);
+            begin
+              record VIVc VIr;
+              VIr.SerNr = OPrw.VISerNr;
+              ReadFirstMain(VIr,1,true);
+              
+              accstr = CM_GetCredManTypePurchItemAccount(OPrw.VISerNr,VIr.CustCredManNr,accstr,true);
+            end;
 //CUST-END
             if (CheckTTRPerRow("OPVc",accstr,otxt,dc1,taccnumber,1)) then begin end;      
             if (OPp.APonTR!=0) then begin

@@ -164,7 +164,8 @@ begin
 
   SString(200108,"These Changes require Server Restart");
   SString(200109,"Can't pause becauce there is an Invoice already created");
-
+  
+  SString(200114,"Vekselio davėjas");
 /*Web Codes 200200-200230*/
   SString(200200,"Banner with this type already registered in these days");
   SString(200201,"Content with this URL already exists");
@@ -281,6 +282,7 @@ begin
   SetText(3,"Bullet Loan");
   SetText(4,"Factoring");
   SetText(5,"Payment Guarantee");
+  SetText(6,"Balloon");
 //  SetText(6,"Linear with Delay");
 //  SetText(7,"Annuity with Delay");
   EndSet;
@@ -357,6 +359,7 @@ begin
   SetText(2,"Prepayment");
   SetText(3,"Credit Note");
   SetText(4,"Partial Buy-out");
+  SetText(5,"Made Payment");
   EndSet;
 
   SetBegin(2012);

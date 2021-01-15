@@ -255,6 +255,23 @@ begin
 end;
 
 global
+procedure PasteSubordinationInCredMan(var record CredManVc CredManr,string code,Integer num)
+begin
+  record CUVc CUr;
+  
+  CUr.Code = code;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    SetFieldValueByName(CredManr,"Subordination" & num & "Name",CUr.Name,-1);
+    SetFieldValueByName(CredManr,"Subordination" & num & "Position",CUr.JobDesc,-1);
+    SetFieldValueByName(CredManr,"Subordination" & num & "Phone",CUr.Phone,-1);
+    SetFieldValueByName(CredManr,"Subordination" & num & "eMail",CUr.eMail,-1);
+  end;
+
+  return;
+end;
+
+
+global
 procedure PasteBOESignerInCredMan(var record CredManVc CredManr,string code,Integer num)
 begin
   record CUVc CUr;
@@ -318,6 +335,7 @@ begin
     CMTr.Code = LAr.Type;
     if (ReadFirstMain(CMTr,1,true)) then begin
       CredManr.AnnualRate = CMTr.AnnualRate;
+      CredManr.UseCompensationInvoices = CMTr.UseCompensationInvoices;
       CredManr.PayDeal = CMTr.PayDeal;
       CredManr.Classifications = CMTr.Classifications;
       CredManr.OverdueRateType = CMTr.OverdueRateType;
@@ -678,6 +696,7 @@ begin
     case "F_TOPAY2_TEXT": res = RepSpec.f13;
     case "F_CREDITIVNO": res = RepSpec.f14;
     case "F_SALESMANJOB": res = RepSpec.f15;
+    case "F_NETTINGTEXT": res = RepSpec.f16;
     otherwise
       res = LetVcReplaceTokenCust(RepSpec,token);
   end;

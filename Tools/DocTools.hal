@@ -88,3 +88,20 @@ begin
   return;
 end;
 
+global
+function Boolean OuterGetExternalDocMatrix(string docname,var string type)
+begin
+  Boolean res;
+  
+  if (docname=="CredManForm") then begin
+    MatCol(1,24,"Language",0,LangCode,false,LangSClass);
+    MatCol(1,140,"Template",0,TemplateName,false,ExternalFormDefImgSClass);
+    MatCol(1,-300,"Table's Field",0,FirstField,false,0); 
+    MatCol(1,-200,"Table's Field 2",0,FirstField2,false,0); 
+    MatCol(1,-100,"Table's Field 3",0,FirstField3,false,0); 
+    res = true;    
+  end;
+
+  OuterGetExternalDocMatrix = res;
+  return;
+end;

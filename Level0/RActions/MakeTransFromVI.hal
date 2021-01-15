@@ -41,7 +41,7 @@ external function Boolean TransInFiscal(Date);
 external procedure SetupVATBase(var record SMVc,var Integer);
 external function string 20 FindItemPriceVarianceAcc(string,string,Integer);
 //CUST-BEGIN
-external outer function string 255 CM_GetCredManTypePurchItemAccount(Longint,string,Boolean);
+external outer function string 255 CM_GetCredManTypePurchItemAccount(Longint,Longint,string,Boolean);
 //CUST-END
 
 function Boolean CheckTAccFieldMapped(string group,string vc,Integer type)
@@ -832,7 +832,7 @@ LkInvoiceTypeCash:;
         goto LMakeTransFromVI;
       end;  
 //CUST-BEGIN
-      apacc = CM_GetCredManTypePurchItemAccount(VIp.SerNr,apacc,false);
+      apacc = CM_GetCredManTypePurchItemAccount(VIp.SerNr,VIp.CustCredManNr,apacc,false);
 //CUST-END
       CheckTTRPerRow("VIVc",apacc,apotxt,dc2,taccnumber,0);
       if (VIp.APonTR!=0) then begin          

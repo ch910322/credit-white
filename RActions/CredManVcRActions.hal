@@ -12,6 +12,7 @@ external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPa
 external inner function Boolean GetAccName(string,var string,Integer);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 external function Boolean CheckCredManSchedule();
+external function Boolean UseDisburseUntil();
 
 global
 function LongInt CredManVcRecordDefaults(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
@@ -20,14 +21,17 @@ BEGIN
   record BaseCurBlock BCb;
   record CredManSetBlock CMb;
   record CMOrderClassBlock OCb;
+  record CMInvoicingBlock CIb;
 
   BlockLoad(BCb);
   BlockLoad(CMb);
   BlockLoad(OCb);
+  BlockLoad(CIb);
   CredManr.CurncyCode = BCb.BaseCur1;
   CredManr.MonthlyPaymentDay = CMb.InvDay;
   CredManr.FirstIntDate = CurrentDate;
   CredManr.Status = 0;
+  CredManr.MaxOverpaidPrc = CIb.MaxOverpaidPrc;
 
   res = inner.CredManVcRecordDefaults(CredManr,CredMan2r,stat,long4);
   CredManVc_PasteType(CredManr);
@@ -75,6 +79,8 @@ BEGIN
   CredManr.BOE2Signed = 0;
   CredManr.BOE3Signed = 0;
   CredManr.BOE4Signed = 0;
+  CredManr.CancelDate = "";
+  CredManr.DisburseUntil = "";
 /*
   CredManr.FactInvAmount = t;
   CredManr.LoanToValue = t;
@@ -242,6 +248,11 @@ BEGIN
       goto LCredManVcRecordCheck;
     end;
   end;
+  if ((CredManr.LoanType==7 or CredManr.LoanType==8) and (CredManr.InstalmentType!=3 and CredManr.InstalmentType!=6)) then begin
+    RecordCheckError(200110,"",-1,"InstalmentType");
+    res = -1;
+    goto LCredManVcRecordCheck;
+  end;
 
   if (CredManr.OrderClass!=CredMan2r.OrderClass) then begin
     CredManr.StateChangeDate = CurrentDate;
@@ -313,6 +324,14 @@ BEGIN
         end;
       end;
     end;  
+  end;
+
+  if (UseDisburseUntil) then begin
+    if (blank(CredManr.DisburseUntil) and CredMan2r.OKFlag==0 and CredManr.Status!=5) then begin
+      RecordCheckError(1058,"",-1,"DisburseUntil");
+      res = -1;
+      goto LCredManVcRecordCheck;
+    end;
   end;
 
   res = inner.CredManVcRecordCheck(CredManr,CredMan2r,stat,long4);
@@ -691,39 +710,39 @@ begin
   rwcnt = MatRowCnt(CMAr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CMAr,i,CMArw);
-    if (GetAccName(CMArw.DebitAcc,tstr,60)==false) then begin
+    if (nonblank(CMArw.DebitAcc) and GetAccName(CMArw.DebitAcc,tstr,60)==false) then begin
       RecordCheckError(1120,CMArw.DebitAcc,i,"DebitAcc");
       res = -1;
       goto LCredManAccVcRecordCheck;
     end;
-    if (GetAccName(CMArw.CreditAcc,tstr,60)==false) then begin
+    if (nonblank(CMArw.CreditAcc) and GetAccName(CMArw.CreditAcc,tstr,60)==false) then begin
       RecordCheckError(1120,CMArw.CreditAcc,i,"CreditAcc");
       res = -1;
       goto LCredManAccVcRecordCheck;
     end;
   end;
-  if (GetAccName(CMAr.PLCreditAcc,tstr,60)==false) then begin
+  if (nonblank(CMAr.PLCreditAcc) and GetAccName(CMAr.PLCreditAcc,tstr,60)==false) then begin
     RecordCheckError(1120,CMAr.PLCreditAcc,-1,"PLCreditAcc");
     res = -1;
     goto LCredManAccVcRecordCheck;
   end;
-  if (GetAccName(CMAr.PLDebitAcc,tstr,60)==false) then begin
+  if (nonblank(CMAr.PLDebitAcc) and GetAccName(CMAr.PLDebitAcc,tstr,60)==false) then begin
     RecordCheckError(1120,CMAr.PLDebitAcc,-1,"PLDebitAcc");
     res = -1;
     goto LCredManAccVcRecordCheck;
   end;
-  if (GetAccName(CMAr.ControlAcc,tstr,60)==false) then begin
-    RecordCheckError(1120,CMAr.ControlAcc,-1,"ControlAcc");
+  if (nonblank(CMAr.ControlAccShort) and GetAccName(CMAr.ControlAccShort,tstr,60)==false) then begin
+    RecordCheckError(1120,CMAr.ControlAccShort,-1,"ControlAccShort");
     res = -1;
     goto LCredManAccVcRecordCheck;
   end;
-  if (GetAccName(CMAr.DebtorsAccShort,tstr,60)==false) then begin
-    RecordCheckError(1120,CMAr.DebtorsAccShort,-1,"DebtorsAccShort");
+  if (nonblank(CMAr.ControlAccLong) and GetAccName(CMAr.ControlAccLong,tstr,60)==false) then begin
+    RecordCheckError(1120,CMAr.ControlAccLong,-1,"ControlAccLong");
     res = -1;
     goto LCredManAccVcRecordCheck;
   end;
-  if (GetAccName(CMAr.DebtorsAccLong,tstr,60)==false) then begin
-    RecordCheckError(1120,CMAr.DebtorsAccLong,-1,"DebtorsAccLong");
+  if (nonblank(CMAr.DebtorsAcc) and GetAccName(CMAr.DebtorsAcc,tstr,60)==false) then begin
+    RecordCheckError(1120,CMAr.DebtorsAcc,-1,"DebtorsAcc");
     res = -1;
     goto LCredManAccVcRecordCheck;
   end;

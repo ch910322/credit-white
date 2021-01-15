@@ -100,3 +100,42 @@ begin
   CredManTypeVcRecordRemoveTest = res;
   return;
 end;
+
+
+global
+function Integer CredManTypeDClassSelectSetToPaste(Integer wn,string fieldname)
+begin
+  Integer res,rownr;
+  record CredManTypeVc CMTr;
+  
+  res = -1;
+  GetWindowRecord(wn,CMTr);
+  switch (fieldname) begin
+    case "InstalmentType":
+      if (CMTr.LoanType==7 or CMTr.LoanType==8) then begin
+        res = 2031;
+      end;
+  end;
+  CredManTypeDClassSelectSetToPaste = res;
+  return;
+end;
+
+
+
+global
+function Boolean CredManTypeDClassLoanTypeButtonAction(Integer wn,Integer value)
+begin
+  record CredManTypeVc CMTr;
+  Boolean res;
+
+  res = true;
+  GetWindowRecord(wn,CMTr);
+  if (value==7) then begin
+    CMTr.InstalmentType = 3;
+    PutWindowRecord(wn,CMTr);
+  end;
+
+
+  CredManTypeDClassLoanTypeButtonAction = res;
+  return;
+end;

@@ -339,11 +339,13 @@ begin
   RecordField(AutoSuretyOfficalNr,M4Int,0,0);
   RecordField(AutoSuretySerie,M4Str,10,0);
   RecordField(CityAgreementClassType,M4Code,20,0);
+  RecordField(NumberLangCode,M4Code,20,0);
   EndBlock;
   
   RecordAddBegin(CUVc,"CredCUVc");
   RecordField(AccessToDataUntil,M4Date,0,0); 
   RecordField(OldPassword,M4Long,0,0); 
+  RecordField(DebtorsAcc,M4Code,20,AccVc);
   EndRecordAdd;
   
   RecordBegin(ScoringSupVc,-,"");
@@ -669,9 +671,65 @@ begin
   RecordField(BuyoutFeeMonths,M4Long,0,0);
   RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
   RecordField(DaysInMonth,M4Int,0,0);
+  RecordField(DisburseUntil,M4Date,0,0);
+  RecordField(UseCompensationInvoices,M4Int,0,0);
+  RecordField(CancelDate,M4Date,0,0);
+  RecordField(MaxOverpaidPrc,M4Val,0,0);
+
+  
+  RecordField(Subordination1,M4Str,200,0);
+  RecordField(Subordination1Name,M4Str,200,0);
+  RecordField(Subordination1Position,M4Str,200,0);
+  RecordField(Subordination1Phone,M4Str,200,0);
+  RecordField(Subordination1eMail,M4Str,200,0);
+  RecordField(Subordination1Date,M4Date,0,0);
+  RecordField(Subordination1Amount,M4Val,0,0);
+  RecordField(Subordination1Signer,M4Str,255,0);
+  RecordField(Subordination1DueDate,M4Date,0,0);
+
+  RecordField(Subordination2,M4Str,200,0);
+  RecordField(Subordination2Name,M4Str,200,0);
+  RecordField(Subordination2Position,M4Str,200,0);
+  RecordField(Subordination2Phone,M4Str,200,0);
+  RecordField(Subordination2eMail,M4Str,200,0);
+  RecordField(Subordination2Date,M4Date,0,0);
+  RecordField(Subordination2Amount,M4Val,0,0);
+  RecordField(Subordination2Signer,M4Str,255,0);
+  RecordField(Subordination2DueDate,M4Date,0,0);
+
+  RecordField(Subordination3,M4Str,200,0);
+  RecordField(Subordination3Name,M4Str,200,0);
+  RecordField(Subordination3Position,M4Str,200,0);
+  RecordField(Subordination3Phone,M4Str,200,0);
+  RecordField(Subordination3eMail,M4Str,200,0);
+  RecordField(Subordination3Date,M4Date,0,0);
+  RecordField(Subordination3Amount,M4Val,0,0);
+  RecordField(Subordination3Signer,M4Str,255,0);
+  RecordField(Subordination3DueDate,M4Date,0,0);
+
+  RecordField(Subordination4,M4Str,200,0);
+  RecordField(Subordination4Name,M4Str,200,0);
+  RecordField(Subordination4Position,M4Str,200,0);
+  RecordField(Subordination4Phone,M4Str,200,0);
+  RecordField(Subordination4eMail,M4Str,200,0);
+  RecordField(Subordination4Date,M4Date,0,0);
+  RecordField(Subordination4Amount,M4Val,0,0);
+  RecordField(Subordination4Signer,M4Str,255,0);
+  RecordField(Subordination4DueDate,M4Date,0,0);
+
+  RecordField(Subordination5,M4Str,200,0);
+  RecordField(Subordination5Name,M4Str,200,0);
+  RecordField(Subordination5Position,M4Str,200,0);
+  RecordField(Subordination5Phone,M4Str,200,0);
+  RecordField(Subordination5eMail,M4Str,200,0);
+  RecordField(Subordination5Date,M4Date,0,0);
+  RecordField(Subordination5Amount,M4Val,0,0);
+  RecordField(Subordination5Signer,M4Str,255,0);
+  RecordField(Subordination5DueDate,M4Date,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
+  ArrayField(InvDate,M4Date,0,0);
   ChangeMatrixField(vRebate,M4Rate,0,0);
 
   KeyBegin(OrderClass);
@@ -843,6 +901,19 @@ begin
   RecordField(VekselisShortMonths,M4Long,0,0);
   RecordField(VekselisExtraMonths,M4Long,0,0);
 
+  RecordField(SuretyPersonCEO1,M4Int,0,0);
+  RecordField(SuretyPersonCEO2,M4Int,0,0);
+  RecordField(SuretyPersonSurety,M4Int,0,0);
+  RecordField(SuretyPersonUs,M4Int,0,0);
+  RecordField(SuretyPersonLangCode,M4Code,10,0);
+  RecordField(CompensLangCode,M4Code,20,0);
+  RecordField(UseCompensationInvoices,M4Int,0,0);
+  RecordField(VekselisLangCode2,M4Code,10,0);
+  RecordField(VekselisShortLangCode2,M4Code,10,0);
+  RecordField(SuretyLangCode2,M4Code,10,0);
+  RecordField(SuretyPersonLangCode2,M4Code,10,0);
+  RecordField(BuyOutLangCode,M4Code,10,0);
+
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
   ChangeMatrixField(vRebate,M4Rate,0,0);
@@ -932,6 +1003,8 @@ begin
   RecordField(CustCredManNr,M4Long,0,0);
   RecordField(CredFromDate,M4Date,0,0);
   RecordField(CredToDate,M4Date,0,0);
+  RecordField(ManualInvoice,M4Int,0,0);
+  RecordField(NoEmailFlag,M4Int,0,0);
   ArrayField(ChargeType,M4Set,2010,0);
   ArrayField(CredHistNr,M4Long,0,CredHistVc);
   ArrayField(FactoringInvoice,M4Long,0,CredManFactInvoiceVc);  
@@ -989,6 +1062,8 @@ begin
   ArrayField(Reb,M4Val,0,0);
   ArrayField(FactoringInvoice,M4Long,0,0);
   ArrayField(OpenAmount,M4Val,0,0);
+  ArrayField(InvType,M4Int,0,0);
+  ArrayField(SortString,M4Str,255,0);
   EndRecordAdd;
 
   BlockBegin(ItemPriorityBlock,-,"");
@@ -1032,6 +1107,9 @@ begin
   RecordField(ActType,M4Code,20,0);
   RecordField(ActText,M4Str,255,0);
   RecordField(StdText,M4Code,10,0);
+  RecordField(LangCode,M4Code,20,0);
+  RecordField(PerBankAcc,M4Int,0,0);
+  RecordField(OnlyOverdueInvoices,M4Int,0,0);
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(ActiveFlag);
@@ -1046,6 +1124,10 @@ begin
   RecordField(InvDate,M4Date,0,0);//Actually due date
   RecordField(ReminderNr,M4Long,0,0);
   RecordField(InvoiceList,M4Str,255,0);
+  RecordField(CheckDays,M4Int,0,0);
+  RecordField(StartDate,M4Date,0,0);
+  RecordField(EndDate,M4Date,0,0);
+
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(SentFlag);
@@ -1454,6 +1536,13 @@ begin
   RecordField(UsePreCreatedInvoicePdf,M4Int,0,0);
   RecordField(LastPrincipleWithExtraMonth,M4Int,0,0);
   RecordField(ItemPriorityCode,M4Code,20,0);
+  RecordField(FirstInvPayDeal,M4Code,5,PDVc);
+  RecordField(RealInterestFlag,M4Int,0,0);
+  RecordField(SellingItem,M4Code,20,0);
+  RecordField(CompensationItem,M4Code,20,0);
+  RecordField(MaxOverpaidPrc,M4Val,0,0);
+  RecordField(SellingSalesAccount,M4Code,20,0);
+  
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
@@ -1477,6 +1566,7 @@ begin
   ArrayField(FirstInvSerie,M4Str,100,0);
   ArrayField(RegularInvSerie,M4Str,100,0);
   ArrayField(OverdueInvSerie,M4Str,100,0);
+  ArrayField(CompensationInvSerie,M4Str,100,0);
   EndArray;
   EndBlock;
   
@@ -1692,6 +1782,8 @@ begin
   RecordField(ExtraDepositSum,M4Val,0,0);
   RecordField(ExtraDepositMonths,M4Str,50,0);
   RecordField(CustCode,M4Str,50,0);
+  RecordField(MoneyTransferDate,M4Date,0,0);
+  RecordField(BasedOn,M4Long,0,0);
   ArrayBegin(Math,-,1);
   ArrayField(InvDate,M4Date,0,0);
   ArrayField(Principle,M4Val,0,0);
@@ -1720,13 +1812,17 @@ begin
   RecordField(Math,M4Matrix,0,0);
   RecordField(PLCreditAcc,M4Code,20,AccVc);
   RecordField(PLDebitAcc,M4Code,20,AccVc);
-  RecordField(ControlAcc,M4Code,20,AccVc);
-  RecordField(DebtorsAccShort,M4Code,20,AccVc);
-  RecordField(DebtorsAccLong,M4Code,20,AccVc);
+  RecordField(xControlAcc,M4Code,20,AccVc);
+  RecordField(xDebtorsAccShort,M4Code,20,AccVc);
+  RecordField(xDebtorsAccLong,M4Code,20,AccVc);
+  RecordField(DebtorsAcc,M4Code,20,AccVc);
+  RecordField(ControlAccShort,M4Code,20,AccVc);
+  RecordField(ControlAccLong,M4Code,20,AccVc);
   ArrayBegin(Math,-,1);
   ArrayField(ArtCode,M4Code,20,INVc);
   ArrayField(CreditAcc,M4Code,20,AccVc);
   ArrayField(DebitAcc,M4Code,20,AccVc);
+  ArrayField(PeriodCode,M4Code,20,AutSimPerVc);
   EndArray;
   MainKeyBegin(CredManType,0);
   KeySegment(CredManType);
@@ -1774,6 +1870,8 @@ begin
   RecordField(ShowLoanType6,M4Int,0,0);
   RecordField(ShowRealInterestFlag,M4Int,0,0);
   RecordField(UseCredManDaysInMonth,M4Int,0,0);
+  RecordField(ShowLoanType7,M4Int,0,0);
+  RecordField(ShowLoanType8,M4Int,0,0);
   EndBlock;
 
   RecordBegin(CredManChangeVc,-,"");
@@ -1798,7 +1896,87 @@ begin
   AppendFieldToKeyName(CredManNr);
   KeySegment(SerNr);
   
-  EndRecord;  
+  EndRecord; 
+
+  RecordAddBegin(VIVc,"Cred_VIVc"); 
+  RecordField(CustCredManNr,M4Long,0,0);
+  EndRecordAdd;
+
+  BlockBegin(CMDateTextBlock,-,"");
+  RecordField(YearLang1,M4Code,20,0);
+  RecordField(MonthLang1,M4Code,20,0);
+  RecordField(MonthCur1,M4Code,20,0);
+  RecordField(DayLang1,M4Code,20,0);
+  RecordField(YearCur1,M4Code,20,0);
+  RecordField(DayCur1,M4Code,20,0);
+  RecordField(YearLang2,M4Code,20,0);
+  RecordField(MonthLang2,M4Code,20,0);
+  RecordField(MonthCur2,M4Code,20,0);
+  RecordField(DayLang2,M4Code,20,0);
+  RecordField(YearCur2,M4Code,20,0);
+  RecordField(DayCur2,M4Code,20,0);
+  RecordField(YearLangMin1,M4Code,20,0);
+  RecordField(YearLangMin2,M4Code,20,0);
+  EndBlock;
+
+  RecordBegin(DefConditionTextVc,-,"");
+  RecordField(Code,M4Code,20,0);
+  RecordField(Text,M4TextField,0,0);
+  MainKeyBegin(Code,0);
+  KeySegment(Code);
+  EndRecord;
+
+  RecordBegin(ConditionTextVc,-,"");
+  RecordField(CredManNr,M4Long,0,0);
+  RecordField(Type,M4Int,0,0);
+  RecordField(Text,M4TextField,0,0);
+  RecordField(ID,M4Str,30,0);
+  MainKeyBegin(CredManNr,0);
+  KeySegment(CredManNr);
+  KeySegment(Type);
+  KeySegment(ID);
+  EndRecord;
+
+  BlockBegin(CMPrintConstantsBlock,-,"");
+  LoadBlockOnStartup;
+  CacheBlockInClient;
+  RecordField(SuretyYes,M4Str,255,0);
+  RecordField(SuretyNo,M4Str,255,0);
+  RecordField(SuretyYes2,M4Str,255,0);
+
+  RecordField(BOEYes,M4Str,255,0);
+  RecordField(BOENo,M4Str,255,0);
+  RecordField(BOEYes2,M4Str,255,0);
+
+  RecordField(PropertyYes,M4Str,255,0);
+  RecordField(PropertyNo,M4Str,255,0);
+  RecordField(PropertyYes2,M4Str,255,0);
+
+  RecordField(ScheduleYes,M4Str,255,0);
+  RecordField(ScheduleNo,M4Str,255,0);
+  RecordField(ScheduleYes2,M4Str,255,0);
+
+  RecordField(InsuranceYes,M4Str,255,0);
+  RecordField(InsuranceNo,M4Str,255,0);
+  RecordField(InsuranceYes2,M4Str,255,0);
+  RecordField(InvoiceText,M4Str,255,0);
+  RecordField(SubordinationYes,M4Str,255,0);
+  RecordField(SubordinationNo,M4Str,255,0);
+
+  RecordField(FullValText,M4Code,10,0);
+  RecordField(Separator,M4Str,30,0);
+  RecordField(DecValText,M4Code,10,0);
+
+  RecordField(CompPrefix,M4Str,30,0);
+  RecordField(PersPrefix,M4Str,30,0);
+
+  RecordField(ValCrncyCode,M4Code,20,0);
+  EndBlock;
+
+  RecordAddBegin(LangNrVc,"LangNrVc_Cust");
+  ChangeMatrixField(ValText,M4Str,255,0);
+  EndRecordAdd;
+ 
 
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);

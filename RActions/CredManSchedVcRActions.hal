@@ -1,4 +1,4 @@
-remote procedure GetScheduleTotals(record CredManSchedVc,var val,var val,var val,var val,var val,var Date,var Date);
+remote procedure GetScheduleTotals(record CredManSchedVc,var val,var val,var val,var val,var val,var val,var Date,var Date);
 
 global
 updating function LongInt CredManSchedVcRecordCheckClient(Longint wn,var record CredManSchedVc CSr,record CredManSchedVc CS2r,LongInt stat,LongInt long4)
@@ -6,7 +6,7 @@ begin
   Longint res;
   record RcVc RepSpec;
   record CredManVc CredManr;
-  val princ,interest,fees,total,vat;
+  val princ,interest,fees,total,vat,credtotal;
   Date sd,ed;
   Integer i,rwcnt;
   Date lasted;
@@ -15,10 +15,10 @@ begin
   
   res = 0;
 
-  GetScheduleTotals(CSr,princ,interest,fees,total,vat,sd,ed);
+  GetScheduleTotals(CSr,princ,interest,fees,total,vat,credtotal,sd,ed);
   CredManr.SerNr = CSr.CredManNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
-    if (princ!=CredManr.InvSum4) then begin
+    if (princ!=credtotal) then begin
       res = -1;
       RecordCheckError(200261,"",MatRowCnt(CSr)-1,"Principle");
       goto LCredManSchedVcRecordCheckClient;

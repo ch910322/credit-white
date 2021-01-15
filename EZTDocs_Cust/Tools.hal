@@ -14,6 +14,13 @@ external inner function boolean AddEMailRecipients(var record MailVc,string,stri
 external inner function Boolean FindCustomerRelation(string,string,var record CUVc);
 external inner procedure ValToText(val,Integer,string,string,var string);
 external inner procedure Ext_PrintValueInclZero(var vector string,string,val,Integer,record LangNrVc,record SysFormatBlock,Boolean);
+external function val GetContactTotalPaidAmount(record CredManVc);
+external inner procedure CustAged(record CUVc,Date,Date,Date,var val,var val,var val,var val,var val,var val,var val,var val,var val,var val,boolean);
+external inner procedure GetOnAccBalance(record RcVc,string,string,Boolean,Integer,var val,var val,var val,var val,var val,var val,var val,record SMVc,
+                   Array string,Array val,var Integer);
+external inner  procedure GetMonthText(string,Date,var string);
+external inner procedure StripLeadingSpaces(var string);
+external inner procedure StripEndingSpaces(var string);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -236,14 +243,28 @@ begin
   string 255 vatnr,del;
   record CUVc CUr;
   record CredManVc CredManr;
-  val topay2,openamount;
+  val topay2,topay3,openamount,openamount2;
   string 255 credivno;
   record IVVc IVCreditr;
   record UserVc Userr;
+  Date bd,td;
+  val ARSSumod,ARSsactod,ARSs0od,ARSs1od,ARSs16od,ARSs31od,ARSs61od,ARSs91od,ARSs121od,ARSs151od;
+  record RcVc RepSpec;
+  val ARSOnAccBal,ARSOnAccBalb1;
+  record SMVc CurTotalsr;
+  val sumbooked,sumnow,sumcurncy,sumdiff;
+  Array val debbal;
+  Integer debcnt;
+  Array string 10 debaccs;
+  val rval,rval2;
+  record CMPrintConstantsBlock PCb;
 
   Ext_PrintInvoiceSigner(vVals);
 
   ExtPrintOwnBankDetails(vVals,IVr.CustCredManNr);
+
+  CUr.Code = IVr.CustCode;
+  if (ReadFirstMain(CUr,1,true)) then begin end;
 
   del = ":";
   BlockLoad(CIb);
@@ -255,30 +276,52 @@ begin
 
   GetHiddenInvoiceValues(IVr,abovehiddenbase,abovehiddenvat);
   openamount = GetCustomerOpenAmount(IVr.CustCode,IVr);
+  td = AddDay(IVr.InvDate,-1);
+  CustAged(CUr,td,bd,td,ARSSumod,ARSsactod,ARSs0od,ARSs1od,ARSs16od,ARSs31od,ARSs61od,ARSs91od,ARSs121od,ARSs151od,0);
+  GetOnAccBalance(RepSpec,CUr.Code,CUr.CurncyCode,false,0,ARSOnAccBalB1,rval2,ARSOnAccBal,sumbooked,sumnow,sumcurncy,sumdiff,CurTotalsr,debaccs,debbal,debcnt);//ObjStr
+  
+  openamount2 = ARSSumod + ARSOnAccBal;
+  topay3 = openamount2;
 
   topay2 = openamount;
   if (IVr.PayDate>=CurrentDate) then begin
     topay2 = topay2 + abovehiddenbase + abovehiddenvat + GetCredManItemValue(IVr,CMb.InstalmentItem,true);
   end;
+  topay3 = topay3 + abovehiddenbase + abovehiddenvat + GetCredManItemValue(IVr,CMb.InstalmentItem,true);
   if (topay2<0) then begin
     topay2 = 0;
   end;
+  if (topay3<0) then begin
+    topay3 = 0;
+  end;
   vVals["F_OPENAMOUNT"] = openamount;
   vVals["F_TOPAY2"] = topay2;
-  ValToText(topay2,M4Val,IVr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText(topay2,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
   vVals["F_TOPAY2_TEXT"] = tstr;
+
+  GetMonthText(IVr.LangCode,td,tstr);
+  vVals["F_LASTDAY"] = tstr & " " & GetDay(td);
+  vVals["F_OPENAMOUNT2"] = openamount2;
+  vVals["F_TOPAY3"] = topay3;
+  ValToText(topay3,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
+  vVals["F_TOPAY3_TEXT"] = tstr;
+
 
   vVals["F_ABOVEHIDDENBASE"] = abovehiddenbase;
   vVals["F_ABOVEHIDDENVAT"] = abovehiddenvat;
   if (IVr.InvType==kInvoiceRowTypeCredit) then begin
     vVals["F_ABOVEHIDDENFULL"] = -(abovehiddenbase + abovehiddenvat);
+    ValToText(-(abovehiddenbase + abovehiddenvat),M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
+    vVals["F_ABOVEHIDDENFULLINWORDS"] = tstr;
   end else begin
     vVals["F_ABOVEHIDDENFULL"] = abovehiddenbase + abovehiddenvat;
+    ValToText(abovehiddenbase + abovehiddenvat,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
+    vVals["F_ABOVEHIDDENFULLINWORDS"] = tstr;
   end;
   vVals["F_NUMMER"] = GetCredManNr(IVr.CustCredManNr);
   CredManr.SerNr = IVr.CustCredManNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
-    vVals["F_CREDMANCREATEDATE"] = CredManr.CreatedDate;
+    vVals["F_CREDMANCREATEDATE"] = CredManr.TransDate;
   end;
 
   BlockLoad(CMb);
@@ -329,15 +372,13 @@ begin
 
   Userr.Code = CredManr.SalesMan;
   if (ReadFirstMain(Userr,1,true)) then begin
+    vVals["F_SALESMANNAME"] = Userr.Name;
     vVals["F_SALESMANJOB"] = Userr.Job;
   end;
 
   
   if (blank(IVr.VATNr)) then begin
-    CUr.Code = IVr.CustCode;
-    if (ReadFirstMain(CUr,1,true)) then begin
-      vatnr = CUr.VATNr;   
-    end;   
+    vatnr = CUr.VATNr;   
   end else begin
     vatnr = IVr.VATNr;      
   end;
@@ -348,7 +389,16 @@ begin
       vatnr = CIb.ReplaceVATNrWith;
     end;
   end;
+  if (CredManr.SerNr>0) then begin
+    vVals["F_TOTALBRUTO"] = GetContactTotalPaidAmount(CredManr);
+  end;
   vVals["F_KUNDMOMSNR2"] = vatnr;
+   
+  if (IVr.ManualInvoice==1) then begin
+    BlockLoad(PCb);
+    vVals["F_NETTINGTEXT"] = PCb.InvoiceText;
+  end;
+
 
   return;
 end;
@@ -495,20 +545,90 @@ begin
 end;
 
 global
-function string 255 DateInWords(Date td,string langcode)
+function string 255 DateInWords(Date td,string langcode,Integer type)
 begin
-  string 255 yearstr,res;
+  string 255 yearstr,yearstr2,res;
   Integer pos;
-  
-  //if (HasLocalization("LTU")) then begin
+  string 255 daystr,monthstr,yl,yc,ml,mc,dl,dc,ylmin;
+  record CMDateTextBlock DTb;
+  Boolean foundf;
+  Longint tmp,pos2;
+  string 255 tres,tstr;
+
+  BlockLoad(DTb);
+  yl = GetFieldValueByName(DTb,"YearLang" & type,-1);
+  ylmin = GetFieldValueByName(DTb,"YearLangMin" & type,-1);
+  yc = GetFieldValueByName(DTb,"YearCur" & type,-1);
+  ml = GetFieldValueByName(DTb,"MonthLang" & type,-1);
+  mc = GetFieldValueByName(DTb,"MonthCur" & type,-1);
+  dl = GetFieldValueByName(DTb,"DayLang" & type,-1);
+  dc = GetFieldValueByName(DTb,"DayCur" & type,-1);
+
+  if (nonblank(yl) and nonblank(yc)) then begin
+    tmp = GetYear(td);
+    tmp = tmp/100*100;
+    ValToText(tmp,M4Val,mc,yl,yearstr);
+    ValToText(GetYear(td)-tmp,M4Val,yc,ylmin,yearstr2);
+    ValToText(GetMonth(td),M4Val,mc,ml,monthstr);
+    ValToText(GetDay(td),M4Val,dc,dl,daystr);
+    tres = LowerCase(yearstr) & LowerCase(yearstr2) & LowerCase(monthstr) & LowerCase(daystr);
+    foundf = true;
+    while (GetNextSubString(tres,pos2," ",tstr)) begin
+      if (nonblank(tstr)) then begin
+        if (nonblank(res)) then begin
+          res = res & " ";
+        end;
+        res = res & tstr;
+      end;
+    end;
+  end;
+
+
+  if (!foundf) then begin
     ValToText(GetYear(td),M4Int,"",langcode,yearstr);
     pos = InString(yearstr,"Eur");
     if (pos>0) then begin
       yearstr = left(yearstr,pos-2);
     end;
     res = yearstr & " " & USetStr(22780 + GetMonth(td)) & " " & GetDay(td) & " " & LowerCase(USetStr(38471));
-  //end;
+  end;
 
   DateInWords = res;
+  return;
+end;
+
+global
+function string 255 AgreementValToText(val tval)
+begin
+  Integer intval;
+  val decval;
+  string 255 res,intstr,decstr;
+  record CMPrintConstantsBlock PCb;
+  record LangNrVc LangNrr;
+  
+  BlockLoad(PCb);
+  LangNrr.LangCode = PCb.FullValText;
+  ReadFirstMain(LangNrr,1,true);
+  intval = tval;
+  if (intval>0) then begin
+    ValToText(intval,M4Int,PCb.ValCrncyCode,PCb.FullValText,intstr);
+    res = intstr;
+  end;
+  decval = (tval - intval) * 100;
+
+  if (decval>0) then begin
+    ValToText(decval,M4Int,PCb.ValCrncyCode,PCb.DecValText,decstr);
+    if (nonblank(res)) then begin
+      res = res & LangNrr.DeciPart & " ";
+    end;
+    res = res & decstr;
+  end;
+
+  res = StrReplace(res,"  "," ");
+  res = StrReplace(res,"  "," ");
+  StripLeadingSpaces(res);
+  StripEndingSpaces(res);
+
+  AgreementValToText = res;
   return;
 end;

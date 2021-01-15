@@ -419,3 +419,32 @@ begin
   GetCredHistOpenValue = res;
   return;
 end;
+
+global
+function val GetCredHistOpenValueOnDate(Longint sernr,Date td)
+begin
+  record CredHistVc CredHistr,CredPayr;
+  val res;
+  Boolean TrHs;
+
+  CredHistr.SerNr = sernr;
+  if (ReadFirstMain(CredHistr,1,true)) then begin
+    res = CredHistr.Sum;
+    TrHs = true;
+    CredPayr.PreviousNr = CredHistr.SerNr;
+    while (LoopKey("PreviousNr",CredPayr,1,TrHs)) begin
+      if (CredPayr.PreviousNr!=CredHistr.SerNr) then begin
+        TrHs = false;
+      end else begin
+        if (CredPayr.TransDate<=td) then begin
+          if (CredPayr.RecordType==1 or CredPayr.RecordType==2 or CredPayr.RecordType==3) then begin
+            res = res - CredPayr.Sum;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  GetCredHistOpenValueOnDate = res;
+  return;
+end;

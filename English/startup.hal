@@ -46,11 +46,17 @@ begin
   Setting("Leasing Agreements",CredMan3LClass,modCredMan);
   Setting("Invega Fund Report Settings",InvegaReportTClass,modCredMan);
   Setting("Agreement Type Accounts",CredManAccLClass,modCredMan);
+  Setting("Date in Text",CMDateTextTClass,modSY);
+  Setting("Printout Constants",CMPrintConstantsTClass,modCredMan);
   
+  Setting("Payment Condition Text",PaymentConditionTextWClass,modCredMan);
+  Setting("Other Condition Text",PaymentConditionTextWClass,modCredMan);
+
+
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
 	Report("Application Overview",LoanApplicationListRClass,LoanApplicationListRn,0,modCredMan);
-	Report("Invega Fund Report",InvegaFundRClass,InvegaFundRn,0,modCredMan);
+	Report("Governmental Fund Report",InvegaFundRClass,InvegaFundRn,0,modCredMan);
 
 	Report("Income Analysis",EBSIncomeAnalysisRClass,EBSIncomeAnalysisRn,0,modCredMan);
 	Report("Income Forecast",CMIncomeForecastRClass,CMIncomeForecastRn,0,modCredMan);
@@ -66,6 +72,8 @@ begin
   Maintenance("Generate Agreement Schedules",CreateCredManScheduleVClass,CreateCredManScheduleMn,modCredMan);
   Maintenance("Create Mails from Schedules",SendScheduleEmailsVClass,SendScheduleEmailsMn,modCredMan);
   Maintenance("Generate Agreement Changes",CreateCredManChangeVClass,CreateCredManChangeMn,modCredMan);
+
+  Maintenance("Account Balance Transfer",CMBalanceTransferVClass,CMBalanceTransferMn,modCredMan);
 
   Maintenance("Recreate Invoices with Prolong months",CredManRecreateDocsVClass,CredManRecreateDocsMn,modCredMan);
 
@@ -192,6 +200,13 @@ begin
 
   SString(200108,"These Changes require Server Restart");
   SString(200109,"Can't pause becauce there is an Invoice already created");
+  SString(200110,"Wrong Type for Credit Limit");
+  SString(200111,"Amount covers only due Invoices. Nothing left for Buyout");
+  SString(200112,"Credit Limit reached");
+  SString(200113,"Payment Date later than Disburse Until Date");
+  SString(200114,"Bill of Exchange");
+  SString(200115,"Invoice already created with Number ");
+  SString(200116,"Importing of Bank Account Statement from an unrecognized Account is not allowed");
 
 /*Web Codes 200200-200230*/
   SString(200200,"Banner with this type already registered in these days");
@@ -253,6 +268,10 @@ begin
   SString(200270,"Schedule Type");
   SString(200271,"Can't update becauce there is an Invoice already created");
   SString(200272,"Agreement schedule is not matching with Fixed schedule");
+  SString(200273,"Schedule doesn't exist");
+  SString(200274,"Date can't be blank or earlier than last Invoice Date");
+  SString(200275,"Netaikomas");
+  SString(200276,"proc.");
 
 /*CreditAgreementsRn*/
   SString(200280,"Credit Agreements");
@@ -405,11 +424,13 @@ begin
   SetText(2,"Prepayment");
   SetText(3,"Credit Note");
   SetText(4,"Partial Buy-out");
+  SetText(5,"Made Payment");
   EndSet;
 
   SetBegin(2012);
   SetText(0,"Invoice");
   SetText(1,"Due Invoice");
+  SetText(2,"Oldest Overdue Invoice");
   EndSet;
 
   SetBegin(2013);
@@ -517,6 +538,13 @@ begin
   SetBegin(2030);
   SetText(0,"First");
   SetText(1,"Second");
+  EndSet;
+
+  SetBegin(2031);
+  SetText(3,"Bullet Loan");
+  if (ISb.ShowLoanType6==1) then begin
+    SetText(6,"Balloon");
+  end;
   EndSet;
 
   return;

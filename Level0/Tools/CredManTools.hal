@@ -328,6 +328,7 @@ begin
     end;
     CredManr.Classifications = CredManTyper.Classifications;
     CredManr.AnnualRate = CredManTyper.AnnualRate;
+    CredManr.UseCompensationInvoices = CredManTyper.UseCompensationInvoices;
 //CUST-END
     AddCredManTypeMatrix(CredManr,CredManTyper);
     if (CredManr.DepositSum==0) then begin

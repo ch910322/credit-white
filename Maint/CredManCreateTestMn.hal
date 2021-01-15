@@ -20,7 +20,7 @@ begin
 
   if (RepSpec.long1>0) then begin
     CredManr.SerNr = RepSpec.long1;
-
+    BlockLoad(CredManSetb);
     if (ReadFirstMain(CredManr,1,true)) then begin
       if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
         BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
@@ -31,10 +31,13 @@ begin
       CredManTestr.TransDate = CredManr.TransDate;
       CredManTestr.Type = CredManr.Type;
       CredManTestr.CustCode = CredManr.CustCode;
+      CredManTestr.BasedOn = CredManr.SerNr;
 
       CredManTestr.IntRate = CredManr.IntRate;
       CredManTestr.Months = CredManr.InstalmentMonths;
       CredManTestr.startDate = CredManr.startDate;
+      CredManTestr.MoneyTransferDate = CredManr.MoneyTransferDate;
+      
       CredManTestr.PrincipleDelayMonths = CredManr.PrincipleDelayMonths;
       CredManTestr.PrincipleDelayInterest = CredManr.PrincipleDelayInterest;
       CredManTestr.MaxMonthlyPayment = CredManr.MaxMonthlyPayment;

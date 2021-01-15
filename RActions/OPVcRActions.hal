@@ -1,6 +1,13 @@
 //<halrule>server-only</halrule>
 external updating procedure UpdateFactoringInvoicePayment(record OPVc,Boolean);
 external updating procedure UpdatePmtGrntReportPayment(record OPVc,Boolean);
+external updating procedure CreateCredHist(Longint,Integer,string,val,Integer,string,Date,Longint,Date,var Longint,Date,Date,Integer,Longint,val,Longint,val);
+external updating procedure UpdateCredHistBalance(Longint,Longint,Integer);
+external updating procedure RemoveCredHist(Longint,Integer);
+external function Integer GetInterestPaymentType(record CredManVc);
+external function Boolean AgreementPaidOut(record CredManVc,var val);
+external procedure GenerateAgreementSchedule(record CredManVc,Boolean,Boolean);
+external function Boolean UseDisburseUntil();
 
 updating procedure UpdateCredManPaymentDate(record OPVc OPr)
 begin
@@ -8,8 +15,13 @@ begin
   row OPVc OPrw;
   record CredManVc CredManr,oldCredManr;
   record CMInvoicingBlock CIb;
-  Boolean updf;
+  Boolean updf,checkf;
   record APVc APr;
+  record VIVc VIr;
+  Longint histnr,credmannr;
+  Integer int_type;
+  record CredManSchedVc CSr;
+  val paidval;
 
   BlockLoad(CIb);
   rwcnt = MatRowCnt(OPr);
@@ -23,16 +35,47 @@ begin
           updf = false;
         end;
       end;
+      VIr.SerNr = OPrw.VISerNr;
+      if (ReadFirstMain(VIr,1,true)) then begin
+        CredManr.SerNr = VIr.CustCredManNr;
+        if (VIr.CustCredManNr>-1) then begin
+          credmannr = VIr.CustCredManNr;
+          if (ReadFirstMain(CredManr,1,true)) then begin
+            int_type = GetInterestPaymentType(CredManr);
+            if (int_type==2) then begin
+              CreateCredHist(OPr.SerNr,18,VIr.VECode,OPrw.RecVal,5,"",OPr.TransDate,VIr.CustCredManNr,OPr.TransDate,histnr,"","",1,-1,OPrw.RecVal,-1,blankval);
+              UpdateCredHistBalance(VIr.CustCredManNr,OPr.SerNr,5);
+              updf = true;
+              checkf = true;
+            end;
+          end;
+
+        end;
+      end;
       if (updf) then begin
         ResetLoop(CredManr);
-        CredManr.VINr = OPrw.VISerNr;
-        if (ReadFirstKey("VINr",CredManr,1,true)) then begin
+        CredManr.SerNr = credmannr;
+        if (ReadFirstMain(CredManr,1,true)) then begin
           RecordCopy(oldCredManr,CredManr);
-          if (CIb.MoneyTransferDateOP==1) then begin
-            CredManr.MoneyTransferDate = OPr.PayDate;
+          if (int_type==1) then begin
+            if (blank(CredManr.MoneyTransferDate)) then begin
+              CredManr.MoneyTransferDate = OPr.PayDate;
+            end;
           end;
-          CredManr.Status = 4;
+          if (int_type==2) then begin
+            AgreementPaidOut(CredManr,paidval);
+            if (paidval==CredManr.InvSum4) then begin
+              CredManr.MoneyTransferDate = OPr.PayDate;
+            end;
+          end;
+          if (int_type<2 or APr.RVal==0) then begin
+            CredManr.Status = 4;
+          end;
           RecordUpdate(oldCredManr,CredManr,true);
+          CSr.CredManNr = CredManr.SerNr;
+          if (ReadFirstMain(CSr,1,true)) then begin
+            threadasync.GenerateAgreementSchedule(CredManr,true,int_type==2);
+          end;
         end;
       end;
     end;
@@ -56,11 +99,65 @@ BEGIN
   if (OPr.DoneFlag==0 and OP2r.DoneFlag==1) then begin
     UpdateFactoringInvoicePayment(OPr,false);
     UpdatePmtGrntReportPayment(OPr,false);
+    RemoveCredHist(OPr.SerNr,5);
   end;
 
   OPVcRecordUpdateAfter = res;
   return;
 end;
+
+function Boolean DisburseIsLate(record OPVc OPr,var Integer rownr)
+begin
+  Integer i,rwcnt;
+  row OPVc OPrw;
+  record VIVc VIr;
+  record CredManVc CredManr;
+  Boolean res;
+
+  rwcnt = MatRowCnt(OPr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(OPr,i,OPrw);
+    VIr.SerNr = OPrw.VISerNr;
+    if (ReadFirstMain(VIr,1,true)) then begin
+      if (VIr.CustCredManNr>-1) then begin
+        CredManr.SerNr = VIr.CustCredManNr;
+        if (ReadFirstMain(CredManr,1,true)) then begin
+          if (nonblank(CredManr.DisburseUntil) and CredManr.DisburseUntil<OPr.TransDate) then begin
+            res = true;
+            rownr = i;
+            i = rwcnt;
+          end;
+        end;
+      end;
+    end;
+  end;  
+
+  DisburseIsLate = res;
+  return;
+end;
+
+global
+updating function LongInt OPVcRecordCheck(var record OPVc OPr,record OPVc OP2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  Integer rownr;
+
+  res = 0;
+  if (UseDisburseUntil) then begin
+    if (DisburseIsLate(OPr,rownr)) then begin
+      RecordCheckError(200113,"",rownr,"VISerNr");
+      res = -1;
+      goto LOPVcRecordCheck;
+    end;
+  end;
+
+  res = inner.OPVcRecordCheck(OPr,OP2r,stat,long4);
+
+LOPVcRecordCheck:;
+  OPVcRecordCheck = res;
+  return;
+end;
+
 
 global
 updating function LongInt OPVcRecordSaveAfter(var record OPVc OPr,record OPVc OP2r,LongInt stat,LongInt long4)

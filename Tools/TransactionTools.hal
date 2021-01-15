@@ -4,11 +4,15 @@ external function Integer GetItemPriority(Longint,string);
 external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 external function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc,record CredManSetBlock,var record SMVc);
+external inner function LongInt DateDiff(Date,Date);
+external function val GetCredHistOpenValue(Longint);
+external inner function LongInt MonthDiff(Date,Date);
+external function val GetCredHistOpenValueOnDate(Longint,Date);
 
 
 
 global
-function string 255 CM_GetCredManTypeSalesItemAccount(Longint sernr,string artcode,string fallback,Boolean debitf)
+function string 255 CM_GetCredManTypeSalesItemAccount(record IVVc IVr,row IVVc IVrw,string fallback,Boolean debitf)
 begin
   record CredManVc CredManr;
   record CredManAccVc CredManAccr;
@@ -16,23 +20,44 @@ begin
   string 255 res;
   Integer i,rwcnt;
   record CMInvoicingBlock CIb;
+  record CUVc CUr;
+  transaction Boolean gCreditSellerf;
+  transaction string 255 gCreditSellerAccount;
+  record CredManSetBlock CMb;
 
   BlockLoad(CIb);
+  BlockLoad(CMb);
   if (CIb.UseTypeAccounts==1) then begin
-    CredManr.SerNr = sernr;
+    CredManr.SerNr = IVr.CustCredManNr;
     if (ReadFirstMain(CredManr,1,true)) then begin
-      CredManAccr.CredManType = CredManr.Type;
-      if (ReadFirstMain(CredManAccr,1,true)) then begin
-        rwcnt = MatRowcnt(CredManAccr);
-        for (i=0;i<rwcnt;i=i+1) begin
-          MatRowGet(CredManAccr,i,CredManAccrw);
-          if (CredManAccrw.ArtCode==artcode) then begin
-            if (debitf) then begin
-              res = CredManAccrw.DebitAcc;
-            end else begin
-              res = CredManAccrw.CreditAcc;
+      if (debitf) then begin
+        CUr.Code = IVr.CustCode;
+        if (ReadFirstMain(CUr,1,true)) then begin
+          if (nonblank(CUr.DebtorsAcc)) then begin
+            res = CUr.DebtorsAcc;
+          end;
+        end;
+      end else begin
+        if (gCreditSellerf) then begin
+          if (IVrw.ChargeType!=1 and IVrw.ArtCode!=CMb.InstalmentItem) then begin
+            res = gCreditSellerAccount;
+          end;
+        end;
+      end;
+      if (blank(res)) then begin
+        CredManAccr.CredManType = CredManr.Type;
+        if (ReadFirstMain(CredManAccr,1,true)) then begin
+          rwcnt = MatRowcnt(CredManAccr);
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(CredManAccr,i,CredManAccrw);
+            if (CredManAccrw.ArtCode==IVrw.ArtCode) then begin
+              if (debitf) then begin
+                res = CredManAccrw.DebitAcc;
+              end else begin
+                res = CredManAccrw.CreditAcc;
+              end;
+              i = rwcnt;
             end;
-            i = rwcnt;
           end;
         end;
       end;
@@ -91,17 +116,29 @@ end;
 
 
 global
-function string 255 CM_GetCredManTypePurchItemAccount(Longint sernr,string fallback,Boolean debitf)
+function string 255 CM_GetCredManTypePurchItemAccount(Longint sernr,Longint credmannr,string fallback,Boolean debitf)
 begin
   record CredManVc CredManr;
   record CredManAccVc CredManAccr;
   string 255 res;
   record CMInvoicingBlock CIb;
+  Boolean foundf;
 
   BlockLoad(CIb);
   if (CIb.UseTypeAccounts==1) then begin
-    CredManr.VINr = sernr;
-    if (ReadFirstKey("VINr",CredManr,1,true)) then begin
+    if (credmannr>0) then begin
+      CredManr.SerNr = credmannr;
+      if (ReadFirstMain(CredManr,1,true)) then begin
+        foundf = true;
+      end;
+    end else begin
+      CredManr.VINr = sernr;
+      if (ReadFirstKey("VINr",CredManr,1,true)) then begin
+        foundf = true;
+      end;
+    end;
+
+    if (foundf) then begin
       CredManAccr.CredManType = CredManr.Type;
       if (ReadFirstMain(CredManAccr,1,true)) then begin
         if (debitf) then begin
@@ -147,8 +184,38 @@ begin
 end;
 
 
+procedure GetPrincipleParts(record CredManVc CredManr,var val shortval,var val longval)
+begin
+  record CredManSetBlock CredManSetb;
+  record CredManPayPlanVc CredManPayPlanr;
+  record SMVc SMr;
+  row SMVc SMrw;
+  Integer curyear,i,rwcnt;
+
+  BlockLoad(CredManSetb);
+
+  if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+    BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+  end;
+
+  curyear = GetYear(CurrentDate);
+  rwcnt = MatRowCnt(SMr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(SMr,i,SMrw);
+    if (GetYear(SMrw.TransDate)==curyear) then begin
+      shortval = shortval + SMrw.DebVal;
+    end else begin
+      longval = longval + SMrw.DebVal;
+    end;
+  end;
+
+  return;
+end;
+
+
 global
-function string 255 CM_GetTransactionControlAcc(record CredManVc CredManr,string fallback)
+procedure CM_GetTransactionControlAcc(record CredManVc CredManr,var string shortacc,var string longacc)
 begin
   record CredManAccVc CredManAccr;
   string 255 res;
@@ -158,33 +225,49 @@ begin
   if (CIb.UseTypeAccounts==1) then begin
     CredManAccr.CredManType = CredManr.Type;
     if (ReadFirstMain(CredManAccr,1,true)) then begin
-      res = CredManAccr.ControlAcc;
+      shortacc = CredManAccr.ControlAccShort;
+      longacc = CredManAccr.ControlAccLong;
+    end;
+  end;
+  
+  return;
+end;
+
+global
+function string 255 AddCMTransactionControlAccounts(record CredManVc CredManr,var string shortacc,var string longacc,var val shortval,var val longval)
+begin
+  record CMInvoicingBlock CIb;
+
+  BlockLoad(CIb);
+  if (CIb.UseTypeAccounts==1) then begin
+    shortval = 0;
+    longval = 0;
+    GetPrincipleParts(CredManr,shortval,longval);
+    CM_GetTransactionControlAcc(CredManr,shortacc,longacc);
+  end;
+
+  return;
+end;
+
+global
+function string 255 CM_GetTransactionDebtorsAcc(record CredManVc CredManr,string fallback)
+begin
+  record CredManAccVc CredManAccr;
+  string 255 res;
+  record CMInvoicingBlock CIb;
+
+  BlockLoad(CIb);
+  if (CIb.UseTypeAccounts==1) then begin
+    CredManAccr.CredManType = CredManr.Type;
+    if (ReadFirstMain(CredManAccr,1,true)) then begin
+      res = CredManAccr.DebtorsAcc;
     end;
   end;
   if (blank(res)) then begin
     res = fallback;
   end;
   
-  CM_GetTransactionControlAcc = res;
-  return;
-end;
-
-global
-procedure CM_GetTransactionDebtorsAcc(record CredManVc CredManr,var string shortacc,var string longacc)
-begin
-  record CredManAccVc CredManAccr;
-  string 255 res;
-  record CMInvoicingBlock CIb;
-
-  BlockLoad(CIb);
-  if (CIb.UseTypeAccounts==1) then begin
-    CredManAccr.CredManType = CredManr.Type;
-    if (ReadFirstMain(CredManAccr,1,true)) then begin
-      shortacc = CredManAccr.DebtorsAccShort;
-      longacc = CredManAccr.DebtorsAccLong;
-    end;
-  end;
-  
+  CM_GetTransactionDebtorsAcc = res;
   return;
 end;
 
@@ -222,7 +305,7 @@ begin
       MatRowGet(tIVr,i,IVrw);
       InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
 
-      acc = CM_GetCredManTypeSalesItemAccount(IVr.CustCredManNr,IVrw.ArtCode,IVr.ARAcc,debitf);
+      acc = CM_GetCredManTypeSalesItemAccount(IVr,IVrw,IVr.ARAcc,debitf);
       sum = IVrw.Sum;
 
       if (IVr.InclVAT==0) then begin
@@ -242,47 +325,100 @@ begin
   return;
 end;
 
-procedure GetPrincipleParts(record CredManVc CredManr,var val shortval,var val longval)
+global
+function val GetCredManPeriodAmount(record IVVc IVr,val rowsum,Integer month)
 begin
-  record CredManSetBlock CredManSetb;
-  record CredManPayPlanVc CredManPayPlanr;
-  record SMVc SMr;
-  row SMVc SMrw;
-  Integer curyear,i,rwcnt;
+  Integer days1,days2,totdays;
+  val res;
+  Date sd,ed,td;
+  Integer cnt;
+  
 
-  BlockLoad(CredManSetb);
+  if (nonblank(IVr.CredFromDate)) then begin
+    totdays = DateDiff(IVr.CredToDate,IVr.CredFromDate)+1;
+    td = IVr.CredToDate;
+    cnt = 0;
+    td.Day = 1;
+    while (td>=IVr.CredFromDate or (GetYear(td)==GetYear(IVr.CredFromDate) and GetMonth(td)==GetMonth(IVr.CredFromDate))) begin
+      sd = td;
+      ed = td;
+      ed.Day = DaysInMonth(GetYear(sd),GetMonth(sd));
+      if (sd<IVr.CredFromDate) then begin
+        sd = IVr.CredFromDate;
+      end;
+      if (ed>IVr.CredToDate) then begin
+        ed = IVr.CredToDate;
+      end;
+      if (cnt==month) then begin
+        days2 = DateDiff(ed,sd)+1;
+        res = days2*rowsum/totdays;
+        goto LGetCredManPeriodAmount;
+      end;
 
-  if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
-    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
-    BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
-  end;
-
-  curyear = GetYear(CurrentDate);
-  rwcnt = MatRowCnt(SMr);
-  for (i=0;i<rwcnt;i=i+1) begin
-    MatRowGet(SMr,i,SMrw);
-    if (GetYear(SMrw.TransDate)==curyear) then begin
-      shortval = shortval + SMrw.DebVal;
-    end else begin
-      longval = longval + SMrw.DebVal;
+      td = AddMonth(td,-1);
+      cnt = cnt - 1;
     end;
   end;
 
+LGetCredManPeriodAmount:;
+  GetCredManPeriodAmount = res;
+  return;
+end;
+
+
+global
+function Boolean CheckInvoiceDebtorsAC(string acc,record IVVc IVr,var val rs)
+begin
+  Boolean res;
+  Integer i,rwcnt;
+  row IVVc IVrw;
+  string 255 ivacc;
+  
+  rs = 0;
+  res = false;
+  rwcnt = MatRowCnt(IVr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    ivacc = CM_GetCredManTypeSalesItemAccount2(IVrw.CredHistNr,IVr.ARAcc,true);
+    if (acc==ivacc) then begin
+      res = true;
+      rs = rs + GetCredHistOpenValue(IVrw.CredHistNr);
+    end;
+  end;
+
+  if (rs==0 and res) then begin
+    res = false;
+  end;
+
+  CheckInvoiceDebtorsAC = res;
   return;
 end;
 
 global
-procedure AddCMTransactionDebtorsAccounts(record CredManVc CredManr,var string shortacc,var string longacc,var val shortval,var val longval)
+function Boolean CheckInvoiceDebtorsACOnDate(string acc,record IVVc IVr,var val rs,Date td)
 begin
-  record CMInvoicingBlock CIb;
-
-  BlockLoad(CIb);
-  if (CIb.UseTypeAccounts==1) then begin
-    shortval = 0;
-    longval = 0;
-    GetPrincipleParts(CredManr,shortval,longval);
-    CM_GetTransactionDebtorsAcc(CredManr,shortacc,longacc);
+  Boolean res;
+  Integer i,rwcnt;
+  row IVVc IVrw;
+  string 255 ivacc;
+  
+  rs = 0;
+  res = false;
+  rwcnt = MatRowCnt(IVr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    ivacc = CM_GetCredManTypeSalesItemAccount2(IVrw.CredHistNr,IVr.ARAcc,true);
+    if (acc==ivacc) then begin
+      res = true;
+      rs = rs + GetCredHistOpenValueOnDate(IVrw.CredHistNr,td);
+    end;
   end;
 
+  if (rs==0 and res) then begin
+    res = false;
+  end;
+
+  CheckInvoiceDebtorsACOnDate = res;
   return;
 end;
+

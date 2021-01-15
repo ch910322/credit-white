@@ -13,7 +13,7 @@ external updating procedure AsyncSwedBankImportSTIn(area);
 external updating procedure AsyncSEBBankImportSTIn(area);
 external updating procedure AsyncLuminorImportSTIn(area);
 external updating procedure AsyncSiauliuImportSTIn(area);
-external procedure GetCustomerLoanAmounts(var record IPVc,var integer,string,var string,var val,string,boolean,string,string,var vector Boolean,Date);
+external updating procedure GetCustomerLoanAmounts(var record IPVc,var integer,string,var string,var val,string,boolean,string,string,var vector Boolean,Date);
 
 global function string 255 ConvertNameToSet(string name)
 begin
@@ -309,12 +309,11 @@ begin
   return;
 end;
 
-
 function Boolean ShouldAddInvoiceToIP(record IPVc IPr,record ARVc ARr,Date untildate,val remsum)
 begin
   Boolean res;
 
-  if (remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate) and CredManPMCodeMatches(IPr.PayMode,ARr.InvoiceNr,false)) then begin
+  if (remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate) and CredManPMCodeMatches(IPr.PayMode,ARr.InvoiceNr,false) and ARr.InvDate<=IPr.TransDate) then begin
     res = true;
   end;
 
@@ -322,7 +321,7 @@ begin
   return;
 end;
 
-global 
+global updating
 procedure BankFillIProws2(var record IPVc IPr,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,Boolean allf,Date untildate)
 begin
 	row IPVc IPrw;
@@ -747,7 +746,7 @@ begin
 return;
 end;
 
-global
+global updating
 procedure BankFillIProws(var record IPVc IPr,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,Boolean allf)
 begin
   

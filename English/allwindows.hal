@@ -58,6 +58,7 @@ external outer function Boolean CanEditCredManCreateDate();
 external outer function Boolean UseCredManStatus();
 external outer function Boolean HasPaymentWithoutRecons();
 external outer function Boolean SimplifiedSureties();
+external outer function Boolean HasSubordinations();
 external outer function Boolean UseBuyOutMonths();
 external outer function Boolean HideLeasingSeller();
 external outer function Boolean HideLoanPledges();
@@ -65,7 +66,13 @@ external outer function Boolean HasMoneyReceivers();
 remote function Boolean ExternalDocumentEnabled(string);
 remote outer function Boolean HasCredManChanges(record CredManVc);
 external outer function Boolean HasBillOfExchangeShort();
-
+external outer function Boolean HasSuretyPerson();
+external outer function Boolean HasPaymentConditionTexts();
+external outer function Boolean HasOtherConditionTexts();
+external outer function Boolean HasSuretyConditionTexts();
+external outer function Boolean UseDisburseUntil();
+external outer function Boolean UseCompensationInvoices();
+external outer function Boolean ShowToDisburse();
 //CUST-END
 
 window CUDClass:14
@@ -380,6 +387,9 @@ begin
   v = VATZoneButtonsLabelsENG(h5+30,v,170,16);
   Tile(tilenr,130,false,tilenr,AccAP); tilenr = tilenr + 1;
   EditField(h,v=6,80,"Creditor A/C",Normal,AccAP,false,AccSClass);
+//CUST-BEGIN
+  EditField(h,v+=vs,80,"Debitor A/C",Normal,DebtorsAcc,false,AccSClass);
+//CUST-END
   EditField(h,v+=vs,80,"Cost A/C",Normal,AccCost,false,AccSClass);
   EditField(h,v+=vs,80,"Cred. On Acc. A/C",Normal,OnAccAccAP,false,AccSClass);
   EditField(h,v+=vs,120,"Sales Tags/Objects",Normal,Objects,false,ObjSClass);
@@ -641,20 +651,15 @@ begin
   EndWindow;
 end;
 
-window CredManDClass:1
-  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+procedure CredManWindow(Integer type)
 begin
   real h,h2,h3,h4,t,v,vm,vs,th;
-  string 255 label1,label2,label3,label4,label5;
-  record CredManVc CredManr;
-  Integer type,n;
+  string 255 label1,label2,label3,label4,label5,wstr;
+  Integer n;
   Boolean statusf;
   record CMInterfaceSetBlock ISb;
+  Integer tilenr;
 
-  if (CurWindow>0) then begin
-    GetWindowRecord(CurWindow,CredManr);
-    type = CredManr.LoanType;
-  end;
   BlockLoad(ISb);
 
   if (UseCredManStatus) then begin
@@ -663,11 +668,15 @@ begin
   end else begin
     n = -40;
   end;
-
-  WindowBegin("Credit Agreement",CredManDClass,CGview,-);
+  wstr = "CredManDClass";
+  if (type>0) then begin
+    wstr = "CredMan" & type & "DClass";
+  end;
+  
+  WindowBegin("Credit Agreement",wstr,CGview,-);
   SetWRect(20,80,940,500);
   Sizeable(-1,-1,0,0);
-  DynamicWindow;
+  //DynamicWindow;
   UseView(CredManVc);
   FormName(CredManForm);
   h = 120; h2 = 320; h3 = 550; h4 = 780; vs = 20;
@@ -676,10 +685,17 @@ begin
 //CUST-BEGIN
   EditField(h+90,v,50,"",ViewOnly,VersionNo,false,0);
   EditField(h2,v,150,"Legal No.",Normal,OfficialSerNr,false,CredLegalNrSerNrSClass);
-  if (HasCredManChanges(CredManr)) then begin
-    ColourPushButton(h3,v+3,h3+100,v+23,"CredManDClassOpenChanges","Agr. Changes",kButtonColourGreen);
-  end else begin
+  //if (HasCredManChanges(CredManr)) then begin
+  //  ColourPushButton(h3,v+3,h3+100,v+23,"CredManDClassOpenChanges","Agr. Changes",kButtonColourGreen);
+  //end else begin
+    CheckBox(h3-30,v+3,0,"",HasChanges);
     HalPushButton(h3,v+3,h3+100,v+23,"CredManDClassOpenChanges","Agr. Changes");    
+  //end;
+  if (HasPaymentConditionTexts) then begin
+    HalPushButton(h3+110,v+3,h3+210,v+23,"CredManDClassOpenPaymentConditions","Paym. Condition");    
+  end;
+  if (HasOtherConditionTexts) then begin
+    HalPushButton(h3,v+26,h3+100,v+46,"CredManDClassOpenOtherConditions","Other Conditions");    
   end;
 //CUST-END
   EditField(h,v+=vs,82,"Type",Normal,Type,false,CredManTypeSClass);
@@ -720,7 +736,7 @@ begin
   if (type!=4 and type!=5) then begin
     EditField(h,v+=vs,30,"Months",Normal,InstalmentMonths,false,0);
   end;
-  if (type==1 or type==4 or type==5) then begin
+  if (type==1 or type==4 or type==5 or type==7 or type==8) then begin
     EditField(h,v+=vs,30,"Monthly Paym. Day",Normal,MonthlyPaymentDay,false,0);
   end;
 //CUST-BEGIN
@@ -738,7 +754,7 @@ begin
     end;
   end;
   th = h;
-  if (type==1 or type==3) then begin
+  if (type==1 or type==3 or type==7 or type==8) then begin
     if (type==3 or HideLoanPledges==false) then begin
       HalPushButton(h-50,v+=vs,h+70,v+20,"CredManDClassOpenProperties","Pledges");
       th = h + 140;
@@ -770,6 +786,9 @@ begin
 //CUST-END
   EditField(h2,v+=vs,82,"End Date",ViewOnly,endDate,false,PasteCurDate);
 //CUST-BEGIN
+  if (UseDisburseUntil) then begin
+    EditField(h2,v+=vs,82,"Disburse Until",Normal,DisburseUntil,false,PasteCurDate);
+  end;
   if (CanEditCredManCreateDate) then begin
     EditField(h2,v+=vs,82,"Agreement Date",Normal,TransDate,false,PasteCurDate);
   end else begin
@@ -793,7 +812,11 @@ begin
   if (UseBuyOutMonths) then begin
     EditField(h3,v+=vs,72,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
   end else begin
-    EditField(h3,v+=vs,72,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
+    if (type==7 or type==8) then begin
+      EditField(h3,v+=vs,72,"Not Used Amount Fee %",Normal,BuyoutFeePrc,true,0);
+    end else begin
+      EditField(h3,v+=vs,72,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
+    end;
     EditField(h3,v+=vs,72,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
   end;
 
@@ -809,7 +832,7 @@ begin
   if (statusf) then begin
     v = v + vs;
   end;
-  if (type!=4 and type!=5) then begin
+  if (type!=4 and type!=5 and type!=7) then begin
     EditField(h4,v+=vs,-40,"Max Monthly Payment",Normal,MaxMonthlyPayment,true,0);
 //CUST-BEGIN
     if (type==2 or type==3) then begin
@@ -819,7 +842,7 @@ begin
     end;
   end;
 //CUST-END
-  if (type!=4 and type!=5) then begin
+  if (type!=4 and type!=5 and type!=7) then begin
     EditField(h4,v+=vs,-40,"Princ. Delay Months",Normal,PrincipleDelayMonths,false,0);
     EditField(h4,v+=vs,-40,"Princ. Delay Interest %",Normal,PrincipleDelayInterest,false,0);
   end;
@@ -861,7 +884,13 @@ begin
   TileButton(4,"Terms");
 //CUST-BEGIN
   TileButton(5,"Surety");
-  TileButton(6,"Bill of Exchange");
+  tilenr = 6;
+  if (SimplifiedSureties) then begin
+    TileButton(tilenr,"Bill of Exchange");tilenr = tilenr + 1;
+  end;
+  if (HasSubordinations) then begin
+    TileButton(tilenr,"Subordination"); tilenr = tilenr + 1;
+  end;
 /*
   if (type!=1 and type!=2 and type!=3 and type!=4 and type!=5) then begin
     TileButton(6,"Factoring");
@@ -888,20 +917,23 @@ begin
   HalPushButton(230,-47,280,-27,"CredManDClassSignAgreement","Open");
   HalPushButton(230,-25,280,-5,"CredManDClassSignSchedule","Open");
 
-  if (SimplifiedSureties==false) then begin
+  if (SimplifiedSureties) then begin
+    CheckBox(285,-41,0,"Bill of Exchange signed",SignVekselis);
+    HalPushButton(430,-47,480,-5,"CredManDClassSignVekselis","Open");
+    if (ShowToDisburse) then begin
+      SoftEditField(410,-21,70,"Not disbursed",ViewOnly,"topayout",true,0,M4Val,0);
+    end;
+  end else begin
     CheckBox(285,-41,0,"Surety signed",SignSurety);
-  end;
-  CheckBox(285,-21,0,"Bill of Exchange signed",SignVekselis);
-
-  if (SimplifiedSureties==false) then begin
     HalPushButton(430,-47,480,-27,"CredManDClassSignSurety","Open");
+    CheckBox(285,-21,0,"Bill of Exchange signed",SignVekselis);
+    HalPushButton(430,-25,480,-5,"CredManDClassSignVekselis","Open");
   end;
-  HalPushButton(430,-25,480,-5,"CredManDClassSignVekselis","Open");
 
   if (GuiType==kGuiWPF) then begin
     RecordList2(10,10,-30,-52,"CredHistVc");//CUST CredManEventVc >> CredManHistVc  
   end else begin
-    RecordList2(10,10,-30,-82,"CredHistVc");//CUST CredManEventVc >> CredManHistVc
+    RecordList2(10,10,-30,-85,"CredHistVc");//CUST CredManEventVc >> CredManHistVc
   end;
   RlColKey(4,4,"Date",TransDate,false,CredManTransDate);
   RlCol(100,100,"Due Date",PayDate,false);
@@ -923,8 +955,10 @@ begin
   MatCol(t,-140,"%",0,vRebate,true,0);
   MatCol(t,-100,"Sum",0,Sum,true,0);
   Flip(2);
-  MatCol(t,-300,"Invoice No.",0,InvoicedOn,false,0);
-  MatCol(t,-200,"Invoiced Sum",0,InvoicedSum,true,0);
+  //MatCol(t,-400,"Invoice No.",0,InvoicedOn,false,0);
+  //MatCol(t,-300,"Invoiced Sum",0,InvoicedSum,true,0);
+
+  MatCol(t,-200,"Invoice Date",0,InvDate,true,PasteCurDate);
   MatCol(t,-100,"Sum",0,Sum,true,0);
 //CUST-BEGIN
   Flip(3);
@@ -970,6 +1004,8 @@ begin
 //  EditField(h,v+=vs,40,"Interest Free Days",Normal,FreeDays,false,0);
   EditField(h,v+=vs,40,"Settlement Months",Normal,SettleLimit,false,0);
   EditField(h,v+=vs,100,"Classifications",Normal,Classifications,false,CredManClassSClass);
+  EditField(h,v+=vs,150,"Cancellation Date",Normal,CancelDate,false,PasteCurDate);
+  EditField(h,v+=vs,100,"Max overpaid Amt %",Normal,MaxOverpaidPrc,false,0);
 
 //CUST-BEGIN
   if (type!=2 and type!=3) then begin
@@ -979,7 +1015,10 @@ begin
   EditField(h2,v=vm-20,-40,"Bank Code",Normal,BankCode,false,BankSClass);
   EditField(h2,v+=vs,-40,"Bank Name",Normal,BankName,false,0);
   EditField(h2,v+=vs,-40,"Bank Account",Normal,BankAccount,false,BankAccountSClass);
-  CheckBox(h2,v+=20,0,"Last Principle Value adds last Calculated value",LastPrincipleWithExtraMonth);
+  CheckBox(h2,v+=20,0,"Remaining principle including Last Months Principle",LastPrincipleWithExtraMonth);
+  if (UseCompensationInvoices) then begin
+    CheckBox(h2,v+=16,0,"Use Compensation, not Overdue",UseCompensationInvoices);
+  end;
   vm = v+40;
 //CUST-END
   ButtonFrame(h2,v=vm,150,2,"Late Interest Based On");
@@ -987,9 +1026,11 @@ begin
   RadioButton(h2,v+=16,1,0,"Trans. Date",LateRateOption);
 
   if (ISb.ShowRealInterestFlag) then begin
-    ButtonFrame(h2,v+=40,150,2,"Int. based on Money Trans.");
-    RadioButton(h2,v,0,0,"No",RealInterestFlag);
-    RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
+    ButtonFrame(h2,v+=40,150,4,"Int. based on Money Trans.");
+    RadioButton(h2,v,0,0,"Default",RealInterestFlag);
+    RadioButton(h2,v+=16,1,0,"Start Date",RealInterestFlag);
+    RadioButton(h2,v+=16,2,0,"Full Disbursement",RealInterestFlag);
+    RadioButton(h2,v+=16,3,0,"Each Disbursement",RealInterestFlag);
   end;
   if (ISb.UseCredManDaysInMonth) then begin
     ButtonFrame(h2,v+=40,82,3,"Days in Month");
@@ -1006,7 +1047,6 @@ begin
 
 //CUST-BEGIN
   CheckBox(h2,v+=30,0,"No Overdue Fees",SkipOverDue);
-
   
   ButtonFrame(h3=h2+120,v=vm,100,6,"Type");
   RadioButton(h3,v,0,0,"Not set",LoanType);
@@ -1027,6 +1067,12 @@ begin
   end;
   if (ISb.ShowLoanType6==1) then begin
     RadioButton(h3,v+=16,6,0,"Balloon",LoanType);
+  end;
+  if (ISb.ShowLoanType7==1) then begin
+    RadioButton(h3,v+=16,7,0,"Credit Line",LoanType);
+  end;
+  if (ISb.ShowLoanType8==1) then begin
+    RadioButton(h3,v+=16,8,0,"Credit Limit",LoanType);
   end;
   EndFrame;
   
@@ -1049,9 +1095,12 @@ begin
     EditField(h+270,v,80,"",Normal,Surety1Amount,true,0);
     EditField(h+360,v,100,"",Normal,Surety1Signer,false,B2BLoanApp_ContactSClass);
     EditField(h+470,v,100,"",Normal,Surety1Position,false,JobTitleSClass);
-    EditField(h+580,v,100,"",Normal,Surety1OfficialSerNr,false,0);
-    CheckBox(h+730,v,0,"",Surety1Signed);
-    HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","1");
+    EditField(h+580,v,90,"",Normal,Surety1OfficialSerNr,false,0);
+    CheckBox(h+700,v,0,"",Surety1Signed);
+    HalPushButtonTag(h+730,v,h+790,v+20,"CredManDClassSignSuretySimplified","Open","1");
+    if (HasSuretyConditionTexts) then begin
+      HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassOpenConditions2","Cond.","1");
+    end;
     v = v + 30;
 
     EditField(h=50,v,60,"Surety 2",Normal,SuretyProvider2,false,B2BLoanApp_CUSClass);
@@ -1060,9 +1109,12 @@ begin
     EditField(h+270,v,80,"",Normal,Surety2Amount,true,0);
     EditField(h+360,v,100,"",Normal,Surety2Signer,false,B2BLoanApp_ContactSClass);
     EditField(h+470,v,100,"",Normal,Surety2Position,false,JobTitleSClass);
-    EditField(h+580,v,100,"",Normal,Surety2OfficialSerNr,false,0);
-    CheckBox(h+730,v,0,"",Surety2Signed);
-    HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","2");
+    EditField(h+580,v,90,"",Normal,Surety2OfficialSerNr,false,0);
+    CheckBox(h+700,v,0,"",Surety2Signed);
+    HalPushButtonTag(h+730,v,h+790,v+20,"CredManDClassSignSuretySimplified","Open","2");
+    if (HasSuretyConditionTexts) then begin
+      HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassOpenConditions2","Cond.","2");
+    end;
     v = v + 30;
 
     EditField(h=50,v,60,"Surety 3",Normal,SuretyProvider3,false,B2BLoanApp_CUSClass);
@@ -1071,9 +1123,12 @@ begin
     EditField(h+270,v,80,"",Normal,Surety3Amount,true,0);
     EditField(h+360,v,100,"",Normal,Surety3Signer,false,B2BLoanApp_ContactSClass);
     EditField(h+470,v,100,"",Normal,Surety3Position,false,JobTitleSClass);
-    EditField(h+580,v,100,"",Normal,Surety3OfficialSerNr,false,0);
-    CheckBox(h+730,v,0,"",Surety3Signed);
-    HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","3");
+    EditField(h+580,v,90,"",Normal,Surety3OfficialSerNr,false,0);
+    CheckBox(h+700,v,0,"",Surety3Signed);
+    HalPushButtonTag(h+730,v,h+790,v+20,"CredManDClassSignSuretySimplified","Open","3");
+    if (HasSuretyConditionTexts) then begin
+      HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassOpenConditions2","Cond.","3");
+    end;
     v = v + 30;
 
     EditField(h=50,v,60,"Surety 4",Normal,SuretyProvider4,false,B2BLoanApp_CUSClass);
@@ -1082,9 +1137,12 @@ begin
     EditField(h+270,v,80,"",Normal,Surety4Amount,true,0);
     EditField(h+360,v,100,"",Normal,Surety4Signer,false,B2BLoanApp_ContactSClass);
     EditField(h+470,v,100,"",Normal,Surety4Position,false,JobTitleSClass);
-    EditField(h+580,v,100,"",Normal,Surety4OfficialSerNr,false,0);
-    CheckBox(h+730,v,0,"",Surety4Signed);
-    HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","4");
+    EditField(h+580,v,90,"",Normal,Surety4OfficialSerNr,false,0);
+    CheckBox(h+700,v,0,"",Surety4Signed);
+    HalPushButtonTag(h+730,v,h+790,v+20,"CredManDClassSignSuretySimplified","Open","4");
+    if (HasSuretyConditionTexts) then begin
+      HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassOpenConditions2","Cond.","4");
+    end;
     v = v + 30;
 
     EditField(h=50,v,60,"Surety 5",Normal,SuretyProvider5,false,B2BLoanApp_CUSClass);
@@ -1093,9 +1151,12 @@ begin
     EditField(h+270,v,80,"",Normal,Surety5Amount,true,0);
     EditField(h+360,v,100,"",Normal,Surety5Signer,false,B2BLoanApp_ContactSClass);
     EditField(h+470,v,100,"",Normal,Surety5Position,false,JobTitleSClass);
-    EditField(h+580,v,100,"",Normal,Surety5OfficialSerNr,false,0);
-    CheckBox(h+730,v,0,"",Surety5Signed);
-    HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","5");
+    EditField(h+580,v,90,"",Normal,Surety5OfficialSerNr,false,0);
+    CheckBox(h+700,v,0,"",Surety5Signed);
+    HalPushButtonTag(h+730,v,h+790,v+20,"CredManDClassSignSuretySimplified","Open","5");
+    if (HasSuretyConditionTexts) then begin
+      HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassOpenConditions2","Cond.","5");
+    end;
     v = v + 30;
 
     EditField(h=50,v,60,"Surety 6",Normal,SuretyProvider6,false,B2BLoanApp_CUSClass);
@@ -1104,9 +1165,12 @@ begin
     EditField(h+270,v,80,"",Normal,Surety6Amount,true,0);
     EditField(h+360,v,100,"",Normal,Surety6Signer,false,B2BLoanApp_ContactSClass);
     EditField(h+470,v,100,"",Normal,Surety6Position,false,JobTitleSClass);
-    EditField(h+580,v,100,"",Normal,Surety6OfficialSerNr,false,0);
-    CheckBox(h+730,v,0,"",Surety6Signed);
-    HalPushButtonTag(h+770,v,h+870,v+20,"CredManDClassSignSuretySimplified","Open","6");
+    EditField(h+580,v,90,"",Normal,Surety6OfficialSerNr,false,0);
+    CheckBox(h+700,v,0,"",Surety6Signed);
+    HalPushButtonTag(h+730,v,h+790,v+20,"CredManDClassSignSuretySimplified","Open","6");
+    if (HasSuretyConditionTexts) then begin
+      HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassOpenConditions2","Cond.","6");
+    end;
     v = v + 30;
 
   end else begin
@@ -1161,9 +1225,9 @@ begin
     EditField(h3,v+=vs,130,label4,Normal,Surety3Addr3,false,0);
     EditField(h3,v+=vs,130,label5,Normal,Surety3Addr4,false,0);
   end;
-  
+  tilenr = 6;
   if (SimplifiedSureties) then begin
-    Tile(6,290,true,"6",BOE1Code); 
+    Tile(tilenr,290,true,"6",BOE1Code); tilenr = tilenr + 1;
   
     StaticText(h=40,v=15,"Contact Code",false);
     StaticText(h+110,v,"Name",false);
@@ -1229,6 +1293,63 @@ begin
 
   end;
 
+  if (HasSubordinations) then begin
+    Tile(tilenr,290,true,"6",Subordination1); tilenr = tilenr + 1;
+    StaticText(h=110,v=15,"Contact Code",false);
+    StaticText(h+110,v,"Name",false);
+    StaticText(h+200,v,"Amount",false);
+    StaticText(h+290,v,"Date",false);
+    StaticText(h+360,v,"Due Date",false);
+    StaticText(h+440,v,"Signing Pers.",false);
+    StaticText(h+550,v,"Position",false);
+    v = v + 30;
+
+    EditField(h=120,v,60,"Subordination 1",Normal,Subordination1,false,B2BLoanApp_CUSClass);
+    EditField(h+70,v,100,"",Normal,Subordination1Name,false,0);
+    EditField(h+180,v,70,"",Normal,Subordination1Amount,true,0);
+    EditField(h+260,v,70,"",Normal,Subordination1Date,false,PasteCurDate);
+    EditField(h+340,v,70,"",Normal,Subordination1DueDate,false,PasteCurDate);
+    EditField(h+420,v,100,"",Normal,Subordination1Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+530,v,80,"",Normal,Subordination1Position,false,JobTitleSClass);
+    v = v + 30;
+
+    EditField(h,v,60,"Subordination 2",Normal,Subordination2,false,B2BLoanApp_CUSClass);
+    EditField(h+70,v,100,"",Normal,Subordination2Name,false,0);
+    EditField(h+180,v,70,"",Normal,Subordination2Amount,true,0);
+    EditField(h+260,v,70,"",Normal,Subordination2Date,false,PasteCurDate);
+    EditField(h+340,v,70,"",Normal,Subordination2DueDate,false,PasteCurDate);
+    EditField(h+420,v,100,"",Normal,Subordination2Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+530,v,80,"",Normal,Subordination2Position,false,JobTitleSClass);
+    v = v + 30;
+
+    EditField(h,v,60,"Subordination 3",Normal,Subordination3,false,B2BLoanApp_CUSClass);
+    EditField(h+70,v,100,"",Normal,Subordination3Name,false,0);
+    EditField(h+180,v,70,"",Normal,Subordination3Amount,true,0);
+    EditField(h+260,v,70,"",Normal,Subordination3Date,false,PasteCurDate);
+    EditField(h+340,v,70,"",Normal,Subordination3DueDate,false,PasteCurDate);
+    EditField(h+420,v,100,"",Normal,Subordination3Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+530,v,80,"",Normal,Subordination3Position,false,JobTitleSClass);
+    v = v + 30;
+
+    EditField(h,v,60,"Subordination 4",Normal,Subordination4,false,B2BLoanApp_CUSClass);
+    EditField(h+70,v,100,"",Normal,Subordination4Name,false,0);
+    EditField(h+180,v,70,"",Normal,Subordination4Amount,true,0);
+    EditField(h+260,v,70,"",Normal,Subordination4Date,false,PasteCurDate);
+    EditField(h+340,v,70,"",Normal,Subordination4DueDate,false,PasteCurDate);
+    EditField(h+420,v,100,"",Normal,Subordination4Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+530,v,80,"",Normal,Subordination4Position,false,JobTitleSClass);
+    v = v + 30;
+
+    EditField(h,v,60,"Subordination 4",Normal,Subordination5,false,B2BLoanApp_CUSClass);
+    EditField(h+70,v,100,"",Normal,Subordination5Name,false,0);
+    EditField(h+180,v,70,"",Normal,Subordination5Amount,true,0);
+    EditField(h+260,v,70,"",Normal,Subordination5Date,false,PasteCurDate);
+    EditField(h+340,v,70,"",Normal,Subordination5DueDate,false,PasteCurDate);
+    EditField(h+420,v,100,"",Normal,Subordination5Signer,false,B2BLoanApp_ContactSClass);
+    EditField(h+530,v,80,"",Normal,Subordination5Position,false,JobTitleSClass);
+    v = v + 30;
+  end;
+
 /*
   if (type!=1 and type!=2 and type!=3 and type!=4 and type!=5) then begin//should just remove
     Tile(6,290,true,"6",LoanToValue); 
@@ -1258,15 +1379,17 @@ begin
   SpecialMenu("Open #NL# Transaction",'t',2,"OpenTRFromCredMan");
   //SpecialMenu("Open Subsystem Record",' ',3,"OpenSubsysCredManDsm");//CUST-REMOVED
 //CUST-BEGIN
-  SpecialMenu("Terminate Agreement",' ',4,"TerminateCredManDsm");
+//  SpecialMenu("Terminate Agreement",' ',4,"TerminateCredManDsm");
   SpecialMenu("Buy-out Agreement",' ',5,"BuyOutCredManDsm");
   SpecialMenu("Check Buy-out Value",' ',6,"CheckBuyoutValueWindowDsm");
   SpecialMenu("Customer Status",'e',7,"CUStatusCredManDsm");
   //SpecialMenu("Print Payment Schedule",' ',8,"PaymentScheduleCredManDsm");
-  SpecialMenu("Pause/prolong Agreement",' ',8,"PauseCredManDsm");
+  SpecialMenu("Register Agreement Changes",' ',8,"PauseCredManDsm");
   SpecialMenu("Credit Agreement Info",'I',0,"CredManInfoDsm");
   SpecialMenu("Refinance Agreement",' ',9,"RefinCredManDsm");
   SpecialMenu("Generate Schedule",' ',9,"CredManGenScheduleDsm");
+  SpecialMenu("Terminate",' ',9,"CredManTerminateDsm");
+  SpecialMenu("Sell Agreement",' ',9,"CredManSellDsm");
   
   
 //CUST-END
@@ -1284,6 +1407,80 @@ begin
 //CUST-END
   //SpecialMenu("Receipt",'r',1,"ReceiptCredManDsm");
   EndWindow;
+
+  return;
+end;
+
+window CredManDClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(0);
+
+end;
+
+window CredMan1DClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(1);
+
+end;
+
+window CredMan2DClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(2);
+
+end;
+
+window CredMan3DClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(3);
+
+end;
+
+window CredMan4DClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(4);
+
+end;
+
+window CredMan5DClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(5);
+
+end;
+
+window CredMan6DClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(6);
+
+end;
+
+window CredMan7DClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(7);
+
+end;
+
+window CredMan8DClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+
+  CredManWindow(8);
+
 end;
 
 window CredManTypeDClass:1
@@ -1300,6 +1497,7 @@ begin
   WindowBegin("Credit Agreement Type",CredManTypeDClass,CGview,-);
   SetWRect(20,80,750,380);//CUST 640>>750
   h = 150; h2 = 300; h3 = 440; v = 6; vs=20;
+  Sizeable(-1,-1,0,0);
   UseView(CredManTypeVc);
   //CUST-BEGIN
   h2 = 330;
@@ -1331,7 +1529,6 @@ begin
   EditField(h,v+=vs,40,"Days in Year",Normal,DaysInYear,false,0);
   if (UseBuyOutMonths) then begin
     EditField(h2,v,82,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
-    v = v - 20;
   end else begin
     EditField(h2,v,82,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
   end;
@@ -1349,16 +1546,19 @@ begin
     EditField(h,v+=vs,150,"Pause Offset Days",Normal,PauseOffsetDays,false,0);
   end;
   EditField(h,v+=vs,100,"Default Item Priority",Normal,ItemPriorityCode,false,CMItemPrioritySCLass);  
-  CheckBox(h,v+=16,0,"Last Principle Value adds last Calculated value",LastPrincipleWithExtraMonth);
+  CheckBox(h,v+=16,0,"Remaining principle including Last Months Principle",LastPrincipleWithExtraMonth);
   CheckBox(h,v+=16,0,"Annual Rate",AnnualRate);
+  CheckBox(h,v+=16,0,"Use Compensation, not Overdue",UseCompensationInvoices);
+
   CheckBox(h,v+=16,0,"Closed",Closed);
   vm2 = v;
   EditField(h2+150,v=vm-20,-40,"Minimum Overdue Fee",Normal,MinOverdueFee,false,0);
   vm = vm + 20;
-  ButtonFrame(h2,v=vm,270,2,"Interest according to Money Transfer Date");
-  RadioButton(h2,v,0,0,"No",RealInterestFlag);
-  RadioButton(h2,v+=16,1,0,"Yes",RealInterestFlag);
-
+  ButtonFrame(h2,v=vm,270,4,"Interest according to Money Transfer Date");
+  RadioButton(h2,v,0,0,"Default",RealInterestFlag);
+  RadioButton(h2,v+=16,1,0,"Start Date",RealInterestFlag);
+  RadioButton(h2,v+=16,2,0,"Full Disbursement",RealInterestFlag);
+  RadioButton(h2,v+=16,3,0,"Each Disbursement",RealInterestFlag);
   //CUST-END
   vm = v+40;
   ButtonFrame(h2,v=vm,150,2,"Late Interest Based On");
@@ -1400,6 +1600,12 @@ begin
   if (ISb.ShowLoanType6==1) then begin
     RadioButton(h3,v+=16,6,0,"Balloon",LoanType);
   end;
+  if (ISb.ShowLoanType7==1) then begin
+    RadioButton(h3,v+=16,7,0,"Credit Line",LoanType);
+  end;
+  if (ISb.ShowLoanType8==1) then begin
+    RadioButton(h3,v+=16,8,0,"Credit Limit",LoanType);
+  end;
   if (vm3+(3*16)>v) then begin
     v = vm3;
   end;
@@ -1439,7 +1645,7 @@ begin
 //CUST-BEGIN
   Tile(2,400,false,"2",CredManCEO1);
   v = 6;
-  h = 30;h2 = 170; h3 = 300; h4 = 400; h5 = 500; h6 = 620;
+  h = 30;h2 = 190; h3 = 320; h4 = 420; h5 = 510; h6 = 630;
   StaticText(h,v+13,"Credit Agreement",false);
   CheckBox(h2,v,0,"CEO not Surety",CredManCEO1);
   CheckBox(h3,v,0,"CEO Surety",CredManCEO2);
@@ -1448,12 +1654,32 @@ begin
   EditField(h6,v,40,"Language",Normal,CredManLangCode,false,LangSClass);
   
   v = v + vs;
-  StaticText(h,v+13,"Surety Agreement",false);
+  if (HasSuretyPerson) then begin
+    tstr = " - Company";
+  end;
+  StaticText(h,v+13,"Surety Agreement" & tstr,false);
   CheckBox(h2,v,0,"CEO not Surety",SuretyCEO1);
   CheckBox(h3,v,0,"CEO Surety",SuretyCEO2);
   CheckBox(h4,v,0,"Surety",SuretySurety);
   CheckBox(h5,v,0,"Us",SuretyUs);
   EditField(h6,v,40,"Language",Normal,SuretyLangCode,false,LangSClass);
+    if (SimplifiedSureties) then begin  
+      EditField(h6+60,v,40,"",Normal,SuretyLangCode2,false,LangSClass);
+    end;
+
+  v = v + vs;
+
+  if (HasSuretyPerson) then begin
+    StaticText(h,v+13,"Surety Agreement - Person",false);
+    CheckBox(h2,v,0,"CEO not Surety",SuretyPersonCEO1);
+    CheckBox(h3,v,0,"CEO Surety",SuretyPersonCEO2);
+    CheckBox(h4,v,0,"Surety",SuretyPersonSurety);
+    CheckBox(h5,v,0,"Us",SuretyPersonUs);
+    EditField(h6,v,40,"Language",Normal,SuretyPersonLangCode,false,LangSClass);
+    if (SimplifiedSureties) then begin  
+      EditField(h6+60,v,40,"",Normal,SuretyPersonLangCode2,false,LangSClass);
+    end;
+  end;
 
   v = v + vs;
   StaticText(h,v+13,"Schedule",false);
@@ -1463,6 +1689,7 @@ begin
   CheckBox(h5,v,0,"Us",ScheduleUs);
   EditField(h6,v,40,"Language",Normal,ScheduleLangCode,false,LangSClass);
 
+  tstr = "";
   if (HasBillOfExchangeShort) then begin
     v = v + vs;
     StaticText(h,v+13,"Bill of Exchange - short",false);
@@ -1471,6 +1698,9 @@ begin
     CheckBox(h4,v,0,"Surety",VekselisShortSurety);
     CheckBox(h5,v,0,"Us",VekselisShortUs);
     EditField(h6,v,40,"Language",Normal,VekselisShortLangCode,false,LangSClass);
+    if (SimplifiedSureties) then begin  
+      EditField(h6+60,v,40,"",Normal,VekselisShortLangCode2,false,LangSClass);
+    end;
     tstr = " - long";
   end;
   v = v + vs;
@@ -1480,11 +1710,18 @@ begin
   CheckBox(h4,v,0,"Surety",VekselisSurety);
   CheckBox(h5,v,0,"Us",VekselisUs);
   EditField(h6,v,40,"Language",Normal,VekselisLangCode,false,LangSClass);
+  if (SimplifiedSureties) then begin  
+    EditField(h6+60,v,40,"",Normal,VekselisLangCode2,false,LangSClass);
+  end;
 
   EditField(h2,v+=40,60,"Language",Normal,LangCode,false,LangSClass);
   EditField(h2,v+=vs,60,"First Invoice Language",Normal,LangCode2,false,LangSClass);
   EditField(h2,v+=vs,60,"Overdue Language",Normal,OverdueLangCode,false,LangSClass);
-
+  EditField(h2,v+=vs,60,"Buyout Language",Normal,BuyOutLangCode,false,LangSClass);
+  
+  if (UseCompensationInvoices) then begin
+    EditField(h2,v+=vs,60,"Compensation Language",Normal,CompensLangCode,false,LangSClass);
+  end;
   if (HasBillOfExchangeShort) then begin
     EditField(h2,v+=vs,40,"BoE Months Separator",Normal,VekselisShortMonths,false,0);
     EditField(h2,v+=vs,40,"BoE Extra Months",Normal,VekselisExtraMonths,false,0);
@@ -2503,6 +2740,9 @@ if (true) then begin
   if (HasLocalization("LTU")) then begin
     CheckBox(h3+130,v+=16,0,"Exclude from Exports",ExcludeFromExports);
   end;
+//CUST-BEGIN
+  CheckBox(h3+130,v+=16,0,"Don't include in Mass Emails",NoEmailFlag);
+//CUST-END
 //    CheckBox(h3,v+=16,0,"Including VAT",InclVAT);
   //  CheckBox(h3,v+=16,0,"E-Invoice Exported",EInvExpFlag);
   Tile(6,150,false,"6",PriceList); vs = 20; h3=550;
@@ -2941,6 +3181,8 @@ begin
     end;
 //CUST-BEGIN
     EditFieldTL(h,v,70,"Item",M4UStr,Normal,60,f14,false,INSClass);
+    v = v + 20;
+    EditFieldTL(h,v,150,"Agreement Nr.",M4UStr,Normal,200,f15,false,CredManSClass);
     v = v + 20;
 //CUST-END
     if (HasSalesman or HasSalesmanBonus) then begin

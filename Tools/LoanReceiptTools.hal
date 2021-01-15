@@ -9,15 +9,18 @@ external inner procedure IPVc_PasteRecCurncy(var record IPVc,Integer);
 external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
 external inner procedure IPVc_PasteBankCurncy(var record IPVc,Integer);
 external updating procedure CreateCredHist(Longint,Integer,string,val,Integer,string,Date,Longint,Date,var Longint,Date,Date,Integer,Longint,val,Longint,val);
-external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string,Boolean,Boolean);
+external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string,Boolean,Boolean,var Date);
 external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var record IVVc,Date,Date,Date,Boolean,Boolean,string,Integer,Boolean);
 external inner procedure IPPastePayMode(var record IPVc);
 external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val,array string);
-external procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
-external procedure SetupOverdueLangCode(var record IVVc,string);
+external updating procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
+external procedure SetupOverdueLangCode(var record IVVc,record CredManVc);
 external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
 external function Boolean CredManPMCodeMatches(string,Longint,Boolean);
-
+external procedure GetItemName(string,var string);
+external procedure SetupInvoiceRowAndAdd(record CredManVc,var record IVVc,string,string,val,val,val,Integer,Longint);
+external procedure GenerateAgreementSchedule(record CredManVc,Boolean,Boolean);
+external updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
 
 /*Invoicing tools*/
 function Boolean GetItemPriorityRecord(Longint credmannr,var record CMItemPriorityVc IPr)
@@ -266,8 +269,87 @@ begin
 end;
 
 /*main function*/
+function Boolean CredManAmountNotOverpaid(record CredManVc CredManr,val remsum)
+begin
+  Boolean res;
+  val maxamount;
+  
+  res = false;
+  if (CredManr.LoanType==8) then begin
+    if (CredManr.MaxOverpaidPrc>0) then begin
+      maxamount = CredManr.InvSum4*CredManr.MaxOverpaidPrc/100;
+      if (maxamount>remsum) then begin
+        res = true;
+      end;
+    end;
+  end;
 
-global
+  CredManAmountNotOverpaid = res;
+  return;
+end;
+
+updating procedure CheckAndRemoveCreditLineBalance(var record IPVc IPr,string cucode,var val remsum,Longint credmannr)
+begin
+  val chk;
+  Boolean installmentf;
+  record CredManVc CredManr;
+  Integer keylen,num;
+  Boolean TrHs;
+  record IVVc IVr;
+  record CredManSetBlock CMb;
+  string 255 spec;
+  record AgreementDocVc ADr;
+  row IPVc IPrw;
+  
+  BlockLoad(CMb);
+  CredManr.CustCode = cucode;
+  keylen = 1;
+  if (credmannr>0) then begin
+    CredManr.SerNr = credmannr;
+    keylen = 2;
+  end;
+  TrHs = true;
+  while (LoopKey("CustCode",CredManr,keylen,TrHs)) begin
+    if (CredManr.CustCode!=cucode) then begin
+      TrHs = false;
+    end;
+    if (credmannr>0 and credmannr!=CredManr.SerNr) then begin
+      Trhs = false;
+    end;
+    if (TrHs) then begin
+      if (CredManr.OKFlag==1 and CredManr.Approved==1 and (CredManr.LoanType==7 or CredManr.LoanType==8)) then begin
+        if (CredManAmountNotOverpaid(CredManr,remsum)) then begin//
+          goto LNext_CheckAndRemoveCreditLineBalance;
+        end;
+        SetupLoanInvoice(CredManr,CMb,IVr,IPr.TransDate,"","",true,false,"",1,true);
+        GetItemName(CMb.InstalmentItem,spec);
+        SetupInvoiceRowAndAdd(CredManr,IVr,CMb.InstalmentItem,spec,1,remsum,blankval,19,-1);
+        //CM_AddPrepayments(IVr,CredManr,CIb);
+        StoreLoanInvoice(IVr,CredManr);
+        ADr.RecordType = 0;
+        ADr.RecordNr = CredManr.SerNr;
+        ADr.Type = 2;
+        if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
+          GenerateAgreementSchedule(CredManr,true,true);
+          RecreateAgreementDocument(ADr,false);
+        end;
+
+        num = MatRowCnt(IPr);
+        ClearRow(IPr,IPrw,1);
+        IPrw.InvoiceNr = IVr.SerNr;
+        MatRowPut(IPr,num,IPrw);
+        PasteInvIn2IPr(IPr,num,IPr.TransDate,chk,false,installmentf);
+        TrHs = false;
+        remsum = 0;
+      end;
+LNext_CheckAndRemoveCreditLineBalance:;
+    end;
+  end;
+
+  return;
+end;
+
+global updating
 procedure GetCustomerLoanAmounts2(var record IPVc IPr,var integer k,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,var vector Boolean invused,Date untildate,Longint credmannr)
 begin
   record ORVc ORr;
@@ -290,7 +372,7 @@ begin
       TrHs = false;
     end else begin
       if (credmannr==-1 or credmannr==CredHistr.CredManNr) then begin
-        if (CredHistr.RecordType==0 and (blank(untildate) or CredHistr.TransDate<=untildate)) then begin
+        if (CredHistr.RecordType==0 and (blank(untildate) or CredHistr.TransDate<=untildate) and IPr.TransDate>=CredHistr.TransDate) then begin
           if (CredManPMCodeMatches(IPr.PayMode,CredHistr.RecordNr,false)) then begin
             priority = GetItemPriority(CredHistr.CredManNr,CredHistr.ArtCode);
             InsertCredHistInArray(CredHistr,arrORr,priority,IPr.TransDate);
@@ -332,12 +414,16 @@ begin
     end;
   end;
 
+  if (remsum>0) then begin
+    CheckAndRemoveCreditLineBalance(IPr,cucode,remsum,credmannr);
+  end;
+
 LGetCustomerLoanAmounts:;
   k = MatRowCnt(IPr);
   return;
 end;
 
-global
+global updating
 procedure GetCustomerLoanAmounts(var record IPVc IPr,var integer k,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,var vector Boolean invused,Date untildate)
 begin
 
@@ -554,13 +640,17 @@ function Date GetLastInvoiceDate(record CredManVc CredManr,Date td)
 begin
   Date res;
   record CredHistVc CredHistr;
+  record CMInvoicingBlock CIb;
 
+  BlockLoad(CIb);
   res = CredManr.FirstInvDate;
   CredHistr.TransDate = td;  
   while (LoopBackKey("CredManTransDate:" & CredManr.SerNr,CredHistr,2,true)) begin
     if (CredHistr.RecordType==0) then begin
-      res = CredHistr.TransDate;
-      goto LGetLastInvoiceDate;
+      if (CIb.OverdueIVType==0 or CredHistr.ChargeType==9) then begin
+        res = CredHistr.TransDate;
+        goto LGetLastInvoiceDate;
+      end;
     end;
   end;
 
@@ -586,9 +676,9 @@ begin
   record CredManSetBlock CMb;
   array string 255 lateformula;
   record CMInvoicingBlock CIb;
+  Date calcsd;
 
   PrepareIPRecord(SMr,IPr);
-
   BlockLoad(CMb);
   BlockLoad(CIb);
   rwcnt = MatRowCnt(SMr);
@@ -607,12 +697,12 @@ begin
           lateamount = 0;
           invdate = SMr.RegDate;
           sd = GetLastInvoiceDate(CredManr,SMr.RegDate);
-          GetCredManOverdueInvoices(CredManr,CMb,invdate,sd,latedays,lateamount,lateformula,true,false);
+          GetCredManOverdueInvoices(CredManr,CMb,invdate,sd,latedays,lateamount,lateformula,true,false,calcsd);
           if (latedays>0 or lateamount>0) then begin
             //Setup always new invoice
-            SetupLoanInvoice(CredManr,CMb,IVr,invdate,sd,invdate,true,false,"",2,true);
+            SetupLoanInvoice(CredManr,CMb,IVr,invdate,calcsd,invdate,true,false,"",2,true);
             AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
-            SetupOverdueLangCode(IVr,CredManr.Type);
+            SetupOverdueLangCode(IVr,CredManr);
             StoreLoanInvoice(IVr,CredManr);
           end;
         end;

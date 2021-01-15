@@ -1,6 +1,6 @@
 external function string 255 BPI_ParseInvStr(string);
-external procedure BankFillIProws2(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean,Date);
-external procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
+external updating procedure BankFillIProws2(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean,Date);
+external updating procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
 external procedure BankFillOProws(var record OPVc,string,string,var val,string,boolean,string,string);
 external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
 external function Integer GetItemPriority(Longint,string);
@@ -113,13 +113,13 @@ begin
         tCUr.Name = "";
         TrHs = true;
         if(nonblank(inname))then begin
-          ResetLoop(CUr);
+          ResetLoop(tCUr);
           while (LoopKey("Name",tCUr,1,TrHs)) begin
             outname = ConvertNameToSet(tCUr.Name);
             if(inname==outname)then begin
               TrHs = false;
               foundf = true;
-              RecordCopy(tCUr,CUr);
+              RecordCopy(CUr,tCUr);
             end;
           end;
           if (foundf==false) then begin

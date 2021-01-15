@@ -42,7 +42,8 @@ external function Boolean GetAccName(string,var string,Integer);
 external procedure ConvertSalesAcc(var string,Integer);
 external procedure GetItemSalesAcc(string,Integer,var string);
 //CUST-BEGIn
-external outer function string 255 CM_GetCredManTypeSalesItemAccount(Longint,string,string,Boolean);
+external outer function string 255 CM_GetCredManTypeSalesItemAccount(record IVVc,row IVVc,string,Boolean);
+external outer function val GetCredManPeriodAmount(record IVVc,val,Integer);
 //CUST-END
 
 global
@@ -123,6 +124,14 @@ BEGIN
     if (days<0) then begin
       pdat = AddDay(pdat,days);
     end;  
+
+    //CUST-BEGIN
+    if (nonblank(IVp.CredFromDate)) then begin
+      if (GetMonth(IVp.CredToDate)!=GetMonth(IVp.InvDate)) then begin
+        pdat = AddMonth(pdat,1);
+      end;
+    end;
+    //CUST-END
     tstr = "";
     if (ASPrw.calc=="=") then begin
       if (IVp.InvType==kInvoiceTypeCredit or IVp.InvType==kInvoiceTypeCreditSpecialSales) then begin
@@ -133,6 +142,17 @@ BEGIN
         tcur = ivrwsump - totsumcur;
       end;
     end else begin
+//CUST-BEGIN
+    if (ASPrw.calc=="#") then begin
+      tcur = GetCredManPeriodAmount(IVp,base1valp,StringToInt(ASPrw.Months));
+      t = GetCredManPeriodAmount(IVp,ivrwsump,StringToInt(ASPrw.Months));
+      if (IVp.InvType!=kInvoiceTypeCredit and IVp.InvType!=kInvoiceTypeCreditSpecialSales) then begin
+        totsumcur = totsumcur + tcur;
+      end else begin
+        totsumcur = totsumcur - tcur;
+      end;
+    end else begin
+//CUST-END
       tstr = ASPrw.calc;
       if (Mid(tstr,len(tstr)-1,1)=="%") then begin
         tstr = Left(tstr,len(tstr)-1);
@@ -148,6 +168,9 @@ BEGIN
         totsumcur = totsumcur - tcur;
       end;
     end;
+//CUST-BEGIN
+    end;
+//CUST-END
     if (nonblank(ASPrw.VATCode)) then begin
       locvatcod = ASPrw.VATCode;
     end;
@@ -237,7 +260,7 @@ begin
     otherwise
     //CUST-BEGIN
       //revacc = IVrw.SalesAcc;
-      revacc = CM_GetCredManTypeSalesItemAccount(IVp.CustCredManNr,IVrw.ArtCode,IVrw.SalesAcc,false);
+      revacc = CM_GetCredManTypeSalesItemAccount(IVp,IVrw,IVrw.SalesAcc,false);
     //CUST-END
   end;
 /*
