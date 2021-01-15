@@ -23,8 +23,10 @@ begin
   record CUVc CUr;
   transaction Boolean gCreditSellerf;
   transaction string 255 gCreditSellerAccount;
+  record CredManSetBlock CMb;
 
   BlockLoad(CIb);
+  BlockLoad(CMb);
   if (CIb.UseTypeAccounts==1) then begin
     CredManr.SerNr = IVr.CustCredManNr;
     if (ReadFirstMain(CredManr,1,true)) then begin
@@ -37,7 +39,7 @@ begin
         end;
       end else begin
         if (gCreditSellerf) then begin
-          if (IVrw.ChargeType!=1) then begin
+          if (IVrw.ChargeType!=1 and IVrw.ArtCode!=CMb.InstalmentItem) then begin
             res = gCreditSellerAccount;
           end;
         end;
