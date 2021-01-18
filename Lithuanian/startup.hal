@@ -13,6 +13,7 @@ begin
   Setting("Invoicing Settings",CMInvoicingTClass,modCredMan);
   
   Setting("Scoring Support",ScoringSupLClass,modCredMan);
+  Setting("Agreement Properties",CredManPropertiesLClass,modCredMan);
   Setting("Order Classes",OrderClassLClass,modCredMan);
   Setting("Order Class Colors",OrderClassColorTClass,modCredMan);
   Setting("Item Priority",ItemPriorityTClass,modCredMan);

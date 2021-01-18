@@ -213,6 +213,7 @@ begin
   SetWRect(20,80,660,298);
   //Sizeable(-1,-1,0,0);
   UseView(CredManPropertiesVc);
+  SpawnClass(CredManPropertiesDClass);
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Agreement",CredManNr,false,CredManNr);
   SearchField("Search");
