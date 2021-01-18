@@ -373,7 +373,7 @@ begin
     end else begin
       if (credmannr==-1 or credmannr==CredHistr.CredManNr) then begin
         if (CredHistr.RecordType==0 and (blank(untildate) or CredHistr.TransDate<=untildate) and IPr.TransDate>=CredHistr.TransDate) then begin
-          if (CredManPMCodeMatches(IPr.PayMode,CredHistr.RecordNr,false)) then begin
+          if (CredManPMCodeMatches(IPr.PayMode,CredHistr.RecordNr,false) or credmannr>-1) then begin
             priority = GetItemPriority(CredHistr.CredManNr,CredHistr.ArtCode);
             InsertCredHistInArray(CredHistr,arrORr,priority,IPr.TransDate);
           end;
