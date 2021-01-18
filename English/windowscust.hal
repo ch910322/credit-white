@@ -209,6 +209,17 @@ begin
   SearchField("Search");
   EndWindow;
 
+  WindowBegin("Agreement Properties",CredManPropertiesLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  //Sizeable(-1,-1,0,0);
+  UseView(CredManPropertiesVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Agreement",CredManNr,false,CredManNr);
+  SearchField("Search");
+  EndWindow;
+
+
+
   WindowBegin("Scoring",ScoringSupDClass,CGView,-);
   SetWRect(20,80,730,539);
   UseView(ScoringSupVc);
