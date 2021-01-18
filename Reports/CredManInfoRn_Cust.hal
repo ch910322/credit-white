@@ -463,7 +463,7 @@ begin
 end;
 
 global
-function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc CredManr,record CredManSetBlock CredManSetb,var record SMVc SMr)
+function Boolean BuildCredManInfoMatrixOnSchedule2(record CredManVc CredManr,record CredManSetBlock CredManSetb,var record SMVc SMr,Date ed)
 begin
   record CredManSchedVc CSr;
   row CredManSchedVc CSrw;
@@ -474,7 +474,12 @@ begin
   record IVVc IVr;
   transaction Boolean gSilenceIVOpenPrepExists;
   Integer int_type;
+  Date enddate;
   
+  enddate = CredManr.endDate;
+  if (nonblank(ed)) then begin
+    enddate = ed;
+  end;
   gSilenceIVOpenPrepExists = true;
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin
@@ -499,7 +504,7 @@ begin
           AddPayOutToList(CSrw.Principle,CSrw.InvDate,SMr,calcbal);
       end;
     end;
-    TestInvoiceBasedOnSchedule(CredManr,CSr,CredManr.endDate,aIVr);
+    TestInvoiceBasedOnSchedule(CredManr,CSr,enddate,aIVr);
     for (i=0;i<aIVr.length;i=i+1) begin
       IVr = aIVr[i];
       IVr.SerNr = -1;
@@ -508,7 +513,15 @@ begin
   end;
 
   gSilenceIVOpenPrepExists = false;
-  BuildCredManInfoMatrixOnSchedule = res;
+  BuildCredManInfoMatrixOnSchedule2 = res;
+  return;
+end;
+
+global
+function Boolean BuildCredManInfoMatrixOnSchedule(record CredManVc CredManr,record CredManSetBlock CredManSetb,var record SMVc SMr)
+begin
+
+  BuildCredManInfoMatrixOnSchedule = BuildCredManInfoMatrixOnSchedule2(CredManr,CredManSetb,SMr,"");
   return;
 end;
 

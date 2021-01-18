@@ -1155,7 +1155,9 @@ begin
       SetupInvoiceRowAndAdd(CredManr,IVr,FMrw.ArtCode,spec,1,FMrw.Sum,blankval,kEventTypeCalcFees,-1);
     end;
   end;
-  MergeItemsInInvoice(IVr,CredManr);
+  if (updf) then begin
+    MergeItemsInInvoice(IVr,CredManr);
+  end;
   if (addfeesf) then begin
     GetCredManOverdueInvoices(CredManr,CMb,CSrw.InvDate,lastd,latedays,lateamount,lateformula,false,false,calcsd);
     switch (CIb.OverdueIVType) begin
@@ -1181,8 +1183,8 @@ begin
   
   if (updf) then begin
     CM_AddPrepayments(IVr,CredManr,CIb);
+    CheckAndAddHiddenPrinciple(IVr,CIb);
   end;
-  CheckAndAddHiddenPrinciple(IVr,CIb);
 
   return;
 end;
