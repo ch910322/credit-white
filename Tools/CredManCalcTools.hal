@@ -786,7 +786,7 @@ begin
 end;
 
 
-function Boolean GetPreviousMonthPayment(record CredManPayPlanVc CredManPayPlanr,Date frdate,var val tval)
+function Boolean GetPreviousMonthPayment(record CredManPayPlanVc CredManPayPlanr,record CredManVc CredManr,Date frdate,var val tval)
 begin
   Integer rwcnt,i;
   row CredManPayPlanVc CredManPayPlanrw;
@@ -801,7 +801,7 @@ begin
       if (lastdate!=CredManPayPlanrw.FromDate and nonblank(lastdate)) then begin
         goto LGetPreviousMonthPayment;
       end;
-      if (CredManPayPlanrw.PlanType==1 or CredManPayPlanrw.PlanType==2 or CredManPayPlanrw.PlanType==4 or CredManPayPlanrw.PlanType==5 or CredManPayPlanrw.PlanType==6 or CredManPayPlanrw.PlanType==8) then begin
+      if ((CredManPayPlanrw.PlanType==1 or CredManPayPlanrw.PlanType==2 or CredManPayPlanrw.PlanType==4 or CredManPayPlanrw.PlanType==5 or CredManPayPlanrw.PlanType==6 or CredManPayPlanrw.PlanType==8) and (CredManPayPlanrw.TransDate>CredManr.FirstInvDate)) then begin
         tval = tval + CredManPayPlanrw.Sum;
         res = true;
         lastdate = CredManPayPlanrw.FromDate;
@@ -827,7 +827,7 @@ begin
   monthlypayment = (CredManr.InvSum4-CredManr.DepositSum)/(CredManr.InstalmentMonths-CredManr.PrincipleDelayMonths);
   reducemonths = buyoutval/monthlypayment+1;
 
-  if (GetPreviousMonthPayment(CredManPayPlanr,frdate,payval)) then begin
+  if (GetPreviousMonthPayment(CredManPayPlanr,CredManr,frdate,payval)) then begin
     res = payval;  
   end else begin
     if (CredManr.InstalmentType==1) then begin
