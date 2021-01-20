@@ -252,6 +252,7 @@ begin
   SString(200254,"Due Date");
   SString(200255,"Remaining");
   SString(200256,"Income Forecast");
+  SString(200257,"Pen.");
 
 
   SString(200260,"Sum doesn't match with Bank Transaction");

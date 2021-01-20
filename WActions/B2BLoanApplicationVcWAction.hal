@@ -1069,7 +1069,7 @@ BEGIN
   GetWindowRecord(wn,RepSpec);
   ReportDefaults(RepSpec,"CMIncomeForecastRClass");  
   RepSpec.Scaling = 0;
-  RepSpec.BaseWidth = 1000;
+  RepSpec.BaseWidth = 1100;
   PutWindowRecord(wn,RepSpec);
   SelectWindow(wn);
   RETURN;

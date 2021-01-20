@@ -1007,7 +1007,7 @@ begin
             firstinvf = true;
             vFirstInv[CredHistr.RecordNr] = true;//we can have multiple records for single invoice. so we need to store that this invoice is the initial invoice
           end else begin
-            if (CredHistr.ArtCode!=CredManSetb.LateRateItem) then begin//invoice
+            if (CredHistr.ChargeType!=kEventTypeIssueLateFees) then begin//invoice
               if (CredHistr.PayDate>=CredManr.FirstInvDate) then begin//trans date is not correct, but pay date is not ideal as well
                 calculatedmonths = MonthDiff(CredManr.FirstInvDate,CredHistr.TransDate)+1;
               end;

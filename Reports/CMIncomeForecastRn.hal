@@ -2,8 +2,10 @@ external inner function Boolean SetInSet2(string,string);
 external function Boolean BuildCredManInfoMatrixOnSchedule2(record CredManVc,record CredManSetBlock,var record SMVc,Date);
 external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
+external function Boolean CMShowVATColumn();
+external function Boolean IsNovitiCustomer;
 
-procedure GetInvoiceValuesFromMatrix(record SMVc SMr,record RcVc RepSpec,var val bal1,var val principle,var val interest,var val fees,var val vat,var val total,var val fees,var val bal2,var Date lastduedate)
+procedure GetInvoiceValuesFromMatrix(record SMVc SMr,record RcVc RepSpec,var val bal1,var val principle,var val interest,var val fees,var val vat,var val total,var val fees,var val bal2,var Date lastduedate,var val penalties)
 begin
   row IVVc IVrw;
   Integer i,rwcnt;
@@ -19,6 +21,7 @@ begin
   total = 0;
   fees = 0;
   bal2 = 0;
+  penalties = 0;
 
   rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -30,10 +33,13 @@ begin
       principle = principle + SMrw.DebVal; 
       interest = interest + SMrw.CredVal;
       fees = fees + SMrw.DebVal2;
-      bal2 = SMrw.CurCredVal;
+      if (bal2==0) then begin
+        bal2 = SMrw.CurCredVal;
+      end;
       vat = vat + SMrw.FrRate;
       total = total + SMrw.CurDebVal;
       lastduedate = SMrw.DueDate;
+      penalties = penalties + SMrw.CredVal2;
     end else begin
       if (SMrw.DueDate>RepSpec.sEndDate) then begin
         i = rwcnt;
@@ -47,11 +53,11 @@ end;
 global
 procedure CMIncomeForecastRn(record RcVc RepSpec)
 begin
-  Integer c10,c11,c12,c13,c14,c15,c16,c17;
+  Integer c10,c11,c12,c13,c14,c15,c16,c17,c18;
   record IVVc IVr;
   Boolean TrHs,testf;
   record CredManVc CredManr;
-  val bal1,principle,interest,vat,total,fees,bal2;
+  val bal1,principle,interest,vat,total,fees,bal2,penalties;
   val rate;
   record CUVc CUr;
   val totprinc,totint,totfees,totvat,tot;
@@ -59,7 +65,9 @@ begin
   record CredManPayPlanVc CredManPayPlanr;
   row CredManPayPlanVc CredManPayPlanrw;
   record SMVc SMr;
+  Boolean showvatf,notivif;
   Date lastduedate;
+  record CredManTypeVc CMTr;
   
   StartReportJob(USetStr(200256));
 
@@ -76,11 +84,14 @@ begin
   c11 = 630;//principle
   c12 = 690;//interest
   c13 = 740;//fees
-  c14 = 800;//vat
-  c15 = 860;//total
-  c16 = 880;//due date
-  c17 = 1000;//remaining
+  c14 = 800;//penalties
+  c15 = 860;//vat
+  c16 = 920;//total
+  c17 = 940;//due date
+  c18 = 1100;//remaining
 
+  notivif = IsNovitiCustomer;
+  showvatf = CMShowVATColumn;
   StartFormat(15);
   OutString(0,0,USetStr(200240),false);
   OutString(2,0,USetStr(200241),false);
@@ -94,13 +105,16 @@ begin
   OutString(c11,0,USetStr(200249),true);
   OutString(c12,0,USetStr(200250),true);
   OutString(c13,0,USetStr(200251),true);
-  OutString(c14,0,USetStr(200252),true);
-  OutString(c15,0,USetStr(200253),true);
-  OutString(c16,0,USetStr(200254),false);
-  OutString(c17,0,USetStr(200255),true);
+  OutString(c14,0,USetStr(200257),true);
+  if (showvatf) then begin
+    OutString(c15,0,USetStr(200252),true);
+  end;
+  OutString(c16,0,USetStr(200253),true);
+  OutString(c17,0,USetStr(200254),false);
+  OutString(c18,0,USetStr(200255),true);
   EndFormat;
   StartFormat(1);
-  Gray_Divider(0,1000);
+  Gray_Divider(0,c18);
   EndFormat;
 
   BlockLoad(CredManSetb);
@@ -117,8 +131,20 @@ begin
     if (nonblank(RepSpec.f3) and RepSpec.f3!=CredManr.OrderClass) then begin
       testf = false;
     end;
-    if (nonblank(RepSpec.f4) and SetInSet2(RepSpec.f3,CredManr.Classifications)==false) then begin
-      testf = false;
+    if (nonblank(RepSpec.f4)) then begin
+      if (notivif) then begin
+        testf = false;
+        CMTr.Code = CredManr.Type;
+        if (ReadFirstMain(CMTr,1,true)) then begin
+          if (SetInSet2(RepSpec.f4,CMTr.Classifications)) then begin
+            testf = true;
+          end;
+        end;
+      end else begin
+        if (SetInSet2(RepSpec.f4,CredManr.Classifications)==false) then begin
+          testf = false;
+        end;
+      end;
     end;
     if (nonblank(RepSpec.f5) and RepSpec.f5!=CredManr.SalesMan) then begin
       testf = false;
@@ -157,16 +183,19 @@ begin
         bal1 = CredManr.InvSum4;
         bal2 = CredManr.InvSum4;
       end;*/
-      GetInvoiceValuesFromMatrix(SMr,RepSpec,bal1,principle,interest,fees,vat,total,fees,bal2,lastduedate);
+      GetInvoiceValuesFromMatrix(SMr,RepSpec,bal1,principle,interest,fees,vat,total,fees,bal2,lastduedate,penalties);
 
       OutString(c10,0,bal1,true);
       OutString(c11,0,principle,true);
       OutString(c12,0,interest,true);
       OutString(c13,0,fees,true);
-      OutString(c14,0,vat,true);
-      OutString(c15,0,total,true);
-      OutString(c16,0,lastduedate,false);
-      OutString(c17,0,bal2,true);
+      OutString(c14,0,penalties,true);
+      if (showvatf) then begin
+        OutString(c15,0,vat,true);
+      end;
+      OutString(c16,0,total,true);
+      OutString(c17,0,lastduedate,false);
+      OutString(c18,0,bal2,true);
       totprinc = totprinc + principle;
       totint = totint + interest;
       totfees = totfees + fees;
@@ -176,7 +205,7 @@ begin
     end;
   end;
 
-  Gray_Divider(0,1000);
+  Gray_Divider(0,c18);
   StartFormat(15);
   OutString(c11,0,totprinc,true);
   OutString(c12,0,totint,true);
