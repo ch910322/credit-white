@@ -382,7 +382,7 @@ begin
     ivacc = CM_GetCredManTypeSalesItemAccount2(IVrw.CredHistNr,IVr.ARAcc,true);
     if (acc==ivacc) then begin
       res = true;
-      rs = rs + GetCredHistOpenValue(IVrw.CredHistNr);
+      rs = rs + GetCredHistOpenValueOnDate(IVrw.CredHistNr,"");
     end;
   end;
 
