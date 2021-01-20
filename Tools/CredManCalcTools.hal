@@ -1433,7 +1433,11 @@ begin
         usesum = calcbal;
         if (PartiaBuyoutShortensPeriod) then begin
           CredManr.MaxMonthlyPayment = GetMaxMonthlyPaymentForPartialBuyout(CredManPayPlanr,CredManr,CredHistr.Sum,frdate,usemonths, prevusesum,reducemonths,curmonth);
-          usemonths = months - curmonth - reducemonths;
+          if (curmonth<CredManr.PrincipleDelayMonths) then begin
+            usemonths = months - CredManr.PrincipleDelayMonths - reducemonths;
+          end else begin
+            usemonths = months - curmonth - reducemonths;
+          end;
         end;
       end;
     end;
