@@ -815,7 +815,7 @@ LGetPreviousMonthPayment:;
   return;
 end;
 
-function val GetMaxMonthlyPaymentForPartialBuyout(record CredManPayPlanVc CredManPayPlanr,record CredManVc CredManr,val buyoutval,Date frdate,Integer usemonths,val prevusesum,var Integer reducemonths)
+function val GetMaxMonthlyPaymentForPartialBuyout(record CredManPayPlanVc CredManPayPlanr,record CredManVc CredManr,val buyoutval,Date frdate,Integer usemonths,val prevusesum,var Integer reducemonths,Integer curmonth)
 begin
   val rate,res,payval,monthlypayment;
 
@@ -827,13 +827,13 @@ begin
   monthlypayment = (CredManr.InvSum4-CredManr.DepositSum)/(CredManr.InstalmentMonths-CredManr.PrincipleDelayMonths);
   reducemonths = buyoutval/monthlypayment+1;
 
-  if (GetPreviousMonthPayment(CredManPayPlanr,CredManr,frdate,payval)) then begin
+  if (curmonth>CredManr.PrincipleDelayMonths and GetPreviousMonthPayment(CredManPayPlanr,CredManr,frdate,payval)) then begin
     res = payval;  
   end else begin
     if (CredManr.InstalmentType==1) then begin
       res = monthlypayment;
     end else begin
-      res = FIN_PMT(rate, usemonths, prevusesum);  
+      res = FIN_PMT(rate, usemonths, prevusesum); 
     end;
   end;    
 
@@ -1031,7 +1031,7 @@ LAddActualsToPlan_Next:;
         usemonths = months - calculatedmonths;
       end;
       if (PartiaBuyoutShortensPeriod) then begin
-        CredManr.MaxMonthlyPayment = GetMaxMonthlyPaymentForPartialBuyout(CredManPayPlanr,CredManr,CredHistr.Sum,CredHistr.TransDate,usemonths,prevusesum,reducemonths);
+        CredManr.MaxMonthlyPayment = GetMaxMonthlyPaymentForPartialBuyout(CredManPayPlanr,CredManr,CredHistr.Sum,CredHistr.TransDate,usemonths,prevusesum,reducemonths,calculatedmonths);
         usemonths = months - calculatedmonths - reducemonths;
       end;
 
@@ -1432,7 +1432,7 @@ begin
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,"","",kEventTypePartialBuyout,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,0);
         usesum = calcbal;
         if (PartiaBuyoutShortensPeriod) then begin
-          CredManr.MaxMonthlyPayment = GetMaxMonthlyPaymentForPartialBuyout(CredManPayPlanr,CredManr,CredHistr.Sum,frdate,usemonths, prevusesum,reducemonths);
+          CredManr.MaxMonthlyPayment = GetMaxMonthlyPaymentForPartialBuyout(CredManPayPlanr,CredManr,CredHistr.Sum,frdate,usemonths, prevusesum,reducemonths,curmonth);
           usemonths = months - curmonth - reducemonths;
         end;
       end;
