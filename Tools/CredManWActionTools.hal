@@ -68,6 +68,7 @@ external function Boolean UseFullBuyoutProcedure();
 external procedure AddBuyOutFee(record CredManVc,var record IVVc,val);
 external procedure CheckAndAddHiddenPrinciple(var record IVVc,record CMInvoicingBlock);
 external function val GetActualBalance(record CredManVc,record CredManPayPlanVc,Boolean);
+remote procedure RefinCredManPartialWClassSubmitCallBack(string,Integer);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -1544,7 +1545,7 @@ begin
 end;
 
 global
-updating procedure CredManPartialBuyoutDo(Date td,val buyoutval,Longint sernr,var string err)
+updating procedure CredManPartialBuyoutDo(Date td,val buyoutval,Longint sernr,Integer wn)
 begin
   record CredManVc CredManr,oldCredManr;
   record SMVc SMr;
@@ -1553,6 +1554,7 @@ begin
   Longint histnr;
   record BaseCurBlock BCb;
   record AgreementDocVc ADr;
+  string 255 err;
   Boolean updf;
   record IVVc IVr;
   Integer k;
@@ -1667,6 +1669,8 @@ begin
   end;
   
 LCredManPartialBuyoutDo:;
+
+  ClientRemoteAsync.RefinCredManPartialWClassSubmitCallBack(err,wn);
   return;
 end;
 
