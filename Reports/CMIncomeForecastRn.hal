@@ -4,8 +4,30 @@ external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPa
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 external function Boolean CMShowVATColumn();
 external function Boolean IsNovitiCustomer;
+external function val GetCredHistOpenValueOnDate(Longint,Date);
 
-procedure GetInvoiceValuesFromMatrix(record SMVc SMr,record RcVc RepSpec,var val bal1,var val principle,var val interest,var val fees,var val vat,var val total,var val fees,var val bal2,var Date lastduedate,var val penalties)
+function val GetContractOpenAmountOnDate(record CredManVc CredManr,Date td)
+begin
+  val res;
+  record CredHistVc CredHistr;
+  Boolean TrHs;
+
+  TrHs = true;
+  while (LoopKey("CredManTransDate:" & CredManr.SerNr,CredHistr,1,TrHs)) begin
+    if (CredHistr.TransDate>td) then begin
+      TrHs = false;
+    end else begin
+      if (CredHistr.PaidFlag==0) then begin
+        res = res + GetCredHistOpenValueOnDate(CredHistr.SerNr,td);
+      end;
+    end;
+  end;
+
+  GetContractOpenAmountOnDate = res;
+  return;
+end;
+
+procedure GetInvoiceValuesFromMatrix(record CredManVc CredManr,record SMVc SMr,record RcVc RepSpec,var val bal1,var val principle,var val interest,var val fees,var val vat,var val total,var val fees,var val bal2,var Date lastduedate,var val penalties)
 begin
   row IVVc IVrw;
   Integer i,rwcnt;
@@ -33,9 +55,6 @@ begin
       principle = principle + SMrw.DebVal; 
       interest = interest + SMrw.CredVal;
       fees = fees + SMrw.DebVal2;
-      if (bal2==0) then begin
-        bal2 = SMrw.CurCredVal;
-      end;
       vat = vat + SMrw.FrRate;
       total = total + SMrw.CurDebVal;
       lastduedate = SMrw.DueDate;
@@ -45,7 +64,12 @@ begin
         i = rwcnt;
       end;
     end;
+    if (SMrw.DueDate<RepSpec.sStartDate) then begin
+      bal2 = SMrw.CurCredVal;
+    end;
   end;
+
+  bal2 = bal2 + GetContractOpenAmountOnDate(CredManr,RepSpec.sStartDate);
 
   return;
 end;
@@ -183,7 +207,7 @@ begin
         bal1 = CredManr.InvSum4;
         bal2 = CredManr.InvSum4;
       end;*/
-      GetInvoiceValuesFromMatrix(SMr,RepSpec,bal1,principle,interest,fees,vat,total,fees,bal2,lastduedate,penalties);
+      GetInvoiceValuesFromMatrix(CredManr,SMr,RepSpec,bal1,principle,interest,fees,vat,total,fees,bal2,lastduedate,penalties);
 
       OutString(c10,0,bal1,true);
       OutString(c11,0,principle,true);
