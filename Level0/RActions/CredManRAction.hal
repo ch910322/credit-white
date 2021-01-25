@@ -15,7 +15,6 @@ external function Boolean SerNrTestCredManVc(LongInt,Date,var Boolean);
 external function Integer CashSerNumberTest(string,val,string,LongInt,var Boolean);
 external procedure AddCredManTypeMatrix(var record CredManVc,record CredManTypeVc);
 external function val GetIntRate(string,Date);
-external outer function string 255 CM_GetTransactionControlAcc(record CredManVc,string);
 external outer procedure AddCMTransactionControlAccounts(record CredManVc,var string,var string,var val,var val);
 external outer function string 255 CM_GetTransactionDebtorsAcc(record CredManVc,string);
 
