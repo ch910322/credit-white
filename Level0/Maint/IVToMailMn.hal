@@ -246,9 +246,14 @@ global
 procedure IVToMailMnTask(string args)
 begin
   Longint pos;
-  string 255 arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12,arg13;
+  string 255 arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12,arg13,compno;
   record RcVc RepSpec;
-  
+  Integer oldcomp;
+
+  oldcomp = CurrentCompany;
+  GetNextSubString(args,pos,"|",compno);
+  SetCompany(StringToInt(compno),false);
+
   GetNextSubString(args,pos,"|",arg1);
   GetNextSubString(args,pos,"|",arg13);
   
@@ -280,6 +285,9 @@ begin
   RepSpec.flags[8] = StringToInt(arg12);
   IVToMailMnRun(RepSpec);
 
+  if (oldcomp!=CurrentCompany) then begin
+    ResetCompany(oldcomp);
+  end;
   return;
 end;
 
@@ -287,7 +295,7 @@ global
 procedure IVToMailMn(record RcVc RepSpec)
 begin
   
-  NewTimedTask2("IVToMailMnTask","IVToMailMnTask","IVToMailMnTask",DateToString(RepSpec.sStartDate,"YYYY-MM-DD") & "|" & DateToString(RepSpec.sEndDate,"YYYY-MM-DD") & "|" & RepSpec.f1 & "|" & RepSpec.f2 & "|" & RepSpec.flags[0] & "|" & RepSpec.flags[1] & "|" & RepSpec.flags[2] & "|" & RepSpec.flags[3] & "|" & RepSpec.flags[4] & "|" & RepSpec.flags[5] & "|" & RepSpec.flags[6] & "|" & RepSpec.flags[7] & "|" & RepSpec.flags[8],CurrentDate,AddSeconds(CurrentTime,1),"","");
+  NewTimedTask2("IVToMailMnTask","IVToMailMnTask","IVToMailMnTask",CurrentCompany & "|" & DateToString(RepSpec.sStartDate,"YYYY-MM-DD") & "|" & DateToString(RepSpec.sEndDate,"YYYY-MM-DD") & "|" & RepSpec.f1 & "|" & RepSpec.f2 & "|" & RepSpec.flags[0] & "|" & RepSpec.flags[1] & "|" & RepSpec.flags[2] & "|" & RepSpec.flags[3] & "|" & RepSpec.flags[4] & "|" & RepSpec.flags[5] & "|" & RepSpec.flags[6] & "|" & RepSpec.flags[7] & "|" & RepSpec.flags[8],CurrentDate,AddSeconds(CurrentTime,1),"","");
 
   return;
 end;
