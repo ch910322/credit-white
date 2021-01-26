@@ -1,0 +1,34 @@
+function Boolean LoanAppDebtsDClassLenderCodeEFAfter(Integer wn, integer rownr, Boolean changedf)
+begin
+  record LoanAppDebtsVc LADr;
+  row LoanAppDebtsVc LADrw;
+  record CUVc CUr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,LADr);
+    MatRowGet(LADr,rownr,LADrw);
+    CUr.Code=LADrw.LenderCode;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      LADrw.Addr0=CUr.Name;
+    end;
+    MatRowPut(LADr,rownr,LADrw);
+    PutWindowRecord(wn,LADr); 
+  end; 
+  LoanAppDebtsDClassLenderCodeEFAfter = true;
+  return;
+end;
+
+global
+function Boolean LoanAppDebtsDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+  
+  if (changed!=0) then begin
+    switch (fieldname) begin
+      case "LenderCode": res=LoanAppDebtsDClassLenderCodeEFAfter(wn,rownr,changed);
+    end;
+  end;
+  LoanAppDebtsDClassAfterEditField=res;
+  return
+end;
+

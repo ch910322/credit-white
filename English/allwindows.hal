@@ -644,7 +644,7 @@ begin
     SpecialMenu("Tags/Objects",' ',1,"CreateObjectCUDsm");
     SpecialMenu("Random Password Mail",' ',3,"RandomPassMailCUDsm");
 //CUST-BEGIN
-    SpecialMenu("B2B Loan Application",' ',3,"CreateB2BLoanApplicationCUDsm");
+    SpecialMenu("Loan Application",' ',3,"CreateB2BLoanApplicationCUDsm");
     SpecialMenu("Credit Agreement",' ',3,"CreateCredManCUDsm");
 //END-CUST
   end;
@@ -1870,9 +1870,9 @@ begin
 //CUST-BEGIN
   Tile(tilenr,121,true,tilenr,NrOfPR); tilenr = tilenr + 1;
   h=20; v=20;
-  ButtonFrame(h,v,420,1,"B2B Loan Applications");
-  CheckBox(h2=30,v,0,"Include B2B Loan Applications",B2BApps);
-  EditField(h3,v,40,"Number of B2B Loan Applications",Normal,NrOfB2BApp,false,0);
+  ButtonFrame(h,v,420,1,"Loan Applications");
+  CheckBox(h2=30,v,0,"Include Loan Applications",B2BApps);
+  EditField(h3,v,40,"Number of Loan Applications",Normal,NrOfB2BApp,false,0);
   ButtonFrame(h,v+=45,420,1,"Credit Applications");
   CheckBox(h2=30,v,0,"Include Credit Applications",CredApps);
   EditField(h3,v,40,"Number of Credit Applications",Normal,NrOfCredApp,false,0);

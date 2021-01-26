@@ -48,7 +48,7 @@ begin
  
   SetLangMode(LangLithuanian,"LIT",2);
 
-  WindowBegin("B2B Loan Applications",B2BLoanApplicationLClass,CGmList,-);
+  WindowBegin("Loan Applications",B2BLoanApplicationLClass,CGmList,-);
   Sizeable(-1,-1,0,0);
   SetWRect(64,80,800,298);
   SpawnClass(B2BLoanApplicationDClass);
@@ -67,7 +67,7 @@ begin
   SearchField("Paieška");
   EndWindow;
 
-  WindowBegin("Paste B2B Loan Application",B2BLoanApplicationSClass,CGsList,-);
+  WindowBegin("Paste Loan Application",B2BLoanApplicationSClass,CGsList,-);
   Sizeable(-1,-1,0,0);
   SetWRect(64,80,800,298);
   SpawnClass(B2BLoanApplicationDClass);
@@ -85,7 +85,7 @@ begin
   SpecialMenu("Vertinimo ataskaita",' ',2,"");
   EndWindow;
 
-  WindowBegin("Number Series - B2B Loan Applications",B2BLoanAppSerTClass,CGHbl,HBlRecType);
+  WindowBegin("Number Series - Loan Applications",B2BLoanAppSerTClass,CGHbl,HBlRecType);
   SetBlid(B2BLoanAppSerBlock);
   SetWRect(20,80,600,351);
   Sizeable(-1,-1,0,0);

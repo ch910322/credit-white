@@ -4,11 +4,11 @@ begin
   SetLangMode(LangLithuanian,"LIT",2);
 
 /* modCredMan */  
-  Register("B2B Loan Applications","B2B Loan Applications",B2BLoanApplicationVc,modCredMan);
+  Register("Loan Applications","Loan Applications",B2BLoanApplicationVc,modCredMan);
   Register("Agreement Schedules","Agreement Schedules",CredManSchedVc,modCredMan);
   Register("Properties","Properties",CMPropertyVc,modCredMan);
 
-  Setting("Number Series - B2B Loan Applications",B2BLoanAppSerTClass,modCredMan);
+  Setting("Number Series - Loan Applications",B2BLoanAppSerTClass,modCredMan);
   Setting("Credit Management Settings",CMApplicationSetTClass,modCredMan);
   Setting("Invoicing Settings",CMInvoicingTClass,modCredMan);
   
@@ -54,7 +54,7 @@ begin
 
 
   Document("Credit Agreement Schedule",CredManScheduleRClass,CredManScheduleForm,CredManScheduleFClass,modCredMan);
-  Document("B2B Loan Application",LoanAppRClass,LoanAppForm,LoanAppFClass,modCredMan);
+  Document("Loan Application",LoanAppRClass,LoanAppForm,LoanAppFClass,modCredMan);
   //Document("Combined Application",LoanAppRClass,CombinedAgreementForm,CombinedAgreementFClass,modCredMan);
   Document("Surety Agreement",SuretyAgreementRClass,SuretyAgreementForm,SuretyAgreementFClass,modCredMan);
   Document("Surety Application",SuretyApplicationRClass,SuretyApplicationForm,SuretyApplicationFClass,modCredMan);
@@ -126,7 +126,7 @@ begin
   SString(200051,"Assets: ");
   SString(200052,"Other");
   //CustPSRn
-  SString(200060,"B2B Loan Applications");
+  SString(200060,"Loan Applications");
   SString(200061,"Appl. No.");
   SString(200062,"Appl. Date");
   SString(200063,"Customer");
@@ -241,7 +241,7 @@ begin
 
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");
-  StrSetText(B2BLoanApplicationVc,"B2B Loan Applications");
+  StrSetText(B2BLoanApplicationVc,"Loan Applications");
   EndStrSet;
 
   StrSetAdd(3);
@@ -454,7 +454,7 @@ begin
 
   SetBegin(2028);
   SetText(0,"Credit Agreement");
-  SetText(1,"B2B Loan Applications");
+  SetText(1,"Loan Applications");
   EndSet;
 
   SetBegin(2029);

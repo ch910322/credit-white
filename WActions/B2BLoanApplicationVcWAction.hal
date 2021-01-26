@@ -17,7 +17,10 @@ remote updating function Boolean SendSuretyInvitation(record RcVc,var record B2B
 remote procedure GetCreditInfoHistory(var record B2BLoanApplicationVc,var Integer,var string,Integer,Longint);
 remote procedure B2BLoanApplicationMakeEmailOffer_Remote(record B2BLoanApplicationVc,var record MailVc);
 remote procedure InsertB2BLoanApplicationDocSignerName(var record B2BLoanApplicationVc,Integer);
-
+remote updating procedure GetB2BLoanApplicationPropertyRecord(record B2BLoanApplicationVc,var record CredManPropertiesVc);
+remote procedure InsertB2BLoanApplicationBoardMemberName(var record B2BLoanApplicationVc,Integer);
+remote updating procedure GetB2BLoanApplicationDebtRecord(record B2BLoanApplicationVc,var record LoanAppDebtsVc);
+external inner function roundmode SetRoundModeD(Integer);
 
 function Boolean B2BLoanApplicationDClassCustCodeEFAfter(Integer wn,Integer changed)
 begin
@@ -271,6 +274,7 @@ begin
     CalculateEndDate(LAr);
     
     PutWindowRecord(wn,LAr);    
+    ReRunWindowDef(wn);//Aldevinas	
   end;
   
   B2BLoanApplicationDClassTypeEFAfter = res;
@@ -330,6 +334,39 @@ begin
   B2BLoanApplicationDClassCEOCustCodeeEFAfter = res;
   return;
 end;
+
+function Boolean B2BLoanApplicationDClassWorkplaceEFAfter(Integer wn,Integer changed)
+begin
+  Boolean res;
+  record B2BLoanApplicationVc LAr;
+  record CUVc CUr;
+  
+  GetWindowRecord(wn,LAr);
+  CUr.Code = LAr.Workplace;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    LAr.WorkplaceName = CUr.Name;
+    PutWindowRecord(wn,LAr);    
+  end;
+  B2BLoanApplicationDClassWorkplaceEFAfter = res;
+  return;
+end;
+
+function Boolean B2BLoanApplicationDClassBeneficiaryEFAfter(Integer wn,Integer changed)
+begin
+  Boolean res;
+  record B2BLoanApplicationVc LAr;
+  record CUVc CUr;
+  
+  GetWindowRecord(wn,LAr);
+  CUr.Code = LAr.Beneficiary;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    LAr.BeneficiaryName = CUr.Name;
+    PutWindowRecord(wn,LAr);    
+  end;
+  B2BLoanApplicationDClassBeneficiaryEFAfter = res;
+  return;
+end;
+
 
 function Boolean B2BLoanApplicationDClassRevMonthsEFAfter(Integer wn,Integer changed)
 begin
@@ -409,10 +446,103 @@ begin
   return;
 end;
 
+function Boolean B2BLoanApplicationDClassBoardMemberEFAfter(Integer wn,Boolean changedf,Integer num)
+begin
+  record B2BLoanApplicationVc LAr;
+  record CUVc CUr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,LAr);
+    InsertB2BLoanApplicationBoardMemberName(LAr,num);
+    PutWindowRecord(wn,LAr);   
+  end; 
+  B2BLoanApplicationDClassBoardMemberEFAfter = true;
+  return;
+end;
+
+procedure UpdateB2BLoanApplicationSoftFields(Integer wn,record B2BLoanApplicationVc LAr,string changedfield)
+begin
+  val t,t2;
+  
+  if (blank(changedfield)) then begin
+    if (LAr.AvgIncome!=0.0) then begin
+      t=LAr.MonthlyLoadPayment/LAr.AvgIncome*100;//If I put this to Round() it does not work.
+      t=Round(t,SetRoundModeD(2));
+    end else begin
+      t=blankval;
+    end;
+    PutWindowString(wn,"monthpayperavgincome",t);  
+    if (LAr.Turnover!=0.0) then begin
+      t=LAr.NetProfit/LAr.Turnover*100;  
+      t=Round(t,SetRoundModeD(2));
+    end else begin
+      t=blankval;
+    end;
+    PutWindowString(wn,"returnsonsales",t);  
+    if (LAr.CurrentLiabilities!=0.0) then begin
+      t=LAr.CurrentAssets/LAr.CurrentLiabilities;
+      t=Round(t,SetRoundModeD(2));
+    end else begin
+      t=blankval;
+    end;
+    PutWindowString(wn,"currliquidityratio",t);  
+    if (LAr.AvgIncome!=0.0) then begin
+      t=((LAr.MonthlyLoadPayment+LAr.OtherObligations)/LAr.AvgIncome)*100;
+      t=Round(t,SetRoundModeD(2));
+    end else begin
+      t=blankval;
+    end;     
+    PutWindowString(wn,"affordability",t);  
+  end else begin
+    if (changedfield=="MonthlyLoadPayment") or (changedfield=="AvgIncome") then begin
+      if (LAr.AvgIncome!=0.0) then begin
+        t=LAr.MonthlyLoadPayment/LAr.AvgIncome*100;
+        t=Round(t,SetRoundModeD(2));
+        t2=((LAr.MonthlyLoadPayment+LAr.OtherObligations)/LAr.AvgIncome)*100;
+        t2=Round(t2,SetRoundModeD(2));
+      end else begin
+        t=blankval;
+        t2=blankval;
+      end;
+      PutWindowString(wn,"monthpayperavgincome",t);  
+      PutWindowString(wn,"affordability",t2);  
+    end;
+    if (changedfield=="OtherObligations") then begin
+      if (LAr.AvgIncome!=0.0) then begin
+         t2=((LAr.MonthlyLoadPayment+LAr.OtherObligations)/LAr.AvgIncome)*100;
+         t2=Round(t2,SetRoundModeD(2));
+      end else begin
+        t2=blankval;
+      end;
+      PutWindowString(wn,"affordability",t2);  
+    end;
+    if ((changedfield=="NetProfit") or (changedfield=="Turnover")) then begin
+      if (LAr.Turnover!=0.0) then begin
+        t=LAr.NetProfit/LAr.Turnover*100;
+        t=Round(t,SetRoundModeD(2));
+      end else begin
+        t=blankval;
+      end;
+      PutWindowString(wn,"returnsonsales",t);  
+    end;
+    if ((changedfield=="CurrentAssets") or (changedfield=="CurrentLiabilities")) then begin
+      if (LAr.CurrentLiabilities!=0.0) then begin
+        t=LAr.CurrentAssets/LAr.CurrentLiabilities;
+        t=Round(t,SetRoundModeD(2));
+      end else begin
+        t=blankval;
+      end;
+      PutWindowString(wn,"currliquidityratio",t);  
+    end;
+  end;  
+  return;
+end;
+
 
 global
 function Boolean B2BLoanApplicationDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
 begin
+  record B2BLoanApplicationVc LAr;
   Boolean res;
   Integer num;
 
@@ -460,7 +590,17 @@ begin
         res = B2BLoanApplicationDClassPrevReceivablesEFAfter(wn,changed);
       case "PrevPayables":
         res = B2BLoanApplicationDClassPrevPayablesEFAfter(wn,changed); 
+      case "Workplace":
+        res = B2BLoanApplicationDClassWorkplaceEFAfter(wn,changed);
+      case "Beneficiary":
+        res = B2BLoanApplicationDClassBeneficiaryEFAfter(wn,changed);  
       otherwise
+        if (fieldname=="NetProfit") or (fieldname=="Turnover") or (fieldname=="MonthlyLoadPayment") or (fieldname=="AvgIncome") 
+        or (fieldname=="CurrentAssets") or (fieldname=="CurrentLiabilities") or (fieldname=="OtherObligations") then begin
+          GetWindowRecord(wn,LAr); 
+          UpdateB2BLoanApplicationSoftFields(wn,LAr,fieldname);
+          res=true;  
+        end;
         if (left(fieldname,14)=="SuretyProvider") then begin
           num = StringToInt(right(fieldname,1));
           res = B2BLoanApplicationDClassSuretyProviderEFAfter(wn,changed,num);
@@ -468,6 +608,10 @@ begin
         if (left(fieldname,6)=="Surety" and right(fieldname,6)=="Signer") then begin
           num = StringToInt(mid(fieldname,6,1));
           res = B2BLoanApplicationDClassSuretySignerEFAfter(wn,changed,num);
+        end;
+        if (left(fieldname,11)=="BoardMember") then begin
+          num = StringToInt(right(fieldname,1));
+          res = B2BLoanApplicationDClassBoardMemberEFAfter(wn,changed,num);
         end;
         
         
@@ -1069,7 +1213,7 @@ BEGIN
   GetWindowRecord(wn,RepSpec);
   ReportDefaults(RepSpec,"CMIncomeForecastRClass");  
   RepSpec.Scaling = 0;
-  RepSpec.BaseWidth = 1100;
+  RepSpec.BaseWidth = 1000;
   PutWindowRecord(wn,RepSpec);
   SelectWindow(wn);
   RETURN;
@@ -1285,16 +1429,28 @@ begin
 end;
 
 global
+function Boolean B2BLoanApplicationDClassOnOpenWindow(Integer wn)
+begin
+ record B2BLoanApplicationVc LAr;
+ GetWindowRecord(wn,LAr);
+ UpdateB2BLoanApplicationSoftFields(wn,LAr,"");
+ B2BLoanApplicationDClassOnOpenWindow=false;
+ return;
+end;
+
+global
 procedure B2BLoanApplicationDClassOnWindowRecordChange(Integer wn)
 begin
   record B2BLoanApplicationVc LAr;
-  string 255 f;
+  string 255 f,f2;
 
   f = WindowActiveField(wn);
   RerunWindowDef(wn);
   GetWindowRecord(wn,LAr);
+  UpdateB2BLoanApplicationSoftFields(wn,LAr,"");
   WindowFieldGoto(wn,LAr,-1,f,true);
-
+  f2 = WindowActiveField(wn);
+  //StopAlert("B2BLoanApplicationDClassOnWindowRecordChange f=" & f & " f2=" & f2);//aldevinas
   return;
 end;
 
@@ -1565,3 +1721,42 @@ BEGIN
   SelectWindow(wn);
   RETURN;
 END;
+
+global
+updating procedure B2BLoanApplicationDClassOpenProperties()
+begin
+  record B2BLoanApplicationVc LAr;
+  record CredManPropertiesVc CMPr;
+  record CredManTypeVc CMTr;
+  Integer wn,nwn;
+  
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_Normal) then begin
+    GetWindowRecord(wn,LAr);
+    GetB2BLoanApplicationPropertyRecord(LAr,CMPr);
+    nwn = OpenWindow("CredManPropertiesDClass",0,0,"","",CMPr);
+    CMTr.Code=LAr.Type;
+    if (ReadFirstMain(CMTr,1,true)) then begin
+      PutWindowString(nwn,"type",CMTr.LoanType);
+    end;
+//???    PutWindowString(nwn,"type",CredManr.LoanType);
+    RerunWindowDef(nwn);        
+  end;
+  return;
+end;
+
+global
+updating procedure B2BLoanApplicationDClassOpenDebts()
+begin
+  record B2BLoanApplicationVc LAr;
+  record LoanAppDebtsVc LADr;
+  Integer wn,nwn;
+  
+  wn = CurWindow;
+  if (WindowState(wn)==Rs_Normal) then begin
+    GetWindowRecord(wn,LAr);
+    GetB2BLoanApplicationDebtRecord(LAr,LADr);
+    nwn = OpenWindow("LoanAppDebtsDClass",0,0,"","",LADr);
+  end;
+  return;
+end;

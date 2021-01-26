@@ -1708,9 +1708,11 @@ updating procedure GetCredManPropertyRecord(record CredManVc CredManr,var record
 begin
   
   CMPr.CredManNr = CredManr.SerNr;
-  if (ReadFirstMain(CMPr,1,true)==false) then begin
+  CMPr.RecordType = 0;
+  if (ReadFirstMain(CMPr,2,true)==false) then begin
     RecordNew(CMPr);
     CMPr.CredManNr = CredManr.SerNr;
+    CMPr.RecordType = 0;
     RecordInsert(CMPr,true);
   end;
 

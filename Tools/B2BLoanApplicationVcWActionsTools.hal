@@ -881,3 +881,45 @@ begin
 
   return;
 end;
+
+global
+updating procedure GetB2BLoanApplicationPropertyRecord(record B2BLoanApplicationVc LAr,var record CredManPropertiesVc LAPr)
+begin
+  
+  LAPr.CredManNr = LAr.SerNr;
+  LAPr.RecordType=1;
+  if (ReadFirstMain(LAPr,2,true)==false) then begin
+    RecordNew(LAPr);
+    LAPr.CredManNr = LAr.SerNr;
+    LAPr.RecordType=1;
+    RecordInsert(LAPr,true);
+  end;
+
+  return;
+end;
+
+global
+updating procedure GetB2BLoanApplicationDebtRecord(record B2BLoanApplicationVc LAr,var record LoanAppDebtsVc LADr)
+begin
+  
+  LADr.LoanAppNr = LAr.SerNr;
+  if (ReadFirstMain(LADr,1,true)==false) then begin
+    RecordNew(LADr);
+    LADr.LoanAppNr = LAr.SerNr;
+    RecordInsert(LADr,true);
+  end;
+  return;
+end;
+
+global
+procedure InsertB2BLoanApplicationBoardMemberName(var record B2BLoanApplicationVc LAr,Integer num)
+begin
+  Boolean res;
+  record CUVc CUr;
+  
+  CUr.Code = GetFieldValueByName(LAr,"BoardMember" & num,-1);
+  if (ReadFirstMain(CUr,1,true)) then begin
+    SetFieldValueByName(LAr,"BoardMember" & num & "Name",CUr.Name,-1);
+  end;
+  return;
+end;

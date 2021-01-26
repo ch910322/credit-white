@@ -514,7 +514,8 @@ begin
   record CredManPropertiesVc CMPr;
   
   CMPr.CredManNr = CredManr.SerNr;
-  if (ReadFirstMain(CMPr,1,true)) then begin
+  CMPr.RecordType = 0;
+  if (ReadFirstMain(CMPr,2,true)) then begin
     if (MatRowCnt(CMPr)>0) then begin
       res = true;
     end;
@@ -549,7 +550,8 @@ begin
   Boolean res;
   
   CMPr.CredManNr = CredManr.SerNr;
-  if (ReadFirstMain(CMPr,1,true)) then begin
+  CMPr.RecordType = 0;
+  if (ReadFirstMain(CMPr,2,true)) then begin
     rwcnt = MatRowCnt(CMPr);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CMPr,i,CMPrw);
@@ -1579,7 +1581,8 @@ begin
   end;
 */
   CMPr.CredManNr = CredManr.SerNr;
-  if (ReadFirstMain(CMPr,1,true)) then begin
+  CMPr.RecordType = 0;
+  if (ReadFirstMain(CMPr,2,true)) then begin
     rwcnt = MatRowCnt(CMPr);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CMPr,i,CMPrw);

@@ -86,7 +86,7 @@ begin
  
   SetLangMode(LangEnglish,"ENG",0);
 
-  WindowBegin("B2B Loan Applications",B2BLoanApplicationLClass,CGmList,-);
+  WindowBegin("Loan Applications",B2BLoanApplicationLClass,CGmList,-);
   Sizeable(-1,-1,0,0);
   SetWRect(64,80,800,298);
   SpawnClass(B2BLoanApplicationDClass);
@@ -105,7 +105,7 @@ begin
   SearchField("Search");
   EndWindow;
 
-  WindowBegin("Paste B2B Loan Application",B2BLoanApplicationSClass,CGsList,-);
+  WindowBegin("Paste Loan Application",B2BLoanApplicationSClass,CGsList,-);
   Sizeable(-1,-1,0,0);
   SetWRect(64,80,800,298);
   SpawnClass(B2BLoanApplicationDClass);
@@ -123,7 +123,7 @@ begin
   SpecialMenu("Evaluation report",' ',2,"");
   EndWindow;
 
-  WindowBegin("Number Series - B2B Loan Applications",B2BLoanAppSerTClass,CGHbl,HBlRecType);
+  WindowBegin("Number Series - Loan Applications",B2BLoanAppSerTClass,CGHbl,HBlRecType);
   SetBlid(B2BLoanAppSerBlock);
   SetWRect(20,80,600,351);
   Sizeable(-1,-1,0,0);
@@ -510,7 +510,7 @@ begin
   EditFieldTL(h=160,v=6,120,"Credit Agreement",M4Long,Normal,0,long1,false,CredManSClass);
   EndWindow;
 
-  WindowBegin("Specify B2B Loan Application Form",LoanAppRClass,CGRcW,RcType);
+  WindowBegin("Specify Loan Application Form",LoanAppRClass,CGRcW,RcType);
   SetWRect(20,80,400,220);
   vs=20;
   EditFieldTL(h=160,v=6,120,"Loan Application",M4Long,Normal,0,long1,false,B2BLoanApplicationSClass);
@@ -765,8 +765,9 @@ begin
   real v,vs,h,h2,h3,t,tilenr,vm,pos;
   string 255 label1,label2,label3,label4,label5;
   record B2BLoanApplicationVc LAr;
+  record CredManTypeVc CMTr;
 
-  WindowBegin("B2B Loan Application",B2BLoanApplicationDClass,CGview,-);
+  WindowBegin("Loan Application",B2BLoanApplicationDClass,CGview,-);
   SetWRect(64,80,859,300);
   UseView(B2BLoanApplicationVc);
   DynamicWindow;
@@ -789,7 +790,8 @@ begin
   EditField(h3+30,v,-40,"Monthly Payment Day",Normal,MonthlyPaymentDay,true,0);
   vm = v;
   EditField(h,v+=vs,100,"Total Sum",Normal,Sum,true,0);
-  EditField(h2,v,130,"Manager",Normal,Manager,false,UserSClass);
+  EditField(h2,v,100,"Monthly Repayment",Normal,MonthlyRepayment,true,0);
+  EditField(h3,v,130,"Manager",Normal,Manager,false,UserSClass);
   EditField(h,v+=vs,100,"Months",Normal,Months,true,0);
   EditField(h,v+=vs,100,"Monthly Rate %",Normal,InterestRate,true,0);
   //EditField(h,v+=vs,100,"Start Date",Normal,StartDate,false,PasteCurDate);
@@ -800,13 +802,36 @@ begin
   HalPushButton(h3+60,v,h3+160,v+25,"B2BLoanAppEvaluate","Evaluate");
 
   h3=h3-30;
+  //ak_start
+  if (GetWindowClass(CurWindow)=="B2BLoanApplicationDClass") then begin  
+    GetWindowRecord(CurWindow,LAr);
+  end;
+  v=v+25;
+  
+  CMTr.Code=LAr.Type;
+  if (ReadFirstMain(CMTr,1,true)) then begin
+    switch (CMTr.LoanType) begin
+	  case 2: //leasing
+	    HalPushButton(h-50,v+=vs,h+70,v+20,"B2BLoanApplicationDClassOpenProperties","Assets");
+    case 3: //Mortgage		
+	    HalPushButton(h-50,v+=vs,h+70,v+20,"B2BLoanApplicationDClassOpenProperties","Pledges");
+    otherwise
+      
+    end;
+  end;
+  
+  //ak_end
   tilenr = 1;
-  TileButton(tilenr,"Contact"); tilenr = tilenr + 1;
+  //TileButton(tilenr,"Contact"); tilenr = tilenr + 1;
+  TileButton(tilenr,"Board Members"); tilenr = tilenr + 1;
   TileButton(tilenr,"Surety"); tilenr = tilenr + 1;  
-  TileButton(tilenr,"Evaluation"); tilenr = tilenr + 1;  
+  //TileButton(tilenr,"Evaluation"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Company Evaluation"); tilenr = tilenr + 1;  
+  TileButton(tilenr,"Person Evaluation"); tilenr = tilenr + 1;  
   TileButton(tilenr,"Comments"); tilenr = tilenr + 1;  
   TileButton(tilenr,"Shareholders"); tilenr = tilenr + 1;  
   tilenr = 1;
+  /*
   Tile(tilenr,290,true,tilenr,Addr0); tilenr = tilenr + 1;
   v = 6;
   label1 = UserDefined("CUVc","InvAddr0");
@@ -841,7 +866,37 @@ begin
   EditField(h2+50,v,100,"CEO Name",Normal,CEOName,false,0);
   EditField(h+100,v+=25,100,"CEO Represent.",Normal,CEORep,false,0);
   CheckBox(h2+50,v,0,"Approved by CFO",CFOApprovedFlag);
- 
+ */
+  Tile(tilenr,290,true,tilenr,BoardMember1); tilenr = tilenr + 1;
+  v = 6;
+  StaticText(h=60,v=15,"Contact Code",false);
+  StaticText(h+120,v,"Name",false);
+  StaticText(h+450,v,"Debt",false);
+  
+  v = v + 30;
+  EditField(h=70,v,60,"Member 1",Normal,BoardMember1,false,B2BLoanApp_CUSClass);
+  EditField(h+110,v,200,"",Normal,BoardMember1Name,false,0);
+  EditField(h+440,v,60,"",Normal,BMDebt1,true,0);
+  v = v + 30;
+  EditField(h=70,v,60,"Member 2",Normal,BoardMember2,false,B2BLoanApp_CUSClass);
+  EditField(h+110,v,200,"",Normal,BoardMember2Name,false,0);
+  EditField(h+440,v,60,"",Normal,BMDebt2,true,0);
+  v = v + 30;
+  EditField(h=70,v,60,"Member 3",Normal,BoardMember3,false,B2BLoanApp_CUSClass);
+  EditField(h+110,v,200,"",Normal,BoardMember3Name,false,0);
+  EditField(h+440,v,60,"",Normal,BMDebt3,true,0);
+  v = v + 30;
+  EditField(h=70,v,60,"Member 4",Normal,BoardMember4,false,B2BLoanApp_CUSClass);
+  EditField(h+110,v,200,"",Normal,BoardMember4Name,false,0);
+  EditField(h+440,v,60,"",Normal,BMDebt4,true,0);
+  v = v + 30;
+  EditField(h=70,v,60,"Member 5",Normal,BoardMember5,false,B2BLoanApp_CUSClass);
+  EditField(h+110,v,200,"",Normal,BoardMember5Name,false,0);
+  EditField(h+440,v,60,"",Normal,BMDebt5,true,0);
+  v = v + 30;
+  EditField(h=70,v,60,"Beneficiary",Normal,Beneficiary,false,B2BLoanApp_CUSClass);
+  EditField(h+110,v,200,"", Normal,BeneficiaryName,false,0);
+  
   Tile(tilenr,290,true,tilenr,MajorityOwner1); tilenr = tilenr + 1;  
   
   if (SimplifiedSureties) then begin
@@ -949,9 +1004,10 @@ begin
     RadioButton(h,v+=16,1,0,"21-27",Surety1AgeGroup);  
     RadioButton(h,v+=16,2,0,"28-64",Surety1AgeGroup);  
     RadioButton(h,v+=16,3,0,"65+",Surety1AgeGroup);
-    if (GetWindowClass(CurWindow)=="B2BLoanApplicationDClass") then begin  
+    /*if (GetWindowClass(CurWindow)=="B2BLoanApplicationDClass") then begin  
       GetWindowRecord(CurWindow,LAr);
-    end;
+    end; moved up
+	*/
     if (LAr.SuretyCnt>=2) then begin
       StaticText(h2=365,v=26,"Surety Provider 2",false);
       CheckBox(h2,v=v+vs,0,"Majority Owner",MajorityOwner2);
@@ -1030,8 +1086,18 @@ begin
     end;
   end;
 
-  Tile(tilenr,600,true,tilenr,LateRating); tilenr = tilenr + 1;
-  EditField(h=135,v=6,100,"Late Rating",Normal,LateRating,true,0);
+  Tile(tilenr,600,true,tilenr,Equity); tilenr = tilenr + 1;
+  EditField(h=135,v=6,100,"Equity",Normal,Equity,true,0);
+  EditField(h2=365,v,100,"Working Capital",Normal,WorkingCapital,true,0);
+  EditField(h3=595,v,100,"Short Term Liabilities",Normal,ShortTermLiabilities,true,0);
+  EditField(h,v+=vs,100,"Current Assets",Normal,CurrentAssets,true,0);
+  EditField(h2,v,100,"Current Liabilities",Normal,CurrentLiabilities,true,0);
+  EditField(h3,v,100,"Turnover",Normal,Turnover,true,0);
+  EditField(h,v+=vs,100,"Net Profit",Normal,NetProfit,true,0);
+  SoftEditField(h2,v,100,"Returns on Sales",ViewOnly,"returnsonsales",true,0,M4Val,0);
+  SoftEditField(h3,v,100,"Curr. Liquidity Ratio",ViewOnly,"currliquidityratio",true,0,M4Val,0);
+  
+  EditField(h=135,v+=vs,100,"Late Rating",Normal,LateRating,true,0);
   EditField(h2=365,v,100,"Bankruptcy Rating",Normal,BankruptcyRating,true,0);
   EditField(h3=595,v,100,"Established",Normal,Established,false,PasteCurDate);
   EditField(h,v+=vs,100,"Monthly Loan Payment",Normal,MonthlyLoadPayment,true,0);
@@ -1052,14 +1118,14 @@ begin
   CheckBox(h3,v,0,"Available fin. statements",AvailableFinStatements);
 
 //  EditField(h,v+=vs,100,"Long Term Asset Value",Normal,AssetValue,false,0);
-  EditField(h,v+=vs,100,"50% Rev. Customers",Normal,HalfRevenueCustomers,true,0);
-  EditField(h2,v,100,"Equity",Normal,Equity,true,0);
-  EditField(h3=595,v,100,"50% Cost Suppliers",Normal,HalfCostSuppliers,true,0);
-  EditField(h,v+=vs,100,"Months",Normal,RevMonths,true,0);
-  EditField(h2,v,100,"Revenue",Normal,Revenue,true,0);
-  EditField(h3,v,100,"Annual Revenue",Normal,AnnualRevenue,true,0);
+  //EditField(h,v+=vs,100,"50% Rev. Customers",Normal,HalfRevenueCustomers,true,0);
+  //EditField(h,v+=vs,100,"Equity",Normal,Equity,true,0);
+  //EditField(h3=595,v,100,"50% Cost Suppliers",Normal,HalfCostSuppliers,true,0);
+  //EditField(h,v+=vs,100,"Months",Normal,RevMonths,true,0);
+  //EditField(h2,v,100,"Revenue",Normal,Revenue,true,0);
+  //EditField(h3,v,100,"Annual Revenue",Normal,AnnualRevenue,true,0);
   h3 = 565;
-
+/*
   ButtonFrame(h-50,v=v+40,640,1,"Current");
   EditField(h,v,80,"Profit",Normal,CurProfit,true,0);
   EditField(h2=320,v,80,"Receivables",Normal,CurReceivables,true,0);
@@ -1071,6 +1137,21 @@ begin
   EditField(h2,v,80,"Receivables",Normal,PrevReceivables,true,0);
   EditField(h3-100,v,80,"Payables",Normal,PrevPayables,true,0);
   EditField(h3+40,v,80,"Total",Normal,PrevTotal,true,0);
+*/
+  Tile(tilenr,600,true,tilenr,Workplace); tilenr = tilenr + 1;//Person evaluation
+  v=6;
+  HalPushButton(h-50,v,h+70,v+20,"B2BLoanApplicationDClassOpenDebts","Debts");
+  EditField(h,v+=vs+10,80,"Workplace",Normal,Workplace,true,B2BLoanApp_CUSClass);
+  EditField(h2,v,300,"",Normal,WorkplaceName,false,0);
+  
+  EditField(h,v+=vs,80,"Average Income",Normal,AvgIncome,true,0);
+  EditField(h2,v,80,"Other Obligations",Normal,OtherObligations,true,0);
+  EditField(h3+30,v,80,"Curr. avg. loan expenses",Normal,CurrAvgLoanExp,true,0);
+  
+  SoftEditField(h,v+=vs,80,"Affordability",ViewOnly,"affordability",true,0,M4Val,0);
+  SoftEditField(h3+30,v,80,"Monthly payment/Avg. income 6 m",ViewOnly,"monthpayperavgincome",true,0,M4Val,0);
+  
+  
 
   Tile(tilenr,560,false,tilenr,Math2); tilenr = tilenr + 1;
   StaticText(30,v=30,"Comments",false);
@@ -2608,6 +2689,29 @@ begin
   EndWindow;
 end;
 
+
+window LoanAppDebtsDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  
+  WindowBegin("Debts",LoanAppDebtsDClass,CGview,-);
+  SetWRect(20,80,900,339);
+  DynamicWindow;
+  UseView(LoanAppDebtsVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  MatrixBegin(10,20,-40,-20,-,99);
+  MatCol(1,24,"Lender",0,LenderCode,false,B2BLoanApp_CUSClass);
+  MatCol(1,104,"Name",0,Addr0,false,0);
+  MatCol(1,-530,"Monthly Rate",0,MonthlyRate,true,0);
+  MatCol(1,-440,"Monthly Payment",0,MonthlyPayment,true,0);
+  MatCol(1,-350,"End Date",0,EndDate,true,PasteCurDate);
+  MatCol(1,-280,"Amount",0,Amount,true,0);
+  MatCol(1,-200,"Debt Type",0,DebtType,false,0);//SetSClass???
+  MatCol(1,-80,"Source",0,Source,false,SourceSClass);//
+  EndMatrix;
+  EndWindow;
+end;
 
 window IVSClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
