@@ -1621,6 +1621,7 @@ begin
   RecordField(CredManNr,M4Long,0,0);
   RecordField(RecalcSchedule,M4Int,0,0);
   RecordField(IntRate,M4Rate,0,0);
+  RecordField(AddVal,M4Val,0,0);
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(CredManPaid);
@@ -1938,6 +1939,7 @@ begin
   RecordField(AnnualRate,M4Int,0,0);
   RecordField(OverduePercentage,M4Qty,0,0);
   RecordField(MonthlyPaymentDay,M4Long,0,0);
+  RecordField(AddValue,M4Val,0,0);
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(CredManDate);
@@ -1953,6 +1955,7 @@ begin
 
   RecordAddBegin(VIVc,"Cred_VIVc"); 
   RecordField(CustCredManNr,M4Long,0,0);
+  RecordField(CredManExtraPayment,M4Int,0,0);
   EndRecordAdd;
 
   BlockBegin(CMDateTextBlock,-,"");

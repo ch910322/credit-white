@@ -438,9 +438,9 @@ begin
             case 4:
               AddBuyOutToList(CredHistr.Sum,CredHistr.TransDate,SMr,calcbal);
             case 5:
-              if (int_type==2) then begin
+              //if (int_type==2) then begin
                 AddPayOutToList(CredHistr.Sum,CredHistr.TransDate,SMr,calcbal);
-              end;
+              //end;
             otherwise
               IPr.SerNr = CredHistr.RecordNr;
               if (ReadFirstMain(IPr,1,true)) then begin

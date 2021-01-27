@@ -1,5 +1,4 @@
-external updating procedure CreatePauseRecord(Longint,Date,val,val,val,Integer);
-external updating procedure CreateProlongRecord(Longint,Date,val,Integer);
+external updating procedure CreatePauseRecord(Longint,Date,val,val,val,val,Integer);
 
 global
 updating procedure CreateCredManChangeMn(record RcVc RepSpec)
@@ -19,7 +18,7 @@ begin
       pause = blankval;
     end;
     if (nonblank(pause) or nonblank(prolong)) then begin
-      CreatePauseRecord(CredManr.SerNr,CredManr.xPauseDate,pause,prolong,blankval,1);
+      CreatePauseRecord(CredManr.SerNr,CredManr.xPauseDate,pause,prolong,blankval,blankval,1);
     end;
   end;
 
