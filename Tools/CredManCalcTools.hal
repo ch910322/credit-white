@@ -1203,11 +1203,18 @@ end;
 function Boolean TotalsDifferTooMuch(val v1,val v2,var val diff,record CredManVc CredManr,Integer usemonths)
 begin
   Boolean res;
-  val origdiff;
+  val origdiff,limit,tmpval;
   origdiff = diff;
 
-  diff = v1-v2;//2nd last - last
-  if (AbsoluteVal(diff)>1) then begin
+  diff = v1-v2;//2nd last - 
+  if (usemonths>100) then begin
+    tmpval = usemonths;
+    tmpval = tmpval/100;
+    limit = Power(tmpval,2);
+  end else begin
+    limit = 1;
+  end;
+  if (AbsoluteVal(diff)>limit) then begin
     res = true;
     diff = CalculateAnnuityDiff(CredManr,diff,usemonths);
   end else begin
