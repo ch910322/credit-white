@@ -1016,7 +1016,7 @@ begin
           lastrecnr = CredHistr.RecordNr;
         end;
       end;
-      if (CredHistr.RecordType==5 and int_type==2 and (CredHistr.TransDate<=lastinvdate and nonblank(lastinvdate))) then begin
+      if (CredHistr.RecordType==5 and (CredHistr.TransDate<=lastinvdate and nonblank(lastinvdate))) then begin
         calcbal = calcbal + CredHistr.Sum;
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,"","",kEventTypePayout,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,openamount);
         prevusesum = usesum;
@@ -1192,7 +1192,6 @@ begin
           pauseuntil = AddMonth(Changer.TransDate,Changer.PauseMonths-1);
           usemonths = months - pausestartmonths - pausemonths;
           usesum = GetBalanceOnDate(CredManPayPlanr,Changer.TransDate);
-
         end;
       end;
     end;
@@ -1395,7 +1394,7 @@ begin
   prevusesum = usesum;
 
   addbal = 0;
-  if (int_type==2) then begin
+//  if (int_type==2) then begin
     TrHs = true;
     CredHistr.TransDate = frdate;
     while (LoopKey("CredManTransDate:" & CredManr.SerNr,CredHistr,1,TrHs)) begin
@@ -1417,7 +1416,7 @@ begin
         end;
       end;
     end;
-  end;
+//  end;
   
 //Add partial buyouts in period
   ResetLoop(CredHistr);

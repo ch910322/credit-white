@@ -1,6 +1,7 @@
 //<halrule>server-only</halrule>
 external  procedure CredManSetDatesCust(var record CredManVc,Boolean);
 external updating procedure RecreateAgreementSchedule2(record CredManVc,Boolean);
+external updating procedure CreateCredmanPurchaseInvoice(record CredManVc,val,var record VIVc,val,Boolean);
 
 global
 function LongInt CredHistVcRecordInIndex(record CredHistVc CredHistr,string indexname)
@@ -19,7 +20,7 @@ begin
 end; 
 
 global
-updating procedure CreatePauseRecord(Longint sernr,Date td,val months,val months2,val rate,Integer okflag)
+updating procedure CreatePauseRecord(Longint sernr,Date td,val months,val months2,val rate,val addval,Integer okflag)
 begin
   record CredManChangeVc Changer;
   
@@ -29,39 +30,7 @@ begin
   Changer.PauseMonths = months;
   Changer.ProlongMonths = months2;
   Changer.IntRate = rate;
-  Changer.OKFlag = okflag;
-  Changer.CredManNr = sernr;
-  RecordStore(Changer,true);
-
-  return;
-end;
-
-global
-updating procedure CreateRateChangeRecord(Longint sernr,Date td,val rate,Integer okflag)
-begin
-  record CredManChangeVc Changer;
-  
-  RecordNew(Changer);
-  Changer.SerNr = NextSerNr("CredManChangeVc",td,-1,false,"");
-  Changer.TransDate = td;
-  Changer.IntRate = rate;
-  Changer.OKFlag = okflag;
-  Changer.CredManNr = sernr;
-  RecordStore(Changer,true);
-
-  return;
-end;
-
-
-global
-updating procedure CreateProlongRecord(Longint sernr,Date td,Integer months,Integer okflag)
-begin
-  record CredManChangeVc Changer;
-  
-  RecordNew(Changer);
-  Changer.SerNr = NextSerNr("CredManChangeVc",td,-1,false,"");
-  Changer.TransDate = td;
-  Changer.ProlongMonths = months;
+  Changer.AddValue = addval;
   Changer.OKFlag = okflag;
   Changer.CredManNr = sernr;
   RecordStore(Changer,true);
@@ -95,35 +64,6 @@ begin
 
   return;
 end;
-
-
-global
-updating procedure ApproveRateRecord(Longint sernr,Date td,Date nd,val rate)
-begin
-  record CredManChangeVc Changer,oldChanger;
-  Boolean TrHs;
-
-  TrHs = true;
-  Changer.CredManNr = sernr;
-  Changer.TransDate = td;
-  while (LoopKey("CredManDate",Changer,2,TrHs)) begin
-    if (Changer.CredManNr!=sernr or Changer.TransDate!=td) then begin
-      TrHs = false;
-    end else begin
-      if (Changer.IntRate==rate) then begin
-        RecordCopy(oldChanger,Changer);
-        Changer.OKFlag = 1;
-        if (nonblank(nd) and Changer.TransDate<nd) then begin
-          Changer.TransDate = nd;
-        end;
-        RecordUpdate(oldChanger,Changer,false);
-      end;
-    end;
-  end;
-
-  return;
-end;
-
 
 global
 function Integer GetProlongMonths(record CredManVc CredManr)
@@ -179,6 +119,7 @@ begin
   record ProlongSessionVc PSr,oldPSr;
   record CredManVc CredManr,oldCredManr;
   record AgreementDocVc ADr;
+  record VIVc VIr;
   Date ndate;
   
   PSr.CredManNr = sernr;
@@ -189,14 +130,12 @@ begin
       if (ReadFirstMain(CredManr,1,true)) then begin
         ndate = GetInvoicePaidDate(histnr);
         RecordCopy(oldCredManr,CredManr);
-        if (PSr.PauseMonths>0 or PSr.ProlongMonths>0 or PSr.IntRate>0) then begin
+        if (PSr.PauseMonths>0 or PSr.ProlongMonths>0 or PSr.IntRate>0 or PSr.AddVal>0) then begin
           ApprovePauseRecord(CredManr.SerNr,PSr.PauseDate,ndate,PSr.PauseMonths,PSr.ProlongMonths);
+          if (PSr.AddVal>0) then begin
+            CreateCredmanPurchaseInvoice(CredManr,0,VIr,PSr.AddVal,true);
+          end;
         end;
-        /*
-        if (PSr.IntRate>0) then begin
-          ApproveRateRecord(CredManr.SerNr,PSr.PauseDate,ndate,PSr.IntRate);
-        end;
-        */
         CredManSetDatesCust(CredManr,false);
         if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
           if (PSr.RecalcSchedule==1) then begin

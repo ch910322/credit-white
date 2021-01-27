@@ -545,6 +545,7 @@ begin
   EditFieldTL(h,v+=vs,120,"Pause Months",M4Qty,Normal,0,vals0,false,0);
   EditFieldTL(h,v+=vs,120,"Prolong Months",M4Qty,Normal,0,vals1,false,0);
   EditFieldTL(h,v+=vs,120,"New Rate",M4Rate,Normal,0,vals3,false,0);
+  EditFieldTL(h,v+=vs,120,"Extra Value",M4Rate,Normal,0,vals4,false,0);
   CheckBox(h,v+=vs,0,"Re-sign Schedule",flags[1]);
   CheckBox(h,v+=vs,0,"Issue Prolong Invoice",flags[2]);
   CheckBox(h,v+=vs,0,"Prolong only when Invoice is paid",flags[3]);
@@ -2355,6 +2356,7 @@ begin
   EditField(h,v+=vs,50,"PaidFlag",Normal,PaidFlag,false,0);
   EditField(h,v+=vs,50,"CredManNr",Normal,CredManNr,false,0);
   EditField(h,v+=vs,50,"RecalcSchedule",Normal,RecalcSchedule,false,0);
+  EditField(h,v+=vs,50,"Extra Value",Normal,AddValue,false,0);
   EndWindow;
 end;
 
@@ -3322,6 +3324,7 @@ begin
   EditField(h,v+=vs,100,"Date",Normal,TransDate,false,PasteCurDate);
   EditField(h,v+=vs,100,"Prolong Months",Normal,ProlongMonths,false,0);
   EditField(h,v+=vs,100,"Pause Months",Normal,PauseMonths,false,0);
+  EditField(h,v+=vs,100,"Extra Value",Normal,AddValue,false,0);
   EditField(h,v+=vs,100,"Rate",Normal,IntRate,false,0);
   Checkbox(h2,v,0,"Annual Rate",AnnualRate);
   EditField(h,v+=vs,100,"Overdue Percentage",Normal,OverduePercentage,false,0);
