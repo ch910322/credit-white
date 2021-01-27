@@ -67,7 +67,7 @@ external procedure AddBuyOutFee(record CredManVc,var record IVVc,val);
 external procedure CheckAndAddHiddenPrinciple(var record IVVc,record CMInvoicingBlock);
 external function val GetActualBalance(record CredManVc,record CredManPayPlanVc,Boolean);
 remote procedure RefinCredManPartialWClassSubmitCallBack(string,Integer);
-forward updating procedure CreateCredmanPurchaseInvoice(record CredManVc,val,var record VIVc,val,Boolean);
+forward updating procedure CreateCredmanPurchaseInvoice(record CredManVc,val,var record VIVc,val,Boolean,Date);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -454,7 +454,7 @@ begin
         end;
         CredManSetDatesCust(CredManr,false);
         if (addval>0) then begin
-          CreateCredmanPurchaseInvoice(CredManr,0,VIr,addval,true);
+          CreateCredmanPurchaseInvoice(CredManr,0,VIr,addval,true,td);
           GenerateAgreementSchedule(CredManr,true,true);
         end;
         /*
@@ -1351,7 +1351,7 @@ begin
 end;
 
 global
-updating procedure CreateCredmanPurchaseInvoice(record CredManVc CredManr,val credsum,var record VIVc VIr,val overridesum,Boolean extrapayment)
+updating procedure CreateCredmanPurchaseInvoice(record CredManVc CredManr,val credsum,var record VIVc VIr,val overridesum,Boolean extrapayment,Date overridedate)
 begin
   record CMInvoicingBlock CIb;
   record VIVc oldVIr;
@@ -1371,6 +1371,9 @@ begin
     VIr.TransDate = CurrentDate;
   end else begin
     VIr.TransDate = CredManr.startDate;
+  end;
+  if (nonblank(overridedate)) then begin
+    VIr.TransDate = overridedate;
   end;
   VIr.InvDate = VIr.TransDate;
   VIr.SerNr = NextSerNr("VIVc",VIr.InvDate,-1,false,"");
@@ -1513,7 +1516,7 @@ begin
     RecordCopy(tIVr,IVr);
     
     //CredManCreditAllInvoices(CredManr);
-    CreateCredmanPurchaseInvoice(CredManr,IVr.Sum4,VIr,overridesum,false);
+    CreateCredmanPurchaseInvoice(CredManr,IVr.Sum4,VIr,overridesum,false,"");
     tCredManr.SerNr = CredManr.SerNr;
     if (ReadFirstMain(tCredManr,1,true)) then begin
       if (ComparePosts(tCredManr,CredManr)==false) then begin

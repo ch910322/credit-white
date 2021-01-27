@@ -1,7 +1,7 @@
 //<halrule>server-only</halrule>
 external  procedure CredManSetDatesCust(var record CredManVc,Boolean);
 external updating procedure RecreateAgreementSchedule2(record CredManVc,Boolean);
-external updating procedure CreateCredmanPurchaseInvoice(record CredManVc,val,var record VIVc,val,Boolean);
+external updating procedure CreateCredmanPurchaseInvoice(record CredManVc,val,var record VIVc,val,Boolean,Date);
 
 global
 function LongInt CredHistVcRecordInIndex(record CredHistVc CredHistr,string indexname)
@@ -133,7 +133,7 @@ begin
         if (PSr.PauseMonths>0 or PSr.ProlongMonths>0 or PSr.IntRate>0 or PSr.AddVal>0) then begin
           ApprovePauseRecord(CredManr.SerNr,PSr.PauseDate,ndate,PSr.PauseMonths,PSr.ProlongMonths);
           if (PSr.AddVal>0) then begin
-            CreateCredmanPurchaseInvoice(CredManr,0,VIr,PSr.AddVal,true);
+            CreateCredmanPurchaseInvoice(CredManr,0,VIr,PSr.AddVal,true,PSr.TransDate);
           end;
         end;
         CredManSetDatesCust(CredManr,false);
