@@ -1613,7 +1613,7 @@ begin
 end;
 
 global
-updating procedure DoBuyOutAgreement(record CredManVc CredManr,var record IVVc firstIVr)
+updating procedure DoBuyOutAgreement(record CredManVc CredManr,Date td,var record IVVc firstIVr)
 begin
   record CredManSetBlock CMb;
   record CredManPayPlanVc CredManPayPlanr;
@@ -1629,16 +1629,15 @@ begin
     BlockLoad(CMb);
     BlockLoad(CIb);
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
-    CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,CurrentDate,IVr,false,sd);
+    CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,td,IVr,false,sd);
 
     CM_AddPrepayments(IVr,CredManr,CIb);
     if (IVr.SerNr>-1) then begin
       CheckAndAddHiddenPrinciple(IVr,CIb);
       if (IVr.Sum4>0) then begin
-        logtext(0,"DoBuyOutAgreement CIb.OverdueIVType " & CIb.OverdueIVType & ":" & sd);
         if (CIb.OverdueIVType>0) then begin
-          GetCredManOverdueInvoices(CredManr,CMb,CurrentDate,sd,latedays,lateamount,lateformula,true,false,calcsd);
-          SetupLoanInvoice(CredManr,CMb,oIVr,CurrentDate,calcsd,CurrentDate,true,false,"",2,true);
+          GetCredManOverdueInvoices(CredManr,CMb,td,sd,latedays,lateamount,lateformula,true,false,calcsd);
+          SetupLoanInvoice(CredManr,CMb,oIVr,td,calcsd,td,true,false,"",2,true);
           AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
           SetupOverdueLangCode(oIVr,CredManr);
           StoreLoanInvoice(oIVr,CredManr);

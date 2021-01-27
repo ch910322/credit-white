@@ -3,7 +3,7 @@ remote procedure PasteCustInAgreementRemote(var record CredManVc,var string);
 remote updating procedure TerminateCredMan(var record CredManVc,val,string,Date,Boolean);
 remote procedure TerminateCredManFinish(var record CredManVc);
 //remote updating procedure TerminateCredMan(var record CredManVc,var record IVVc);//old implementation
-remote updating procedure DoBuyOutAgreement(record CredManVc,var record IVVc);
+remote updating procedure DoBuyOutAgreement(record CredManVc,Date,var record IVVc);
 remote procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 remote inner procedure SetupCustPS2Rn(string,var record RcVc);
 remote procedure CredManSetDatesCust(var record CredManVc,Boolean);
@@ -637,13 +637,60 @@ begin
   Integer wn;
   record CredManVc CredManr;
   record IVVc IVr;
+  record RcVc RepSpec;
 
   wn = CurWindow;
   if (WindowState(wn)==Rs_Normal) then begin
     GetWindowRecord(wn,CredManr);
-    DoBuyOutAgreement(CredManr,IVr);
-    if (IVr.SerNr>0) then begin
-      OpenWindow("IVDClass",1,0,"","",IVr);
+    RepSpec.long1 = CredManr.SerNr;
+    RepSpec.d1 = CurrentDate;
+    OpenWindow("CredManBuyoutWClass",0,wn,"","",RepSpec);
+  end;
+
+  return;
+end;
+
+function Boolean CanTerminateWithDate(record CredManVc CredManr,Date td)
+begin
+  Boolean res;
+  Date lastinvdate;
+
+  res = true;
+  if (blank(td)) then begin
+    res = false;
+  end else begin
+    lastinvdate = GetLastInvoiceDate(CredManr,AddYear(CurrentDate,1));
+    if (lastinvdate>=td) then begin
+      res = false;
+    end;
+  end;
+
+  CanTerminateWithDate = res;
+  return;
+end;
+
+global
+updating procedure CredManBuyoutWClassProceed()
+begin
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  Integer wn,mwn;
+  record IVVc IVr;
+
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  mwn = MotherWindow(wn);
+  if (mwn>0) then begin
+    GetWindowRecord(mwn,CredManr);
+    if (CanTerminateWithDate(CredManr,RepSpec.d1)) then begin
+      DoBuyOutAgreement(CredManr,RepSpec.d1,IVr);
+      if (IVr.SerNr>0) then begin
+        OpenWindow("IVDClass",1,0,"","",IVr);
+      end;
+      CloseWindow(wn);
+    end else begin
+      MessageBox(200274,"");
     end;
   end;
 
@@ -1939,25 +1986,6 @@ begin
     end;
   end;
 
-  return;
-end;
-
-function Boolean CanTerminateWithDate(record CredManVc CredManr,Date td)
-begin
-  Boolean res;
-  Date lastinvdate;
-
-  res = true;
-  if (blank(td)) then begin
-    res = false;
-  end else begin
-    lastinvdate = GetLastInvoiceDate(CredManr,AddYear(CurrentDate,1));
-    if (lastinvdate>=td) then begin
-      res = false;
-    end;
-  end;
-
-  CanTerminateWithDate = res;
   return;
 end;
 

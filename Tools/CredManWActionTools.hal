@@ -1,4 +1,4 @@
-external updating procedure DoBuyOutAgreement(record CredManVc,var record IVVc);
+external updating procedure DoBuyOutAgreement(record CredManVc,Date,var record IVVc);
 external inner procedure CredManUpdate(var record CredManVc,Integer,string);
 external inner procedure CredManSumup(var record CredManVc);
 external inner procedure CredManVc_PasteCurncyCode(var record CredManVc);
@@ -737,7 +737,7 @@ begin
     CredManr.OrderClass = OCb.RefinClass;
     if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
       CreateRefinCredMan(RepSpec,nCredManr,CredManr);
-      DoBuyOutAgreement(CredManr,IVr);
+      DoBuyOutAgreement(CredManr,CurrentDate,IVr);
       CreditCredManInvoices(CredManr,100,credval,vCredVal,false);
       res = true;
     end;
