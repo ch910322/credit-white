@@ -82,6 +82,122 @@ begin
   return;
 end;
 
+procedure UpdateB2BLoanApplicationSoftFields(Integer wn,record B2BLoanApplicationVc LAr,string changedfield)
+begin
+  val t;
+  boolean monthpayperavgincomef,returnsonsalesf,currliquidityratiof,affordabilityf;
+  boolean MonthlyRepaymentf;
+
+  MonthlyRepaymentf=false;
+  monthpayperavgincomef=false;
+  returnsonsalesf=false;
+  currliquidityratiof=false;
+  affordabilityf=false;
+  if (blank(changedfield)) then begin
+    if (LAr.AvgIncome!=0.0) then begin
+      t=LAr.MonthlyRepayment/LAr.AvgIncome*100;//If I put this to Round() it does not work.
+      t=Round(t,SetRoundModeD(2));
+    end else begin
+      t=blankval;
+    end;
+    PutWindowString(wn,"monthpayperavgincome",t);  
+    if (LAr.Turnover!=0.0) then begin
+      t=LAr.NetProfit/LAr.Turnover*100;  
+      t=Round(t,SetRoundModeD(2));
+    end else begin
+      t=blankval;
+    end;
+    PutWindowString(wn,"returnsonsales",t);  
+    if (LAr.CurrentLiabilities!=0.0) then begin
+      t=LAr.CurrentAssets/LAr.CurrentLiabilities;
+      t=Round(t,SetRoundModeD(2));
+    end else begin
+      t=blankval;
+    end;
+    PutWindowString(wn,"currliquidityratio",t);  
+    if (LAr.AvgIncome!=0.0) then begin
+      t=((LAr.MonthlyRepayment+LAr.OtherObligations)/LAr.AvgIncome)*100;
+      t=Round(t,SetRoundModeD(2));
+    end else begin
+      t=blankval;
+    end;     
+    PutWindowString(wn,"affordability",t);  
+  end else begin
+    switch (changedfield) begin
+      case "Turnover":
+        returnsonsalesf=true;
+      case "NetProfit":
+        returnsonsalesf=true;
+      case "MonthlyLoadPayment":
+        
+      case "MonthlyRepayment":
+        affordabilityf=true;
+        monthpayperavgincomef=true;  
+      case "AvgIncome":
+        monthpayperavgincomef=true;
+        affordabilityf=true;
+      case "OtherObligations":
+        affordabilityf=true;
+      case "CurrentAssets":
+        currliquidityratiof=true;
+      case "CurrentLiabilities":
+        currliquidityratiof=true;  
+      case "Sum":
+        MonthlyRepaymentf=true;
+      case "Months":
+        MonthlyRepaymentf=true;
+      case "InterestRate":
+        MonthlyRepaymentf=true;
+    end;
+    if (MonthlyRepaymentf) then begin
+      /* TODO: find out formula
+      t=(LAr.Sum/LAr.Months*LAr.InterestRate/100.0)+(LAr.Sum/LAr.Months);
+      t=Round(t,SetRoundModeD(2));
+      LAr.MonthlyRepayment=t;  
+      */
+      affordabilityf=true;
+      monthpayperavgincomef=true;
+    end;
+    if (monthpayperavgincomef)  then begin
+      if (LAr.AvgIncome!=0.0) then begin
+        t=LAr.MonthlyRepayment/LAr.AvgIncome*100;
+        t=Round(t,SetRoundModeD(2));
+      end else begin
+        t=blankval;
+      end;
+      PutWindowString(wn,"monthpayperavgincome",t);  
+    end;
+    if (affordabilityf) then begin
+      if (LAr.AvgIncome!=0.0) then begin
+        t=((LAr.MonthlyRepayment+LAr.OtherObligations)/LAr.AvgIncome)*100;
+        t=Round(t,SetRoundModeD(2));
+      end else begin
+        t=blankval;
+      end;
+      PutWindowString(wn,"affordability",t);  
+    end;
+    if (returnsonsalesf) then begin
+      if (LAr.Turnover!=0.0) then begin
+        t=LAr.NetProfit/LAr.Turnover*100;
+        t=Round(t,SetRoundModeD(2));
+      end else begin
+        t=blankval;
+      end;
+      PutWindowString(wn,"returnsonsales",t);  
+    end;
+    if (currliquidityratiof) then begin
+      if (LAr.CurrentLiabilities!=0.0) then begin
+        t=LAr.CurrentAssets/LAr.CurrentLiabilities;
+        t=Round(t,SetRoundModeD(2));
+      end else begin
+        t=blankval;
+      end;
+      PutWindowString(wn,"currliquidityratio",t);  
+    end;
+  end;  
+  return;
+end;
+
 function Boolean B2BLoanApplicationDClassMonthsEFAfter(Integer wn,Integer changed)
 begin
   Boolean res;
@@ -274,7 +390,6 @@ begin
     CalculateEndDate(LAr);
     
     PutWindowRecord(wn,LAr);    
-    ReRunWindowDef(wn);//Aldevinas	
   end;
   
   B2BLoanApplicationDClassTypeEFAfter = res;
@@ -460,84 +575,23 @@ begin
   return;
 end;
 
-procedure UpdateB2BLoanApplicationSoftFields(Integer wn,record B2BLoanApplicationVc LAr,string changedfield)
+function Boolean B2BLoanApplicationDClassInterestRateEFAfter(Integer wn,Boolean changedf)
 begin
-  val t,t2;
-  
-  if (blank(changedfield)) then begin
-    if (LAr.AvgIncome!=0.0) then begin
-      t=LAr.MonthlyLoadPayment/LAr.AvgIncome*100;//If I put this to Round() it does not work.
-      t=Round(t,SetRoundModeD(2));
-    end else begin
-      t=blankval;
-    end;
-    PutWindowString(wn,"monthpayperavgincome",t);  
-    if (LAr.Turnover!=0.0) then begin
-      t=LAr.NetProfit/LAr.Turnover*100;  
-      t=Round(t,SetRoundModeD(2));
-    end else begin
-      t=blankval;
-    end;
-    PutWindowString(wn,"returnsonsales",t);  
-    if (LAr.CurrentLiabilities!=0.0) then begin
-      t=LAr.CurrentAssets/LAr.CurrentLiabilities;
-      t=Round(t,SetRoundModeD(2));
-    end else begin
-      t=blankval;
-    end;
-    PutWindowString(wn,"currliquidityratio",t);  
-    if (LAr.AvgIncome!=0.0) then begin
-      t=((LAr.MonthlyLoadPayment+LAr.OtherObligations)/LAr.AvgIncome)*100;
-      t=Round(t,SetRoundModeD(2));
-    end else begin
-      t=blankval;
-    end;     
-    PutWindowString(wn,"affordability",t);  
-  end else begin
-    if (changedfield=="MonthlyLoadPayment") or (changedfield=="AvgIncome") then begin
-      if (LAr.AvgIncome!=0.0) then begin
-        t=LAr.MonthlyLoadPayment/LAr.AvgIncome*100;
-        t=Round(t,SetRoundModeD(2));
-        t2=((LAr.MonthlyLoadPayment+LAr.OtherObligations)/LAr.AvgIncome)*100;
-        t2=Round(t2,SetRoundModeD(2));
-      end else begin
-        t=blankval;
-        t2=blankval;
-      end;
-      PutWindowString(wn,"monthpayperavgincome",t);  
-      PutWindowString(wn,"affordability",t2);  
-    end;
-    if (changedfield=="OtherObligations") then begin
-      if (LAr.AvgIncome!=0.0) then begin
-         t2=((LAr.MonthlyLoadPayment+LAr.OtherObligations)/LAr.AvgIncome)*100;
-         t2=Round(t2,SetRoundModeD(2));
-      end else begin
-        t2=blankval;
-      end;
-      PutWindowString(wn,"affordability",t2);  
-    end;
-    if ((changedfield=="NetProfit") or (changedfield=="Turnover")) then begin
-      if (LAr.Turnover!=0.0) then begin
-        t=LAr.NetProfit/LAr.Turnover*100;
-        t=Round(t,SetRoundModeD(2));
-      end else begin
-        t=blankval;
-      end;
-      PutWindowString(wn,"returnsonsales",t);  
-    end;
-    if ((changedfield=="CurrentAssets") or (changedfield=="CurrentLiabilities")) then begin
-      if (LAr.CurrentLiabilities!=0.0) then begin
-        t=LAr.CurrentAssets/LAr.CurrentLiabilities;
-        t=Round(t,SetRoundModeD(2));
-      end else begin
-        t=blankval;
-      end;
-      PutWindowString(wn,"currliquidityratio",t);  
-    end;
-  end;  
-  return;
+  record B2BLoanApplicationVc LAr;
+
+  GetWindowRecord(wn,LAr);
+  UpdateB2BLoanApplicationSoftFields(wn,LAr,"InterestRate");
+  PutWindowRecord(wn,LAr);
 end;
 
+function Boolean B2BLoanApplicationDClassSumEFAfter(Integer wn,Boolean changedf)
+begin
+  record B2BLoanApplicationVc LAr;
+
+  GetWindowRecord(wn,LAr);
+  UpdateB2BLoanApplicationSoftFields(wn,LAr,"Sum");
+  PutWindowRecord(wn,LAr);
+end;
 
 global
 function Boolean B2BLoanApplicationDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
@@ -594,8 +648,12 @@ begin
         res = B2BLoanApplicationDClassWorkplaceEFAfter(wn,changed);
       case "Beneficiary":
         res = B2BLoanApplicationDClassBeneficiaryEFAfter(wn,changed);  
+      case "InterestRate":
+        res = B2BLoanApplicationDClassInterestRateEFAfter(wn,changed);    
+      case "Sum":
+        res=B2BLoanApplicationDClassSumEFAfter(wn,changed);
       otherwise
-        if (fieldname=="NetProfit") or (fieldname=="Turnover") or (fieldname=="MonthlyLoadPayment") or (fieldname=="AvgIncome") 
+        if (fieldname=="MonthlyRepayment") or (fieldname=="NetProfit") or (fieldname=="Turnover") or (fieldname=="MonthlyLoadPayment") or (fieldname=="AvgIncome") 
         or (fieldname=="CurrentAssets") or (fieldname=="CurrentLiabilities") or (fieldname=="OtherObligations") then begin
           GetWindowRecord(wn,LAr); 
           UpdateB2BLoanApplicationSoftFields(wn,LAr,fieldname);
@@ -1431,11 +1489,12 @@ end;
 global
 function Boolean B2BLoanApplicationDClassOnOpenWindow(Integer wn)
 begin
- record B2BLoanApplicationVc LAr;
- GetWindowRecord(wn,LAr);
- UpdateB2BLoanApplicationSoftFields(wn,LAr,"");
- B2BLoanApplicationDClassOnOpenWindow=false;
- return;
+  record B2BLoanApplicationVc LAr;
+
+  GetWindowRecord(wn,LAr);
+  UpdateB2BLoanApplicationSoftFields(wn,LAr,"");
+  B2BLoanApplicationDClassOnOpenWindow = false;
+  return;
 end;
 
 global
@@ -1443,14 +1502,12 @@ procedure B2BLoanApplicationDClassOnWindowRecordChange(Integer wn)
 begin
   record B2BLoanApplicationVc LAr;
   string 255 f,f2;
-
+  
   f = WindowActiveField(wn);
-  RerunWindowDef(wn);
   GetWindowRecord(wn,LAr);
+  RerunWindowDef(wn);
   UpdateB2BLoanApplicationSoftFields(wn,LAr,"");
   WindowFieldGoto(wn,LAr,-1,f,true);
-  f2 = WindowActiveField(wn);
-  //StopAlert("B2BLoanApplicationDClassOnWindowRecordChange f=" & f & " f2=" & f2);//aldevinas
   return;
 end;
 
