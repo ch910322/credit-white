@@ -1382,9 +1382,6 @@ begin
 //CUST-BEGIN
 //  SpecialMenu("Terminate Agreement",' ',4,"TerminateCredManDsm");
   SpecialMenu("Buy-out Agreement",' ',5,"BuyOutCredManDsm");
-  if (UseBuyoutSummary) then begin
-    SpecialMenu("Buy-out Summary",' ',5,"CheckBuyoutValueWindowDsm");
-  end;
   SpecialMenu("Check Buy-out Value",' ',6,"CheckBuyoutValueWindowDsm");
   SpecialMenu("Customer Status",'e',7,"CUStatusCredManDsm");
   //SpecialMenu("Print Payment Schedule",' ',8,"PaymentScheduleCredManDsm");
@@ -1407,6 +1404,9 @@ begin
     SpecialMenu("Payment Without Reconciliation",' ',1,"CredManMakePaymentReconsDsm");
   end;
   SpecialMenu("Extra Fee Invoice",' ',1,"ManualExtraFeeDsm");
+  if (UseBuyoutSummary) then begin
+    SpecialMenu("Buy-out Summary",' ',5,"CheckBuyoutValueWindowDsm");
+  end;
   
 //CUST-END
   //SpecialMenu("Receipt",'r',1,"ReceiptCredManDsm");
