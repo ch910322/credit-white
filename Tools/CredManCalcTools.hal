@@ -599,8 +599,15 @@ begin
   for (i=0;i<usemonths;i=i+1) begin
     tdiff = tdiff + ((i+1)*ndiff);
   end;
+  //rate = 0.00001;
+  res = rate * (diff * power(1 + rate, usemonths)) / (power(1 + rate, usemonths) - 1);
+/*
+  for (i=0;i<usemonths;i=i+1) begin
+    res = res - FIN_PPMT(rate, usemonths, diff, i+1);
+  end;
+*/
+  //res = diff - tdiff;//(diff*0.31855);//(ndiff*usemonths);//(diff*0.31855);// - (diff*0.1);// - (diff*0.1);//0.42
 
-  res = diff - tdiff;//(diff*0.31855);//(ndiff*usemonths);//(diff*0.31855);// - (diff*0.1);// - (diff*0.1);//0.42
   CalculateAnnuityDiff = res;
   return;
 end;
@@ -651,6 +658,22 @@ begin
     end;
   end;
   GetCurMonthInterest = tint;
+  return;
+end;
+
+function val GetAnnuityDiffLimit(Integer usemonths)
+begin
+  val res,tmpval;
+
+  if (usemonths>100) then begin
+    tmpval = usemonths;
+    tmpval = tmpval/100;
+    res = Power(tmpval,2);
+  end else begin
+    res = 1;
+  end;
+  
+  GetAnnuityDiffLimit = res;
   return;
 end;
 
@@ -734,13 +757,15 @@ begin
           end;
           sum = tsum - tint;
         end else begin
-          if (month==0 and extra_diff==0) then begin
+          if (month==1 and extra_diff==0) then begin
             tsum = FIN_PMT(rate, tusemonths, tusesum);
             tint = GetCurMonthInterest(CredManPayPlanr,invdate);
             tsum = tsum - tint;
             extra_diff = CalculateAnnuityDiff(CredManr,tsum-sum,tusemonths);
-            if (AbsoluteVal(extra_diff)>1) then begin
-              sum = tsum - (extra_diff/(tusemonths));
+            sum = tsum;
+            //extra_diff = 0;
+            if (AbsoluteVal(extra_diff)>GetAnnuityDiffLimit(usemonths)) then begin
+              sum = tsum - (extra_diff/(tusemonths/5));
             end else begin
               extra_diff = 0;
             end;
@@ -748,7 +773,7 @@ begin
             if (extra_diff!=0) then begin
               tint = GetCurMonthInterest(CredManPayPlanr,invdate);
               sum = FIN_PMT(rate, tusemonths, tusesum);
-              sum = sum - (extra_diff/(tusemonths)) - tint;
+              sum = sum - (extra_diff/(tusemonths/5)) - tint;
             end else begin
               tsum = FIN_PMT(rate, tusemonths, tusesum);
               tint = GetCurMonthInterest(CredManPayPlanr,invdate);
@@ -1207,13 +1232,7 @@ begin
   origdiff = diff;
 
   diff = v1-v2;//2nd last - 
-  if (usemonths>100) then begin
-    tmpval = usemonths;
-    tmpval = tmpval/100;
-    limit = Power(tmpval,2);
-  end else begin
-    limit = 1;
-  end;
+  limit = GetAnnuityDiffLimit(usemonths);
   if (AbsoluteVal(diff)>limit) then begin
     res = true;
     diff = CalculateAnnuityDiff(CredManr,diff,usemonths);
