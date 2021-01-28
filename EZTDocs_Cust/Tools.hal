@@ -5,6 +5,7 @@ external procedure ExternalPrintCredManForm(record CredManVc,var vector string);
 external procedure ExternalPrintCredManScheduleForm(record CredManVc,var vector string);
 external procedure ExternalPrintVekselisForm(record CredManVc,var vector string);
 external procedure ExternalPrintSuretyAgreementForm(record CredManVc,var vector string);
+external procedure ExternalBuyoutSummaryForm(record CredManVc,record RcVc,var vector string);
 external inner function string 255 CredManOwnBankAccount(Longint,var string,var string,var string);
 external inner procedure FindVATCodeRow(string,record VATCodeBlock,var row VATCodeBlock);
 external inner function string 255 StrReplace(string,string,string);
@@ -68,6 +69,12 @@ begin
       printf = (ReadFirstMain(CredManr,1,true) or id=="-2");
       if (printf) then begin
         ExternalPrintVekselisForm(CredManr,vVals);
+      end;
+    case "BuyoutSummaryForm":
+      CredManr.SerNr = StringToLongint(id);
+      printf = (ReadFirstMain(CredManr,1,true) or id=="-2");
+      if (printf) then begin
+        ExternalBuyoutSummaryForm(CredManr,RepSpec,vVals);
       end;
 
   end;

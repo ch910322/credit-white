@@ -68,6 +68,8 @@ external procedure CheckAndAddHiddenPrinciple(var record IVVc,record CMInvoicing
 external function val GetActualBalance(record CredManVc,record CredManPayPlanVc,Boolean);
 remote procedure RefinCredManPartialWClassSubmitCallBack(string,Integer);
 forward updating procedure CreateCredmanPurchaseInvoice(record CredManVc,val,var record VIVc,val,Boolean,Date);
+external inner procedure FindUserMailboxName(string,var string,var string);
+external inner function Boolean CheckAttachedFilesSizeToLetter(record LetVc);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -2056,3 +2058,80 @@ begin
   return;
 end;
 
+global
+updating procedure PrintBuyOutSummary(record CredManVc CredManr,record RcVc RepSpec,var string err,area farea,var record MailVc Mailr)
+begin
+  record LTxtVc LTxtr;
+  row MailVc Mailrw;
+  record CUVc CUr;
+  record CMApplicationSetBlock CMb;
+  record RLinkVc RLr;
+  record Attach2Vc Attachr;
+  string 255 mailboxnr,mailboxname;
+  record MailSettingsBlock MSb;
+  record RcVc tRepSpec;
+  Longint pos,i,l;
+  string 255 tstr,fname;
+  area a;
+
+  BlockLoad(CMb);
+  LTxtr.Code = CMb.BuyoutText;
+  if (ReadFirstMain(LTxtr,1,true)) then begin
+    RecordNew(Mailr);
+    Mailr.Header = LTxtr.Comment;    
+    FindUserMailboxName(CurrentUser,mailboxnr,mailboxname);
+    if (nonblank(mailboxname)) then begin
+      ClearRow(Mailr,Mailrw,1);
+      Mailrw.RowTyp = kMailRowTypeFrom;
+      Mailrw.AddrCode = mailboxname;
+      mailrw.Mailbox = StringToLongInt(mailboxnr);
+      MatRowPut(Mailr,0,Mailrw);
+    end else begin
+      BlockLoad(MSb);
+      ClearRow(Mailr,Mailrw,0);
+      Mailrw.RowTyp = 1;
+      Mailrw.AddrCode = MSb.FromSystem;
+      MatRowPut(Mailr,0,Mailrw);
+    end;
+    
+    CUr.Code = CredManr.CustCode;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      ClearRow(Mailr,Mailrw,1);
+      Mailrw.RowTyp = kMailRowTypeTo;
+      Mailrw.AddrCode = CUr.eMail;
+      MatRowPut(Mailr,1,Mailrw);
+    end;
+    tRepSpec.f1 = CredManr.CustCode;
+//    tRepSpec.f8 = GetCredManNr(CredManr.SerNr);
+    if (LTxtr.HtmlFlag==0) then begin
+      ParseTextField(a,LTxtr,tRepSpec,"LtxtVcReplaceToken");
+      l = GetAreaLength(a);
+      pos = 0;
+      while (pos<l) begin
+        tstr = GetStringFromArea(a,pos,255);
+        AddToText(tstr,Mailr); 
+        pos = pos+255;
+      end;
+    end else begin
+      Mailr.HtmlFlag = 1;
+    end;
+
+    if (CheckAttachedFilesSizeToLetter(LTxtr)) then begin
+      if (RecordInsert(Mailr,true)) then begin
+        if (ReadRecordLink(Mailr,1,Attachr,RLr)) begin
+          RecordRemove(RLr);
+        end; 
+        CopyRecordLinks(LTxtr,Mailr);
+        if (Mailr.HtmlFlag==1) then begin
+          ParseHtmlField(Mailr,tRepSpec,"MailVcReplaceToken");
+        end;
+        fname = "tmp/BuyoutSummary.pdf";
+        WriteAreaToFile(farea,fname,0);
+        RecordLinkFile(fname,0,Mailr,CurrentCompany);
+        Delete_File(fname);
+      end;
+    end;
+  end;
+
+  return;
+end;

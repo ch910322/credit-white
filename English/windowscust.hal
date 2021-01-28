@@ -13,6 +13,7 @@ external outer function Boolean ShowBuyOutFee();
 external outer function Boolean HasBalloonLoanType();
 external outer function Boolean IsNovitiCustomer;
 external outer function Boolean UseCompensationInvoices();
+external outer function Boolean UseBuyoutSummary();
 
 procedure ShowCredManLClassWindow(Integer type)
 begin
@@ -172,6 +173,11 @@ begin
     CheckBox(h,v+=30,0,"Automatically pause Agreements",AutoPauseCredMan);
     EditField(h,v+=20,100,"Time",Normal,AutoPauseCredManTime,false,PasteCurTime);
   end;
+
+  if (UseBuyoutSummary) then begin
+    EditField(h,v+=vs,100,"Buyout Summary Text",Normal,BuyoutText,false,LTxtSClass);
+    EditField(h,v+=vs,100,"Buyout Summary Language",Normal,BuyoutLangCode,false,LangSClass);
+  end;  
   h = 360; v = 0;
   h2 = 380;
   ButtonFrame(h2,v+=40,150,2,"Surety Provider by default");
@@ -465,11 +471,14 @@ begin
 
   WindowBegin("Check Buy-out Value",CheckBuyoutValueWClass,CGother,RcType);
   UseView(RcVc);
+  h = 220;
   if (ShowBuyOutFee) then begin
-    SetWRect(20,80,400,240);
-  end else begin
-    SetWRect(20,80,400,220);    
+    h = h + 20;
   end;
+  if (UseBuyoutSummary) then begin
+    h = h + 40;
+  end;
+  SetWRect(20,80,400,h);
   AutoSizeWindow(false);  
   h = 150; h2 = 250; v=450;
   EditFieldTL(h,v=6,120,"Buy-out Date",M4Date,Normal,0,d1,false,PasteCurDate);
@@ -482,6 +491,9 @@ begin
   EditFieldTL(h,v+=vs,120,"Expected Payment",M4Val,ViewOnly,0,vals2,true,0);
 
   HalPushButton(h,v+=vs,h+120,v+20,"CalculateBuyOutValue","Calculate");
+  if (UseBuyoutSummary) then begin
+    HalPushButton(h,v+=30,h+120,v+20,"BuyOutSummaryEmail","Buyout Summary");
+  end;
   EndWindow;
 
   WindowBegin("Create Invoice",CredManInvNoWClass,CGother,RcType);
@@ -538,7 +550,7 @@ begin
 
   WindowBegin("Register Agreement Changes",PauseCredManWClass,CGother,RcType);
   UseView(RcVc);
-  SetWRect(20,80,400,250);
+  SetWRect(20,80,400,280);
   AutoSizeWindow(false);  
   h = 150; h2 = 250; v=450;
   EditFieldTL(h,v=6,120,"Changes Start Date",M4Date,Normal,0,d1,false,PasteCurDate);

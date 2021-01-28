@@ -1,3 +1,5 @@
+external function Boolean UseBuyoutSummary();
+
 event startup
 begin
   
@@ -10,6 +12,9 @@ begin
   StrSetText(SuretyAgreementForm,"Surety Agreement");
   StrSetText(VekselisForm,"Vekselis");
   StrSetText(LoanAppForm,"Loan Application");
+  if (UseBuyoutSummary) then begin
+    StrSetText(BuyoutSummaryForm,"Buyout Summary");
+  end;
   EndStrSet;
 
   return;
@@ -24,6 +29,7 @@ begin
     case "CredManScheduleForm": type = "CredMan";
     case "SuretyAgreementForm": type = "CredMan";
     case "VekselisForm": type = "CredMan";
+    case "BuyoutSummaryForm": type = "BuyoutSummary";
   end;
 
   return;

@@ -1495,6 +1495,20 @@ begin
   return;
 end;
 
+
+global
+procedure ExternalBuyoutSummaryForm(record CredManVc CredManr,record RcVc RepSpec,var vector string vVals)
+begin
+  LongInt i,rwcnt;
+  val totpayment,totinterest;
+  record CUVc CUr;
+  record CYBlock CYb;
+ 
+  Ext_CommonDocumentFields(vVals);
+
+  return;
+end;
+
 procedure GetCFOContacts(string custcode,var array record CUVc aCUr)
 begin
   Boolean TrHs;
