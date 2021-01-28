@@ -176,7 +176,7 @@ begin
 
   if (UseBuyoutSummary) then begin
     EditField(h,v+=vs,100,"Buyout Summary Text",Normal,BuyoutText,false,LTxtSClass);
-    EditField(h,v+=vs,100,"Buyout Summary Language",Normal,BuyoutLangCode,false,LangSClass);
+//    EditField(h,v+=vs,100,"Buyout Summary Language",Normal,BuyoutLangCode,false,LangSClass);
   end;  
   h = 360; v = 0;
   h2 = 380;
