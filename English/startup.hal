@@ -52,7 +52,7 @@ begin
   
   Setting("Payment Condition Text",PaymentConditionTextWClass,modCredMan);
   Setting("Other Condition Text",PaymentConditionTextWClass,modCredMan);
-
+  Setting("Managers Workload",ManagerWorkloadLClass,modCredMan);
 
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
@@ -489,6 +489,7 @@ begin
   SetBegin(2021);
   SetText(0,"Manager from Record");
   SetText(1,"Specified Person");
+  SetText(2,"Least Workload Manager");
   EndSet;
 
   SetBegin(2022);

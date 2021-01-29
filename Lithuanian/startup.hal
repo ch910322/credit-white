@@ -416,6 +416,7 @@ begin
   SetBegin(2021);
   SetText(0,"Manager from Record");
   SetText(1,"Specified Person");
+  SetText(2,"Least Workload Manager");
   EndSet;
 
   SetBegin(2022);

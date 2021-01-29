@@ -1,0 +1,91 @@
+global
+function LongInt ManagerWorkloadVcRecordDefaults(var record ManagerWorkloadVc MWr,record ManagerWorkloadVc MW2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+ 
+  MWr.SerNr = -1;
+  if (SingleUserMode) then begin
+    MWr.SerNr = NextSerNr("ManagerWorkloadVc",CurrentDate,-1,false,"");
+  end;
+  ManagerWorkloadVcRecordDefaults = res;
+  return;
+END;  
+
+global
+function LongInt ManagerWorkloadVcRecordDuplicate(var record ManagerWorkloadVc MWr,record ManagerWorkloadVc MW2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  
+  MWr.SerNr = -1;
+  if (SingleUserMode) then begin
+    MWr.SerNr = NextSerNr("ManagerWorkloadVc",CurrentDate,-1,false,"");
+  end;
+  ManagerWorkloadVcRecordDuplicate = res;
+  return;
+END;  
+
+global
+updating function LongInt ManagerWorkloadVcRecordCheck(var record ManagerWorkloadVc MWr,record ManagerWorkloadVc MW2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res,oldnr;
+  record CredManTypeVc CMTyper;
+  record CredManClassVc CMClassr;
+  record SalesGroupVc SalesGroupr;
+  record ManagerWorkloadVc MWrtest;
+
+  res = 0;
+  oldnr = MWr.SerNr;
+  if (MWr.SerNr<=0) then begin
+    MWr.SerNr = NextSerNr("ManagerWorkloadVc",CurrentDate,-1,false,"");
+  end;
+  if (blank(MWr.SalesGroup)) then begin
+    RecordCheckError(2210,"",-1,"SalesGroup");
+    res = -1;
+    goto LManagerWorkloadVcRecordCheck; 
+  end;
+  SalesGroupr.SGroupCode=MWr.SalesGroup;
+  if (!ReadFirstMain(SalesGroupr,1,true)) then begin
+    RecordCheckError(1290,"",-1,"SalesGroup");
+    res = -1;
+    goto LManagerWorkloadVcRecordCheck;
+  end;
+  if (nonblank(MWr.CredManType)) then begin
+    CMTyper.Code = MWr.CredManType;
+    if (!ReadFirstMain(CMTyper,1,true)) then begin
+      RecordCheckError(1290,"",-1,"CredManType");
+      res = -1;
+      goto LManagerWorkloadVcRecordCheck;
+    end;
+    if (nonblank(MWr.CredManClass)) then begin
+      RecordCheckError(2010,"",-1,"CredManClass");
+      res = -1;
+      goto LManagerWorkloadVcRecordCheck;
+    end;
+  end;
+  if (nonblank(MWr.CredManClass)) then begin
+    if (nonblank(MWr.CredManType)) then begin
+      RecordCheckError(2010,"",-1,"CredManType");
+      res = -1;
+      goto LManagerWorkloadVcRecordCheck;
+    end;
+    CMClassr.Code = MWr.CredManClass;
+    if (!ReadFirstMain(CMClassr,1,true)) then begin
+      RecordCheckError(1290,"",-1,"CredManClass");
+      res = -1;
+      goto LManagerWorkloadVcRecordCheck; 
+    end;  
+  end;
+  MWrtest.ActType = MWr.ActType;
+  MWrtest.CredManType = MWr.CredManType;
+  MWrtest.CredManClass = MWr.CredManClass;
+  MWrtest.SalesGroup = MWr.SalesGroup;
+  if (ReadFirstKey("Unique",MWrtest,4,true)) then begin
+    RecordCheckError(1032,"",-1,"ActType");
+    res = -1;
+    goto LManagerWorkloadVcRecordCheck;
+  end;  
+  LManagerWorkloadVcRecordCheck:;
+  if (res!=0) then begin MWr.SerNr = oldnr; end;
+  ManagerWorkloadVcRecordCheck = res;
+  return;
+END;

@@ -3396,3 +3396,57 @@ begin
   SearchField("Search");
   EndWindow;
 end;
+
+window ManagerWorkloadLClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Manager Workload",ManagerWorkloadLClass,CGmList,-);
+  Sizeable(-1,-1,0,0);
+  SetWRect(64,80,800,298);
+  SpawnClass(ManagerWorkloadDClass);
+  UseView(ManagerWorkloadVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
+  RlColKey(101,101,"Act. Type",ActType,false,ActType);
+  RlColKey(181,181,"Type",CredManType,false,CredManType);
+  RlColKey(260,260,"Agreement Class",CredManClass,false,CredManClass);
+  RlColKey(-240,-240,"Sales Group",SalesGroup,false,SalesGroup);
+EndWindow;
+end;
+
+window ManagerWorkloadDClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v,vs,h,h2,h3;
+  
+  WindowBegin("Manager Workload",ManagerWorkloadDClass,CGView,-);
+  Sizeable(-1,-1,0,0);
+  SetWRect(64,80,600,298);
+  UseView(ManagerWorkloadVc);
+  vs = 20; h=135; h2=375; h3=595;
+  EditField(h,v=6,100,"Ser. No.",Normal,SerNr,false,TSerSClass);
+  EditField(h2,v,80,"Activity Type",Normal,ActType,false,ActTypeSClass);
+  EditField(h3,v,80,"Agreement Type",Normal,CredManType,false,CredManTypeSClass);
+  EditField(h,v+=vs,80,"Agreement Type Class",Normal,CredManClass,false,CredManClassSClass);
+  EditField(h2,v,80,"Sales Group",Normal,SalesGroup,false,SalesGroupSClass);
+  ButtonFrame(h,v+=40,150,3,"Evaluation");
+  RadioButton(h,v,0,0,"Total Booked Time",EvaluationType);
+  RadioButton(h,v+=16,1,0,"Today Task Quantity",EvaluationType); 
+  RadioButton(h,v+=16,2,0,"Total Task Quantity",EvaluationType); 
+  EndWindow;
+end;
+
+window CredManTypeSClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Credit Agreement Types",CredManTypeSClass,CGslist,-);
+  SetWRect(20,80,500,300);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManTypeDClass);
+  UseView(CredManTypeVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,20,"Code",Code,false,ActCode);//CUST Code>>ActCode
+  RlColKey(100,100,"Comment",Comment,false,ActComment);//CUST Comment>>ActComment
+  SearchField("Search");
+  EndWindow;
+end;

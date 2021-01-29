@@ -5,6 +5,7 @@ external inner procedure IVToMailMn(record RcVc);
 external updating function Boolean LoopAndGenLoanAgreementInvoice(var record RcVc,var record IVVc);
 external function string 255 CM_SetCompanyLanguage();
 external procedure CM_ResetCompanyLanguage(string);
+external inner function LongInt TimeToMinutes(Time);
 
 global
 updating procedure CreateTaskActivityCredMan(record CredManVc CredManr,string person,string acttype,string acttext)
@@ -68,6 +69,118 @@ begin
   return;
 end;
 
+function longint GetManagerWorkLoadEvaluation(string user,Integer EvaluationType,date d)
+begin
+  record ActVc Actr;
+  longint ev;
+  boolean testf,foundf;
+  string 255 keystr;
+
+  ev = 0;
+  keystr = "OKFlagUserMain:" & user;
+  Actr.OKFlag = 0;
+  Actr.MainPersons = user;
+  foundf = true;
+  while (LoopKey(keystr,Actr,1,foundf)) begin
+    if (!SetInSet(user,Actr.MainPersons)) then begin
+      foundf = false;
+    end; 
+    if (Actr.OKFlag != 0) then begin
+      foundf = false;
+    end;
+    if (foundf) then begin
+      switch (EvaluationType) begin
+        case 0: 
+          if (Actr.TransDate == d) then begin
+            ev = ev + TimeToMinutes(Actr.CostTime);
+          end;
+        case 1:
+          if (Actr.TransDate == d) then begin
+            ev = ev +1;
+          end;    
+        case 2:
+          ev = ev +1;      
+      end;  
+    end;  
+  end;  
+  // TimeToVal2, TimeToMinutes?
+  GetManagerWorkLoadEvaluation = ev;
+  return;
+end;
+
+function string 10 GetLeastWorkLoadManager(string ActType, string CredManType, date d)
+begin
+  record ManagerWorkloadVc MWr;
+  record CredManTypeVc CMTyper;
+  boolean foundf,TrHs;
+  string 10 res;
+  record SMVc SMr;
+  row SMVc SMrw; 
+  record UserVc Userr;
+  longint ev, prevev;
+  string 255 tstr;
+  Longint pos;
+
+  foundf=false;
+  res = "";
+  prevev = 0;
+  if (nonblank(CredManType)) then begin
+    MWr.ActType = ActType;
+    MWr.CredManType = CredManType;
+  foundf = ReadFirstKey("ActTypeCredManType",MWr,2,true);
+  end;
+  if (!foundf) then begin
+    //2. exact match of activity type and agreement type classification;
+    CMTyper.Code = CredManType;
+    if (ReadFirstMain(CMTyper,1,true)) then begin 
+      while (GetNextSubString(CMTyper.Classifications,pos,",",tstr)) begin
+        MWr.ActType = ActType;
+        MWr.CredManClass = tstr;
+        foundf = ReadFirstKey("ActTypeCMClassType",MWr,2,true);
+        if (foundf) then begin 
+          goto LWEnd; 
+        end;
+      end;  
+      LWEnd:;
+    end;
+  end;
+  if (!foundf) then begin
+    //3. exact match of activity type and blank agreement type and agreement type classification fields;
+    MWr.ActType = ActType;
+    MWr.CredManType = "";
+    MWr.CredManClass = "";
+    foundf=ReadFirstKey("ActTypeCMTCMCType",MWr,3,true);
+  end;
+  if (!foundf) then begin
+    //4.Managers Workload record with blank activity type, blank agreement type and blank agreement type classification fields
+    MWr.ActType = "";
+    MWr.CredManType = "";
+    MWr.CredManClass = "";
+    foundf=ReadFirstKey("ActTypeCMTCMCType",MWr,3,true);
+  end;
+  if (!foundf) then begin
+    //if neither of previously described are found, should not create any tasks  
+  end;
+  if (foundf) then begin
+    Userr.SalesGroup = MWr.SalesGroup;
+    TrHs = true;
+    while (LoopKey("SalesGroup",Userr,1,TrHs)) begin
+      if (Userr.SalesGroup!=MWr.SalesGroup) then begin
+         TrHs=false;
+      end;
+      if (TrHs) then begin
+        ev = GetManagerWorkLoadEvaluation(Userr.Code,MWr.EvaluationType,d);
+        if (ev <= prevev) then begin
+          res = Userr.Code;
+        end;  
+        prevev = ev;
+      end;  
+    end;
+  end;
+  GetLeastWorkLoadManager = res;
+  return;
+end;
+
 global
 procedure CredManToolsCheckRecord(string args)
 begin
@@ -119,6 +232,12 @@ begin
               if (ATBrw.PersonType==1) then begin
                 person = ATbrw.Manager;
               end;
+              if (ATBrw.PersonType==2) then begin
+                person = GetLeastWorkLoadManager(ATbrw.ActType,CredManr.Type,td);
+                if (blank(person)) then begin
+                  LogText(0,"GetLeastWorkLoadManager " & ATbrw.ActType & " failed");
+                end; 
+              end;  
               qupdating.CreateTaskActivityCredMan(CredManr,person,ATbrw.ActType,ATbrw.ActText);
             end;
           end;
@@ -137,6 +256,12 @@ begin
               person = LAr.Manager;
               if (ATBrw.PersonType==1) then begin
                 person = ATbrw.Manager;
+              end;
+              if (ATBrw.PersonType==2) then begin
+                person = GetLeastWorkLoadManager(ATbrw.ActType,CredManr.Type,td);
+                if (blank(person)) then begin
+                  LogText(0,"GetLeastWorkLoadManager " & ATbrw.ActType & " failed");
+                end; 
               end;
               qupdating.CreateTaskActivityLoanApp(LAr,person,ATbrw.ActType,ATbrw.ActText);
             end;
