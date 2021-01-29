@@ -43,6 +43,11 @@ BEGIN
     res = -1;
     goto LManagerWorkloadVcRecordCheck; 
   end;
+  if (blank(MWr.ActType)) then begin
+    RecordCheckError(2210,"",-1,"ActType");
+    res = -1;
+    goto LManagerWorkloadVcRecordCheck; 
+  end;
   SalesGroupr.SGroupCode=MWr.SalesGroup;
   if (!ReadFirstMain(SalesGroupr,1,true)) then begin
     RecordCheckError(1290,"",-1,"SalesGroup");

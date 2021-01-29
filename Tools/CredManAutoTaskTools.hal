@@ -127,7 +127,7 @@ begin
   if (nonblank(CredManType)) then begin
     MWr.ActType = ActType;
     MWr.CredManType = CredManType;
-  foundf = ReadFirstKey("ActTypeCredManType",MWr,2,true);
+    foundf = ReadFirstKey("ActTypeCredManType",MWr,2,true);
   end;
   if (!foundf) then begin
     //2. exact match of activity type and agreement type classification;
@@ -166,7 +166,7 @@ begin
     TrHs = true;
     while (LoopKey("SalesGroup",Userr,1,TrHs)) begin
       if (Userr.SalesGroup!=MWr.SalesGroup) then begin
-         TrHs=false;
+         TrHs = false;
       end;
       if (TrHs) then begin
         ev = GetManagerWorkLoadEvaluation(Userr.Code,MWr.EvaluationType,d);
