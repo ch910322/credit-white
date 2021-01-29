@@ -56,6 +56,9 @@ remote function Boolean ContractHasHistory(record CredManVc);
 remote function Boolean AgreementPaidOut(record CredManVc,var val);
 remote function Boolean AgreementPaidOut2(record CredManVc,var val);
 remote function Date GetLastInvoiceDate(record CredManVc,Date);
+remote inner procedure PrintEBSDocument(string,string,record RcVc,string,string,var area);
+remote inner function Boolean ExternalDocumentEnabled(string);
+remote updating procedure PrintBuyOutSummary(record CredManVc,record RcVc,var string,area,var record MailVc);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -713,6 +716,38 @@ begin
     PutWindowRecord(wn,RepSpec);
   end;
   SelectWindow(wn);
+
+  return;
+end;
+
+global
+updating procedure BuyOutSummaryEmail()
+begin
+  Integer wn;
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  record MailVc Mailr;
+  area farea;
+  string 255 errstr,fname;
+  
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  CredManr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    if (ExternalDocumentEnabled("BuyoutSummaryForm")) then begin
+      threadremote.PrintEBSDocument("BuyoutSummaryForm","",RepSpec,CredManr.SerNr,"",farea);
+      if (GetAreaLength(farea)>0) then begin
+        PrintBuyOutSummary(CredManr,RepSpec,errstr,farea,Mailr);
+        if (blank(errstr)) then begin
+          OpenWindow("MailDClass",1,0,"","",Mailr);
+        end else begin
+          MessageBox(0,errstr);
+        end;
+      end;
+    end;
+  end;
+  SelectWindow(wn);  
 
   return;
 end;

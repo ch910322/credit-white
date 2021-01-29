@@ -73,6 +73,7 @@ external outer function Boolean HasSuretyConditionTexts();
 external outer function Boolean UseDisburseUntil();
 external outer function Boolean UseCompensationInvoices();
 external outer function Boolean ShowToDisburse();
+external outer function Boolean UseBuyoutSummary();
 //CUST-END
 
 window CUDClass:14
@@ -1403,6 +1404,9 @@ begin
     SpecialMenu("Payment Without Reconciliation",' ',1,"CredManMakePaymentReconsDsm");
   end;
   SpecialMenu("Extra Fee Invoice",' ',1,"ManualExtraFeeDsm");
+  if (UseBuyoutSummary) then begin
+    SpecialMenu("Buy-out Summary",' ',5,"CheckBuyoutValueWindowDsm");
+  end;
   
 //CUST-END
   //SpecialMenu("Receipt",'r',1,"ReceiptCredManDsm");

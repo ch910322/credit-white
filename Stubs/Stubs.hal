@@ -96,3 +96,10 @@ begin
   PartiaBuyoutShortensPeriod = true;
   return;
 end;
+
+global
+function Boolean UseBuyoutSummary()
+begin
+  UseBuyoutSummary = false;
+  return;
+end;
