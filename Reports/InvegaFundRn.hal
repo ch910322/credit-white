@@ -524,6 +524,8 @@ begin
       pos = 0;
       if (GetNextSubString(translist,pos,",",tmp)) begin
         OutString(p[14],0,tmp,false);
+      end else begin
+        OutString(p[14],0,"",false);
       end;
       OutString(p[15],0,paidval,false);
       OutString(p[16],0,princ,false);
