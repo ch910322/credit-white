@@ -2029,6 +2029,7 @@ begin
   RecordField(PersPrefix,M4Str,30,0);
 
   RecordField(ValCrncyCode,M4Code,20,0);
+  RecordField(BOEValueLangCode,M4Code,20,0);
   EndBlock;
 
   RecordAddBegin(LangNrVc,"LangNrVc_Cust");

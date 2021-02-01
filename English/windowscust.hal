@@ -2942,6 +2942,8 @@ begin
   EditField(h,v=6,140,"Yes",Normal,BOEYes,false,0);
   EditField(h,v+=vs,140,"No",Normal,BOENo,false,0);
   EditField(h,v+=vs,140,"If Yes, then",Normal,BOEYes2,false,0);
+  EditField(h,v+=vs,140,"Amount Value in Text",Normal,BOEValueLangCode,false,LangNrSClass);
+  
   Tile(3,700,false,"3",PropertyYes);
   EditField(h,v=6,140,"Yes (Mortgage)",Normal,PropertyYes,false,0);
   EditField(h,v+=vs,140,"No",Normal,PropertyNo,false,0);
