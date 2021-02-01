@@ -103,3 +103,11 @@ begin
   UseBuyoutSummary = false;
   return;
 end;
+
+global
+function Boolean HasMoneyTransferDate()
+begin
+  
+  HasMoneyTransferDate = false;
+  return;
+end;

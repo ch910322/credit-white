@@ -8,6 +8,7 @@ external function Integer GetInterestPaymentType(record CredManVc);
 external function Boolean AgreementPaidOut(record CredManVc,var val);
 external procedure GenerateAgreementSchedule(record CredManVc,Boolean,Boolean);
 external function Boolean UseDisburseUntil();
+external function Boolean HasMoneyTransferDate();
 
 updating procedure UpdateCredManPaymentDate(record OPVc OPr)
 begin
@@ -57,15 +58,17 @@ begin
         CredManr.SerNr = credmannr;
         if (ReadFirstMain(CredManr,1,true)) then begin
           RecordCopy(oldCredManr,CredManr);
-          if (int_type==1) then begin
-            if (blank(CredManr.MoneyTransferDate)) then begin
-              CredManr.MoneyTransferDate = OPr.PayDate;
+          if (HasMoneyTransferDate) then begin
+            if (int_type==1) then begin
+              if (blank(CredManr.MoneyTransferDate)) then begin
+                CredManr.MoneyTransferDate = OPr.PayDate;
+              end;
             end;
-          end;
-          if (int_type==2) then begin
-            AgreementPaidOut(CredManr,paidval);
-            if (paidval==CredManr.InvSum4) then begin
-              CredManr.MoneyTransferDate = OPr.PayDate;
+            if (int_type==2) then begin
+              AgreementPaidOut(CredManr,paidval);
+              if (paidval==CredManr.InvSum4) then begin
+                CredManr.MoneyTransferDate = OPr.PayDate;
+              end;
             end;
           end;
           if (int_type<2 or APr.RVal==0) then begin

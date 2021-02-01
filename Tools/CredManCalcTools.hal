@@ -8,6 +8,7 @@ external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlan
 forward procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
 external function Integer GetInterestPaymentType(record CredManVc);
 external function Boolean PartiaBuyoutShortensPeriod();
+external function Boolean HasMoneyTransferDate();
 
 enum begin
   kEventTypeNone = 0,
@@ -76,8 +77,10 @@ begin
     if (nonblank(CredManr.FirstIntDate)) then begin
       nint_sdp = CredManr.FirstIntDate;
     end;
-    if (CredManr.MoneyTransferDate>int_sdp) then begin
-      nint_sdp = CredManr.MoneyTransferDate;
+    if (HasMoneyTransferDate) then begin
+      if (CredManr.MoneyTransferDate>int_sdp) then begin
+        nint_sdp = CredManr.MoneyTransferDate;
+      end;
     end;
     if (nonblank(payoutdate) and paymentnr==-1) then begin
       nint_sdp = payoutdate;
