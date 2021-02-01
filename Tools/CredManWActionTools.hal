@@ -622,7 +622,7 @@ begin
   return;
 end;
 
-updating procedure CreditAndOKInvoice(Longint ivnr,val prc,var val credval,var vector val vCredVal,val rval,Boolean sellf)
+updating procedure CreditAndOKInvoice(Longint ivnr,val prc,var val credval,var vector val vCredVal,val rval,Boolean sellf,Date td)
 begin
   record IVVc IVr,IVCreditr,oldIVr,IV2r;
   string 255 warning;
@@ -636,6 +636,9 @@ begin
   if (ReadFirstMain(IVr,1,true)) then begin
     ratio = rval/IVr.Sum4;
     if (CreateCreditNoteIV(IVr,kInvoiceTypeCredit,IVCreditr,"",false)==0) then begin
+      if (nonblank(td)) then begin
+        IVr.InvDate = td;
+      end;
       if (IVr.InvDate>IVCreditr.InvDate) then begin
         IVCreditr.InvDate = IVr.InvDate;
         IVVc_PasteInvDate(IVCreditr,LMb,err1,err2);
@@ -694,7 +697,7 @@ begin
   return;
 end;
 
-updating procedure CreditCredManInvoices(record CredManVc CredManr,val prc,var val credval,var vector val vCredVal,Boolean sellf)
+updating procedure CreditCredManInvoices(record CredManVc CredManr,val prc,var val credval,var vector val vCredVal,Boolean sellf,Date td)
 begin
   Boolean TrHs;
   record CredHistVc CredHistr;
@@ -722,7 +725,7 @@ begin
     ARr.InvoiceNr = StringToLongint(invarr[i]);
     if (ReadFirstMain(ARr,1,true)) then begin
       if (ARr.RVal>0) then begin
-        CreditAndOKInvoice(ARr.InvoiceNr,prc,credval,vCredVal,ARr.RVal,sellf);
+        CreditAndOKInvoice(ARr.InvoiceNr,prc,credval,vCredVal,ARr.RVal,sellf,td);
       end;
     end;
   end;
@@ -748,7 +751,7 @@ begin
     if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
       CreateRefinCredMan(RepSpec,nCredManr,CredManr);
       DoBuyOutAgreement(CredManr,CurrentDate,IVr);
-      CreditCredManInvoices(CredManr,100,credval,vCredVal,false);
+      CreditCredManInvoices(CredManr,100,credval,vCredVal,false,"");
       res = true;
     end;
   end;
@@ -2020,7 +2023,7 @@ begin
     end;
   end;
 
-  CreditCredManInvoices(CredManr,prc,credval,vCredVal,sellf);
+  CreditCredManInvoices(CredManr,prc,credval,vCredVal,sellf,selldate);
   ReadFirstMain(CredManr,1,true);
 
   if (nonblank(custcode) and credval>0) then begin
@@ -2028,7 +2031,7 @@ begin
     RecordNew(IVr);
     RecordCopy(tCredManr,CredManr);
     tCredManr.CustCode = custcode;
-    SetupLoanInvoice(tCredManr,CMb,IVr,CurrentDate,"","",true,false,"",1,true);
+    SetupLoanInvoice(tCredManr,CMb,IVr,selldate,"","",true,false,"",1,true);
     GetVectorTags(vCredVal,aCredVal);
     for (i=0;i<aCredVal.length;i=i+1) begin
       GetItemName(aCredVal[i],spec);
