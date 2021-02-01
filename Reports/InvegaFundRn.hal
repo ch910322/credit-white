@@ -740,6 +740,8 @@ begin
       pos = 0;
       if (GetNextSubString(translist,pos,",",tmp)) begin
         OutString(p[10],0,tmp,false);
+      end else begin
+        OutString(p[10],0,"",false);
       end;
 //what about these 4?
       OutString(p[11],0,unpaidstartbal,false);
