@@ -712,7 +712,7 @@ begin
   string 255 sc,strnum;
   Integer gnum;
   array record CUVc aCUr;
-  val tval;
+  val tval,rate;
   
   BlockLoad(CMb);
   CUr.Code = CredManr.CustCode;
@@ -962,7 +962,7 @@ begin
   ExtPrintOwnBankDetails(vVals,CredManr.SerNr);
   rate = CredManr.IntRate;
   if (CredManr.AnnualRate==0) then begin
-    rate = CredManr.IntRate*12
+    rate = CredManr.IntRate*12;
   end;
   vVals["F_ANNUALRATE"] = Round(rate,SetRoundModeD(2)) & " %";
   tstr = AgreementValToText(Round(rate,SetRoundModeD(2)));
