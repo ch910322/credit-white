@@ -637,7 +637,8 @@ begin
     ratio = rval/IVr.Sum4;
     if (CreateCreditNoteIV(IVr,kInvoiceTypeCredit,IVCreditr,"",false)==0) then begin
       if (nonblank(td)) then begin
-        IVr.InvDate = td;
+        IVCreditr.InvDate = td;
+        IVVc_PasteInvDate(IVCreditr,LMb,err1,err2);
       end;
       if (IVr.InvDate>IVCreditr.InvDate) then begin
         IVCreditr.InvDate = IVr.InvDate;
@@ -1965,6 +1966,7 @@ begin
   Date calcsd;
   transaction Boolean gCreditSellerf;
   transaction string 255 gCreditSellerAccount;
+  Date tmpdate;
 
   BlockLoad(CMb);
   BlockLoad(CIb);
@@ -1988,7 +1990,7 @@ begin
   RecordCopy(tCredManr,CredManr);
   tCredManr.CancelDate = "";
   BuildCredManPayPlanCust(tCredManr,CredManPayPlanr,CMb,true,false);
-  GetBuyOutData(tCredManr,CredManPayPlanr,CMb,selldate,balance);
+  GetBuyOutData(tCredManr,CredManPayPlanr,CMb,tmpdate,balance);
 
   if (balance>0) then begin
     if (IVr.SerNr>-1) then begin
