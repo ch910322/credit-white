@@ -247,7 +247,7 @@ begin
   Longint pos,l;
   string 255 tstr;
   record CMInvoicingBlock CIb;
-  string 255 vatnr,del;
+  string 255 vatnr,del,regnr;
   record CUVc CUr;
   record CredManVc CredManr;
   val topay2,topay3,openamount,openamount2;
@@ -389,7 +389,9 @@ begin
   end else begin
     vatnr = IVr.VATNr;      
   end;
-
+  if (CUr.CustType==0) then begin
+    regnr = CUr.RegNr1;
+  end;
   BlockLoad(CIb);
   if (nonblank(CIb.ReplaceVATNr)) then begin
     if (CIb.ReplaceVATNr==vatnr) then begin
@@ -400,6 +402,7 @@ begin
     vVals["F_TOTALBRUTO"] = GetContactTotalPaidAmount(CredManr);
   end;
   vVals["F_KUNDMOMSNR2"] = vatnr;
+  vVals["F_COMPREGNR"] = regnr;
    
   if (IVr.ManualInvoice==1) then begin
     BlockLoad(PCb);
