@@ -320,7 +320,7 @@ begin
         latedays = GetLateDaysInPeriod(CredHistr,sd,ed,dueamount);
         if (dueamount>0 and latedays>=90) then begin
           tmpdate = AddDay(CredHistr.TransDate,90);
-          if (tmpdate<limitdate) then begin
+          if ((tmpdate<limitdate or blank(limitdate)) and tmpdate<ed) then begin
             limitdate = tmpdate;
           end;
         end;
@@ -710,6 +710,7 @@ begin
       if (CredManr.AnnualRate==0) then begin
         rate = rate * 12;
       end;
+      limitdate = "";
       startbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.sStartDate);
       endbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.sEndDate);
       translist = GetCredManTransactionList(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,paidval,princ,interest,overdues,false);
@@ -724,7 +725,7 @@ begin
 
       overduesign = "Ne";
       if (principlelatedays>90 or interestlatedays>90 or overdueslatedays>90 or CUr.OnHoldFlag==1) then begin
-        overduesign = limitdate;
+        overduesign = DateToString(limitdate,"YYYY-MM-DD");
       end;
 
       ReadFirstMain(CUr,1,true);
