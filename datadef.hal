@@ -1041,6 +1041,7 @@ begin
   ArrayField(ChargeType,M4Set,2010,0);
   ArrayField(CredHistNr,M4Long,0,CredHistVc);
   ArrayField(FactoringInvoice,M4Long,0,CredManFactInvoiceVc);  
+  ArrayField(CustCredManNrRow,M4Long,0,0);
   EndRecordAdd;
 
   BlockBegin(ItemPriorityBlock,-,"");

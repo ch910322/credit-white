@@ -2613,6 +2613,9 @@ if (true) then begin
   if (GuiType!=kGuiiPhone) then begin
     MatCol(t,144,"Description",0,Spec,false,0);
   end;
+//CUST-BEGIN
+  MatCol(t,-320,"Credit Agr.",0,CustCredManNrRow,false,0);
+//CUST-END
   MatCol(t,-240,"Customs No.",0,CustomsNr,false,0);
   MatCol(t,-100,"Country of Origin",0,CountryOfOrg,false,CountrySClass);
   MatCol(t=kInvoiceRowTypeStructuredItemComponent,144,"Description",0,Spec,false,0);
