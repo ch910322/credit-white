@@ -960,11 +960,13 @@ begin
   vVals["F_DELADDRESS"] = GetDelAddr(CredManr.CustCode);;
 
   ExtPrintOwnBankDetails(vVals,CredManr.SerNr);
-  if (CredManr.AnnualRate==1) then begin
-    vVals["F_ANNUALRATE"] = Round(CredManr.IntRate,SetRoundModeD(2)) & " %";
-  end else begin
-    vVals["F_ANNUALRATE"] = Round(CredManr.IntRate*12,SetRoundModeD(2)) & " %";
+  rate = CredManr.IntRate;
+  if (CredManr.AnnualRate==0) then begin
+    rate = CredManr.IntRate*12
   end;
+  vVals["F_ANNUALRATE"] = Round(rate,SetRoundModeD(2)) & " %";
+  tstr = AgreementValToText(Round(rate,SetRoundModeD(2)));
+  vVals["F_ANNUALRATEINTEXT"] = tstr;
 
   calcfees = GetMonthlyFees(CredManr,0);
   fixfees =  GetMonthlyFees(CredManr,1);
