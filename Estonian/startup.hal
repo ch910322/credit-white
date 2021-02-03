@@ -158,8 +158,8 @@ begin
   SString(200071,"Agr. Date");
   SString(200072,"Instalm.");
 
-  SString(200080,"Agreement No.: ");
-  SString(200081,"Period: ");
+  SString(200080,"Laenuleping nr.: ");
+  SString(200081,"Periood: ");
 
 /*CredManInfoRn*/
   SString(200090,"Date");
