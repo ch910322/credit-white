@@ -263,7 +263,7 @@ begin
   Array val debbal;
   Integer debcnt;
   Array string 10 debaccs;
-  val rval,rval2;
+  val rval,rval2,tval;
   record CMPrintConstantsBlock PCb;
 
   Ext_PrintInvoiceSigner(vVals);
@@ -399,7 +399,10 @@ begin
     end;
   end;
   if (CredManr.SerNr>0) then begin
-    vVals["F_TOTALBRUTO"] = GetContactTotalPaidAmount(CredManr);
+    tval = GetContactTotalPaidAmount(CredManr);
+    vVals["F_TOTALBRUTO"] = tval;
+    ValToText(tval,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+    vVals["F_TOTALBRUTOINTEXT"] = tstr;
   end;
   vVals["F_KUNDMOMSNR2"] = vatnr;
   vVals["F_COMPREGNR"] = regnr;

@@ -187,6 +187,8 @@ begin
   Integer i,rwcnt;
   record SMVc SMr;
   row SMVc SMrw;
+  val tval;
+  string 255 tstr;
  
   BlockLoad(CredManSetb);
   if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
@@ -202,7 +204,10 @@ begin
       i = rwcnt;
     end;
   end;
-  vVals["F_TOTALBRUTO"] = GetTotalFromCredManInfoMatrix(SMr);
+  tval = GetTotalFromCredManInfoMatrix(SMr);
+  vVals["F_TOTALBRUTO"] = tval;
+  ValToText(tval,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  vVals["F_TOTALBRUTOINTEXT"] = tstr;
   vVals["F_INSTALMENTDUEDATE"] = res;
 
   return;
