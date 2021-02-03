@@ -327,6 +327,7 @@ begin
   return;
 end;
 
+global
 function Boolean InvoiceHasHiddenLine(record IVVc IVr)
 begin
   Integer i,rwcnt;
