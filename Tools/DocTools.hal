@@ -1,3 +1,5 @@
+external procedure FillInvoiceData(record IVVc,var record RcVc);
+
 global
 updating procedure PrintCredManDocument(string docname,string fn,record CredManVc CredManr,Integer type,Boolean maxmonthlyf,string langcode)
 begin
@@ -54,9 +56,20 @@ global
 function Boolean Ext_CreateInvoiceHeader(record IVVc IVr,row MailTextVc MTrw,record IVMailBlock IVMailr,var record MailVc Mailr)
 begin
   string 255 sernr;
+  record RcVc RepSpec;
+  area a;
+  string 255 tstr;
+  record LTxtVc LTxtr;
 
   if (nonblank(MTrw.Header)) then begin  
     Mailr.Header = MTrw.Header;
+    if (InString(Mailr.Header,"?")>0) then begin
+      FillInvoiceData(IVr,RepSpec);
+      AddToText(Mailr.Header,LTxtr)
+      ParseTextField(a,LTxtr,RepSpec,"InvLtxtVcReplaceToken");
+      Mailr.Header = GetStringFromArea(a,0,255);
+      goto LExt_CreateInvoiceHeader;
+    end;
   end else begin
     if (nonblank(IVMailr.Header)) then begin
       Mailr.Header = IVMailr.Header & " ";
@@ -84,6 +97,8 @@ begin
   end;
   Mailr.Header = Mailr.Header & sernr;
 
+
+LExt_CreateInvoiceHeader:;
   Ext_CreateInvoiceHeader = true;
   return;
 end;
