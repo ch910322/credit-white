@@ -524,6 +524,7 @@ begin
   SetBegin(2027);
   SetText(0,"Invoice");
   SetText(4,"Buy-out");
+  SetText(5,"Payout");
   EndSet;
 
   SetBegin(2028);

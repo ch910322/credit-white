@@ -12,11 +12,11 @@ begin
   CredManr.SerNr = CSr.CredManNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
     int_type = GetInterestPaymentType(CredManr);
+    AgreementPaidOut(CredManr,paidval);
     if (int_type==2) then begin
-      AgreementPaidOut(CredManr,paidval);
       res = paidval;
     end else begin
-      res = CredManr.InvSum4;
+      res = CredManr.InvSum4 + paidval;
     end;
   end;
 
