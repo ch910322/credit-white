@@ -3091,6 +3091,7 @@ begin
   end else begin
     EditFieldTL(h,v,120,"Until Date",M4Date,Normal,0,d1,false,PasteCurDate);
   end;
+  EditFieldTL(h,v+=vs,120,"Agreement",M4Long,Normal,0,long1,false,CredManSClass);
   ButtonFrame(h,v+=40,150,2,"Calculation");
   RadioButton(h,v,0,0,"Based on Period",ArtMode);
   RadioButton(h,v+=16,1,0,"Since Last Overdue Invoice",ArtMode); 
