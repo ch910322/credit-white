@@ -35,6 +35,7 @@ external function Boolean CredManPMCodeMatches2(string,record CredManVc,Boolean)
 remote procedure CheckBuyOutAgreementCallBack(record RcVc,Integer);
 external function Boolean TypeAffectsBalance(Integer);
 external function val GetAgreementAmount(record CredManVc);
+external inner procedure IVVc_PastePayDeal2(var record IVVc,string,string,Boolean);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -373,6 +374,8 @@ global
 procedure SetupOverdueLangCode(var record IVVc IVr,record CredManVc CredManr)
 begin
   record CredManTypeVc CMTr;
+  Boolean serf;
+  record CMInvoicingBlock CIb;
 
   CMTr.Code = CredManr.Type;
   if (ReadFirstMain(CMTr,1,true)) then begin
@@ -385,6 +388,11 @@ begin
         IVr.LangCode = CMTr.OverdueLangCode;
       end;
     end;
+  end;
+  BlockLoad(CIb);
+  if (nonblank(CIb.OverduePayTerm)) then begin
+    IVr.PayDeal = CIb.OverduePayTerm;
+    IVVc_PastePayDeal2(IVr,"","",serf);
   end;
 
   return;

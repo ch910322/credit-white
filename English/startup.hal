@@ -200,7 +200,7 @@ begin
   SString(200107,"Invitation sent successfully");
 
   SString(200108,"These Changes require Server Restart");
-  SString(200109,"Can't pause becauce there is an Invoice already created");
+  SString(200109,"Can't pause because there is an Invoice already created");
   SString(200110,"Wrong Type for Credit Limit");
   SString(200111,"Amount covers only due Invoices. Nothing left for Buyout");
   SString(200112,"Credit Limit reached");
@@ -268,7 +268,7 @@ begin
   SString(200269,"Amount is different than specified in Credit Agreement");
 
   SString(200270,"Schedule Type");
-  SString(200271,"Can't update becauce there is an Invoice already created");
+  SString(200271,"Can't update because there is an Invoice already created");
   SString(200272,"Agreement schedule is not matching with Fixed schedule");
   SString(200273,"Schedule doesn't exist");
   SString(200274,"Date can't be blank or earlier than last Invoice Date");
