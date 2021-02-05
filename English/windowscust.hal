@@ -3180,7 +3180,8 @@ begin
   UseView(CredManAccVc);
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Type",CredManType,false,CredManType);
-  RlCol(124,124,"Comment",Comment,false);
+  RlCol(124,124,"Category",CustCat,false);
+  RlCol(224,224,"Comment",Comment,false);
   SearchField("Search");
   EndWindow;
 end;
