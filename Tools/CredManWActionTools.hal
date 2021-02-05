@@ -309,7 +309,7 @@ begin
     res = false;
   end;
 
-  if (CredManr.PrincipleDelayMonths>0) then begin
+  if (CredManr.PrincipleDelayMonths>0 and months>0) then begin
     if (AddDay(AddMonth(CredManr.FirstInvDate,CredManr.PrincipleDelayMonths-1),-1)>td) then begin
       res = false;
     end;
