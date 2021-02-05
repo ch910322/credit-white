@@ -1876,6 +1876,7 @@ begin
   RecordField(DebtorsAcc,M4Code,20,AccVc);
   RecordField(ControlAccShort,M4Code,20,AccVc);
   RecordField(ControlAccLong,M4Code,20,AccVc);
+  RecordField(CustCat,M4Code,20,CCatVc);
   ArrayBegin(Math,-,1);
   ArrayField(ArtCode,M4Code,20,INVc);
   ArrayField(CreditAcc,M4Code,20,AccVc);
@@ -1884,6 +1885,7 @@ begin
   EndArray;
   MainKeyBegin(CredManType,0);
   KeySegment(CredManType);
+  KeySegment(CustCat);
   EndRecord;
 
   RecordBegin(CredManMoneyRecVc,-,"");

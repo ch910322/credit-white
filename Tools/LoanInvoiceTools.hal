@@ -36,6 +36,7 @@ remote procedure CheckBuyOutAgreementCallBack(record RcVc,Integer);
 external function Boolean TypeAffectsBalance(Integer);
 external function val GetAgreementAmount(record CredManVc);
 external inner procedure IVVc_PastePayDeal2(var record IVVc,string,string,Boolean);
+external function Boolean FindCredManAcc(record CredManVc,var record CredManAccVc);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -309,8 +310,7 @@ begin
     end;
 
     if (chargetype!=17) then begin
-      CMAr.CredManType = CredManr.Type;
-      if (ReadFirstMain(CMAr,1,true)) then begin
+      if (FindCredManAcc(CredManr,CMAr)) then begin
         rwcnt = MatRowCnt(CMAr);
         for (i=0;i<rwcnt;i=i+1) begin
           MatRowGet(CMAr,i,CMArw);

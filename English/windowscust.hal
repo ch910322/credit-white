@@ -3194,7 +3194,8 @@ begin
   WindowBegin("Account",CredManAccDCLass,CGview,-);
   UseView(CredManAccVc);
   SetWRect(64,80,599,475);
-  EditField(h=145,v=6, 100, "Type",Normal,CredManType,false,CredManTypeSClass);
+  EditField(h=145,v=6,100, "Type",Normal,CredManType,false,CredManTypeSClass);
+  EditField(h,v+=vs,100, "Customer Category",Normal,CustCat,false,CCatSClass);
   EditField(h,v+=vs,-40,"Name",Normal,Comment,false,0);
   EditField(h,v+=vs,100,"P/L Debit Account",Normal,PLDebitAcc,false,AccSClass);
   EditField(h,v+=vs,100,"P/L Credit Account",Normal,PLCreditAcc,false,AccSClass);
