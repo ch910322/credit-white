@@ -759,6 +759,7 @@ begin
   RecordField(Subordination5Amount,M4Val,0,0);
   RecordField(Subordination5Signer,M4Str,255,0);
   RecordField(Subordination5DueDate,M4Date,0,0);
+  RecordField(MaxMonthlyPrinciple,M4Val,0,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);

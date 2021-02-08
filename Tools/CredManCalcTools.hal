@@ -786,6 +786,11 @@ begin
           end;
         end;
 
+        if (CredManr.MaxMonthlyPrinciple>0) then begin
+          if (sum>CredManr.MaxMonthlyPrinciple) then begin
+            sum = CredManr.MaxMonthlyPrinciple;
+          end;
+        end;
         if (CredManr.MaxMonthlyPayment>0) then begin
           curpayment = GetCurrentMonthPayment(CredManPayPlanr,invdate,sum);
           if (CredManr.MaxMonthlyPayment<curpayment) then begin
@@ -1075,7 +1080,7 @@ LAddActualsToPlan_Next:;
         usemonths = months - calculatedmonths;
       end;
       if (PartiaBuyoutShortensPeriod) then begin
-        CredManr.MaxMonthlyPayment = GetMaxMonthlyPaymentForPartialBuyout(CredManPayPlanr,CredManr,CredHistr.Sum,CredHistr.TransDate,usemonths,prevusesum,reducemonths,calculatedmonths);
+        CredManr.MaxMonthlyPrinciple = GetMaxMonthlyPaymentForPartialBuyout(CredManPayPlanr,CredManr,CredHistr.Sum,CredHistr.TransDate,usemonths,prevusesum,reducemonths,calculatedmonths);
         usemonths = months - calculatedmonths - reducemonths;
       end;
 
@@ -1476,7 +1481,7 @@ begin
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,"","",kEventTypePartialBuyout,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,0);
         usesum = calcbal;
         if (PartiaBuyoutShortensPeriod) then begin
-          CredManr.MaxMonthlyPayment = GetMaxMonthlyPaymentForPartialBuyout(CredManPayPlanr,CredManr,CredHistr.Sum,frdate,usemonths, prevusesum,reducemonths,curmonth);
+          CredManr.MaxMonthlyPrinciple = GetMaxMonthlyPaymentForPartialBuyout(CredManPayPlanr,CredManr,CredHistr.Sum,frdate,usemonths, prevusesum,reducemonths,curmonth);
           if (curmonth<CredManr.PrincipleDelayMonths) then begin
             usemonths = months - CredManr.PrincipleDelayMonths - reducemonths;
           end else begin
