@@ -79,3 +79,33 @@ begin
   IVVcRecordSaveAfter = res; 
   return;
 end;
+
+
+global
+updating function LongInt IVVcVcRecordRemoveAfter(var record IVVc IVr,record IVVc IV2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  record ProlongSessionVc PSr;
+  row IVVc IVrw;
+  Integer i,rwcnt;
+
+  res = inner.IVVcVcRecordRemoveAfter(IVr,IV2r,stat,long4);
+  
+  rwcnt = MatRowCnt(IVr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    if (IVrw.ChargeType==14) then begin
+      PSr.CredManNr = IVr.CustCredManNr;
+      PSr.PaidFlag = 0;
+      if (ReadFirstKey("CredManPaid",PSr,2,true)) then begin
+        RecordRemove(PSr);
+        goto LIVVcVcRecordRemoveAfter; 
+      end;
+    end;
+  end;
+
+LIVVcVcRecordRemoveAfter:;
+  IVVcVcRecordRemoveAfter = res;
+  return;
+end;
+
