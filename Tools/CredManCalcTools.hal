@@ -265,6 +265,7 @@ begin
     case kEventTypeIssueDeposit:    res = true;
     case kEventTypeCalcDeposit:     res = true;
     case kEventTypePartialBuyout:   res = true;
+    case 11:                        res = true;//old partial buyout?
   end;
   
   TypeAffectsBalance = res;
@@ -985,6 +986,19 @@ begin
   return;
 end;
 
+global
+function Boolean IsPartialBuyoutType(Integer type)
+begin
+  Boolean res;
+  
+  if (type==kEventTypePartialBuyout or type==11) then begin
+    res = true;
+  end;
+
+  IsPartialBuyoutType = res;
+  return;
+end;
+
 procedure AddActualsToPlan(record CredManVc CredManr,var record CredmanPayPlanVc CredManPayPlanr,var Integer calculatedmonths,var val acumint,var val calcbal,var Boolean firstinvf,record CredManSetBlock CredManSetb,var Integer months,var val buyoutamount,var val pausebal,var val prolongbal,Integer int_type,var val usesum,var Integer usemonths)
 begin
   record CredHistVc CredHistr,PrevCredHistr;
@@ -1014,23 +1028,25 @@ begin
           case 0: 
             type = GetCredHistType(CredHistr.ArtCode,CredHistr.ChargeType,false); 
             openamount = GetCredHistOpenAmount(CredHistr);
+          case 4: 
+            type = GetCredHistType(CredHistr.ArtCode,CredHistr.ChargeType,false); 
           otherwise
             PrevCredHistr.SerNr = CredHistr.PreviousNr;
             ReadFirstMain(PrevCredHistr,1,true);
             type = GetCredHistType(PrevCredHistr.ArtCode,-1,true);          
         end;
-        if (CredHistr.ChargeType==kEventTypePartialBuyout and (CredHistr.TransDate>lastinvdate or blank(lastinvdate))) then begin
+        if (IsPartialBuyoutType(CredHistr.ChargeType) and (CredHistr.TransDate>lastinvdate or blank(lastinvdate))) then begin
           goto LAddActualsToPlan_Next;
         end;
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,CredHistr.ArtCode,"",type,CredHistr.Sum,0,acumint,calcbal,CredHistr.CredFromDate,CredHistr.CredToDate,CredHistr.SerNr,-1,openamount);
-        if (CredHistr.RecordType==0 and (CredHistr.ChargeType==kEventTypePartialBuyout)) then begin
+        if (IsPartialBuyoutType(CredHistr.ChargeType)) then begin
           prevusesum = usesum;
           usesum = calcbal;
         end;
-        if (CredHistr.ChargeType==kEventTypePartialBuyout) then begin
+        if (IsPartialBuyoutType(CredHistr.ChargeType)) then begin
           buyoutamount = buyoutamount + CredHistr.Sum;
         end;
-        if (CredHistr.RecordType==0 and CredHistr.ChargeType!=kEventTypePartialBuyout and CredHistr.ChargeType!=kEventTypeIssueLateFees) then begin
+        if (CredHistr.RecordType==0 and IsPartialBuyoutType(CredHistr.ChargeType)==false and CredHistr.ChargeType!=kEventTypeIssueLateFees) then begin
           if (IsInitialInvoice(CredManr,CredHistr.TransDate,lastrecnr,vFirstInv[CredHistr.RecordNr])) then begin
             firstinvf = true;
             vFirstInv[CredHistr.RecordNr] = true;//we can have multiple records for single invoice. so we need to store that this invoice is the initial invoice
@@ -1456,7 +1472,7 @@ begin
     if (CredHistr.TransDate>todate) then begin
       TrHs = false;
     end else begin
-      if (CredHistr.ChargeType==kEventTypePartialBuyout) then begin//partial buyout
+      if (IsPartialBuyoutType(CredHistr.ChargeType)) then begin//partial buyout
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,"","",kEventTypePartialBuyout,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,0);
         usesum = calcbal;
         if (PartiaBuyoutShortensPeriod) then begin

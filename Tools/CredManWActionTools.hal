@@ -260,7 +260,7 @@ begin
     end else begin
       if (Changer.OKFlag==1) then begin
         if (Changer.PauseMonths>0) then begin
-          ed = AddDay(AddMonth(Changer.TransDate,Changer.PauseMonths)-1);
+          ed = AddDay(AddMonth(Changer.TransDate,Changer.PauseMonths),-1);
           if (DateInRange(td,Changer.TransDate,ed)) then begin
             res = true;
             TrHs = false;

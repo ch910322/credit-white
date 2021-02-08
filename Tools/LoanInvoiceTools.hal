@@ -37,6 +37,7 @@ external function Boolean TypeAffectsBalance(Integer);
 external function val GetAgreementAmount(record CredManVc);
 external inner procedure IVVc_PastePayDeal2(var record IVVc,string,string,Boolean);
 external function Boolean FindCredManAcc(record CredManVc,var record CredManAccVc);
+external function Boolean IsPartialBuyoutType(Integer);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -1720,7 +1721,7 @@ begin
       if (CredManPayrw.PlanType==kEventTypePayout) then begin
         curbal = curbal + CredManPayrw.Sum;
       end;
-      if (CredManPayrw.PlanType==kEventTypeIssueInstalment or CredManPayrw.PlanType==kEventTypePartialBuyout) then begin
+      if (CredManPayrw.PlanType==kEventTypeIssueInstalment or IsPartialBuyoutType(CredManPayrw.PlanType)) then begin
         openamount = openamount + CredManPayrw.OpenAmount;
       end;
     end;
@@ -1761,31 +1762,6 @@ begin
   end;
 
   GetPrepaymentValue = res;
-  return;
-end;
-
-function val GetActualBalanceSched(record CredManVc CredManr,record CredManSchedVc CSr)
-begin
-  val bal;
-  Integer i,rwcnt;
-  row CredManSchedVc CSrw;
-  
-  bal = CredManr.InvSum4;
-  rwcnt = MatRowCnt(CSr);
-  for (i=0;i<rwcnt;i=i+1) begin
-    MatRowGet(CSr,i,CSrw);
-    if (CSrw.Invoiced==1) then begin
-      if (CSrw.Type==4) then begin
-        bal = bal - CSrw.Total;
-      end else begin
-        bal = bal - CSrw.Principle - CSrw.Deposit;
-      end;
-    end else begin
-      i = rwcnt;
-    end;
-  end;
-
-  GetActualBalanceSched = bal;
   return;
 end;
 

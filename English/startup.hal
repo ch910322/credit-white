@@ -416,7 +416,8 @@ begin
   SetText(8,"Invoiced Fees");
   SetText(9,"Invoices Late Fees");
   SetText(10,"Paid Invoice");
-  SetText(11,"Partial Buy-out");
+  SetText(11,"Partial Buy-out (old)");
+  SetText(19,"Partial Buy-out");
 //new types should be added to function MapChargeTypes
   EndSet;
 
