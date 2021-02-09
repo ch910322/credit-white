@@ -53,11 +53,13 @@ begin
     end else begin
       if (Changer.PauseMonths==months and Changer.ProlongMonths==months2) then begin
         RecordCopy(oldChanger,Changer);
-        Changer.OKFlag = 1;
         if (nonblank(nd) and Changer.TransDate<nd) then begin
           Changer.TransDate = nd;
         end;
         RecordUpdate(oldChanger,Changer,false);
+        RecordCopy(oldChanger,Changer);
+        Changer.OKFlag = 1;
+        RecordUpdate(oldChanger,Changer,true);
       end;
     end;
   end;
@@ -129,16 +131,14 @@ begin
       CredManr.SerNr = sernr;
       if (ReadFirstMain(CredManr,1,true)) then begin
         ndate = GetInvoicePaidDate(histnr);
-        RecordCopy(oldCredManr,CredManr);
         if (PSr.PauseMonths>0 or PSr.ProlongMonths>0 or PSr.IntRate>0 or PSr.AddVal>0) then begin
           ApprovePauseRecord(CredManr.SerNr,PSr.PauseDate,ndate,PSr.PauseMonths,PSr.ProlongMonths);
           if (PSr.AddVal>0) then begin
             CreateCredmanPurchaseInvoice(CredManr,0,VIr,PSr.AddVal,true,PSr.TransDate);
           end;
         end;
-        CredManSetDatesCust(CredManr,false);
-        if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
-          if (PSr.RecalcSchedule==1) then begin
+        if (PSr.RecalcSchedule==1) then begin
+          if (ReadFirstMain(CredManr,1,true)) then begin
             RecreateAgreementSchedule2(CredManr,true);
           end;
         end;
