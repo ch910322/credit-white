@@ -1497,7 +1497,7 @@ end;
 
 
 global
-procedure BuildCredManPayPlanCust(record CredManVc inCredManr,var record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb,Boolean withactuals,Boolean recalculatef)
+procedure BuildCredManPayPlanCust2(record CredManVc inCredManr,var record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb,Boolean withactuals,Boolean recalculatef,Boolean planf)
 begin
   Integer calculatedmonths,months;
   val acumint,calcbal;
@@ -1546,7 +1546,7 @@ LCalcSchedule:;
   if (withactuals) then begin
     AddActualsToPlan(inCredManr,CredManPayPlanr,calculatedmonths,acumint,calcbal,firstinvf,CredManSetb,months,buyoutamount,pausebal,prolongbal,int_type,usesum,usemonths);
   end;
-  if (tCredManr.Status==5) then begin
+  if (tCredManr.Status==5 or planf) then begin//if cancelled or we just want to get the actuals
     goto LBuildCredManPayPlanCust;
   end;
   if (usemonths==0) then begin
@@ -1702,6 +1702,15 @@ logtext(0,"BuildCredManPayPlanCust end2");
   RecordCopy(inCredManr,tCredManr);
 
 LBuildCredManPayPlanCust:;
+  return;
+end;
+
+global
+procedure BuildCredManPayPlanCust(record CredManVc inCredManr,var record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb,Boolean withactuals,Boolean recalculatef)
+begin
+
+  BuildCredManPayPlanCust2(inCredManr,CredManPayPlanr,CredManSetb,withactuals,recalculatef,true);
+
   return;
 end;
 
