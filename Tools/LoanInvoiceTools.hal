@@ -1,4 +1,5 @@
 external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
+external procedure BuildCredManPayPlanCust2(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean,Boolean);
 external inner function Boolean PasteCust2InInv(var record IVVc,record LocalMachineBlock,string,Boolean,var string,var string,var string,var string,var string);
 remote inner procedure IVVc_PastePayDeal(var record IVVc,string,string);
 remote inner procedure IVVc_PasteSalesMan(var record IVVc,string);
@@ -1783,7 +1784,7 @@ logtext(0,"CheckBuyOutAgreement start");
 
   gSilenceIVOpenPrepExists = true;
   BlockLoad(CMb);
-    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
+    BuildCredManPayPlanCust2(CredManr,CredManPayPlanr,CMb,true,false,false);
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,RepSpec.d1,IVr,true,sd2);
 //  end;
   CheckUnpaidInvoices(CredManr,dueamount,openamount);
