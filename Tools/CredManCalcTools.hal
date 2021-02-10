@@ -1546,7 +1546,7 @@ LCalcSchedule:;
   if (withactuals) then begin
     AddActualsToPlan(inCredManr,CredManPayPlanr,calculatedmonths,acumint,calcbal,firstinvf,CredManSetb,months,buyoutamount,pausebal,prolongbal,int_type,usesum,usemonths);
   end;
-  if (tCredManr.Status==5 or planf) then begin//if cancelled or we just want to get the actuals
+  if (tCredManr.Status==5 or planf==false) then begin//if cancelled or we just want to get the actuals
     goto LBuildCredManPayPlanCust;
   end;
   if (usemonths==0) then begin
