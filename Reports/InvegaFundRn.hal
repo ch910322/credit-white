@@ -319,7 +319,7 @@ begin
       if (CredHistr.RecordType==0 and CredHistr.PayDate<=ed) then begin
         latedays = GetLateDaysInPeriod(CredHistr,sd,ed,dueamount);
         if (dueamount>0 and latedays>=90) then begin
-          tmpdate = AddDay(CredHistr.TransDate,90);
+          tmpdate = AddDay(CredHistr.PayDate,90);
           if ((tmpdate<limitdate or blank(limitdate)) and tmpdate<ed) then begin
             limitdate = tmpdate;
           end;
