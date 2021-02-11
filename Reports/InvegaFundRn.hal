@@ -148,7 +148,7 @@ begin
     end else begin
       if (CredHistr.RecordType==1 or CredHistr.RecordType==2) then begin
         if (invegaf and CredHistr.RecordType==1) then begin
-          //vDates[DateToString(CredHistr.TransDate,"YYYY-MM-DD")] = true;
+          vDates[DateToString(CredHistr.TransDate,"YYYY-MM-DD")] = true;
         end;
         tCredHistr.SerNr = CredHistr.PreviousNr;
         if (ReadFirstMain(tCredHistr,1,true)) then begin
@@ -219,6 +219,7 @@ begin
     end;
   end;
 
+  res = "";
   GetVectorTags(vDates,aDates);
   SortArray(aDates,M4Date);
   for (i=0;i<aDates.length;i=i+1) begin
@@ -530,7 +531,7 @@ begin
       OutString(p[12],0,DateToString(CredManr.endDate,"YYYY-MM-DD"),false);
       OutString(p[13],0,startbal,false);
       pos = 0;
-      if (GetNextSubString(translist,pos,",",tmp)) begin
+      if (nonblank(translist) and GetNextSubString(translist,pos,",",tmp)) begin
         OutString(p[14],0,tmp,false);
       end else begin
         OutString(p[14],0,"",false);
@@ -748,7 +749,7 @@ begin
       totpaid = totpaid + paidval;
       checkf = false;
       pos = 0;
-      if (GetNextSubString(translist,pos,",",tmp)) begin
+      if (nonblank(translist) and GetNextSubString(translist,pos,",",tmp)) begin
         OutString(p[10],0,tmp,false);
       end else begin
         OutString(p[10],0,"",false);
