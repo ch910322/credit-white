@@ -122,7 +122,7 @@ begin
     MatRowGet(OPr,i,OPrw);
     VIr.SerNr = OPrw.VISerNr;
     if (ReadFirstMain(VIr,1,true)) then begin
-      if (VIr.CustCredManNr>-1) then begin
+      if (VIr.CustCredManNr>-1 and VIr.CredManExtraPayment==0) then begin
         CredManr.SerNr = VIr.CustCredManNr;
         if (ReadFirstMain(CredManr,1,true)) then begin
           if (nonblank(CredManr.DisburseUntil) and CredManr.DisburseUntil<OPr.TransDate) then begin

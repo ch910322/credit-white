@@ -130,7 +130,7 @@ begin
         case 4:
           bal = bal - CSrw.Total;
         case 5:
-          bal = bal + CSrw.Total;
+          bal = bal + CSrw.Principle;
         otherwise
           bal = bal - CSrw.Principle - CSrw.Deposit;
       end;
