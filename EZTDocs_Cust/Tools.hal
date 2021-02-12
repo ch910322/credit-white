@@ -397,8 +397,10 @@ begin
   end else begin
     vatnr = IVr.VATNr;      
   end;
+  BlockLoad(PCb);
   if (CUr.CustType==0) then begin
     regnr = CUr.RegNr1;
+    vVals["REGNRCOMMENT"] = PCb.RegNrComment;
   end;
   BlockLoad(CIb);
   if (nonblank(CIb.ReplaceVATNr)) then begin
@@ -416,7 +418,6 @@ begin
   vVals["F_COMPREGNR"] = regnr;
    
   if (IVr.ManualInvoice==1) then begin
-    BlockLoad(PCb);
     vVals["F_NETTINGTEXT"] = PCb.InvoiceText;
   end;
 

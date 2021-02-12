@@ -2036,6 +2036,8 @@ begin
 
   RecordField(ValCrncyCode,M4Code,20,0);
   RecordField(BOEValueLangCode,M4Code,20,0);
+  RecordField(RegNrComment,M4Str,255,0);
+  
   EndBlock;
 
   RecordAddBegin(LangNrVc,"LangNrVc_Cust");
