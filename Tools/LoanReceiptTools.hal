@@ -450,6 +450,7 @@ begin
   row ORVc ORrw;
   array record ORVc arrORr;
   Longint histnr,credmannr;
+  val tmpval;
   
   if (IPrw.CredHistNr>0) then begin
     CredHistr.SerNr = IPrw.CredHistNr;
@@ -457,15 +458,17 @@ begin
       InsertCredHistInArray(CredHistr,arrORr,0,IPr.TransDate);
     end;
   end else begin
-    TrHs = true;
-    CredHistr.RecordNr = IPrw.InvoiceNr;
-    CredHistr.RecordType = 0;
-    while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
-      if (CredHistr.RecordNr!=IPrw.InvoiceNr or CredHistr.RecordType!=0) then begin
-        TrHs = false;
-      end else begin
-        priority = GetItemPriority(CredHistr.CredManNr,CredHistr.ArtCode);
-        InsertCredHistInArray(CredHistr,arrORr,priority,IPr.TransDate);
+    if (IPrw.RecVal>0) then begin
+      TrHs = true;
+      CredHistr.RecordNr = IPrw.InvoiceNr;
+      CredHistr.RecordType = 0;
+      while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+        if (CredHistr.RecordNr!=IPrw.InvoiceNr or CredHistr.RecordType!=0) then begin
+          TrHs = false;
+        end else begin
+          priority = GetItemPriority(CredHistr.CredManNr,CredHistr.ArtCode);
+          InsertCredHistInArray(CredHistr,arrORr,priority,IPr.TransDate);
+        end;
       end;
     end;
   end;
@@ -484,31 +487,62 @@ begin
     arrORr[i] = ORr;
   end;
 
- remsum = IPrw.RecVal;
-//we could do this more efficiently 
-  for (i=0;i<arrORr.length;i=i+1) begin
-    ORr = arrORr[i];
-    rwcnt = MatRowCnt(ORr);
-    for (j=0;j<rwcnt;j=j+1) begin
-      MatRowGet(ORr,j,ORrw);
-      paid = ORrw.Sum-ORrw.Price;
-      if (paid>0) then begin
-        if (remsum<paid) then begin
-          paid = remsum;
+  remsum = IPrw.RecVal;
+  if (remsum>0) then begin
+  //we could do this more efficiently 
+    for (i=0;i<arrORr.length;i=i+1) begin
+      ORr = arrORr[i];
+      rwcnt = MatRowCnt(ORr);
+      for (j=0;j<rwcnt;j=j+1) begin
+        MatRowGet(ORr,j,ORrw);
+        paid = ORrw.Sum-ORrw.Price;
+        if (paid>0) then begin
+          if (remsum<paid) then begin
+            paid = remsum;
+          end;
+          remsum = remsum - paid;
+          mainf = 0;
+          recval = 0;
+          credmannr = ORrw.TAX2Reb;
+          if (arrCredManr[credmannr]>0) then begin
+            recval = arrCredManr[credmannr];
+            arrCredManr[credmannr] = 0;
+            //mainf = 1;
+          end;
+          CreateCredHist(IPr.SerNr,10,ORrw.VECode,paid,rectype,"",IPr.TransDate,ORrw.TAX2Reb,IPr.TransDate,histnr,"","",mainf,ORrw.CUServiceHistNr,recval,-1,0);
         end;
-        remsum = remsum - paid;
-        mainf = 0;
-        recval = 0;
-        credmannr = ORrw.TAX2Reb;
-        if (arrCredManr[credmannr]>0) then begin
-          recval = arrCredManr[credmannr];
-          arrCredManr[credmannr] = 0;
-          //mainf = 1;
+        if (remsum<=0) then begin
+          goto LFindUnpaidCredHist;
         end;
-        CreateCredHist(IPr.SerNr,10,ORrw.VECode,paid,rectype,"",IPr.TransDate,ORrw.TAX2Reb,IPr.TransDate,histnr,"","",mainf,ORrw.CUServiceHistNr,recval,-1,0);
       end;
-      if (remsum<=0) then begin
-        goto LFindUnpaidCredHist;
+    end;
+  end else begin
+    remsum = -remsum;
+    for (i=0;i<arrORr.length;i=i+1) begin
+      ORr = arrORr[i];
+      rwcnt = MatRowCnt(ORr);
+      for (j=0;j<rwcnt;j=j+1) begin
+        MatRowGet(ORr,j,ORrw);
+        paid = ORrw.Price;
+        if (paid>0) then begin
+          tmpval = remsum;
+          if (remsum>paid) then begin
+            tmpval = paid;
+          end;
+          remsum = remsum - tmpval;
+          mainf = 0;
+          recval = 0;
+          credmannr = ORrw.TAX2Reb;
+          if (arrCredManr[credmannr]>0) then begin
+            recval = arrCredManr[credmannr];
+            arrCredManr[credmannr] = 0;
+            //mainf = 1;
+          end;
+          CreateCredHist(IPr.SerNr,10,ORrw.VECode,-tmpval,rectype,"",IPr.TransDate,ORrw.TAX2Reb,IPr.TransDate,histnr,"","",mainf,ORrw.CUServiceHistNr,recval,-1,0);
+        end;
+        if (remsum<=0) then begin
+          goto LFindUnpaidCredHist;
+        end;
       end;
     end;
   end;
