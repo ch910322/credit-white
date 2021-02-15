@@ -1661,6 +1661,7 @@ begin
     if (fullf==false) then begin
       IVr.OfficialSerNr = "";
       IVr.NoEmailFlag = 1;
+      IVr.ExcludeFromExports = 1;
     end;
     GetItemName(CMb.InstalmentItem,spec);
     SetupInvoiceRowAndAdd(CredManr,IVr,CMb.InstalmentItem,spec,1,buyoutval-tval,blankval,19,-1);
@@ -1669,14 +1670,16 @@ begin
     StoreLoanInvoice(IVr,CredManr);
 
     //IVr.Sum4 = buyoutval;//a little hack for this to work
-    CreatePaymentFakeReceipt(CredManr,IVr);
+    if (full) then begin
+      CreatePaymentFakeReceipt(CredManr,IVr);
+    end;
 
-    if (fullf==false) then begin
+//    if (fullf==false) then begin
       SetupLoanInvoice(CredManr,CMb,IVr,td,"","",true,false,"",1,true);
       GetItemName(CMb.InstalmentItem,spec);
       AddBuyoutFee(CredManr,IVr,buyoutval-tval);
       StoreLoanInvoice(IVr,CredManr);
-    end;    
+//    end;    
 
     if (updf) then begin
       ADr.RecordType = 0;
