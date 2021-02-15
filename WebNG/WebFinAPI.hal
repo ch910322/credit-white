@@ -411,7 +411,7 @@ begin
 end;
 
 global
-webpublic procedure WebFinAPI()
+procedure WebFinAPI()
 begin
   string 255 tstr,rep;
   string 20 compcode;
