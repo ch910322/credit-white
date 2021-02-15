@@ -39,6 +39,7 @@ external function val GetAgreementAmount(record CredManVc);
 external inner procedure IVVc_PastePayDeal2(var record IVVc,string,string,Boolean);
 external function Boolean FindCredManAcc(record CredManVc,var record CredManAccVc);
 external function Boolean IsPartialBuyoutType(Integer);
+external function Boolean CredManCanInvoiceOverdues(record CredManVc);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -940,29 +941,25 @@ begin
   return;
 end;
 
-function Boolean CanInvoiceDate(record CredManVc CredManr,Integer invtype)
+function Boolean CanInvoiceDate(record CredManVc CredManr,Boolean allf,Boolean startfullf)
 begin
   Boolean res;
   
-  if ((invtype==1 and CredManr.OKFlag==1) or GetInterestPaymentType(CredManr)==2) then begin
+  if (allf or startfullf) then begin
     res = true;
-  end else begin
-    if (invtype==0) then begin
-      res = true;
-    end;
   end;
 
   CanInvoiceDate = res;
   return;
 end;  
 
-updating procedure CreateInvoicesFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date ed,var record IVVc firstIVr,string ivno,Boolean manualf)
+updating procedure CreateInvoicesFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date ed,var record IVVc firstIVr,string ivno,Boolean manualf,Boolean allf)
 begin
   Integer i,rwcnt;
   row CredManPayPlanVc CredManPayPlanrw;
   Date lastd,lastd2;
   record IVVc IVr,oldIVr,oIVr;
-  Boolean firstf;
+  Boolean firstf,startfullf;
   Integer latedays;
   val lateamount;
   record CMInvoicingBlock CIb;
@@ -974,28 +971,33 @@ begin
   rwcnt = MatRowCnt(CredManPayPlanr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
-    if (CredManPayPlanrw.PlanType<=4 and CredManPayPlanrw.TransDate<=ed and CanInvoiceDate(CredManr,CredManPayPlanrw.InvType)) then begin
+    if (nonblank(CredManPayPlanrw.FromDate)) then begin
+      startfullf = true;
+    end;
+    if (CredManPayPlanrw.PlanType<=4 and CredManPayPlanrw.TransDate<=ed and CanInvoiceDate(CredManr,allf,startfullf)) then begin
       if (lastd!=CredManPayPlanrw.TransDate) then begin
         //Setup new invoice
         if (nonblank(lastd)) then begin
           //if (IVr.InvDate==CredManr.startDate) then begin
             MergeItemsInInvoice(IVr,CredManr);
           //end;
-          GetCredManOverdueInvoices(CredManr,CMb,lastd,lastd2,latedays,lateamount,lateformula,false,false,calcsd);
-          switch (CIb.OverdueIVType) begin
-            case 0: AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
-            case 1: 
-              SetupLoanInvoice(CredManr,CMb,oIVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno,2,true);
-              SetupOverdueLangCode(IVr,CredManr);
-              AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
-              StoreLoanInvoice(oIVr,CredManr);
-            case 2:
-              if (nonblank(CredManr.CancelDate)) then begin
+          if (CredManCanInvoiceOverdues(CredManr)) then begin
+            GetCredManOverdueInvoices(CredManr,CMb,lastd,lastd2,latedays,lateamount,lateformula,false,false,calcsd);
+            switch (CIb.OverdueIVType) begin
+              case 0: AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
+              case 1: 
                 SetupLoanInvoice(CredManr,CMb,oIVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno,2,true);
                 SetupOverdueLangCode(IVr,CredManr);
                 AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
                 StoreLoanInvoice(oIVr,CredManr);
-              end;
+              case 2:
+                if (nonblank(CredManr.CancelDate)) then begin
+                  SetupLoanInvoice(CredManr,CMb,oIVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno,2,true);
+                  SetupOverdueLangCode(IVr,CredManr);
+                  AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
+                  StoreLoanInvoice(oIVr,CredManr);
+                end;
+            end;
           end;
           CM_AddPrepayments(IVr,CredManr,CIb);
           if (IVr.SerNr>-1) then begin
@@ -1034,14 +1036,16 @@ begin
   end;
   if (nonblank(lastd)) then begin
     MergeItemsInInvoice(IVr,CredManr);
-    GetCredManOverdueInvoices(CredManr,CMb,lastd,lastd2,latedays,lateamount,lateformula,false,false,calcsd);
-    switch (CIb.OverdueIVType) begin
-      case 0: AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
-      case 1: 
-        SetupLoanInvoice(CredManr,CMb,oIVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno,2,true);
-        AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
-        SetupOverdueLangCode(IVr,CredManr);
-        StoreLoanInvoice(oIVr,CredManr);
+    if (CredManCanInvoiceOverdues(CredManr)) then begin
+      GetCredManOverdueInvoices(CredManr,CMb,lastd,lastd2,latedays,lateamount,lateformula,false,false,calcsd);
+      switch (CIb.OverdueIVType) begin
+        case 0: AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
+        case 1: 
+          SetupLoanInvoice(CredManr,CMb,oIVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno,2,true);
+          AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
+          SetupOverdueLangCode(IVr,CredManr);
+          StoreLoanInvoice(oIVr,CredManr);
+      end;
     end;
     CM_AddPrepayments(IVr,CredManr,CIb);
     if (IVr.SerNr>-1) then begin
@@ -1084,10 +1088,6 @@ begin
       if (lastd!=CredManPayPlanrw.TransDate) then begin
         //Setup new invoice
         if (nonblank(lastd)) then begin
-          //if (IVr.InvDate==CredManr.startDate) then begin
-          //  MergeItemsInInvoice(IVr);
-          //end;
-          //GetCredManOverdueInvoices(CredManr,CMb,lastd,lastd2,latedays,lateamount,lateformula,false,false);
           aIVr[aIVr.length] = IVr;
         end;
         lastd2 = AddDay(lastd,1);//to get the start date for penalty calculation.
@@ -1169,7 +1169,7 @@ begin
   if (updf) then begin
     MergeItemsInInvoice(IVr,CredManr);
   end;
-  if (addfeesf) then begin
+  if (addfeesf and CredManCanInvoiceOverdues(CredManr)) then begin
     GetCredManOverdueInvoices(CredManr,CMb,CSrw.InvDate,lastd,latedays,lateamount,lateformula,false,false,calcsd);
     switch (CIb.OverdueIVType) begin
       case 0: AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
@@ -1215,7 +1215,7 @@ begin
   return;
 end;
 
-updating function Boolean CreateInvoiceBasedOnSchedule(record CredManVc CredManr,Date ed,var record IVVc firstIVr,Boolean manualf)
+updating function Boolean CreateInvoiceBasedOnSchedule(record CredManVc CredManr,Date ed,var record IVVc firstIVr,Boolean manualf,Boolean allf)
 begin
   record CredManSchedVc CSr,oldCSr;
   row CredManSchedVc CSrw,lastCSrw;
@@ -1235,7 +1235,7 @@ begin
   Date ted,sd,invdat2;
   Integer latedays;
   val lateamount;
-  Boolean addf;
+  Boolean addf,startfullf;
   array string 255 lateformula;
   Date calcsd;
 
@@ -1250,7 +1250,10 @@ begin
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CSr,i,CSrw);
       testf = false;
-      if (CSrw.InvDate<=ed and CSrw.Invoiced==0 and CanInvoiceDate(CredManr,InvoiceTypeFromSchedule(CredManr,CSrw))) then begin
+      if (nonblank(CSrw.FromDate)) then begin
+        startfullf = true;
+      end;
+      if (CSrw.InvDate<=ed and CSrw.Invoiced==0 and CanInvoiceDate(CredManr,allf,startfullf)) then begin
         testf = true;
       end;
       if (nonblank(CredManr.CancelDate) and CSrw.Invoiced==0) then begin
@@ -1373,22 +1376,30 @@ end;
 
 
 global
-updating procedure CreateSingleAgreementInvoice(record CredManVc CredManr,Date ed,var record IVVc IVr,string ivno,Boolean manualf)
+updating procedure CreateSingleAgreementInvoice2(record CredManVc CredManr,Date ed,var record IVVc IVr,string ivno,Boolean manualf,Boolean allf)
 begin
   record CredManSetBlock CMb;
   record CredManPayPlanVc CredManPayPlanr;
   string 255 oldlang;
 
-  //if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
   if (CanCreateSingleAgreementInvoice(CredManr,ed)) then begin
     oldlang = CM_SetCompanyLanguage;
-    if (CreateInvoiceBasedOnSchedule(CredManr,ed,IVr,manualf)==false) then begin
+    if (CreateInvoiceBasedOnSchedule(CredManr,ed,IVr,manualf,allf)==false) then begin
       BlockLoad(CMb);
       BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
-      CreateInvoicesFromPlan(CredManr,CMb,CredManPayPlanr,ed,IVr,ivno,manualf);
+      CreateInvoicesFromPlan(CredManr,CMb,CredManPayPlanr,ed,IVr,ivno,manualf,allf);
     end;
     CM_ResetCompanyLanguage(oldlang);
   end;
+
+  return;
+end;
+
+global
+updating procedure CreateSingleAgreementInvoice(record CredManVc CredManr,Date ed,var record IVVc IVr,string ivno,Boolean manualf)
+begin
+
+  CreateSingleAgreementInvoice2(CredManr,ed,IVr,ivno,manualf,true);
 
   return;
 end;
