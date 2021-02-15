@@ -1670,7 +1670,7 @@ begin
     StoreLoanInvoice(IVr,CredManr);
 
     //IVr.Sum4 = buyoutval;//a little hack for this to work
-    if (full) then begin
+    if (fullf) then begin
       CreatePaymentFakeReceipt(CredManr,IVr);
     end;
 
