@@ -399,6 +399,35 @@ begin
   return;
 end;
 
+procedure LoadAgreementRateToDate(record CredManVc CredManr,Date ed,var val rate)
+begin
+  Date sd;
+  record CredManChangeVc Changer;
+  Boolean TrHs;
+
+  sd = CredManr.startDate;
+  
+  Changer.CredManNr = CredManr.SerNr;
+  Changer.TransDate = sd;
+  TrHs = true;
+  while (LoopKey("CredManDate",Changer,2,TrHs)) begin
+    if (CredManr.SerNr!=Changer.CredManNr or Changer.TransDate>ed) then begin
+      TrHs = false;
+    end else begin
+      if (Changer.OKFlag==1) then begin
+        if (nonblank(Changer.IntRate)) then begin
+          rate = Changer.IntRate;
+          if (Changer.AnnualRate==0) then begin
+            rate = rate * 12;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
 procedure DisplayInvegaReport(record RcVc RepSpec)
 begin
   record InvegaReportBlock IRb;
@@ -486,10 +515,12 @@ begin
     
     if (testf) then begin
       CUr.Code = CredManr.CustCode;
+      
       rate = CredManr.IntRate;
       if (CredManr.AnnualRate==0) then begin
         rate = rate * 12;
       end;
+      LoadAgreementRateToDate(CredManr,RepSpec.sEndDate,rate);
       startbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.sStartDate);
       endbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.sEndDate);
       translist = GetCredManTransactionList(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,paidval,princ,interest,overdues,true);
