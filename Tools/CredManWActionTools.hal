@@ -17,7 +17,7 @@ external inner function Boolean VIVc_PasteVECode(var record VIVc,Integer,Boolean
 external inner procedure VIVc_PastePayDeal(var record VIVc);
 external inner procedure VICalcVals(var record VIVc);
 external inner procedure VISumup(record VIVc,var val);
-external updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc,string,Boolean);
+external updating procedure CreateSingleAgreementInvoice2(record CredManVc,Date,var record IVVc,string,Boolean,Boolean);
 external inner procedure IVVc_PasteInvDate(var record IVVc,record LocalMachineBlock,var Integer,var Integer);
 external updating procedure ReceiptEntryCreateReceipts(record SMVc,Boolean,var val);
 external updating procedure CreateCredHist(Longint,Integer,string,val,Integer,string,Date,Longint,Date,var Longint,Date,Date,Integer,Longint,val,Longint,val);
@@ -1517,7 +1517,7 @@ begin
 
 
   if (CredManr.InstalmentType!=4 and CredManr.InstalmentType!=5) then begin
-    CreateSingleAgreementInvoice(CredManr,AddDay(CredManr.FirstInvDate,-1),IVr,invno,receiptf);//marking it as manual only if we make a receipt
+    CreateSingleAgreementInvoice2(CredManr,AddDay(CredManr.FirstInvDate,-1),IVr,invno,receiptf,true);//marking it as manual only if we make a receipt
     CheckAndCreateAutoMailFromInvoice(IVr);
     RecordCopy(tIVr,IVr);
     
@@ -1661,6 +1661,7 @@ begin
     if (fullf==false) then begin
       IVr.OfficialSerNr = "";
       IVr.NoEmailFlag = 1;
+      IVr.ExcludeFromExports = 1;
     end;
     GetItemName(CMb.InstalmentItem,spec);
     SetupInvoiceRowAndAdd(CredManr,IVr,CMb.InstalmentItem,spec,1,buyoutval-tval,blankval,19,-1);
@@ -1669,14 +1670,16 @@ begin
     StoreLoanInvoice(IVr,CredManr);
 
     //IVr.Sum4 = buyoutval;//a little hack for this to work
-    CreatePaymentFakeReceipt(CredManr,IVr);
+    if (fullf) then begin
+      CreatePaymentFakeReceipt(CredManr,IVr);
+    end;
 
-    if (fullf==false) then begin
+//    if (fullf==false) then begin
       SetupLoanInvoice(CredManr,CMb,IVr,td,"","",true,false,"",1,true);
       GetItemName(CMb.InstalmentItem,spec);
       AddBuyoutFee(CredManr,IVr,buyoutval-tval);
       StoreLoanInvoice(IVr,CredManr);
-    end;    
+//    end;    
 
     if (updf) then begin
       ADr.RecordType = 0;
@@ -1983,7 +1986,7 @@ begin
     StoreLoanInvoice(IVr,CredManr);
   end;
   RecordClear(IVr);
-  CreateSingleAgreementInvoice(CredManr,selldate,IVr,"",false);
+  CreateSingleAgreementInvoice2(CredManr,selldate,IVr,"",false,false);
 
   //recalculate schedule if there is one
   //unok the invoice
