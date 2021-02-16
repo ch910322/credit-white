@@ -503,7 +503,7 @@ begin
     if (nonblank(RepSpec.f2) and RepSpec.f2!=CredManr.CustCode) then begin
       testf = false;
     end;
-    if (nonblank(RepSpec.f3) and SetInSet2(RepSpec.f3,CredManr.Classifications)) then begin
+    if (nonblank(RepSpec.f3) and SetInSet2(RepSpec.f3,CredManr.Classifications)==false) then begin
       testf = false;
     end;
     if (nonblank(RepSpec.f4) and RepSpec.f4!=CredManr.SalesMan) then begin
@@ -723,7 +723,7 @@ begin
     if (nonblank(RepSpec.f2) and RepSpec.f2!=CredManr.CustCode) then begin
       testf = false;
     end;
-    if (nonblank(RepSpec.f3) and SetInSet2(RepSpec.f3,CredManr.Classifications)) then begin
+    if (nonblank(RepSpec.f3) and SetInSet2(RepSpec.f3,CredManr.Classifications)==false) then begin
       testf = false;
     end;
     if (nonblank(RepSpec.f4) and RepSpec.f4!=CredManr.SalesMan) then begin
