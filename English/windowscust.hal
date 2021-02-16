@@ -2990,7 +2990,7 @@ begin
   EditFieldTL(h,v+=20,150,"Customer",M4UStr,Normal,40,f2,false,CUSClass);
   EditFieldTL(h,v+=20,150,"Classifications",M4UStr,Normal,255,f3,false,CredManClassSClass);
   EditFieldTL(h,v+=20,150,"Manager",M4Code,Normal,255,f4,false,UserSClass);
-  EditFieldTL(h,v+=20,150,"Type Classifictions",M4UStr,Normal,255,f5,false,CredManClassSClass);
+  EditFieldTL(h,v+=20,150,"Type Classifications",M4UStr,Normal,255,f5,false,CredManClassSClass);
   ButtonFrame(h,v+=40,150,2,"Type");
   RadioButton(h,v,0,0,"Invega Fund Report",ArtMode);
   RadioButton(h,v+=16,1,0,"Garfondas Fund Report",ArtMode); 
