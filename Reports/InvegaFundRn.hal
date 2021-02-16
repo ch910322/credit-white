@@ -509,7 +509,7 @@ begin
     if (nonblank(RepSpec.f4) and RepSpec.f4!=CredManr.SalesMan) then begin
       testf = false;
     end;
-    if (nonblank(RepSpec.f5) and SetInSet2(RepSpec.f5,vClass[CredManr.Type])) then begin
+    if (nonblank(RepSpec.f5) and SetInSet2(RepSpec.f5,vClass[CredManr.Type])==false) then begin
       testf = false;
     end;
     
@@ -729,7 +729,7 @@ begin
     if (nonblank(RepSpec.f4) and RepSpec.f4!=CredManr.SalesMan) then begin
       testf = false;
     end;
-    if (nonblank(RepSpec.f5) and SetInSet2(RepSpec.f5,vClass[CredManr.Type])) then begin
+    if (nonblank(RepSpec.f5) and SetInSet2(RepSpec.f5,vClass[CredManr.Type])==false) then begin
       testf = false;
     end;
     if (CredManr.TransDate>RepSpec.sEndDate) then begin
