@@ -1579,6 +1579,7 @@ begin
   RecordField(MaxOverpaidPrc,M4Val,0,0);
   RecordField(SellingSalesAccount,M4Code,20,0);
   RecordField(OverduePayTerm,M4Code,20,0);
+  RecordField(InterestFirstDay,M4Int,0,0);
   
   EndBlock;
 

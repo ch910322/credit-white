@@ -2152,12 +2152,14 @@ begin
   CheckBox(h,v+=16,0,"Manual Contract Fee Invoice Number",ManualInvoiceNumber);
   CheckBox(h,v+=16,0,"Principle below hidden Line",HiddenPrinciple);
   CheckBox(h,v+=16,0,"Use Agreement Type Accounts",UseTypeAccounts);
+  CheckBox(h,v+=16,0,"Interest including First Day",InterestFirstDay);
 
   CheckBox(h,v+=30,0,"Automatically issue Invoices",AutoInvoiceFlag);
   EditField(h,v+=20,100,"Time",Normal,AutoInvoiceTime,false,PasteCurTime);
   CheckBox(h,v+=20,0,"Automatically send issued Invoices",AutoInvoiceSend);
   CheckBox(h,v+=16,0,"Automatically send Invoices created from Contracts",AutoMailsFromInvoices);
   CheckBox(h,v+=16,0,"When creating Email, use precreated PDFs",UsePreCreatedInvoicePdf);
+
 //  CheckBox(h,v+=16,0,"Remaining principle including Last Months Principle",LastPrincipleWithExtraMonth);
   
 
@@ -2198,7 +2200,6 @@ begin
 
   Tile(2,500,false,"2",DetailedInvoice);
   CheckBox(h,v=6,0,"Overdue Calculation below hidden Line",AddOverdueDetails);
-
 
   EditField(h,v+=30,100,"Overdue Item Class",Normal,OverdueItemClass,false,DISClass);
   EditField(h,v+=vs,100,"Overdue Months",Normal,OverdueMonths,false,0);
