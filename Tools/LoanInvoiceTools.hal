@@ -463,6 +463,39 @@ begin
   return;
 end;
 
+function Longint GetCredManLateFees(record CredManVc CredManr,Date sd,Date ed)
+begin
+  Boolean TrHs,testf;
+  record CredManChangeVc Changer;
+  Longint res;
+
+  res = CredManr.LateFeeDays;
+
+  TrHs = true;
+  Changer.CredManNr = CredManr.SerNr;
+  while (LoopKey("CredManDate",Changer,1,TrHs)) begin
+    if (Changer.CredManNr!=CredManr.SerNr) then begin
+      TrHs = false;
+    end else begin
+      if (Changer.OKFlag==1 and Changer.LateFeeDays>-1) then begin
+        if (DateInRange(sd,Changer.TransDate,Changer.EndDate)) then begin
+          testf = true;
+        end;
+        if (DateInRange(ed,Changer.TransDate,Changer.EndDate)) then begin
+          testf = true;
+        end;
+        if (res) then begin
+          res = Changer.LateFeeDays;
+          TrHs = false;
+        end;
+      end;
+    end;
+  end;
+
+  GetCredManLateFees = res;
+  return;
+end;
+
 procedure GetLatePaymentPlan(record CredManVc CredManr,record CredHistVc CredHistr,Date sd,Date ed,Date overduetd,var array val amounts,var array Integer daycnt)
 begin
   Date tempsd,tempsd2;
@@ -470,6 +503,7 @@ begin
   Integer i,daydiff,daydiff2;
   Boolean TrHs;
   val paysum;
+  Longint latefeedays;
   
   paysum = CredHistr.Sum;
   tempsd = sd;//this is the start date when this item should have been paid since
@@ -487,6 +521,8 @@ begin
   end;
   */
 
+  latefeedays = GetCredManLateFees(CredManr,tempsd,tempsd);
+
   ClearArray(amounts);
   TrHs = true;
   CredPayr.PreviousNr = CredHistr.SerNr;
@@ -498,7 +534,7 @@ begin
         if (CredPayr.TransDate>tempsd and CredPayr.TransDate<=ed) then begin
           daydiff = DateDiff(CredPayr.TransDate,tempsd)+1;//or DateDiff2 to get daydiff+1 days
           daydiff2 = DateDiff(CredPayr.TransDate,CredHistr.PayDate);//or DateDiff2 to get daydiff+1 days
-          if (CredManr.LateFeeDays<daydiff2) then begin
+          if (latefeedays<daydiff2) then begin
             for (i=0;i<daydiff;i=i+1) begin
               amounts[amounts.length] = paysum;
               daycnt[daycnt.length] = GetMonthDays(AddDay(tempsd,i));

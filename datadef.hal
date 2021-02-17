@@ -1949,6 +1949,8 @@ begin
   RecordField(OverduePercentage,M4Qty,0,0);
   RecordField(MonthlyPaymentDay,M4Long,0,0);
   RecordField(AddValue,M4Val,0,0);
+  RecordField(LateFeeDays,M4Long,0,0);
+  RecordField(EndDate,M4Date,0,0);
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(CredManDate);

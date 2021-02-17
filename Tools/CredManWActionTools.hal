@@ -2143,3 +2143,60 @@ begin
 
   return;
 end;
+
+function Boolean CanCreateGracePeriod(record CredManVc CredManr,Date sd,Date ed,Longint days,var string errstr)
+begin
+  Boolean res,TrHs;
+  record CredManChangeVc Changer;
+
+  res = true;
+
+  if (days<0) then begin
+    res = false;
+    errstr = USetStr(200302);
+  end;
+
+
+  TrHs = true;
+  Changer.CredManNr = CredManr.SerNr;
+  while (LoopKey("CredManDate",Changer,1,TrHs)) begin
+    if (Changer.CredManNr!=CredManr.SerNr) then begin
+      TrHs = false;
+    end else begin
+      if (Changer.OKFlag==1 and Changer.LateFeeDays>-1) then begin
+        if (DateInRange(sd,Changer.TransDate,Changer.EndDate)) then begin
+          res = false;
+        end;
+        if (DateInRange(ed,Changer.TransDate,Changer.EndDate)) then begin
+          res = false;
+        end;
+        if (res==false) then begin
+          TrHs = false;
+          errstr = USetStr(200303);
+        end;
+      end;
+    end;
+  end;
+
+  CanCreateGracePeriod = res;
+  return;
+end;
+
+global
+updating procedure CredManGracePeriodRemote(record RcVc RepSpec,record CredManVc CredManr,var string errstr)
+begin
+  record CredManChangeVc Changer;
+
+  if (CanCreateGracePeriod(CredManr,RepSpec.d1,RepSpec.d2,RepSpec.long1,errstr)) then begin
+    RecordNew(Changer);
+    Changer.SerNr = NextSerNr("CredManChangeVc",RepSpec.d1,-1,false,"");
+    Changer.TransDate = RepSpec.d1;
+    Changer.EndDate = RepSpec.d2;
+    Changer.LateFeeDays = RepSpec.long1;
+    Changer.OKFlag = 1;
+    Changer.CredManNr = CredManr.SerNr;
+    RecordStore(Changer,true);
+  end;
+
+  return;
+end;

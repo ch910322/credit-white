@@ -3350,6 +3350,7 @@ begin
   EditField(h,v+=vs,100,"Rate",Normal,IntRate,false,0);
   Checkbox(h2,v,0,"Annual Rate",AnnualRate);
   EditField(h,v+=vs,100,"Overdue Percentage",Normal,OverduePercentage,false,0);
+  EditField(h,v+=vs,100,"Max Late Days",Normal,LateFeeDays,false,0);
   //EditField(h,v+=vs,100,"Monthly Payment Day",Normal,MonthlyPaymentDay,false,0);
   EndWindow;
 end;
@@ -3471,4 +3472,25 @@ begin
   RlColKey(100,100,"Comment",Comment,false,ActComment);//CUST Comment>>ActComment
   SearchField("Search");
   EndWindow;
+end;
+
+
+window CredManGracePeriodWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v,vs; 
+
+  vs = 20;
+  WindowBegin("Register Extended Grace Period",CredManGracePeriodWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,300,180);
+  AutoSizeWindow(false);  
+  EditFieldTL(100,v=6,90,"From Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(100,v+=vs,90,"To Date",M4Date,Normal,0,d2,false,PasteCurDate);
+  EditFieldTL(100,v+=vs,90,"Max late Days",M4Long,Normal,0,long1,false,0);
+  HalPushButton(-260,v+=vs,-160,v+vs,"CredManGracePeriodWClassProceed","Confirm");
+  HalPushButton(-120,v,-20,v+vs,"SchedYesNoWClassClose","No");
+  EndWindow;
+
+  return;
 end;
