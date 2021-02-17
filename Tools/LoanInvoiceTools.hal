@@ -1474,8 +1474,10 @@ begin
 
     end else begin
       BlockLoad(CMb);
-      BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
-      BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CMb,SMr);
+      if (BuildCredManInfoMatrixOnSchedule(CredManr,CMb,SMr)==false) then begin
+        BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
+        BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CMb,SMr);
+      end;
       rwcnt = MatRowCnt(SMr);
       cnt = CredManr.BuyoutFeeMonths;
       for (i=0;i<rwcnt;i=i+1) begin
