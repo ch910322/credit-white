@@ -297,6 +297,9 @@ begin
   SString(200300,"Balance");
   SString(200301,"Buy-out");
 
+  SString(200302,"Specify Max late Days");
+  SString(200303,"Grace Period already registered");
+
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");
   StrSetText(B2BLoanApplicationVc,"Loan Applications");

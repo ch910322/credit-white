@@ -17,7 +17,7 @@ external inner function Boolean VIVc_PasteVECode(var record VIVc,Integer,Boolean
 external inner procedure VIVc_PastePayDeal(var record VIVc);
 external inner procedure VICalcVals(var record VIVc);
 external inner procedure VISumup(record VIVc,var val);
-external updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc,string,Boolean);
+external updating procedure CreateSingleAgreementInvoice2(record CredManVc,Date,var record IVVc,string,Boolean,Boolean);
 external inner procedure IVVc_PasteInvDate(var record IVVc,record LocalMachineBlock,var Integer,var Integer);
 external updating procedure ReceiptEntryCreateReceipts(record SMVc,Boolean,var val);
 external updating procedure CreateCredHist(Longint,Integer,string,val,Integer,string,Date,Longint,Date,var Longint,Date,Date,Integer,Longint,val,Longint,val);
@@ -1517,7 +1517,7 @@ begin
 
 
   if (CredManr.InstalmentType!=4 and CredManr.InstalmentType!=5) then begin
-    CreateSingleAgreementInvoice(CredManr,AddDay(CredManr.FirstInvDate,-1),IVr,invno,receiptf);//marking it as manual only if we make a receipt
+    CreateSingleAgreementInvoice2(CredManr,AddDay(CredManr.FirstInvDate,-1),IVr,invno,receiptf,true);//marking it as manual only if we make a receipt
     CheckAndCreateAutoMailFromInvoice(IVr);
     RecordCopy(tIVr,IVr);
     
@@ -1986,7 +1986,7 @@ begin
     StoreLoanInvoice(IVr,CredManr);
   end;
   RecordClear(IVr);
-  CreateSingleAgreementInvoice(CredManr,selldate,IVr,"",false);
+  CreateSingleAgreementInvoice2(CredManr,selldate,IVr,"",false,false);
 
   //recalculate schedule if there is one
   //unok the invoice
@@ -2139,6 +2139,63 @@ begin
         Delete_File(fname);
       end;
     end;
+  end;
+
+  return;
+end;
+
+function Boolean CanCreateGracePeriod(record CredManVc CredManr,Date sd,Date ed,Longint days,var string errstr)
+begin
+  Boolean res,TrHs;
+  record CredManChangeVc Changer;
+
+  res = true;
+
+  if (days<0) then begin
+    res = false;
+    errstr = USetStr(200302);
+  end;
+
+
+  TrHs = true;
+  Changer.CredManNr = CredManr.SerNr;
+  while (LoopKey("CredManDate",Changer,1,TrHs)) begin
+    if (Changer.CredManNr!=CredManr.SerNr) then begin
+      TrHs = false;
+    end else begin
+      if (Changer.OKFlag==1 and Changer.LateFeeDays>-1) then begin
+        if (DateInRange(sd,Changer.TransDate,Changer.EndDate)) then begin
+          res = false;
+        end;
+        if (DateInRange(ed,Changer.TransDate,Changer.EndDate)) then begin
+          res = false;
+        end;
+        if (res==false) then begin
+          TrHs = false;
+          errstr = USetStr(200303);
+        end;
+      end;
+    end;
+  end;
+
+  CanCreateGracePeriod = res;
+  return;
+end;
+
+global
+updating procedure CredManGracePeriodRemote(record RcVc RepSpec,record CredManVc CredManr,var string errstr)
+begin
+  record CredManChangeVc Changer;
+
+  if (CanCreateGracePeriod(CredManr,RepSpec.d1,RepSpec.d2,RepSpec.long1,errstr)) then begin
+    RecordNew(Changer);
+    Changer.SerNr = NextSerNr("CredManChangeVc",RepSpec.d1,-1,false,"");
+    Changer.TransDate = RepSpec.d1;
+    Changer.EndDate = RepSpec.d2;
+    Changer.LateFeeDays = RepSpec.long1;
+    Changer.OKFlag = 1;
+    Changer.CredManNr = CredManr.SerNr;
+    RecordStore(Changer,true);
   end;
 
   return;

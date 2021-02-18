@@ -1,5 +1,5 @@
 //<halrule>server-only</halrule>
-external updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc,string,Boolean);
+external updating procedure CreateSingleAgreementInvoice2(record CredManVc,Date,var record IVVc,string,Boolean,Boolean);
 
 global
 updating function Boolean LoopAndGenLoanAgreementInvoice(var record RcVc RepSpec,var record IVVc nIVr)
@@ -28,7 +28,7 @@ begin
         testf = false;
       end;
       if (testf) then begin
-        CreateSingleAgreementInvoice(CredManr,RepSpec.d1,IVr,"",false);
+        CreateSingleAgreementInvoice2(CredManr,RepSpec.d1,IVr,"",false,false);
         RecordCopy(nIVr,IVr);
         TrHs = false;
       end;

@@ -181,9 +181,11 @@ global
 function val GetRateAmount(record CredManVc CredManr,val trate,Integer monthtypef,Date frdate,Date todate,val calcbal,Boolean ignoref,Boolean fixeddaysf)
 begin
   record CMApplicationSetBlock CMb;
+  record CMInvoicingBlock CIb;
   val days,res;
   Integer months;
   val rate;
+
 
   rate = trate;
   if (CredManr.AnnualRate==1 and ignoref==false) then begin
@@ -191,6 +193,7 @@ begin
   end;
   days = DateDiff(todate,frdate)+1;
   BlockLoad(CMb);
+  BlockLoad(CIb);
   switch (monthtypef) begin
     case kMonthTypeFirst:
 /*
@@ -206,6 +209,9 @@ begin
         res = GetAgreementAmount(CredManr)*rate/100*12/GetDaysInYear(CMb,CredManr)*days;
       end;
 */
+        if (CIb.InterestFirstDay==0) then begin
+          days = days - 1;
+        end;
         if (frdate!=todate and frdate.Day==todate.day) then begin
           months = MonthDiff(frdate,todate);
           res = calcbal*months*(rate/100);

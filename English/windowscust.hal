@@ -2152,12 +2152,14 @@ begin
   CheckBox(h,v+=16,0,"Manual Contract Fee Invoice Number",ManualInvoiceNumber);
   CheckBox(h,v+=16,0,"Principle below hidden Line",HiddenPrinciple);
   CheckBox(h,v+=16,0,"Use Agreement Type Accounts",UseTypeAccounts);
+  CheckBox(h,v+=16,0,"Interest including First Day",InterestFirstDay);
 
   CheckBox(h,v+=30,0,"Automatically issue Invoices",AutoInvoiceFlag);
   EditField(h,v+=20,100,"Time",Normal,AutoInvoiceTime,false,PasteCurTime);
   CheckBox(h,v+=20,0,"Automatically send issued Invoices",AutoInvoiceSend);
   CheckBox(h,v+=16,0,"Automatically send Invoices created from Contracts",AutoMailsFromInvoices);
   CheckBox(h,v+=16,0,"When creating Email, use precreated PDFs",UsePreCreatedInvoicePdf);
+
 //  CheckBox(h,v+=16,0,"Remaining principle including Last Months Principle",LastPrincipleWithExtraMonth);
   
 
@@ -2198,7 +2200,6 @@ begin
 
   Tile(2,500,false,"2",DetailedInvoice);
   CheckBox(h,v=6,0,"Overdue Calculation below hidden Line",AddOverdueDetails);
-
 
   EditField(h,v+=30,100,"Overdue Item Class",Normal,OverdueItemClass,false,DISClass);
   EditField(h,v+=vs,100,"Overdue Months",Normal,OverdueMonths,false,0);
@@ -2990,7 +2991,7 @@ begin
   EditFieldTL(h,v+=20,150,"Customer",M4UStr,Normal,40,f2,false,CUSClass);
   EditFieldTL(h,v+=20,150,"Classifications",M4UStr,Normal,255,f3,false,CredManClassSClass);
   EditFieldTL(h,v+=20,150,"Manager",M4Code,Normal,255,f4,false,UserSClass);
-  EditFieldTL(h,v+=20,150,"Type Classifictions",M4UStr,Normal,255,f5,false,CredManClassSClass);
+  EditFieldTL(h,v+=20,150,"Type Classifications",M4UStr,Normal,255,f5,false,CredManClassSClass);
   ButtonFrame(h,v+=40,150,2,"Type");
   RadioButton(h,v,0,0,"Invega Fund Report",ArtMode);
   RadioButton(h,v+=16,1,0,"Garfondas Fund Report",ArtMode); 
@@ -3349,6 +3350,7 @@ begin
   EditField(h,v+=vs,100,"Rate",Normal,IntRate,false,0);
   Checkbox(h2,v,0,"Annual Rate",AnnualRate);
   EditField(h,v+=vs,100,"Overdue Percentage",Normal,OverduePercentage,false,0);
+  EditField(h,v+=vs,100,"Max Late Days",Normal,LateFeeDays,false,0);
   //EditField(h,v+=vs,100,"Monthly Payment Day",Normal,MonthlyPaymentDay,false,0);
   EndWindow;
 end;
@@ -3472,6 +3474,7 @@ begin
   EndWindow;
 end;
 
+
 window ManagerReplacementLClass:1
   wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
@@ -3505,4 +3508,25 @@ begin
   EditField(h4,v,100,"From",Normal,DateFrom,false,PasteCurDate);
   EditField(h5,v,100,"To",Normal,DateTo,false,PasteCurDate);
   EndWindow;
+end;
+
+
+window CredManGracePeriodWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v,vs; 
+
+  vs = 20;
+  WindowBegin("Register Extended Grace Period",CredManGracePeriodWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,300,180);
+  AutoSizeWindow(false);  
+  EditFieldTL(100,v=6,90,"From Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(100,v+=vs,90,"To Date",M4Date,Normal,0,d2,false,PasteCurDate);
+  EditFieldTL(100,v+=vs,90,"Max late Days",M4Long,Normal,0,long1,false,0);
+  HalPushButton(-260,v+=vs,-160,v+vs,"CredManGracePeriodWClassProceed","Confirm");
+  HalPushButton(-120,v,-20,v+vs,"SchedYesNoWClassClose","No");
+  EndWindow;
+
+  return;
 end;
