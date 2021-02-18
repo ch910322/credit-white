@@ -9,7 +9,32 @@ external function val GetCredHistOpenValue(Longint);
 external inner function LongInt MonthDiff(Date,Date);
 external function val GetCredHistOpenValueOnDate(Longint,Date);
 
+global
+function Boolean FindCredManAcc(record CredManVc CredManr,var record CredManAccVc tCredManAccr)
+begin
+  record CredManAccVc CredManAccr;
+  record CUVc CUr;
+  Boolean res;
 
+  CUr.Code = CredManr.CustCode;
+  ReadFirstMain(CUr,1,true);
+
+  CredManAccr.CredManType = CredManr.Type;
+  CredManAccr.CustCat = CUr.CustCat;
+  if (ReadFirstMain(CredManAccr,2,true)) then begin
+    res = true;
+    RecordCopy(tCredManAccr,CredManAccr);
+  end else begin
+    CredManAccr.CredManType = CredManr.Type;
+    if (ReadFirstMain(CredManAccr,1,true)) then begin
+      res = true;
+      RecordCopy(tCredManAccr,CredManAccr);
+    end;
+  end;
+
+  FindCredManAcc = res;
+  return;
+end;
 
 global
 function string 255 CM_GetCredManTypeSalesItemAccount(record IVVc IVr,row IVVc IVrw,string fallback,Boolean debitf)
@@ -45,8 +70,7 @@ begin
         end;
       end;
       if (blank(res)) then begin
-        CredManAccr.CredManType = CredManr.Type;
-        if (ReadFirstMain(CredManAccr,1,true)) then begin
+        if (FindCredManAcc(CredManr,CredManAccr)) then begin
           rwcnt = MatRowcnt(CredManAccr);
           for (i=0;i<rwcnt;i=i+1) begin
             MatRowGet(CredManAccr,i,CredManAccrw);
@@ -88,8 +112,7 @@ begin
     if (ReadFirstMain(CredHistr,1,true)) then begin
       CredManr.SerNr = CredHistr.CredManNr;
       if (ReadFirstMain(CredManr,1,true)) then begin
-        CredManAccr.CredManType = CredManr.Type;
-        if (ReadFirstMain(CredManAccr,1,true)) then begin
+        if (FindCredManAcc(CredManr,CredManAccr)) then begin
           rwcnt = MatRowcnt(CredManAccr);
           for (i=0;i<rwcnt;i=i+1) begin
             MatRowGet(CredManAccr,i,CredManAccrw);
@@ -139,8 +162,7 @@ begin
     end;
 
     if (foundf) then begin
-      CredManAccr.CredManType = CredManr.Type;
-      if (ReadFirstMain(CredManAccr,1,true)) then begin
+      if (FindCredManAcc(CredManr,CredManAccr)) then begin
         if (debitf) then begin
           res = CredManAccr.PLDebitAcc;
         end else begin
@@ -166,8 +188,7 @@ begin
 
   BlockLoad(CIb);
   if (CIb.UseTypeAccounts==1) then begin
-    CredManAccr.CredManType = CredManr.Type;
-    if (ReadFirstMain(CredManAccr,1,true)) then begin
+    if (FindCredManAcc(CredManr,CredManAccr)) then begin
       if (debitf) then begin
         res = CredManAccr.PLDebitAcc;
       end else begin
@@ -223,8 +244,7 @@ begin
 
   BlockLoad(CIb);
   if (CIb.UseTypeAccounts==1) then begin
-    CredManAccr.CredManType = CredManr.Type;
-    if (ReadFirstMain(CredManAccr,1,true)) then begin
+    if (FindCredManAcc(CredManr,CredManAccr)) then begin
       shortacc = CredManAccr.ControlAccShort;
       longacc = CredManAccr.ControlAccLong;
     end;
@@ -258,8 +278,7 @@ begin
 
   BlockLoad(CIb);
   if (CIb.UseTypeAccounts==1) then begin
-    CredManAccr.CredManType = CredManr.Type;
-    if (ReadFirstMain(CredManAccr,1,true)) then begin
+    if (FindCredManAcc(CredManr,CredManAccr)) then begin
       res = CredManAccr.DebtorsAcc;
     end;
   end;

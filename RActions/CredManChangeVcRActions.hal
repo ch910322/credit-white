@@ -1,5 +1,7 @@
 //<halrule>server-only</halrule>
 external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
+external  procedure CredManSetDatesCust(var record CredManVc,Boolean);
+external updating procedure RecreateAgreementSchedule2(record CredManVc,Boolean);
 
 global
 function LongInt CredManChangeVcRecordDuplicate(var record CredManChangeVc Changer,record CredManChangeVc Change2r,LongInt stat,LongInt long4)
@@ -110,3 +112,27 @@ BEGIN
   CredManChangeVcRecordRemoveTest = res;
   return;
 END;
+
+
+global
+updating function LongInt CredManChangeVcRecordUpdateAfter(var record CredManChangeVc Changer,record CredManChangeVc Change2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  record CredManVc CredManr,oldCredManr;
+
+  res = 0;
+
+  if ((Changer.OKFlag==1 and Change2r.OKFlag==0) or (Changer.OKFlag==0 and Change2r.OKFlag==1)) then begin
+    CredManr.SerNr = Changer.CredManNr;
+    if (ReadFirstMain(CredManr,1,true)) then begin
+      RecordCopy(oldCredManr,CredManr);
+      CredManSetDatesCust(CredManr,false);
+      if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
+        RecreateAgreementSchedule2(CredManr,false);
+      end;
+    end;
+  end;
+
+  CredManChangeVcRecordUpdateAfter = res;
+  return;
+end;

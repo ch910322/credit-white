@@ -8,6 +8,7 @@ external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlan
 forward procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
 external function Integer GetInterestPaymentType(record CredManVc);
 external function Boolean PartiaBuyoutShortensPeriod();
+external function Boolean HasMoneyTransferDate();
 
 enum begin
   kEventTypeNone = 0,
@@ -76,8 +77,10 @@ begin
     if (nonblank(CredManr.FirstIntDate)) then begin
       nint_sdp = CredManr.FirstIntDate;
     end;
-    if (CredManr.MoneyTransferDate>int_sdp) then begin
-      nint_sdp = CredManr.MoneyTransferDate;
+    if (HasMoneyTransferDate) then begin
+      if (CredManr.MoneyTransferDate>int_sdp) then begin
+        nint_sdp = CredManr.MoneyTransferDate;
+      end;
     end;
     if (nonblank(payoutdate) and paymentnr==-1) then begin
       nint_sdp = payoutdate;
@@ -178,9 +181,11 @@ global
 function val GetRateAmount(record CredManVc CredManr,val trate,Integer monthtypef,Date frdate,Date todate,val calcbal,Boolean ignoref,Boolean fixeddaysf)
 begin
   record CMApplicationSetBlock CMb;
+  record CMInvoicingBlock CIb;
   val days,res;
   Integer months;
   val rate;
+
 
   rate = trate;
   if (CredManr.AnnualRate==1 and ignoref==false) then begin
@@ -188,6 +193,7 @@ begin
   end;
   days = DateDiff(todate,frdate)+1;
   BlockLoad(CMb);
+  BlockLoad(CIb);
   switch (monthtypef) begin
     case kMonthTypeFirst:
 /*
@@ -203,6 +209,9 @@ begin
         res = GetAgreementAmount(CredManr)*rate/100*12/GetDaysInYear(CMb,CredManr)*days;
       end;
 */
+        if (CIb.InterestFirstDay==0) then begin
+          days = days - 1;
+        end;
         if (frdate!=todate and frdate.Day==todate.day) then begin
           months = MonthDiff(frdate,todate);
           res = calcbal*months*(rate/100);
@@ -262,6 +271,7 @@ begin
     case kEventTypeIssueDeposit:    res = true;
     case kEventTypeCalcDeposit:     res = true;
     case kEventTypePartialBuyout:   res = true;
+    case 11:                        res = true;//old partial buyout?
   end;
   
   TypeAffectsBalance = res;
@@ -782,6 +792,11 @@ begin
           end;
         end;
 
+        if (CredManr.MaxMonthlyPrinciple>0) then begin
+          if (sum>CredManr.MaxMonthlyPrinciple) then begin
+            sum = CredManr.MaxMonthlyPrinciple;
+          end;
+        end;
         if (CredManr.MaxMonthlyPayment>0) then begin
           curpayment = GetCurrentMonthPayment(CredManPayPlanr,invdate,sum);
           if (CredManr.MaxMonthlyPayment<curpayment) then begin
@@ -982,6 +997,19 @@ begin
   return;
 end;
 
+global
+function Boolean IsPartialBuyoutType(Integer type)
+begin
+  Boolean res;
+  
+  if (type==kEventTypePartialBuyout or type==11) then begin
+    res = true;
+  end;
+
+  IsPartialBuyoutType = res;
+  return;
+end;
+
 procedure AddActualsToPlan(record CredManVc CredManr,var record CredmanPayPlanVc CredManPayPlanr,var Integer calculatedmonths,var val acumint,var val calcbal,var Boolean firstinvf,record CredManSetBlock CredManSetb,var Integer months,var val buyoutamount,var val pausebal,var val prolongbal,Integer int_type,var val usesum,var Integer usemonths)
 begin
   record CredHistVc CredHistr,PrevCredHistr;
@@ -1011,28 +1039,30 @@ begin
           case 0: 
             type = GetCredHistType(CredHistr.ArtCode,CredHistr.ChargeType,false); 
             openamount = GetCredHistOpenAmount(CredHistr);
+          case 4: 
+            type = GetCredHistType(CredHistr.ArtCode,CredHistr.ChargeType,false); 
           otherwise
             PrevCredHistr.SerNr = CredHistr.PreviousNr;
             ReadFirstMain(PrevCredHistr,1,true);
             type = GetCredHistType(PrevCredHistr.ArtCode,-1,true);          
         end;
-        if (CredHistr.ChargeType==kEventTypePartialBuyout and (CredHistr.TransDate>lastinvdate or blank(lastinvdate))) then begin
+        if (IsPartialBuyoutType(CredHistr.ChargeType) and (CredHistr.TransDate>lastinvdate or blank(lastinvdate))) then begin
           goto LAddActualsToPlan_Next;
         end;
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,CredHistr.ArtCode,"",type,CredHistr.Sum,0,acumint,calcbal,CredHistr.CredFromDate,CredHistr.CredToDate,CredHistr.SerNr,-1,openamount);
-        if (CredHistr.RecordType==0 and (CredHistr.ChargeType==kEventTypePartialBuyout)) then begin
+        if (IsPartialBuyoutType(CredHistr.ChargeType)) then begin
           prevusesum = usesum;
           usesum = calcbal;
         end;
-        if (CredHistr.ChargeType==kEventTypePartialBuyout) then begin
+        if (IsPartialBuyoutType(CredHistr.ChargeType)) then begin
           buyoutamount = buyoutamount + CredHistr.Sum;
         end;
-        if (CredHistr.RecordType==0 and CredHistr.ChargeType!=kEventTypePartialBuyout and CredHistr.ChargeType!=kEventTypeIssueLateFees) then begin
+        if (CredHistr.RecordType==0 and IsPartialBuyoutType(CredHistr.ChargeType)==false and CredHistr.ChargeType!=kEventTypeIssueLateFees) then begin
           if (IsInitialInvoice(CredManr,CredHistr.TransDate,lastrecnr,vFirstInv[CredHistr.RecordNr])) then begin
             firstinvf = true;
             vFirstInv[CredHistr.RecordNr] = true;//we can have multiple records for single invoice. so we need to store that this invoice is the initial invoice
           end else begin
-            if (CredHistr.ChargeType!=kEventTypeIssueLateFees) then begin//invoice
+            if (CredHistr.ChargeType==kEventTypeIssueInstalment or CredHistr.ChargeType==kEventTypeIssueInterest) then begin//invoice
               if (CredHistr.PayDate>=CredManr.FirstInvDate) then begin//trans date is not correct, but pay date is not ideal as well
                 calculatedmonths = MonthDiff(CredManr.FirstInvDate,CredHistr.TransDate)+1;
               end;
@@ -1056,7 +1086,7 @@ LAddActualsToPlan_Next:;
         usemonths = months - calculatedmonths;
       end;
       if (PartiaBuyoutShortensPeriod) then begin
-        CredManr.MaxMonthlyPayment = GetMaxMonthlyPaymentForPartialBuyout(CredManPayPlanr,CredManr,CredHistr.Sum,CredHistr.TransDate,usemonths,prevusesum,reducemonths,calculatedmonths);
+        CredManr.MaxMonthlyPrinciple = GetMaxMonthlyPaymentForPartialBuyout(CredManPayPlanr,CredManr,CredHistr.Sum,CredHistr.TransDate,usemonths,prevusesum,reducemonths,calculatedmonths);
         usemonths = months - calculatedmonths - reducemonths;
       end;
 
@@ -1453,11 +1483,11 @@ begin
     if (CredHistr.TransDate>todate) then begin
       TrHs = false;
     end else begin
-      if (CredHistr.ChargeType==kEventTypePartialBuyout) then begin//partial buyout
+      if (IsPartialBuyoutType(CredHistr.ChargeType)) then begin//partial buyout
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,"","",kEventTypePartialBuyout,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,0);
         usesum = calcbal;
         if (PartiaBuyoutShortensPeriod) then begin
-          CredManr.MaxMonthlyPayment = GetMaxMonthlyPaymentForPartialBuyout(CredManPayPlanr,CredManr,CredHistr.Sum,frdate,usemonths, prevusesum,reducemonths,curmonth);
+          CredManr.MaxMonthlyPrinciple = GetMaxMonthlyPaymentForPartialBuyout(CredManPayPlanr,CredManr,CredHistr.Sum,frdate,usemonths, prevusesum,reducemonths,curmonth);
           if (curmonth<CredManr.PrincipleDelayMonths) then begin
             usemonths = months - CredManr.PrincipleDelayMonths - reducemonths;
           end else begin
@@ -1473,7 +1503,7 @@ end;
 
 
 global
-procedure BuildCredManPayPlanCust(record CredManVc inCredManr,var record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb,Boolean withactuals,Boolean recalculatef)
+procedure BuildCredManPayPlanCust2(record CredManVc inCredManr,var record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb,Boolean withactuals,Boolean recalculatef,Boolean planf)
 begin
   Integer calculatedmonths,months;
   val acumint,calcbal;
@@ -1522,7 +1552,7 @@ LCalcSchedule:;
   if (withactuals) then begin
     AddActualsToPlan(inCredManr,CredManPayPlanr,calculatedmonths,acumint,calcbal,firstinvf,CredManSetb,months,buyoutamount,pausebal,prolongbal,int_type,usesum,usemonths);
   end;
-  if (tCredManr.Status==5) then begin
+  if (tCredManr.Status==5 or planf==false) then begin//if cancelled or we just want to get the actuals
     goto LBuildCredManPayPlanCust;
   end;
   if (usemonths==0) then begin
@@ -1678,6 +1708,15 @@ logtext(0,"BuildCredManPayPlanCust end2");
   RecordCopy(inCredManr,tCredManr);
 
 LBuildCredManPayPlanCust:;
+  return;
+end;
+
+global
+procedure BuildCredManPayPlanCust(record CredManVc inCredManr,var record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb,Boolean withactuals,Boolean recalculatef)
+begin
+
+  BuildCredManPayPlanCust2(inCredManr,CredManPayPlanr,CredManSetb,withactuals,recalculatef,true);
+
   return;
 end;
 

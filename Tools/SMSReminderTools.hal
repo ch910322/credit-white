@@ -7,6 +7,7 @@ external updating procedure Cust_SetReminderStatus(record SMSReminderQueueVc,Int
 external inner function string 255 CredManOwnBankAccount(Longint,var string,var string,var string);
 external inner function LongInt DateDiff(Date,Date);
 external inner function string 255 StrReplace(string,string,string);
+external function string 255 GetCredManNr(Longint);
 
 enum begin
   kMaxCheckDays = 3
@@ -527,6 +528,20 @@ begin
   return;
 end;
 
+function string 255 GetInvoiceNumber(record IVVc IVr)
+begin
+  string 255 res;
+
+  if (nonblank(IVr.OfficialSerNr)) then begin
+    res = IVr.OfficialSerNr;
+  end else begin
+    res = IVr.SerNr;
+  end;
+
+  GetInvoiceNumber = res;
+  return;
+end;
+
 global
 updating procedure Cust_SendReminder2(record SMSReminderVc SMSReminder,record IVVc IVr)
 begin
@@ -567,6 +582,7 @@ begin
   return;
 end;
 
+
 function string 255 GetInvoiceTable(string invlist,var string agreementlist)
 begin
   string 255 res,tmp;
@@ -574,6 +590,7 @@ begin
   record ARVc ARr;
   Integer days;
   Longint pos;
+  string 255 sernr,credmannr;
 
   while (GetNextSubString(invlist,pos,",",tmp)) begin
     IVr.SerNr = StringToLongint(tmp);
@@ -581,13 +598,14 @@ begin
       ARr.InvoiceNr = IVr.SerNr;
       if (ReadFirstMain(ARr,1,true)) then begin
         days = DateDiff(CurrentDate,IVr.PayDate);
-        res = res & "<tr><td>" & IVr.SerNr & "</td><td>" & IVr.InvDate & "</td><td>" & IVr.Sum4 & "</td><td>" & IVr.PayDate & "</td><td>" & days & "</td><td>" & ARr.RVal & "</td></tr>";
+        res = res & "<tr><td>" & GetInvoiceNumber(IVr) & "</td><td>" & IVr.InvDate & "</td><td>" & IVr.Sum4 & "</td><td>" & IVr.PayDate & "</td><td>" & days & "</td><td>" & ARr.RVal & "</td></tr>";
         if (IVr.CustCredManNr>0) then begin
-          if (SetInSet(IVr.CustCredManNr,agreementlist)==false) then begin
+          credmannr = GetCredManNr(IVr.CustCredManNr);
+          if (SetInSet(credmannr,agreementlist)==false) then begin
             if (nonblank(agreementlist)) then begin
               agreementlist = agreementlist & ",";
             end;
-            agreementlist = agreementlist & IVr.CustCredManNr;
+            agreementlist = agreementlist & credmannr;
           end;
         end;
       end;

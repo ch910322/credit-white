@@ -22,6 +22,7 @@ external inner procedure GetOnAccBalance(record RcVc,string,string,Boolean,Integ
 external inner  procedure GetMonthText(string,Date,var string);
 external inner procedure StripLeadingSpaces(var string);
 external inner procedure StripEndingSpaces(var string);
+external function Boolean InvoiceHasHiddenLine(record IVVc);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -247,7 +248,7 @@ begin
   Longint pos,l;
   string 255 tstr;
   record CMInvoicingBlock CIb;
-  string 255 vatnr,del;
+  string 255 vatnr,del,regnr;
   record CUVc CUr;
   record CredManVc CredManr;
   val topay2,topay3,openamount,openamount2;
@@ -263,8 +264,9 @@ begin
   Array val debbal;
   Integer debcnt;
   Array string 10 debaccs;
-  val rval,rval2;
+  val rval,rval2,tval;
   record CMPrintConstantsBlock PCb;
+  Boolean hiddenf;
 
   Ext_PrintInvoiceSigner(vVals);
 
@@ -289,12 +291,18 @@ begin
   
   openamount2 = ARSSumod + ARSOnAccBal;
   topay3 = openamount2;
-
+  hiddenf = InvoiceHasHiddenLine(IVr);
   topay2 = openamount;
   if (IVr.PayDate>=CurrentDate) then begin
-    topay2 = topay2 + abovehiddenbase + abovehiddenvat + GetCredManItemValue(IVr,CMb.InstalmentItem,true);
+    topay2 = topay2 + abovehiddenbase + abovehiddenvat;
+    if (hiddenf) then begin
+      topay2 = topay2 + GetCredManItemValue(IVr,CMb.InstalmentItem,true);;
+    end; 
   end;
-  topay3 = topay3 + abovehiddenbase + abovehiddenvat + GetCredManItemValue(IVr,CMb.InstalmentItem,true);
+  topay3 = topay3 + abovehiddenbase + abovehiddenvat;
+  if (hiddenf) then begin
+    topay3 = topay3 + GetCredManItemValue(IVr,CMb.InstalmentItem,true);
+  end; 
   if (topay2<0) then begin
     topay2 = 0;
   end;
@@ -389,7 +397,11 @@ begin
   end else begin
     vatnr = IVr.VATNr;      
   end;
-
+  BlockLoad(PCb);
+  if (CUr.CustType==0) then begin
+    regnr = CUr.RegNr1;
+    vVals["REGNRCOMMENT"] = PCb.RegNrComment;
+  end;
   BlockLoad(CIb);
   if (nonblank(CIb.ReplaceVATNr)) then begin
     if (CIb.ReplaceVATNr==vatnr) then begin
@@ -397,12 +409,15 @@ begin
     end;
   end;
   if (CredManr.SerNr>0) then begin
-    vVals["F_TOTALBRUTO"] = GetContactTotalPaidAmount(CredManr);
+    tval = GetContactTotalPaidAmount(CredManr);
+    vVals["F_TOTALBRUTO"] = tval;
+    ValToText(tval,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+    vVals["F_TOTALBRUTOINTEXT"] = tstr;
   end;
   vVals["F_KUNDMOMSNR2"] = vatnr;
+  vVals["F_COMPREGNR"] = regnr;
    
   if (IVr.ManualInvoice==1) then begin
-    BlockLoad(PCb);
     vVals["F_NETTINGTEXT"] = PCb.InvoiceText;
   end;
 

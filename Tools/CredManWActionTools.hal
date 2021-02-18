@@ -17,7 +17,7 @@ external inner function Boolean VIVc_PasteVECode(var record VIVc,Integer,Boolean
 external inner procedure VIVc_PastePayDeal(var record VIVc);
 external inner procedure VICalcVals(var record VIVc);
 external inner procedure VISumup(record VIVc,var val);
-external updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc,string,Boolean);
+external updating procedure CreateSingleAgreementInvoice2(record CredManVc,Date,var record IVVc,string,Boolean,Boolean);
 external inner procedure IVVc_PasteInvDate(var record IVVc,record LocalMachineBlock,var Integer,var Integer);
 external updating procedure ReceiptEntryCreateReceipts(record SMVc,Boolean,var val);
 external updating procedure CreateCredHist(Longint,Integer,string,val,Integer,string,Date,Longint,Date,var Longint,Date,Date,Integer,Longint,val,Longint,val);
@@ -260,7 +260,7 @@ begin
     end else begin
       if (Changer.OKFlag==1) then begin
         if (Changer.PauseMonths>0) then begin
-          ed = AddMonth(Changer.TransDate,Changer.PauseMonths);
+          ed = AddDay(AddMonth(Changer.TransDate,Changer.PauseMonths),-1);
           if (DateInRange(td,Changer.TransDate,ed)) then begin
             res = true;
             TrHs = false;
@@ -309,7 +309,7 @@ begin
     res = false;
   end;
 
-  if (CredManr.PrincipleDelayMonths>0) then begin
+  if (CredManr.PrincipleDelayMonths>0 and months>0) then begin
     if (AddDay(AddMonth(CredManr.FirstInvDate,CredManr.PrincipleDelayMonths-1),-1)>td) then begin
       res = false;
     end;
@@ -622,7 +622,7 @@ begin
   return;
 end;
 
-updating procedure CreditAndOKInvoice(Longint ivnr,val prc,var val credval,var vector val vCredVal,val rval,Boolean sellf)
+updating procedure CreditAndOKInvoice(Longint ivnr,val prc,var val credval,var vector val vCredVal,val rval,Boolean sellf,Date td)
 begin
   record IVVc IVr,IVCreditr,oldIVr,IV2r;
   string 255 warning;
@@ -636,6 +636,10 @@ begin
   if (ReadFirstMain(IVr,1,true)) then begin
     ratio = rval/IVr.Sum4;
     if (CreateCreditNoteIV(IVr,kInvoiceTypeCredit,IVCreditr,"",false)==0) then begin
+      if (nonblank(td)) then begin
+        IVCreditr.InvDate = td;
+        IVVc_PasteInvDate(IVCreditr,LMb,err1,err2);
+      end;
       if (IVr.InvDate>IVCreditr.InvDate) then begin
         IVCreditr.InvDate = IVr.InvDate;
         IVVc_PasteInvDate(IVCreditr,LMb,err1,err2);
@@ -694,7 +698,7 @@ begin
   return;
 end;
 
-updating procedure CreditCredManInvoices(record CredManVc CredManr,val prc,var val credval,var vector val vCredVal,Boolean sellf)
+updating procedure CreditCredManInvoices(record CredManVc CredManr,val prc,var val credval,var vector val vCredVal,Boolean sellf,Date td)
 begin
   Boolean TrHs;
   record CredHistVc CredHistr;
@@ -722,7 +726,7 @@ begin
     ARr.InvoiceNr = StringToLongint(invarr[i]);
     if (ReadFirstMain(ARr,1,true)) then begin
       if (ARr.RVal>0) then begin
-        CreditAndOKInvoice(ARr.InvoiceNr,prc,credval,vCredVal,ARr.RVal,sellf);
+        CreditAndOKInvoice(ARr.InvoiceNr,prc,credval,vCredVal,ARr.RVal,sellf,td);
       end;
     end;
   end;
@@ -748,7 +752,7 @@ begin
     if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
       CreateRefinCredMan(RepSpec,nCredManr,CredManr);
       DoBuyOutAgreement(CredManr,CurrentDate,IVr);
-      CreditCredManInvoices(CredManr,100,credval,vCredVal,false);
+      CreditCredManInvoices(CredManr,100,credval,vCredVal,false,"");
       res = true;
     end;
   end;
@@ -1513,7 +1517,7 @@ begin
 
 
   if (CredManr.InstalmentType!=4 and CredManr.InstalmentType!=5) then begin
-    CreateSingleAgreementInvoice(CredManr,AddDay(CredManr.FirstInvDate,-1),IVr,invno,receiptf);//marking it as manual only if we make a receipt
+    CreateSingleAgreementInvoice2(CredManr,AddDay(CredManr.FirstInvDate,-1),IVr,invno,receiptf,true);//marking it as manual only if we make a receipt
     CheckAndCreateAutoMailFromInvoice(IVr);
     RecordCopy(tIVr,IVr);
     
@@ -1657,6 +1661,7 @@ begin
     if (fullf==false) then begin
       IVr.OfficialSerNr = "";
       IVr.NoEmailFlag = 1;
+      IVr.ExcludeFromExports = 1;
     end;
     GetItemName(CMb.InstalmentItem,spec);
     SetupInvoiceRowAndAdd(CredManr,IVr,CMb.InstalmentItem,spec,1,buyoutval-tval,blankval,19,-1);
@@ -1665,14 +1670,16 @@ begin
     StoreLoanInvoice(IVr,CredManr);
 
     //IVr.Sum4 = buyoutval;//a little hack for this to work
-    CreatePaymentFakeReceipt(CredManr,IVr);
+    if (fullf) then begin
+      CreatePaymentFakeReceipt(CredManr,IVr);
+    end;
 
-    if (fullf==false) then begin
+//    if (fullf==false) then begin
       SetupLoanInvoice(CredManr,CMb,IVr,td,"","",true,false,"",1,true);
       GetItemName(CMb.InstalmentItem,spec);
       AddBuyoutFee(CredManr,IVr,buyoutval-tval);
       StoreLoanInvoice(IVr,CredManr);
-    end;    
+//    end;    
 
     if (updf) then begin
       ADr.RecordType = 0;
@@ -1962,6 +1969,7 @@ begin
   Date calcsd;
   transaction Boolean gCreditSellerf;
   transaction string 255 gCreditSellerAccount;
+  Date tmpdate;
 
   BlockLoad(CMb);
   BlockLoad(CIb);
@@ -1978,14 +1986,14 @@ begin
     StoreLoanInvoice(IVr,CredManr);
   end;
   RecordClear(IVr);
-  CreateSingleAgreementInvoice(CredManr,selldate,IVr,"",false);
+  CreateSingleAgreementInvoice2(CredManr,selldate,IVr,"",false,false);
 
   //recalculate schedule if there is one
   //unok the invoice
   RecordCopy(tCredManr,CredManr);
   tCredManr.CancelDate = "";
   BuildCredManPayPlanCust(tCredManr,CredManPayPlanr,CMb,true,false);
-  GetBuyOutData(tCredManr,CredManPayPlanr,CMb,selldate,balance);
+  GetBuyOutData(tCredManr,CredManPayPlanr,CMb,tmpdate,balance);
 
   if (balance>0) then begin
     if (IVr.SerNr>-1) then begin
@@ -2020,7 +2028,7 @@ begin
     end;
   end;
 
-  CreditCredManInvoices(CredManr,prc,credval,vCredVal,sellf);
+  CreditCredManInvoices(CredManr,prc,credval,vCredVal,sellf,selldate);
   ReadFirstMain(CredManr,1,true);
 
   if (nonblank(custcode) and credval>0) then begin
@@ -2028,7 +2036,7 @@ begin
     RecordNew(IVr);
     RecordCopy(tCredManr,CredManr);
     tCredManr.CustCode = custcode;
-    SetupLoanInvoice(tCredManr,CMb,IVr,CurrentDate,"","",true,false,"",1,true);
+    SetupLoanInvoice(tCredManr,CMb,IVr,selldate,"","",true,false,"",1,true);
     GetVectorTags(vCredVal,aCredVal);
     for (i=0;i<aCredVal.length;i=i+1) begin
       GetItemName(aCredVal[i],spec);
@@ -2131,6 +2139,63 @@ begin
         Delete_File(fname);
       end;
     end;
+  end;
+
+  return;
+end;
+
+function Boolean CanCreateGracePeriod(record CredManVc CredManr,Date sd,Date ed,Longint days,var string errstr)
+begin
+  Boolean res,TrHs;
+  record CredManChangeVc Changer;
+
+  res = true;
+
+  if (days<0) then begin
+    res = false;
+    errstr = USetStr(200302);
+  end;
+
+
+  TrHs = true;
+  Changer.CredManNr = CredManr.SerNr;
+  while (LoopKey("CredManDate",Changer,1,TrHs)) begin
+    if (Changer.CredManNr!=CredManr.SerNr) then begin
+      TrHs = false;
+    end else begin
+      if (Changer.OKFlag==1 and Changer.LateFeeDays>-1) then begin
+        if (DateInRange(sd,Changer.TransDate,Changer.EndDate)) then begin
+          res = false;
+        end;
+        if (DateInRange(ed,Changer.TransDate,Changer.EndDate)) then begin
+          res = false;
+        end;
+        if (res==false) then begin
+          TrHs = false;
+          errstr = USetStr(200303);
+        end;
+      end;
+    end;
+  end;
+
+  CanCreateGracePeriod = res;
+  return;
+end;
+
+global
+updating procedure CredManGracePeriodRemote(record RcVc RepSpec,record CredManVc CredManr,var string errstr)
+begin
+  record CredManChangeVc Changer;
+
+  if (CanCreateGracePeriod(CredManr,RepSpec.d1,RepSpec.d2,RepSpec.long1,errstr)) then begin
+    RecordNew(Changer);
+    Changer.SerNr = NextSerNr("CredManChangeVc",RepSpec.d1,-1,false,"");
+    Changer.TransDate = RepSpec.d1;
+    Changer.EndDate = RepSpec.d2;
+    Changer.LateFeeDays = RepSpec.long1;
+    Changer.OKFlag = 1;
+    Changer.CredManNr = CredManr.SerNr;
+    RecordStore(Changer,true);
   end;
 
   return;

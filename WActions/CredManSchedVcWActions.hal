@@ -12,11 +12,11 @@ begin
   CredManr.SerNr = CSr.CredManNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
     int_type = GetInterestPaymentType(CredManr);
+    AgreementPaidOut(CredManr,paidval);
     if (int_type==2) then begin
-      AgreementPaidOut(CredManr,paidval);
       res = paidval;
     end else begin
-      res = CredManr.InvSum4;
+      res = CredManr.InvSum4 + paidval;
     end;
   end;
 
@@ -126,10 +126,13 @@ begin
     rwcnt = MatRowCnt(CSr);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CSr,i,CSrw);
-      if (CSrw.Type==4) then begin
-        bal = bal - CSrw.Total;
-      end else begin
-        bal = bal - CSrw.Principle - CSrw.Deposit;
+      switch (CSrw.Type) begin
+        case 4:
+          bal = bal - CSrw.Total;
+        case 5:
+          bal = bal + CSrw.Principle;
+        otherwise
+          bal = bal - CSrw.Principle - CSrw.Deposit;
       end;
       CSrw.Balance = bal;
       MatRowPut(CSr,i,CSrw);

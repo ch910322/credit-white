@@ -1,4 +1,4 @@
-remote updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc,string,Boolean);
+remote updating procedure CreateSingleAgreementInvoice2(record CredManVc,Date,var record IVVc,string,Boolean,Boolean);
 remote procedure PasteCustInAgreementRemote(var record CredManVc,var string);
 remote updating procedure TerminateCredMan(var record CredManVc,val,string,Date,Boolean);
 remote procedure TerminateCredManFinish(var record CredManVc);
@@ -59,6 +59,7 @@ remote function Date GetLastInvoiceDate(record CredManVc,Date);
 remote inner procedure PrintEBSDocument(string,string,record RcVc,string,string,var area);
 remote inner function Boolean ExternalDocumentEnabled(string);
 remote updating procedure PrintBuyOutSummary(record CredManVc,record RcVc,var string,area,var record MailVc);
+remote updating procedure CredManGracePeriodRemote(record RcVc,record CredManVc,var string);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -599,7 +600,7 @@ updating procedure CreateCredManInvoiceDo(record CredManVc CredManr,string invno
 begin
   record IVVc IVr;
  
-  CreateSingleAgreementInvoice(CredManr,CurrentDate,IVr,invno,true);
+  CreateSingleAgreementInvoice2(CredManr,CurrentDate,IVr,invno,true,false);
 
   if (IVr.SerNr>0) then begin
     CheckAndCreateAutoMailFromInvoice(IVr);
@@ -3092,3 +3093,44 @@ BEGIN
   CredManDClassApprovedButtonAction = res;
   RETURN;
 END;
+
+global
+procedure CredManGracePeriodDsm()
+begin
+  record RcVc RepSpec;
+  Date ed;
+  
+  RepSpec.d1 = CurrentDate;
+  ed = AddMonth(CurrentDate,2);
+  ed.Day = 1;
+  ed = AddDay(ed,-1);
+  RepSpec.d2 = ed;
+
+  OpenWindow("CredManGracePeriodWClass",0,CurWindow,"","",RepSpec);
+
+  return;
+end;
+
+global
+updating procedure CredManGracePeriodWClassProceed()
+begin
+  Integer wn,mwn;
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  string 255 errstr;
+
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  mwn = MotherWindow(wn);
+  GetWindowRecord(mwn,CredManr);
+  CredManGracePeriodRemote(RepSpec,CredManr,errstr);
+  if (nonblank(errstr)) then begin
+    MessageBox(0,errstr);
+  end else begin
+    CloseWindow(wn);
+    
+  end;
+
+  return;
+end;

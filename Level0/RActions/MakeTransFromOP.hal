@@ -1376,7 +1376,7 @@ begin
               VIr.SerNr = OPrw.VISerNr;
               ReadFirstMain(VIr,1,true);
               
-              accstr = CM_GetCredManTypePurchItemAccount(OPrw.VISerNr,VIr.CustCredManNr,accstr,true);
+              accstr = CM_GetCredManTypePurchItemAccount(OPrw.VISerNr,VIr.CustCredManNr,accstr,false);
             end;
 //CUST-END
             if (CheckTTRPerRow("OPVc",accstr,otxt,dc1,taccnumber,1)) then begin end;      

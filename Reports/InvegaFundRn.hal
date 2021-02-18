@@ -148,7 +148,7 @@ begin
     end else begin
       if (CredHistr.RecordType==1 or CredHistr.RecordType==2) then begin
         if (invegaf and CredHistr.RecordType==1) then begin
-          //vDates[DateToString(CredHistr.TransDate,"YYYY-MM-DD")] = true;
+          vDates[DateToString(CredHistr.TransDate,"YYYY-MM-DD")] = true;
         end;
         tCredHistr.SerNr = CredHistr.PreviousNr;
         if (ReadFirstMain(tCredHistr,1,true)) then begin
@@ -219,6 +219,7 @@ begin
     end;
   end;
 
+  res = "";
   GetVectorTags(vDates,aDates);
   SortArray(aDates,M4Date);
   for (i=0;i<aDates.length;i=i+1) begin
@@ -299,12 +300,13 @@ begin
   return;
 end;
 
-procedure GetCredManLateAmounts(record CredManVc CredManr,Date sd,Date ed,Integer chargetype,var Longint maxlatedays,var val dueamount)
+procedure GetCredManLateAmounts(record CredManVc CredManr,Date sd,Date ed,Integer chargetype,var Longint maxlatedays,var val dueamount,var Date limitdate)
 begin
   string 255 res;
   record CredHistVc CredHistr;
   Boolean TrHs;
   Longint latedays;
+  Date tmpdate;
 
   dueamount = 0;
   maxlatedays = 0;
@@ -317,6 +319,12 @@ begin
     end else begin
       if (CredHistr.RecordType==0 and CredHistr.PayDate<=ed) then begin
         latedays = GetLateDaysInPeriod(CredHistr,sd,ed,dueamount);
+        if (dueamount>0 and latedays>=90) then begin
+          tmpdate = AddDay(CredHistr.PayDate,90);
+          if ((tmpdate<limitdate or blank(limitdate)) and tmpdate<ed) then begin
+            limitdate = tmpdate;
+          end;
+        end;
         maxlatedays = MAX(maxlatedays,latedays);
       end;
     end;
@@ -391,6 +399,35 @@ begin
   return;
 end;
 
+procedure LoadAgreementRateToDate(record CredManVc CredManr,Date ed,var val rate)
+begin
+  Date sd;
+  record CredManChangeVc Changer;
+  Boolean TrHs;
+
+  sd = CredManr.startDate;
+  
+  Changer.CredManNr = CredManr.SerNr;
+  Changer.TransDate = sd;
+  TrHs = true;
+  while (LoopKey("CredManDate",Changer,2,TrHs)) begin
+    if (CredManr.SerNr!=Changer.CredManNr or Changer.TransDate>ed) then begin
+      TrHs = false;
+    end else begin
+      if (Changer.OKFlag==1) then begin
+        if (nonblank(Changer.IntRate)) then begin
+          rate = Changer.IntRate;
+          if (Changer.AnnualRate==0) then begin
+            rate = rate * 12;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
 procedure DisplayInvegaReport(record RcVc RepSpec)
 begin
   record InvegaReportBlock IRb;
@@ -410,6 +447,7 @@ begin
   record CredManTypeVc CMTr;
   string 255 tmp;
   Longint pos;
+  Date limitdate;
 
 
   num = 0;
@@ -465,31 +503,33 @@ begin
     if (nonblank(RepSpec.f2) and RepSpec.f2!=CredManr.CustCode) then begin
       testf = false;
     end;
-    if (nonblank(RepSpec.f3) and SetInSet2(RepSpec.f3,CredManr.Classifications)) then begin
+    if (nonblank(RepSpec.f3) and SetInSet2(RepSpec.f3,CredManr.Classifications)==false) then begin
       testf = false;
     end;
     if (nonblank(RepSpec.f4) and RepSpec.f4!=CredManr.SalesMan) then begin
       testf = false;
     end;
-    if (nonblank(RepSpec.f5) and SetInSet2(RepSpec.f5,vClass[CredManr.Type])) then begin
+    if (nonblank(RepSpec.f5) and SetInSet2(RepSpec.f5,vClass[CredManr.Type])==false) then begin
       testf = false;
     end;
     
     if (testf) then begin
       CUr.Code = CredManr.CustCode;
+      
       rate = CredManr.IntRate;
       if (CredManr.AnnualRate==0) then begin
         rate = rate * 12;
       end;
+      LoadAgreementRateToDate(CredManr,RepSpec.sEndDate,rate);
       startbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.sStartDate);
       endbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.sEndDate);
       translist = GetCredManTransactionList(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,paidval,princ,interest,overdues,true);
-      GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,5,principlelatedays,principlelateamount);
-      GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,6,interestlatedays,interestlateamount);
-      GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,9,overdueslatedays,overdueslateamount);
+      GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,5,principlelatedays,principlelateamount,limitdate);
+      GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,6,interestlatedays,interestlateamount,limitdate);
+      GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,9,overdueslatedays,overdueslateamount,limitdate);
       
       overduesign = "Ne";
-      if (principlelatedays>90 or interestlatedays>90 or overdueslatedays>90 or CUr.OnHoldFlag==1) then begin
+      if (principlelatedays>=90 or interestlatedays>=90 or overdueslatedays>=90 or CUr.OnHoldFlag==1) then begin
         overduesign = "Taip";
       end;
 
@@ -522,8 +562,10 @@ begin
       OutString(p[12],0,DateToString(CredManr.endDate,"YYYY-MM-DD"),false);
       OutString(p[13],0,startbal,false);
       pos = 0;
-      if (GetNextSubString(translist,pos,",",tmp)) begin
+      if (nonblank(translist) and GetNextSubString(translist,pos,",",tmp)) begin
         OutString(p[14],0,tmp,false);
+      end else begin
+        OutString(p[14],0,"",false);
       end;
       OutString(p[15],0,paidval,false);
       OutString(p[16],0,princ,false);
@@ -627,6 +669,7 @@ begin
   Integer transcnt;
   val totinterest,totprinciplelateamount,totinterestlateamount,totendbal,totpaid,totsum;
   val unpaidstartbal,periodbal,paidstartbal,paidperiodbal,totunpaidstartbal,totperiodbal,totpaidstartbal,totpaidperiodbal;
+  Date limitdate;
 
   num = 0;
   for (i=0;i<26;i=i+1) begin
@@ -680,13 +723,13 @@ begin
     if (nonblank(RepSpec.f2) and RepSpec.f2!=CredManr.CustCode) then begin
       testf = false;
     end;
-    if (nonblank(RepSpec.f3) and SetInSet2(RepSpec.f3,CredManr.Classifications)) then begin
+    if (nonblank(RepSpec.f3) and SetInSet2(RepSpec.f3,CredManr.Classifications)==false) then begin
       testf = false;
     end;
     if (nonblank(RepSpec.f4) and RepSpec.f4!=CredManr.SalesMan) then begin
       testf = false;
     end;
-    if (nonblank(RepSpec.f5) and SetInSet2(RepSpec.f5,vClass[CredManr.Type])) then begin
+    if (nonblank(RepSpec.f5) and SetInSet2(RepSpec.f5,vClass[CredManr.Type])==false) then begin
       testf = false;
     end;
     if (CredManr.TransDate>RepSpec.sEndDate) then begin
@@ -699,21 +742,22 @@ begin
       if (CredManr.AnnualRate==0) then begin
         rate = rate * 12;
       end;
+      limitdate = "";
       startbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.sStartDate);
       endbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.sEndDate);
       translist = GetCredManTransactionList(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,paidval,princ,interest,overdues,false);
-      GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,5,principlelatedays,principlelateamount);
+      GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,5,principlelatedays,principlelateamount,limitdate);
       unpaidstartbal = 0;
       periodbal = 0;
       paidstartbal = 0;
       paidperiodbal = 0;
-      GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,6,interestlatedays,interestlateamount);
-      GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,9,overdueslatedays,overdueslateamount);
+      GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,6,interestlatedays,interestlateamount,limitdate);
+      GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,9,overdueslatedays,overdueslateamount,limitdate);
       GetPeriodBalances(CredManr,CredManSetb,RepSpec.sStartDate,RepSpec.sEndDate,unpaidstartbal,periodbal,paidstartbal,paidperiodbal);
 
       overduesign = "Ne";
       if (principlelatedays>90 or interestlatedays>90 or overdueslatedays>90 or CUr.OnHoldFlag==1) then begin
-        overduesign = "Taip";
+        overduesign = DateToString(limitdate,"YYYY-MM-DD");
       end;
 
       ReadFirstMain(CUr,1,true);
@@ -736,8 +780,10 @@ begin
       totpaid = totpaid + paidval;
       checkf = false;
       pos = 0;
-      if (GetNextSubString(translist,pos,",",tmp)) begin
+      if (nonblank(translist) and GetNextSubString(translist,pos,",",tmp)) begin
         OutString(p[10],0,tmp,false);
+      end else begin
+        OutString(p[10],0,"",false);
       end;
 //what about these 4?
       OutString(p[11],0,unpaidstartbal,false);

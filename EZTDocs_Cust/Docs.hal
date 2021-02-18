@@ -187,6 +187,8 @@ begin
   Integer i,rwcnt;
   record SMVc SMr;
   row SMVc SMrw;
+  val tval;
+  string 255 tstr;
  
   BlockLoad(CredManSetb);
   if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
@@ -202,7 +204,10 @@ begin
       i = rwcnt;
     end;
   end;
-  vVals["F_TOTALBRUTO"] = GetTotalFromCredManInfoMatrix(SMr);
+  tval = GetTotalFromCredManInfoMatrix(SMr);
+  vVals["F_TOTALBRUTO"] = tval;
+  ValToText(tval,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  vVals["F_TOTALBRUTOINTEXT"] = tstr;
   vVals["F_INSTALMENTDUEDATE"] = res;
 
   return;
@@ -712,7 +717,7 @@ begin
   string 255 sc,strnum;
   Integer gnum;
   array record CUVc aCUr;
-  val tval;
+  val tval,rate;
   
   BlockLoad(CMb);
   CUr.Code = CredManr.CustCode;
@@ -960,11 +965,13 @@ begin
   vVals["F_DELADDRESS"] = GetDelAddr(CredManr.CustCode);;
 
   ExtPrintOwnBankDetails(vVals,CredManr.SerNr);
-  if (CredManr.AnnualRate==1) then begin
-    vVals["F_ANNUALRATE"] = Round(CredManr.IntRate,SetRoundModeD(2)) & " %";
-  end else begin
-    vVals["F_ANNUALRATE"] = Round(CredManr.IntRate*12,SetRoundModeD(2)) & " %";
+  rate = CredManr.IntRate;
+  if (CredManr.AnnualRate==0) then begin
+    rate = CredManr.IntRate*12;
   end;
+  vVals["F_ANNUALRATE"] = Round(rate,SetRoundModeD(2)) & " %";
+  tstr = AgreementValToText(Round(rate,SetRoundModeD(2)));
+  vVals["F_ANNUALRATEINTEXT"] = tstr;
 
   calcfees = GetMonthlyFees(CredManr,0);
   fixfees =  GetMonthlyFees(CredManr,1);
@@ -1025,7 +1032,7 @@ begin
   end;
 
   vVals["F_FIRSTINVDATE"] = CredManr.FirstInvDate;
-  vVals["F_OTHERCONDITIONS"] = GetConditionsText(CredManr,0);
+  vVals["F_OTHERCONDITIONSLONG"] = GetConditionsText(CredManr,0);
   vVals["F_PMTCONDITIONS"] = GetConditionsText(CredManr,1);
 
   PrintFirstPrincipleDueDate(vVals,CredManr);
@@ -1339,19 +1346,25 @@ begin
   Date enddate,duedate,td;
   Integer gnum;
   record CMApplicationSetBlock CMb;
+  record CMPrintConstantsBlock PCb;
 
 
   Ext_CommonDocumentFields(vVals);
 
   if (gBOENumber>0) then begin
     BlockLoad(CMb);
+    BlockLoad(PCb);
     GetBOEValues3(CredManr,gBOENumber,name,phone,email,addr0,addr1,addr2,addr3,addr4,value,signer,contactid,td,duedate);
     vVals["F_CONTACTNAME"] = name;
     vVals["F_CONTACTPHONE"] = phone;
     vVals["F_CONTACTMAIL"] = email;
     vVals["F_CONTACTID"] = contactid;
     vVals["F_CONTACTVALUE"] = value;
-    ValToText(value,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+    if (nonblank(PCb.BOEValueLangCode)) then begin
+      ValToText(value,M4Val,CredManr.CurncyCode,PCb.BOEValueLangCode,tstr);
+    end else begin
+      ValToText(value,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+    end;
     tstr = StrReplace(tstr,"  "," ");
     tstr = StrReplace(tstr,"  "," ");
     vVals["F_CONTACTVALUEINWORDS"] = tstr;

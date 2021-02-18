@@ -2152,12 +2152,14 @@ begin
   CheckBox(h,v+=16,0,"Manual Contract Fee Invoice Number",ManualInvoiceNumber);
   CheckBox(h,v+=16,0,"Principle below hidden Line",HiddenPrinciple);
   CheckBox(h,v+=16,0,"Use Agreement Type Accounts",UseTypeAccounts);
+  CheckBox(h,v+=16,0,"Interest including First Day",InterestFirstDay);
 
   CheckBox(h,v+=30,0,"Automatically issue Invoices",AutoInvoiceFlag);
   EditField(h,v+=20,100,"Time",Normal,AutoInvoiceTime,false,PasteCurTime);
   CheckBox(h,v+=20,0,"Automatically send issued Invoices",AutoInvoiceSend);
   CheckBox(h,v+=16,0,"Automatically send Invoices created from Contracts",AutoMailsFromInvoices);
   CheckBox(h,v+=16,0,"When creating Email, use precreated PDFs",UsePreCreatedInvoicePdf);
+
 //  CheckBox(h,v+=16,0,"Remaining principle including Last Months Principle",LastPrincipleWithExtraMonth);
   
 
@@ -2199,9 +2201,9 @@ begin
   Tile(2,500,false,"2",DetailedInvoice);
   CheckBox(h,v=6,0,"Overdue Calculation below hidden Line",AddOverdueDetails);
 
-
-  EditField(h,v+=vs,100,"Overdue Item Class",Normal,OverdueItemClass,false,DISClass);
-  EditField(h,v+=30,100,"Overdue Months",Normal,OverdueMonths,false,0);
+  EditField(h,v+=30,100,"Overdue Item Class",Normal,OverdueItemClass,false,DISClass);
+  EditField(h,v+=vs,100,"Overdue Months",Normal,OverdueMonths,false,0);
+  EditField(h,v+=vs,100,"Overdue Payment Terms",Normal,OverduePayTerm,false,PDSClass);
 
   ButtonFrame(h,v+=40,400,3,"Overdue Invoicing");
   RadioButton(h,v,0,0,"With Principle, same Invoice",OverdueIVType);
@@ -2923,7 +2925,7 @@ begin
   WindowBegin("Printout Constants",CMPrintConstantsTClass,CGSbl,-);
   SetBlid(CMPrintConstantsBlock);
   SetWRect(20,80,700,298);
-  vs=20; h=150; vs2=16; hm=-100;
+  vs=20; h=170; vs2=16; hm=-100;
   
   Tile(0,20,false,"",SuretyYes);
   TileButton(1,"Surety");  
@@ -2942,6 +2944,8 @@ begin
   EditField(h,v=6,140,"Yes",Normal,BOEYes,false,0);
   EditField(h,v+=vs,140,"No",Normal,BOENo,false,0);
   EditField(h,v+=vs,140,"If Yes, then",Normal,BOEYes2,false,0);
+  EditField(h,v+=vs,140,"Amount Value in Text",Normal,BOEValueLangCode,false,LangNrSClass);
+  
   Tile(3,700,false,"3",PropertyYes);
   EditField(h,v=6,140,"Yes (Mortgage)",Normal,PropertyYes,false,0);
   EditField(h,v+=vs,140,"No",Normal,PropertyNo,false,0);
@@ -2957,6 +2961,7 @@ begin
   EditField(h,v+=vs,140,"If Yes, then",Normal,ScheduleYes2,false,0);
   Tile(5,50,false,"5",InvoiceText);
   EditField(h,v=6,140,"Netting Text",Normal,InvoiceText,false,0);
+  EditField(h,v+=vs,140,"Company Reg. No. Comment",Normal,RegNrComment,false,0);
 
   Tile(6,60,false,"6",SubordinationYes);
   EditField(h,v=6,140,"Yes",Normal,SubordinationYes,false,0);
@@ -2986,7 +2991,7 @@ begin
   EditFieldTL(h,v+=20,150,"Customer",M4UStr,Normal,40,f2,false,CUSClass);
   EditFieldTL(h,v+=20,150,"Classifications",M4UStr,Normal,255,f3,false,CredManClassSClass);
   EditFieldTL(h,v+=20,150,"Manager",M4Code,Normal,255,f4,false,UserSClass);
-  EditFieldTL(h,v+=20,150,"Type Classifictions",M4UStr,Normal,255,f5,false,CredManClassSClass);
+  EditFieldTL(h,v+=20,150,"Type Classifications",M4UStr,Normal,255,f5,false,CredManClassSClass);
   ButtonFrame(h,v+=40,150,2,"Type");
   RadioButton(h,v,0,0,"Invega Fund Report",ArtMode);
   RadioButton(h,v+=16,1,0,"Garfondas Fund Report",ArtMode); 
@@ -3089,6 +3094,9 @@ begin
   end else begin
     EditFieldTL(h,v,120,"Until Date",M4Date,Normal,0,d1,false,PasteCurDate);
   end;
+  EditFieldTL(h,v+=vs,120,"Agreement",M4Long,Normal,0,long1,false,CredManSClass);
+  EditFieldTL(h,v+=vs,120,"Classification",M4Code,Normal,20,f1,false,CredManClassSClass);
+  EditFieldTL(h,v+=vs,120,"Agreement Type",M4Code,Normal,20,f2,false,CredManTypeSClass);
   ButtonFrame(h,v+=40,150,2,"Calculation");
   RadioButton(h,v,0,0,"Based on Period",ArtMode);
   RadioButton(h,v+=16,1,0,"Since Last Overdue Invoice",ArtMode); 
@@ -3176,7 +3184,8 @@ begin
   UseView(CredManAccVc);
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Type",CredManType,false,CredManType);
-  RlCol(124,124,"Comment",Comment,false);
+  RlCol(124,124,"Category",CustCat,false);
+  RlCol(224,224,"Comment",Comment,false);
   SearchField("Search");
   EndWindow;
 end;
@@ -3190,7 +3199,8 @@ begin
   WindowBegin("Account",CredManAccDCLass,CGview,-);
   UseView(CredManAccVc);
   SetWRect(64,80,599,475);
-  EditField(h=145,v=6, 100, "Type",Normal,CredManType,false,CredManTypeSClass);
+  EditField(h=145,v=6,100, "Type",Normal,CredManType,false,CredManTypeSClass);
+  EditField(h,v+=vs,100, "Customer Category",Normal,CustCat,false,CCatSClass);
   EditField(h,v+=vs,-40,"Name",Normal,Comment,false,0);
   EditField(h,v+=vs,100,"P/L Debit Account",Normal,PLDebitAcc,false,AccSClass);
   EditField(h,v+=vs,100,"P/L Credit Account",Normal,PLCreditAcc,false,AccSClass);
@@ -3340,6 +3350,7 @@ begin
   EditField(h,v+=vs,100,"Rate",Normal,IntRate,false,0);
   Checkbox(h2,v,0,"Annual Rate",AnnualRate);
   EditField(h,v+=vs,100,"Overdue Percentage",Normal,OverduePercentage,false,0);
+  EditField(h,v+=vs,100,"Max Late Days",Normal,LateFeeDays,false,0);
   //EditField(h,v+=vs,100,"Monthly Payment Day",Normal,MonthlyPaymentDay,false,0);
   EndWindow;
 end;
@@ -3461,4 +3472,60 @@ begin
   RlColKey(100,100,"Comment",Comment,false,ActComment);//CUST Comment>>ActComment
   SearchField("Search");
   EndWindow;
+end;
+
+
+window ManagerReplacementLClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Manager Replacements",ManagerReplacementLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  //Sizeable(-1,-1,0,0);
+  UseView(ManagerReplacementVc);
+  SpawnClass(ManagerReplacementDClass);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Nr",SerNr,false,SerNr);
+  RlColKey(84,84,"From",ManagerFrom,false,ManagerFrom);
+  RlColKey(168,168,"To",ManagerTo,false,ManagerTo);
+  RlColKey(238,238,"From",DateFrom,false,DateFrom);
+  RlColKey(318,318,"To",DateTo,false,DateTo);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window ManagerReplacementDClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v,vs,h,h2,h3,h4,h5;
+  
+  WindowBegin("Manager Replacement",ManagerReplacementDClass,CGView,-);
+  SetWRect(20,80,730,539);
+  UseView(ManagerReplacementVc);
+  vs = 20; h=60; h2=150; h3=300; h4 = 450; h5 = 600;
+  EditField(h,v=6,50,"Nr.",Normal,SerNr,false,0);
+  EditField(h2,v,100,"From",Normal,ManagerFrom,false,UserSClass);
+  EditField(h3,v,100,"To",Normal,ManagerTo,false,UserSClass);
+  EditField(h4,v,100,"From",Normal,DateFrom,false,PasteCurDate);
+  EditField(h5,v,100,"To",Normal,DateTo,false,PasteCurDate);
+  EndWindow;
+end;
+
+window CredManGracePeriodWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v,vs; 
+
+  vs = 20;
+  WindowBegin("Register Extended Grace Period",CredManGracePeriodWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,300,180);
+  AutoSizeWindow(false);  
+  EditFieldTL(100,v=6,90,"From Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(100,v+=vs,90,"To Date",M4Date,Normal,0,d2,false,PasteCurDate);
+  EditFieldTL(100,v+=vs,90,"Max late Days",M4Long,Normal,0,long1,false,0);
+  HalPushButton(-260,v+=vs,-160,v+vs,"CredManGracePeriodWClassProceed","Confirm");
+  HalPushButton(-120,v,-20,v+vs,"SchedYesNoWClassClose","No");
+  EndWindow;
+
+  return;
 end;

@@ -98,7 +98,7 @@ begin
 	Report("Income Analysis",EBSIncomeAnalysisRClass,EBSIncomeAnalysisRn,0,modSL);
 
 /*CRM */
-
+  Setting("Manager Replacements",ManagerReplacementLClass,modCRM);
 	Report("News Letter List",MailingListRClass,MailingListRn,0,modCRM);
 
 /* Integration modInteg */
@@ -200,7 +200,7 @@ begin
   SString(200107,"Invitation sent successfully");
 
   SString(200108,"These Changes require Server Restart");
-  SString(200109,"Can't pause becauce there is an Invoice already created");
+  SString(200109,"Can't pause because there is an Invoice already created");
   SString(200110,"Wrong Type for Credit Limit");
   SString(200111,"Amount covers only due Invoices. Nothing left for Buyout");
   SString(200112,"Credit Limit reached");
@@ -268,7 +268,7 @@ begin
   SString(200269,"Amount is different than specified in Credit Agreement");
 
   SString(200270,"Schedule Type");
-  SString(200271,"Can't update becauce there is an Invoice already created");
+  SString(200271,"Can't update because there is an Invoice already created");
   SString(200272,"Agreement schedule is not matching with Fixed schedule");
   SString(200273,"Schedule doesn't exist");
   SString(200274,"Date can't be blank or earlier than last Invoice Date");
@@ -296,6 +296,9 @@ begin
   SString(200299,"Monthly p.");
   SString(200300,"Balance");
   SString(200301,"Buy-out");
+
+  SString(200302,"Specify Max late Days");
+  SString(200303,"Grace Period already registered");
 
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");
@@ -416,7 +419,8 @@ begin
   SetText(8,"Invoiced Fees");
   SetText(9,"Invoices Late Fees");
   SetText(10,"Paid Invoice");
-  SetText(11,"Partial Buy-out");
+  SetText(11,"Partial Buy-out (old)");
+  SetText(19,"Partial Buy-out");
 //new types should be added to function MapChargeTypes
   EndSet;
 
@@ -524,6 +528,7 @@ begin
   SetBegin(2027);
   SetText(0,"Invoice");
   SetText(4,"Buy-out");
+  SetText(5,"Payout");
   EndSet;
 
   SetBegin(2028);

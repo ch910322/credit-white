@@ -494,7 +494,11 @@ BEGIN
     CredManIPrsStats(CredManr,false);
   end;
   if ((CredManr.OKFlag==0) and (CredMan2r.OKFlag==1)) then begin
-    DeleteTransaction(CredManr.SerNr,CredManYc);
+//CUST-BEGIN
+    if (CredManr.Status!=5) then begin
+      DeleteTransaction(CredManr.SerNr,CredManYc);
+    end;
+//CUST-END
     UpdateARFromCredMan(CredManr,true,false);
     CredManIPrsStats(CredManr,true);
   end;

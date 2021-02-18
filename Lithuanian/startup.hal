@@ -164,7 +164,7 @@ begin
   SString(200107,"Invitation sent successfully");
 
   SString(200108,"These Changes require Server Restart");
-  SString(200109,"Can't pause becauce there is an Invoice already created");
+  SString(200109,"Can't pause because there is an Invoice already created");
   
   SString(200114,"Vekselio davėjas");
 /*Web Codes 200200-200230*/
@@ -451,6 +451,7 @@ begin
   SetBegin(2027);
   SetText(0,"Invoice");
   SetText(4,"Buy-out");
+  SetText(5,"Payout");
   EndSet;
 
   SetBegin(2028);
