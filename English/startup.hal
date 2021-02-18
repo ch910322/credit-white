@@ -98,7 +98,7 @@ begin
 	Report("Income Analysis",EBSIncomeAnalysisRClass,EBSIncomeAnalysisRn,0,modSL);
 
 /*CRM */
-
+  Setting("Manager Replacements",ManagerReplacementLClass,modCRM);
 	Report("News Letter List",MailingListRClass,MailingListRn,0,modCRM);
 
 /* Integration modInteg */
