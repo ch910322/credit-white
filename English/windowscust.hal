@@ -3510,7 +3510,6 @@ begin
   EndWindow;
 end;
 
-
 window CredManGracePeriodWClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
