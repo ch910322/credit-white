@@ -35,7 +35,7 @@ begin
   RecordField(MonthlyPaymentDay,M4Int,0,0);
   RecordField(StartDate,M4Date,0,0);
   RecordField(EndDate,M4Date,0,0);
-  RecordField(Months,M4Int,0,0);
+  RecordField(Months,M4Long,0,0);
 
   RecordField(Addr0,M4Str,200,0);
   RecordField(Addr1,M4Str,200,0);
