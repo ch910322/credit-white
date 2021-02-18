@@ -35,7 +35,18 @@ begin
     case 7: SpawnClass(CredMan7DClass);
     case 8: SpawnClass(CredMan8DClass);
     otherwise
-      SpawnClass(CredManDClass);
+      switch (ISb.DefCredManLoanType) begin
+        case 1: SpawnClass(CredMan1DClass);
+        case 2: SpawnClass(CredMan2DClass);
+        case 3: SpawnClass(CredMan3DClass);
+        case 4: SpawnClass(CredMan4DClass);
+        case 5: SpawnClass(CredMan5DClass);
+        case 6: SpawnClass(CredMan6DClass);
+        case 7: SpawnClass(CredMan7DClass);
+        case 8: SpawnClass(CredMan8DClass);
+        otherwise
+          SpawnClass(CredManDClass);
+      end;
   end;
   UseView(CredManVc);
   if (ISb.ShowLoanType1==1) then begin
@@ -371,7 +382,7 @@ begin
   SetWRect(20,80,640,380);
   h = 150; h2 = 300; h3 = 440; v = 6; vs=20;
   UseView(CredHistVc);
-  EditField(h,v,80,"Ser. No.",ViewOnly,SerNr,false,0);
+  EditField(h,v,80,"Ser. No.",Normal,SerNr,false,0);
   EditField(h2,v,120,"Customer",Normal,CustCode,false,CUSClass);
   EditField(h,v+=vs,120,"Record No.",Normal,RecordNr,false,0);
   EditField(h,v+=vs,120,"Previous Rec.",Normal,PreviousNr,false,0);
