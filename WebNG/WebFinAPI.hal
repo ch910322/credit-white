@@ -315,6 +315,7 @@ begin
   AddPlainXmlToArea(a,"<GetRepaidPrincipal>",0);
   AddXMLTagToArea(a,"CredManNr","",arg,1);
   AddPlainXmlToArea(a,"<Result>",1);
+  AddXMLTagToArea(a,"CurncyCode","",CredManr.CurncyCode,2);
   AddXMLTagToArea(a,"TotalPrincipal","",ValToString(tot,M4Val,"",".",0),2);
   AddPlainXmlToArea(a,"</Result>",1);
   AddPlainXmlToArea(a,"</GetRepaidPrincipal>",0);
