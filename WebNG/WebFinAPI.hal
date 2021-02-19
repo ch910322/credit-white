@@ -117,9 +117,6 @@ begin
   
   frPayDate = DateFromString(FirstInRange(vFilter["filter.row.PayDate"],10),"YYYY-MM-DD");
   toPayDate = DateFromString(LastInRange(vFilter["filter.row.PayDate"],10),"YYYY-MM-DD");
-  /*allf = vFilter["return"]=="all";
-  LogText(0,"vFilter[""return""]" & vFilter["return"] & " allf=" & allf);
-  */
   SetAreaZeroSize(a);
   AddPlainXmlToArea(a,"<CredManSchedVc>",0);
   AddXMLTagToArea(a,"CredManNr","",CMr.CredManNr,1);//todo
@@ -151,16 +148,19 @@ begin
       AddXMLTagToArea(a,"Interest","",ValToString(CMrw.Interest,M4Val,"",".",0),3);
       AddXMLTagToArea(a,"Fees","",ValToString(CMrw.Fees,M4Val,"",".",0),3);
       //Sum1 - Amunt ex vat
+      tstr = "";
       t = blankval;
       if (CMrw.Type==0) then begin
         if (nonblank(CMrw.InvoiceNr)) then begin
           IVr.SerNr = StringToLongInt(CMrw.InvoiceNr);
           if (ReadFirstMain(IVr,1,true)) then begin
             t = IVr.Sum3;        
+            tstr = IVr.CurncyCode;
           end;
         end else begin
           TestInvoiceBasedOnScheduleRow(CMr,CMrw,IVr);
           t = IVr.Sum3;
+          tstr = IVr.CurncyCode;
         end;
       end;
       AddXMLTagToArea(a,"VATTotal","",ValToString(t,M4Val,"",".",0),3);
@@ -173,6 +173,7 @@ begin
       AddXMLTagToArea(a,"FeesMatrix","","",3);
       AddXMLTagToArea(a,"Balance","",ValToString(CMrw.Balance,M4Val,"",".",0),3);
       AddXMLTagToArea(a,"Deposit","",ValToString(CMrw.Deposit,M4Val,"",".",0),3);
+      AddXMLTagToArea(a,"CurncyCode","",tstr,3);
       AddPlainXmlToArea(a,"</row>",2);
     end;
   end;
@@ -272,6 +273,7 @@ begin
   AddXMLTagToArea(a,"CredManNr","",arg,1);
   AddPlainXmlToArea(a,"<Result>",1);
   AddXMLTagToArea(a,"TotalOverdue","",ValToString(tot,M4Val,"",".",0),1);
+  AddXMLTagToArea(a,"CurncyCode","",CMr.CurncyCode,1);
   AddPlainXmlToArea(a,"</Result>",1);
   AddPlainXmlToArea(a,"</GetTotalOverDue>",0);
   WebOutArea2(a);
@@ -290,6 +292,7 @@ begin
   row CredManPayPlanVc CredManPayPlanrw;
   record CredManVc CredManr;
   integer i,rwcnt;
+  string 255 tstr;
   
   arg = WebGetArg("CredManNr");
   id = StringToLongInt(arg);
@@ -297,6 +300,7 @@ begin
     BlockLoad(CredManSetb);
     CredManr.SerNr = id;
     if (ReadFirstMain(CredManr,1,true)) then begin
+      tstr = CredManr.CurncyCode;
       BuildCredManPayPlanCust2(CredManr,CredManPayPlanr,CredManSetb,true,true,false);  
       rwcnt = MatRowCnt(CredManPayPlanr);
       for (i=0;i<rwcnt;i=i+1) begin
@@ -315,8 +319,8 @@ begin
   AddPlainXmlToArea(a,"<GetRepaidPrincipal>",0);
   AddXMLTagToArea(a,"CredManNr","",arg,1);
   AddPlainXmlToArea(a,"<Result>",1);
-  AddXMLTagToArea(a,"CurncyCode","",CredManr.CurncyCode,2);
   AddXMLTagToArea(a,"TotalPrincipal","",ValToString(tot,M4Val,"",".",0),2);
+  AddXMLTagToArea(a,"CurncyCode","",tstr,2);
   AddPlainXmlToArea(a,"</Result>",1);
   AddPlainXmlToArea(a,"</GetRepaidPrincipal>",0);
   WebOutArea2(a);
@@ -350,8 +354,6 @@ begin
           if (FileExists("Attach/" & Attachr.UUID)) then begin
             asernr = Attachr.SerNr;
             l = len(Attachr.FileName);
-            tstr = Mid(Attachr.FileName,l-16,4);
-            WebOutStringNL("<tstr>" & tstr & "</tstr>");
             if (Mid(Attachr.FileName,l-16,4)=="_new") then begin
               d2 = DateFromString(Mid(Attachr.FileName,l-12,8),"YYYYMMDD");
               if (d2>d1) then begin
