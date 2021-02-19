@@ -118,3 +118,10 @@ begin
   CredManCanInvoiceOverdues = true;
   return;
 end;
+global
+function Boolean ShowPartialBuyoutOptions()
+begin
+  ShowPartialBuyoutOptions = false;
+  return;
+end;
+
