@@ -18,6 +18,8 @@ external inner procedure LogAreaToFile(string,area);
 remote procedure TestInvoiceBasedOnScheduleRow(record CredManSchedVc,row CredManSchedVc,var record IVVc);
 external inner procedure AddAreaAfterArea(var area,area);
 external procedure BuildCredManPayPlanCust2(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean,Boolean);
+external inner updating procedure CreateInvoicePdfFile(record IVVc);
+external inner procedure BitSafeBase64EncodeAnArea(var area); 
 
 procedure AddXmlTag(string tag,string value,var Area a)
 begin
@@ -30,52 +32,6 @@ begin
   AddTextToArea(tag,a);
   AddTextToArea(">",a);
   return;
-end;
-
-// Here is an alternative to achieve AreaBase64Encode functionality.
-// We will not use Base64Encode, as it is not bitsafe.
-procedure BitSafeAreaBase64Encode(area target,var area encoded) 
-begin
-  Area chunk,zero;
-  LongInt alen,i,j;
-  LongInt tmp_long;
-  Integer cc;
-  string 8 fromArea;
-  string 70 b64;
-  array string 1 b64_arr;
-
-  // for faster flow
-  b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-  alen = len(b64);
-  for(i=0;i<alen;i=i+1) begin
-    b64_arr[i] = Mid(b64,i,1);
-  end;
-
-  alen = GetAreaLength(target);
-  AddTextToArea(chr(0),zero);
-  for(i=0;i<alen;i=i+3) begin
-    SetAreaZeroSize(chunk);
-    GetAreaFromArea(target,i,3,chunk);
-    InsertAreaBeforeArea(zero,chunk); // we want to treat this chunk as unsigned long
-    tmp_long = GetLongFromArea(chunk,0);
-    for(j=0;j<4;j=j+1) begin
-      cc = Mod(tmp_long,64);
-      tmp_long = (tmp_long-cc)/64;
-      fromArea = b64_arr[cc] & fromArea;
-    end;
-    AddTextToArea(fromArea,encoded);
-    fromArea = "";
-  end;
-
-  switch(Mod(alen,3)) begin
-    case 1: // 8 bit final
-      fromArea = "==";
-    case 2: // 16 bit final
-      fromArea = "=";
-  end;
-  
-  AddTextToArea(fromArea,encoded);
-  return
 end;
 
 procedure OutXmlHeader(string registername)
@@ -374,8 +330,8 @@ begin
     Attachr.SerNr = asernr;
     if (ReadFirstMain(Attachr,1,true)) then begin
       fname = Attachr.FileName;
-      AddAttachFileToArea(Attachr,atemp,false);      
-      BitSafeAreaBase64Encode(atemp,abase64);
+      AddAttachFileToArea(Attachr,abase64,false);      
+      BitSafeBase64EncodeAnArea(abase64);
     end;
   end;
   
@@ -394,27 +350,100 @@ begin
   return;
 end;
 
-procedure GetDocument()
+updating procedure GetInvoicePDF(LongInt id)
+begin
+  record IVVc IVr;
+  record RLinkVc RLr;
+  record Attach2Vc Attachr;
+  date d1,d2;
+  integer l,i,livnr;
+  string 255 fname, struuid;
+  area a,atemp,abase64;
+  string 255 ivnrstr;
+  longint asernr;
+  
+  asernr = -1;
+  IVr.SerNr = id;
+  ivnrstr = id;
+  livnr = len(ivnrstr);
+  if (ReadFirstMain(IVr,1,true)) then begin
+    i = 1;
+    while (ReadRecordLink(IVr,i,Attachr,RLr)) begin
+      if (Attachr.Uploading==0) then begin
+        if (right(Attachr.FileName,4+livnr)==ivnrstr & ".pdf") then begin
+          if (FileExists("Attach/" & Attachr.UUID)) then begin
+            asernr = Attachr.SerNr;
+            goto LW1;
+          end;
+        end;
+      end;
+      i = i + 1;
+    end;
+    LW1:;
+    if (asernr==-1) then begin
+      CreateInvoicePdfFile(IVr);
+      i = 1;
+      while (ReadRecordLink(IVr,i,Attachr,RLr)) begin
+        if (Attachr.Uploading==0) then begin
+          if (right(Attachr.FileName,4+livnr)==ivnrstr & ".pdf") then begin
+            if (FileExists("Attach/" & Attachr.UUID)) then begin
+              asernr = Attachr.SerNr;
+              goto LW2;
+            end;
+          end;
+        end;
+        i = i + 1;
+      end;
+      LW2:;
+    end;
+  end;
+  if (asernr!=-1) then begin
+    Attachr.SerNr = asernr;
+    if (ReadFirstMain(Attachr,1,true)) then begin
+      fname = Attachr.FileName;
+      AddAttachFileToArea(Attachr,abase64,false);      
+      BitSafeBase64EncodeAnArea(abase64);
+    end;
+  end;
+  AddPlainXmlToArea(a,"<GetDocument>",0);
+  AddXMLTagToArea(a,"InvoiceNr","",id,1);
+  AddPlainXmlToArea(a,"<Result>",1);
+  AddXMLTagToArea(a,"FileName","",ConvertXMLString(fname,true),2);
+  //AddXMLTagToArea(a,"FileSize","",,2);
+  AddPlainXmlToArea(a,"<File64>",2);
+  AddAreaAfterArea(a,abase64);
+  AddPlainXmlToArea(a,"</File64>",2);
+  AddPlainXmlToArea(a,"</Result>",1);
+  AddPlainXmlToArea(a,"</GetDocument>",0);
+  WebOutArea2(a);
+  
+  return;
+end;
+
+updating procedure GetDocument()
 begin
   string 255 arg, type;
   LongInt id;
   
   WebSetContentType("text/xml"); 
   OutXmlHeader("GetDocument");
-  arg = WebGetArg("CredManNr");
-  id = StringToLongint(arg);
   type = WebGetArg("doctype");
   switch (type) begin
     case "schedule":
+      arg = WebGetArg("CredManNr");
+      id = StringToLongint(arg);
       GetSchedulePDF(id);
+    case "invoice":
+      arg = WebGetArg("InvoiceNr");
+      id = StringToLongint(arg);
+      GetInvoicePDF(id);
   end;
-  
   WebOutString("</data>");
   return;
 end;
 
 global
-procedure WebFinAPI()
+updating procedure WebFinAPI()
 begin
   string 255 tstr,rep;
   string 20 compcode;
