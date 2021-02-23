@@ -20,7 +20,7 @@ remote procedure PrepareAgreementDocSigningSession(record AgreementDocVc,var str
 remote function Boolean GetAgreementDoc(record CredManVc,Integer,var record AgreementDocVc);
 remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc,var record IVVc,string,var val,Boolean,val);
 remote function Boolean GetAgreementDoc2(Longint,string,Integer,var record AgreementDocVc);
-remote updating procedure CredManPartialBuyoutDo(Date,val,Longint,Integer);
+remote updating procedure CredManPartialBuyoutDo(Date,val,Longint,record RcVc,Integer);
 remote procedure GetPauseCredManNextDate(record CredManVc,var Date);
 remote updating procedure RecreateAgreementSchedule(record CredManVc);
 remote updating procedure RecreateAgreementSchedule2(record CredManVc,Boolean);
@@ -60,6 +60,7 @@ remote inner procedure PrintEBSDocument(string,string,record RcVc,string,string,
 remote inner function Boolean ExternalDocumentEnabled(string);
 remote updating procedure PrintBuyOutSummary(record CredManVc,record RcVc,var string,area,var record MailVc);
 remote updating procedure CredManGracePeriodRemote(record RcVc,record CredManVc,var string);
+external function Boolean UseFullBuyoutProcedure();
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -1359,6 +1360,11 @@ begin
   
   //GetRefinCredManData(RepSpec.long1,type,RepSpec2,true);
 
+  if (UseFullBuyoutProcedure) then begin
+    RepSpec.flags[1] = 1;
+    RepSpec.flags[2] = 1;
+  end;
+
   CloseWindow(wn);
   OpenWindow("RefinCredManPartialWClass",0,0,"","",RepSpec);
   return;
@@ -1395,7 +1401,7 @@ begin
     SetGlobalBoolean("PartialBuyoutInProcess",true);
     
     if (nonblank(RepSpec.d1) and RepSpec.d1<=CurrentDate and RepSpec.vals0>0) then begin
-      asyncremote.CredManPartialBuyoutDo(RepSpec.d1,RepSpec.vals0,RepSpec.long1,wn);
+      asyncremote.CredManPartialBuyoutDo(RepSpec.d1,RepSpec.vals0,RepSpec.long1,RepSpec,wn);
     end;
   end;
 

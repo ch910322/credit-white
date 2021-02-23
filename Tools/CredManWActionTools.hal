@@ -1566,7 +1566,7 @@ begin
 end;
 
 global
-updating procedure CredManPartialBuyoutDo(Date td,val buyoutval,Longint sernr,Integer wn)
+updating procedure CredManPartialBuyoutDo(Date td,val buyoutval,Longint sernr,record RcVc RepSpec,Integer wn)
 begin
   record CredManVc CredManr,oldCredManr;
   record SMVc SMr;
@@ -1603,7 +1603,7 @@ begin
     invdate = td;
     BlockLoad(CMb);
     fullf = UseFullBuyoutProcedure;
-    if (fullf) then begin
+    if (RepSpec.flags[1]==1) then begin
       sd = GetLastInvoiceDate(CredManr,invdate);
       GetCredManOverdueInvoices(CredManr,CMb,invdate,sd,latedays,lateamount,lateformula,true,false,calcsd);
       if (latedays>0 or lateamount>0) then begin
@@ -1613,7 +1613,8 @@ begin
         SetupOverdueLangCode(IVr,CredManr);
         StoreLoanInvoice(IVr,CredManr);
       end;
-
+    end;
+    if (RepSpec.flags[2]==1) then begin
       IPr.TransDate = td;
       IPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
       IPr.RegDate = td;

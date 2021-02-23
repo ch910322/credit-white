@@ -1010,7 +1010,7 @@ begin
   return;
 end;
 
-procedure AddActualsToPlan(record CredManVc CredManr,var record CredmanPayPlanVc CredManPayPlanr,var Integer calculatedmonths,var val acumint,var val calcbal,var Boolean firstinvf,record CredManSetBlock CredManSetb,var Integer months,var val buyoutamount,var val pausebal,var val prolongbal,Integer int_type,var val usesum,var Integer usemonths)
+procedure AddActualsToPlan(record CredManVc CredManr,var record CredmanPayPlanVc CredManPayPlanr,var Integer calculatedmonths,var val acumint,var val calcbal,var Boolean firstinvf,record CredManSetBlock CredManSetb,var Integer months,var val buyoutamount,var val pausebal,var val prolongbal,Integer int_type,var val usesum,var Integer usemonths,Boolean planf)
 begin
   record CredHistVc CredHistr,PrevCredHistr;
   Boolean TrHs;
@@ -1046,7 +1046,7 @@ begin
             ReadFirstMain(PrevCredHistr,1,true);
             type = GetCredHistType(PrevCredHistr.ArtCode,-1,true);          
         end;
-        if (IsPartialBuyoutType(CredHistr.ChargeType) and (CredHistr.TransDate>lastinvdate or blank(lastinvdate))) then begin
+        if (IsPartialBuyoutType(CredHistr.ChargeType) and ((CredHistr.TransDate>lastinvdate or blank(lastinvdate)) and planf)) then begin
           goto LAddActualsToPlan_Next;
         end;
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,CredHistr.ArtCode,"",type,CredHistr.Sum,0,acumint,calcbal,CredHistr.CredFromDate,CredHistr.CredToDate,CredHistr.SerNr,-1,openamount);
@@ -1071,7 +1071,7 @@ begin
           lastrecnr = CredHistr.RecordNr;
         end;
       end;
-      if (CredHistr.RecordType==5 and (CredHistr.TransDate<=lastinvdate and nonblank(lastinvdate))) then begin
+      if (CredHistr.RecordType==5 and ((CredHistr.TransDate<=lastinvdate and nonblank(lastinvdate)) or planf==false)) then begin
         calcbal = calcbal + CredHistr.Sum;
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,"","",kEventTypePayout,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,openamount);
         prevusesum = usesum;
@@ -1550,7 +1550,7 @@ LCalcSchedule:;
   delaymonths = inCredManr.PrincipleDelayMonths;
 
   if (withactuals) then begin
-    AddActualsToPlan(inCredManr,CredManPayPlanr,calculatedmonths,acumint,calcbal,firstinvf,CredManSetb,months,buyoutamount,pausebal,prolongbal,int_type,usesum,usemonths);
+    AddActualsToPlan(inCredManr,CredManPayPlanr,calculatedmonths,acumint,calcbal,firstinvf,CredManSetb,months,buyoutamount,pausebal,prolongbal,int_type,usesum,usemonths,planf);
   end;
   if (tCredManr.Status==5 or planf==false) then begin//if cancelled or we just want to get the actuals
     goto LBuildCredManPayPlanCust;

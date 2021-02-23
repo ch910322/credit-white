@@ -400,7 +400,7 @@ begin
   BlockLoad(PCb);
   if (CUr.CustType==0) then begin
     regnr = CUr.RegNr1;
-    vVals["REGNRCOMMENT"] = PCb.RegNrComment;
+    vVals["F_REGNRCOMMENT"] = PCb.RegNrComment;
   end;
   BlockLoad(CIb);
   if (nonblank(CIb.ReplaceVATNr)) then begin
