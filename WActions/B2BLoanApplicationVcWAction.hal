@@ -379,16 +379,26 @@ begin
   Boolean res;
   record B2BLoanApplicationVc LAr;
   record CredManTypeVc CMTr;
+  Integer nwn;
+  Integer wstate;
   
+  wstate = WindowState(wn);
   GetWindowRecord(wn,LAr);
   CMTr.Code = LAr.Type;
   if (ReadFirstMain(CMTr,1,true)) then begin
     LAr.InterestRate = CMTr.IntRate;
     LAr.Months = CMTr.InstalmentMonths;
+/* -1 month issue fixed by changing field type
+    if (LAr.Months==-1) then begin 
+      LAr.Months = 0;
+    end;
+*/
     LAr.PrincipleDelayMonths = CMTr.PrincipleDelayMonths;
     LAr.PrincipleDelayInterest = CMTr.PrincipleDelayInterest;
     CalculateEndDate(LAr);
-    
+    //CloseWindow(wn);
+    //nwn = OpenWindow("B2BLoanApplicationDClass",0,0,"","",LAr);
+    //SetWindowState(nwn,wstate);
     PutWindowRecord(wn,LAr);    
   end;
   
@@ -1507,7 +1517,9 @@ begin
   GetWindowRecord(wn,LAr);
   RerunWindowDef(wn);
   UpdateB2BLoanApplicationSoftFields(wn,LAr,"");
+  if (nonblank(f)) then begin
   WindowFieldGoto(wn,LAr,-1,f,true);
+  end;
   return;
 end;
 
