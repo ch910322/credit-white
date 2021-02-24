@@ -296,6 +296,11 @@ begin
   SString(200299,"Monthly p.");
   SString(200300,"Balance");
   SString(200301,"Buy-out");
+  SString(200302,"Act. Months");
+  SString(200303,"Act. Rate");
+  SString(200304,"Rate Date");
+  SString(200305,"Order Cls");
+  SString(200306,"Classification");
 
   SString(200302,"Specify Max late Days");
   SString(200303,"Grace Period already registered");

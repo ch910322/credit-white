@@ -2,6 +2,8 @@
 external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
 external inner function Boolean SetInSet2(string,string);
 external procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
+external procedure LoadAgreementRateToDate(record CredManVc,Date,var val,var Date);
+external inner function LongInt MonthDiff(Date,Date);
 
 function string 10 Checkbocout(boolean in)
 begin
@@ -16,21 +18,19 @@ return;
 end;
 
 global
-function val GetFutureCredManBalance(record CredManVc CredManr,record CredManSetBlock CredManSetb,Date baldate)
+function val GetFutureCredManBalance(record CredManVc CredManr,var record CredManPayPlanVc CredManPayr,Date baldate,record CredManSetBlock CredManSetb)
 begin
 	val res;
-	record CredManPayPlanVc CredManPayr;
 	row CredManPayPlanVc CredManPayrw;
 	Integer rwcnt,i;
   val open;
   
 	res = blankval;
-	BuildCredManPayPlanCust(CredManr,CredManPayr,CredManSetb,true,false);
 	rwcnt = MatRowCnt(CredManPayr);
 	for (i=rwcnt-1;i>=0;i=i-1) begin
 		MatRowGet(CredManPayr,i,CredManPayrw);
     open = open + CredManPayrw.OpenAmount;
-		if (CredManPayrw.TransDate<=baldate and blank(res) and CredManSetb.InstalmentItem==CredManPayrw.ArtCode) then begin
+		if (CredManPayrw.TransDate<=baldate and blank(res) and (CredManPayrw.ArtCode==CredManSetb.InstalmentItem)) then begin
   		res = CredManPayrw.Bal;
 //			i = 0;
 		end;
@@ -82,18 +82,48 @@ begin
   return;
 end;
 
+function Integer GetActualMonths(record CredManVc CredManr,record CredManPayPlanVc CredManPayr)
+begin
+  Integer rwcnt,res;
+  row CredManPayPlanVc CredManPayrw;
+  
+  rwcnt = MatRowCnt(CredManPayr);
+  MatRowGet(CredManPayr,rwcnt-1,CredManPayrw);
+  res = MonthDiff(CredManr.FirstInvDate,CredManPayrw.TransDate)+1;
+
+  GetActualMonths = res;
+  return;
+end;
+
+function string 255 GetCredManTypeClassifications(string type)
+begin
+  record CredManTypeVc CMTr;
+  string 255 res;
+
+  CMTr.Code = type;
+  if (ReadFirstMain(CMTr,1,true)) then begin
+    res = CMTr.Classifications;
+  end;
+
+  GetCredManTypeClassifications = res;
+  return;
+end;
+
 global procedure CreditAgreementsRn(record RcVc RepSpec)
 begin
 	record CredManVc CredManr;
 	boolean TrHs,testf;
 	record CredManEventVc CMEventr;
-	string 200 thekey;
+	string 200 thekey,classifications;
 	val curbal,totamount,totdep,totmonth,totbal,totalbuyout;
 	record CredManSetBlock CredManSetb;
 	record CUVc CUr;
   record RcVc tRepSpec;
   array Integer rp;
-
+  Integer realmonths;
+  val realrate;
+  Date ratedate;
+  record CredManPayPlanVc CredManPayr;
 
 	BlockLoad(CredManSetb);
 	startreportjob(USetStr(200280));
@@ -114,10 +144,15 @@ begin
   rp[8] = 600;
   rp[9] = 670;
   rp[10] = 720;
-  rp[11] = 780;
-  rp[12] = 930;
-  rp[13] = 1000;
-  rp[14] = 1070;
+  rp[11] = 770;
+  rp[12] = 850;
+  rp[13] = 910;
+  rp[14] = 990;
+  rp[15] = 1120;
+  rp[16] = 1160;
+  rp[17] = 1250;
+  rp[18] = 1300;
+  rp[19] = 1350;
   
 	
 	StartFormat(15);
@@ -141,11 +176,16 @@ begin
   		OutString(rp[8],0,USetStr(200295),false);//totals
   		OutString(rp[9],0,USetStr(200296),false);
     end;
-		OutString(rp[10],0,USetStr(200297),false);
-		OutString(rp[11],0,USetStr(200298),false);
-		OutString(rp[12],0,USetStr(200299),true);//totals
-		OutString(rp[13],0,USetStr(200300),true);//totals
-		OutString(rp[14],0,USetStr(200301),true);//buyout value
+		OutString(rp[10],0,USetStr(200297),false);//months
+		OutString(rp[11],0,USetStr(200302),false);//real months
+		OutString(rp[12],0,USetStr(200298),false);//rate
+		OutString(rp[13],0,USetStr(200303),false);//real rate
+		OutString(rp[14],0,USetStr(200304),false);//rate date
+		OutString(rp[15],0,USetStr(200299),true);//totals
+		OutString(rp[16],0,USetStr(200300),true);//totals
+		OutString(rp[17],0,USetStr(200301),true);//buyout value
+		OutString(rp[18],0,USetStr(200305),true);//order class
+		OutString(rp[19],0,USetStr(200306),true);//classifications
 	EndFormat;
 	
 	TrHs = true;
@@ -170,7 +210,9 @@ begin
 		if(nonblank(RepSpec.Period2Str2) and DateInRange(CredManr.FirstInvDate,RepSpec.sStartDate2,RepSpec.sEndDate2)==false)then begin testf = false; end;
 		
 		if (testf) then begin
-  		curbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.d1);
+      RecordClear(CredManPayr);
+      BuildCredManPayPlanCust(CredManr,CredManPayr,CredManSetb,true,false);
+  		curbal = GetFutureCredManBalance(CredManr,CredManPayr,RepSpec.d1,CredManSetb);
 			if(RepSpec.flags[5]==0 and curbal<=0)then begin testf = false; end;
 		end;
 		
@@ -178,6 +220,10 @@ begin
 		  CUr.Code = CredManr.CustCode;
       tRepSpec.d1 = RepSpec.d1;
       CheckBuyOutAgreement(CredManr,tRepSpec);
+      realmonths = GetActualMonths(CredManr,CredManPayr);
+      realrate = CredManr.IntRate;
+      LoadAgreementRateToDate(CredManr,RepSpec.sEndDate,realrate,ratedate);
+      classifications = GetCredManTypeClassifications(CredManr.Type);
 
 		  ReadFirstMain(CUr,1,true);
 			StartFormat(15);
@@ -202,10 +248,16 @@ begin
         OutString(rp[9],0,CredManr.DepositPrc,false);
       end;
       OutString(rp[10],0,CredManr.InstalmentMonths,false);
-      OutString(rp[11],0,CredManr.IntRate,false);
-      OutString(rp[12],0,CredManr.MonthlySum,true);
-      OutString(rp[13],0,curbal,true);
-      OutString(rp[14],0,tRepSpec.vals2,true);
+      OutString(rp[11],0,realmonths,false);
+      OutString(rp[12],0,CredManr.IntRate,false);
+      OutString(rp[13],0,realrate,false);
+      OutString(rp[14],0,ratedate,false);
+      
+      OutString(rp[15],0,CredManr.MonthlySum,true);
+      OutString(rp[16],0,curbal,true);
+      OutString(rp[17],0,tRepSpec.vals2,true);
+      OutString(rp[18],0,CredManr.OrderClass,true);
+      OutString(rp[19],0,classifications,true);
       totamount = totamount + CredManr.InvSum4;
       totdep = totdep + CredManr.DepositSum;
       totmonth = totmonth + CredManr.MonthlySum;
@@ -229,9 +281,12 @@ begin
   OutString(rp[9],0,"",false);
   OutString(rp[10],0,"",false);
   OutString(rp[11],0,"",false);
-  OutString(rp[12],0,totmonth,true);
-  OutString(rp[13],0,totbal,true);
-  OutString(rp[14],0,totalbuyout,true);
+  OutString(rp[12],0,"",false);
+  OutString(rp[13],0,"",false);
+  OutString(rp[14],0,"",false);
+  OutString(rp[15],0,totmonth,true);
+  OutString(rp[16],0,totbal,true);
+  OutString(rp[17],0,totalbuyout,true);
   EndFormat;
 	
 	endjob;
