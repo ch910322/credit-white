@@ -24,6 +24,7 @@ external inner procedure GetPrePayments(record VIVc,var val);
 external inner procedure PurgeTRExtYc(record PurgeTRVc,var string);
 external inner function Integer GetIntYc(Date);
 external inner function Integer TypeOfCurncy(var string,var Integer);
+external inner function string 255 StrReplace(string,string,string);
 
 procedure AddXmlTag(string tag,string value,var Area a)
 begin
@@ -374,7 +375,7 @@ begin
   integer l,i,livnr,loffnr;
   string 255 fname, struuid;
   area a,atemp,abase64;
-  string 255 ivnrstr;
+  string 255 ivnrstr,ivoffnrstr;
   longint asernr;
   
   asernr = -1;
@@ -382,11 +383,12 @@ begin
   ivnrstr = id;
   livnr = len(ivnrstr);
   if (ReadFirstMain(IVr,1,true)) then begin
-    loffnr = len(IVr.OfficialSerNr);
+    ivoffnrstr = StrReplace(IVr.OfficialSerNr,"/","");
+    loffnr = len(ivoffnrstr);
     i = 1;
     while (ReadRecordLink(IVr,i,Attachr,RLr)) begin
       if (Attachr.Uploading==0) then begin
-        if ((right(Attachr.FileName,4+loffnr)==IVr.OfficialSerNr & ".pdf")) then begin
+        if ((nonblank(ivoffnrstr)) and (right(Attachr.FileName,4+loffnr)==ivoffnrstr & ".pdf")) then begin
           if (FileExists("Attach/" & Attachr.UUID)) then begin
             asernr = Attachr.SerNr;
             goto LW1;
