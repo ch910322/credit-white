@@ -49,7 +49,7 @@ end;
 
 //CUST-BEGIN
 global
-updating procedure CreateSingleCustomerInvoiceMails(array LongInt IVSerNrs,Boolean sendf)
+updating procedure CreateSingleCustomerInvoiceMails(array LongInt IVSerNrs,Boolean sendf,var array record MailVc aMailr)
 begin
   record IVVc IVr;
   record IVVc oldIVr;
@@ -67,18 +67,21 @@ begin
         RecordUpdate(oldIVr,IVr,false);
       end;
     end;
+    /*
     if (sendf) then begin
       RecordCopy(OldMailr,Mailr);
       Mailr.SendFlag = 1;
       RecordUpdate(OldMailr,Mailr,true);
     end;
+    */
+    aMailr[aMailr.length] = Mailr;
   end;
 
   return;
 end;
 //CUST-END
 
-procedure CreateMailsFromInvoiceArea(array string custcodes,vector LongInt custindexes,vector LongInt custinvcnt,area invoices,Boolean sendf)//cust
+procedure CreateMailsFromInvoiceArea(array string custcodes,vector LongInt custindexes,vector LongInt custinvcnt,area invoices,Boolean sendf,var array record MailVc aMailr)//cust
 begin
   record IVVc IVr;
   record IVVc oldIVr;
@@ -93,13 +96,13 @@ begin
       IVSerNrs[IVSerNrs.length] = GetLongFromArea(invoices,custindexes[custcodes[i]] + i2 * 4);
     end;
     
-    qupdating.CreateSingleCustomerInvoiceMails(IVSerNrs,sendf);//CUST
+    qupdating.CreateSingleCustomerInvoiceMails(IVSerNrs,sendf,aMailr);//CUST
   end;
 end;
 
 //CUST-BEGIN
 global
-updating procedure SendSingleInvoiceEmail(record IVVc IVr,record RcVc RepSpec)
+updating procedure SendSingleInvoiceEmail(record IVVc IVr,record RcVc RepSpec,var array record MailVc aMailr)
 begin
   record MailVc Mailr,oldMailr;
   string 255 tstr;
@@ -111,16 +114,37 @@ begin
       RecordCopy(oldIVr,IVr);
       IVr.Prntdf = 1;
       RecordUpdate(oldIVr,IVr,false);
+      aMailr[aMailr.length] = Mailr;
+      /*
       if (RepSpec.flags[1] != 0) then begin
         RecordCopy(OldMailr,Mailr);
         Mailr.SendFlag = 1;
         RecordUpdate(OldMailr,Mailr,true);
       end;
+      */
     end;
   end;
   
   return;
 end;
+
+global
+updating procedure MarkAllMailsAsSent(array record MailVc aMailr)
+begin
+  record MailVc Mailr,oldMailr;
+  Integer i;
+
+  for (i=0;i<aMailr.length;i=i+1) begin
+    Mailr = aMailr[i];
+    ReadFirstMain(Mailr,1,true);
+    RecordCopy(OldMailr,Mailr);
+    Mailr.SendFlag = 1;
+    RecordUpdate(OldMailr,Mailr,true);
+  end;
+
+  return;
+end;
+
 //CUST-END
 
 global
@@ -140,6 +164,7 @@ begin
   vector LongInt custindexes;
   vector LongInt custinvcnt;
   area invoices;
+  array record MailVc aMailr;//CUST
   
   friv = FirstInRange(RepSpec.f2,10);
   toiv = LastInRange(RepSpec.f2,10);
@@ -229,14 +254,18 @@ begin
             end;
           end;
         */
-        qupdating.SendSingleInvoiceEmail(IVr,RepSpec,);
+        qupdating.SendSingleInvoiceEmail(IVr,RepSpec,aMailr);
         //CUST-END
         end;
       end;
     end;
   end;
   if (RepSpec.flags[7]!=0) then begin
-    CreateMailsFromInvoiceArea(custcodes,custindexes,custinvcnt,invoices,RepSpec.flags[1]!=0);
+    CreateMailsFromInvoiceArea(custcodes,custindexes,custinvcnt,invoices,RepSpec.flags[1]!=0,aMailr);
+  end;
+
+  if (RepSpec.flags[1]==1) then begin
+    qupdating.MarkAllMailsAsSent(aMailr);
   end;
   return;
 end;

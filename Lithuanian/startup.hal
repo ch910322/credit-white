@@ -238,6 +238,11 @@ begin
   SString(200299,"Mėnesiniai įnašai");
   SString(200300,"Balansų vertė");
   SString(200301,"Buy-out");
+  SString(200302,"Fakt. mėnesiai");
+  SString(200303,"Fakt. palūkanos");
+  SString(200304,"Palūkanų data");
+  SString(200305,"Order Cls");
+  SString(200306,"Classification");
 
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");

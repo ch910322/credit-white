@@ -14,6 +14,7 @@ external outer function Boolean HasBalloonLoanType();
 external outer function Boolean IsNovitiCustomer;
 external outer function Boolean UseCompensationInvoices();
 external outer function Boolean UseBuyoutSummary();
+external outer function Boolean ShowPartialBuyoutOptions();
 
 procedure ShowCredManLClassWindow(Integer type)
 begin
@@ -35,7 +36,18 @@ begin
     case 7: SpawnClass(CredMan7DClass);
     case 8: SpawnClass(CredMan8DClass);
     otherwise
-      SpawnClass(CredManDClass);
+      switch (ISb.DefCredManLoanType) begin
+        case 1: SpawnClass(CredMan1DClass);
+        case 2: SpawnClass(CredMan2DClass);
+        case 3: SpawnClass(CredMan3DClass);
+        case 4: SpawnClass(CredMan4DClass);
+        case 5: SpawnClass(CredMan5DClass);
+        case 6: SpawnClass(CredMan6DClass);
+        case 7: SpawnClass(CredMan7DClass);
+        case 8: SpawnClass(CredMan8DClass);
+        otherwise
+          SpawnClass(CredManDClass);
+      end;
   end;
   UseView(CredManVc);
   if (ISb.ShowLoanType1==1) then begin
@@ -371,7 +383,7 @@ begin
   SetWRect(20,80,640,380);
   h = 150; h2 = 300; h3 = 440; v = 6; vs=20;
   UseView(CredHistVc);
-  EditField(h,v,80,"Ser. No.",ViewOnly,SerNr,false,0);
+  EditField(h,v,80,"Ser. No.",Normal,SerNr,false,0);
   EditField(h2,v,120,"Customer",Normal,CustCode,false,CUSClass);
   EditField(h,v+=vs,120,"Record No.",Normal,RecordNr,false,0);
   EditField(h,v+=vs,120,"Previous Rec.",Normal,PreviousNr,false,0);
@@ -615,6 +627,12 @@ begin
   h = 150; h2 = 250; v=350;
   EditFieldTL(h,v=6,120,"Date",M4Date,Normal,0,d1,false,PasteCurDate);
   EditFieldTL(h,v+=vs,120,"Amount",M4Val,Normal,0,vals0,false,0);
+
+  if (ShowPartialBuyoutOptions) then begin
+    CheckBox(h,v+=30,0,"Generate Overdue Invoices",flags[1]);
+    CheckBox(h,v+=vs,0,"Cover open Invoices",flags[2]);
+  end;
+
   HalPushButton(h,v+=40,h+120,v+20,"RefinCredManPartialWClassSubmit","Confirm");
   EndWindow;
 
@@ -3474,6 +3492,41 @@ begin
   EndWindow;
 end;
 
+
+window ManagerReplacementLClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Manager Replacements",ManagerReplacementLClass,CGmlist,-);
+  SetWRect(20,80,660,298);
+  //Sizeable(-1,-1,0,0);
+  UseView(ManagerReplacementVc);
+  SpawnClass(ManagerReplacementDClass);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Nr",SerNr,false,SerNr);
+  RlColKey(84,84,"From",ManagerFrom,false,ManagerFrom);
+  RlColKey(168,168,"To",ManagerTo,false,ManagerTo);
+  RlColKey(238,238,"From",DateFrom,false,DateFrom);
+  RlColKey(318,318,"To",DateTo,false,DateTo);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window ManagerReplacementDClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v,vs,h,h2,h3,h4,h5;
+  
+  WindowBegin("Manager Replacement",ManagerReplacementDClass,CGView,-);
+  SetWRect(20,80,730,539);
+  UseView(ManagerReplacementVc);
+  vs = 20; h=60; h2=150; h3=300; h4 = 450; h5 = 600;
+  EditField(h,v=6,50,"Nr.",Normal,SerNr,false,0);
+  EditField(h2,v,100,"From",Normal,ManagerFrom,false,UserSClass);
+  EditField(h3,v,100,"To",Normal,ManagerTo,false,UserSClass);
+  EditField(h4,v,100,"From",Normal,DateFrom,false,PasteCurDate);
+  EditField(h5,v,100,"To",Normal,DateTo,false,PasteCurDate);
+  EndWindow;
+end;
 
 window CredManGracePeriodWClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")

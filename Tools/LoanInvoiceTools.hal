@@ -2141,6 +2141,9 @@ begin
       rwcnt = MatRowCnt(IVr);
       for (i=0;i<rwcnt;i=i+1) begin
         MatRowGet(IVr,i,IVrw);
+        if (IVrw.ChargeType==0 and nonblank(IVrw.ArtCode) and IVr.CustCredManNr>0) then begin
+          IVrw.ChargeType = 15;
+        end;
         if (IVrw.ChargeType>0) then begin
           CreateCredHist(IVr.SerNr,IVrw.ChargeType,IVr.CustCode,CalculateRowSumWithVAT(IVr,IVrw),kCredHistRecTypeInvoice,IVrw.ArtCode,IVr.PayDate,IVr.CustCredManNr,IVr.InvDate,histnr,IVr.CredFromDate,IVr.CredToDate,firstf,-1,IVr.Sum4,IVrw.FactoringInvoice,0);
           IVrw.CredHistNr = histnr;

@@ -42,8 +42,10 @@ begin
     if (CredHistr.CredManNr!=CredManr.SerNr) then begin
       TrHs = false;
     end else begin
-      RecordRemove(CredHistr);
-      StepBack(CredHistr);
+      if (CredHistr.ChargeType!=11) then begin
+        RecordRemove(CredHistr);
+        StepBack(CredHistr);
+      end;
     end;
   end;
 

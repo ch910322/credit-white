@@ -1518,7 +1518,7 @@ begin
   RerunWindowDef(wn);
   UpdateB2BLoanApplicationSoftFields(wn,LAr,"");
   if (nonblank(f)) then begin
-  WindowFieldGoto(wn,LAr,-1,f,true);
+    WindowFieldGoto(wn,LAr,-1,f,true);
   end;
   return;
 end;

@@ -18,6 +18,13 @@ external inner procedure LogAreaToFile(string,area);
 remote procedure TestInvoiceBasedOnScheduleRow(record CredManSchedVc,row CredManSchedVc,var record IVVc);
 external inner procedure AddAreaAfterArea(var area,area);
 external procedure BuildCredManPayPlanCust2(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean,Boolean);
+external inner updating procedure CreateInvoicePdfFile(record IVVc);
+external inner procedure BitSafeBase64EncodeAnArea(var area); 
+external inner procedure GetPrePayments(record VIVc,var val);
+external inner procedure PurgeTRExtYc(record PurgeTRVc,var string);
+external inner function Integer GetIntYc(Date);
+external inner function Integer TypeOfCurncy(var string,var Integer);
+external inner function string 255 StrReplace(string,string,string);
 
 procedure AddXmlTag(string tag,string value,var Area a)
 begin
@@ -30,52 +37,6 @@ begin
   AddTextToArea(tag,a);
   AddTextToArea(">",a);
   return;
-end;
-
-// Here is an alternative to achieve AreaBase64Encode functionality.
-// We will not use Base64Encode, as it is not bitsafe.
-procedure BitSafeAreaBase64Encode(area target,var area encoded) 
-begin
-  Area chunk,zero;
-  LongInt alen,i,j;
-  LongInt tmp_long;
-  Integer cc;
-  string 8 fromArea;
-  string 70 b64;
-  array string 1 b64_arr;
-
-  // for faster flow
-  b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-  alen = len(b64);
-  for(i=0;i<alen;i=i+1) begin
-    b64_arr[i] = Mid(b64,i,1);
-  end;
-
-  alen = GetAreaLength(target);
-  AddTextToArea(chr(0),zero);
-  for(i=0;i<alen;i=i+3) begin
-    SetAreaZeroSize(chunk);
-    GetAreaFromArea(target,i,3,chunk);
-    InsertAreaBeforeArea(zero,chunk); // we want to treat this chunk as unsigned long
-    tmp_long = GetLongFromArea(chunk,0);
-    for(j=0;j<4;j=j+1) begin
-      cc = Mod(tmp_long,64);
-      tmp_long = (tmp_long-cc)/64;
-      fromArea = b64_arr[cc] & fromArea;
-    end;
-    AddTextToArea(fromArea,encoded);
-    fromArea = "";
-  end;
-
-  switch(Mod(alen,3)) begin
-    case 1: // 8 bit final
-      fromArea = "==";
-    case 2: // 16 bit final
-      fromArea = "=";
-  end;
-  
-  AddTextToArea(fromArea,encoded);
-  return
 end;
 
 procedure OutXmlHeader(string registername)
@@ -117,9 +78,6 @@ begin
   
   frPayDate = DateFromString(FirstInRange(vFilter["filter.row.PayDate"],10),"YYYY-MM-DD");
   toPayDate = DateFromString(LastInRange(vFilter["filter.row.PayDate"],10),"YYYY-MM-DD");
-  /*allf = vFilter["return"]=="all";
-  LogText(0,"vFilter[""return""]" & vFilter["return"] & " allf=" & allf);
-  */
   SetAreaZeroSize(a);
   AddPlainXmlToArea(a,"<CredManSchedVc>",0);
   AddXMLTagToArea(a,"CredManNr","",CMr.CredManNr,1);//todo
@@ -149,18 +107,21 @@ begin
       AddXMLTagToArea(a,"InvDate","",DateToString(CMrw.InvDate,"YYYY-MM-DD"),3);
       AddXMLTagToArea(a,"Principle","",ValToString(CMrw.Principle,M4Val,"",".",0),3);
       AddXMLTagToArea(a,"Interest","",ValToString(CMrw.Interest,M4Val,"",".",0),3);
-      AddXMLTagToArea(a,"Fees","",ValToString(CMrw.Fees,M4Val,"",".",0),3);
+      //AddXMLTagToArea(a,"Fees","",ValToString(CMrw.Fees,M4Val,"",".",0),3); customer request: do not output
       //Sum1 - Amunt ex vat
+      tstr = "";
       t = blankval;
       if (CMrw.Type==0) then begin
         if (nonblank(CMrw.InvoiceNr)) then begin
           IVr.SerNr = StringToLongInt(CMrw.InvoiceNr);
           if (ReadFirstMain(IVr,1,true)) then begin
             t = IVr.Sum3;        
+            tstr = IVr.CurncyCode;
           end;
         end else begin
           TestInvoiceBasedOnScheduleRow(CMr,CMrw,IVr);
           t = IVr.Sum3;
+          tstr = IVr.CurncyCode;
         end;
       end;
       AddXMLTagToArea(a,"VATTotal","",ValToString(t,M4Val,"",".",0),3);
@@ -173,6 +134,7 @@ begin
       AddXMLTagToArea(a,"FeesMatrix","","",3);
       AddXMLTagToArea(a,"Balance","",ValToString(CMrw.Balance,M4Val,"",".",0),3);
       AddXMLTagToArea(a,"Deposit","",ValToString(CMrw.Deposit,M4Val,"",".",0),3);
+      AddXMLTagToArea(a,"CurncyCode","",tstr,3);
       AddPlainXmlToArea(a,"</row>",2);
     end;
   end;
@@ -272,6 +234,7 @@ begin
   AddXMLTagToArea(a,"CredManNr","",arg,1);
   AddPlainXmlToArea(a,"<Result>",1);
   AddXMLTagToArea(a,"TotalOverdue","",ValToString(tot,M4Val,"",".",0),1);
+  AddXMLTagToArea(a,"CurncyCode","",CMr.CurncyCode,1);
   AddPlainXmlToArea(a,"</Result>",1);
   AddPlainXmlToArea(a,"</GetTotalOverDue>",0);
   WebOutArea2(a);
@@ -290,6 +253,7 @@ begin
   row CredManPayPlanVc CredManPayPlanrw;
   record CredManVc CredManr;
   integer i,rwcnt;
+  string 255 tstr;
   
   arg = WebGetArg("CredManNr");
   id = StringToLongInt(arg);
@@ -297,6 +261,7 @@ begin
     BlockLoad(CredManSetb);
     CredManr.SerNr = id;
     if (ReadFirstMain(CredManr,1,true)) then begin
+      tstr = CredManr.CurncyCode;
       BuildCredManPayPlanCust2(CredManr,CredManPayPlanr,CredManSetb,true,true,false);  
       rwcnt = MatRowCnt(CredManPayPlanr);
       for (i=0;i<rwcnt;i=i+1) begin
@@ -316,6 +281,7 @@ begin
   AddXMLTagToArea(a,"CredManNr","",arg,1);
   AddPlainXmlToArea(a,"<Result>",1);
   AddXMLTagToArea(a,"TotalPrincipal","",ValToString(tot,M4Val,"",".",0),2);
+  AddXMLTagToArea(a,"CurncyCode","",tstr,2);
   AddPlainXmlToArea(a,"</Result>",1);
   AddPlainXmlToArea(a,"</GetRepaidPrincipal>",0);
   WebOutArea2(a);
@@ -323,7 +289,7 @@ begin
   return;
 end;
 
-procedure GetSchedulePDF(LongInt id)
+procedure GetSchedulePDF(LongInt id, integer nopdfoutput)
 begin
   record AgreementDocVc ADr;
   record RLinkVc RLr;
@@ -333,10 +299,14 @@ begin
   boolean datedfound;
   string 255 fname, struuid;
   area a,atemp,abase64;
-  string 255 tstr;
-  longint asernr;
+  string 255 tstr,nrstr;
+  longint asernr,altsernr;
+  integer lnr;
   
   asernr = -1;
+  altsernr = -1;
+  nrstr = id;
+  lnr = len(nrstr);
   datedfound=false;
   ADr.RecordNr = id;
   ADr.Type = 2;
@@ -347,15 +317,16 @@ begin
       if (Attachr.Uploading==0) then begin
         if (right(Attachr.FileName,4)==".pdf") then begin
           if (FileExists("Attach/" & Attachr.UUID)) then begin
-            asernr = Attachr.SerNr;
-            l = len(Attachr.FileName);
-            tstr = Mid(Attachr.FileName,l-16,4);
-            WebOutStringNL("<tstr>" & tstr & "</tstr>");
-            if (Mid(Attachr.FileName,l-16,4)=="_new") then begin
-              d2 = DateFromString(Mid(Attachr.FileName,l-12,8),"YYYYMMDD");
-              if (d2>d1) then begin
-                datedfound = true; 
-                asernr = Attachr.SerNr;
+            if (right(Attachr.FileName,4+lnr)==nrstr & ".pdf") then begin
+              altsernr = Attachr.SerNr;
+            end else begin
+              l = len(Attachr.FileName);
+              if (Mid(Attachr.FileName,l-16,4)=="_new") then begin
+                d2 = DateFromString(Mid(Attachr.FileName,l-12,8),"YYYYMMDD");
+                if (d2>d1) then begin
+                  datedfound = true; 
+                  asernr = Attachr.SerNr;
+                end;
               end;
             end;
           end;
@@ -364,20 +335,104 @@ begin
       i = i + 1;
     end;
     if (!datedfound) then begin
-        //todo ?     
+       asernr = altsernr;
     end;
   end;
   if (asernr!=-1) then begin
     Attachr.SerNr = asernr;
     if (ReadFirstMain(Attachr,1,true)) then begin
       fname = Attachr.FileName;
-      AddAttachFileToArea(Attachr,atemp,false);      
-      BitSafeAreaBase64Encode(atemp,abase64);
+      if (nopdfoutput==0) then begin
+        AddAttachFileToArea(Attachr,abase64,false);      
+        BitSafeBase64EncodeAnArea(abase64);
+      end;
     end;
   end;
   
   AddPlainXmlToArea(a,"<GetDocument>",0);
   AddXMLTagToArea(a,"CredManNr","",id,1);
+  AddPlainXmlToArea(a,"<Result>",1);
+  AddXMLTagToArea(a,"FileName","",ConvertXMLString(fname,true),2);
+  //AddXMLTagToArea(a,"FileSize","",,2);
+  if (nopdfoutput==0) then begin
+    AddPlainXmlToArea(a,"<File64>",2);
+    AddAreaAfterArea(a,abase64);
+    AddPlainXmlToArea(a,"</File64>",2);
+  end;
+  AddPlainXmlToArea(a,"</Result>",1);
+  AddPlainXmlToArea(a,"</GetDocument>",0);
+  WebOutArea2(a);
+  
+  return;
+end;
+
+function LongInt GetInvoicePDFAttachNr(longint id)
+begin
+  record IVVc IVr;
+  record RLinkVc RLr;
+  record Attach2Vc Attachr;
+  date d1,d2;
+  integer l,i,livnr,loffnr;
+  string 255 fname, struuid;
+  area a,atemp,abase64;
+  string 255 ivnrstr,ivoffnrstr;
+  longint asernr;
+  
+  asernr = -1;
+  IVr.SerNr = id;
+  ivnrstr = id;
+  livnr = len(ivnrstr);
+  if (ReadFirstMain(IVr,1,true)) then begin
+    ivoffnrstr = StrReplace(IVr.OfficialSerNr,"/","");
+    loffnr = len(ivoffnrstr);
+    i = 1;
+    while (ReadRecordLink(IVr,i,Attachr,RLr)) begin
+      if (Attachr.Uploading==0) then begin
+        if ((nonblank(ivoffnrstr)) and (right(Attachr.FileName,4+loffnr)==ivoffnrstr & ".pdf")) then begin
+          if (FileExists("Attach/" & Attachr.UUID)) then begin
+            asernr = Attachr.SerNr;
+            goto LW1;
+          end;
+        end else begin
+          if (right(Attachr.FileName,4+livnr)==ivnrstr & ".pdf") then begin
+            if (FileExists("Attach/" & Attachr.UUID)) then begin
+              asernr = Attachr.SerNr;
+              goto LW1;
+            end;
+          end;
+        end;
+      end;
+      i = i + 1;
+    end;
+    LW1:;
+  end;
+  GetInvoicePDFAttachNr = asernr;
+  return;
+end;
+
+updating procedure GetInvoicePDF(LongInt id)
+begin
+  record IVVc IVr;
+  record Attach2Vc Attachr;
+  string 255 fname;
+  area a,abase64;
+  longint asernr;
+  
+  asernr = GetInvoicePDFAttachNr(id);
+  if (asernr==-1) then begin
+    CreateInvoicePdfFile(IVr);
+  end;
+  asernr = GetInvoicePDFAttachNr(id);
+  if (asernr!=-1) then begin
+    Attachr.SerNr = asernr;
+    if (ReadFirstMain(Attachr,1,true)) then begin
+      fname = Attachr.FileName;
+      AddAttachFileToArea(Attachr,abase64,false);      
+      BitSafeBase64EncodeAnArea(abase64);
+    end;
+  end;
+  AddPlainXmlToArea(a,"<GetDocument>",0);
+  AddXMLTagToArea(a,"InvoiceNr","",id,1);
   AddPlainXmlToArea(a,"<Result>",1);
   AddXMLTagToArea(a,"FileName","",ConvertXMLString(fname,true),2);
   //AddXMLTagToArea(a,"FileSize","",,2);
@@ -391,27 +446,336 @@ begin
   return;
 end;
 
-procedure GetDocument()
+updating procedure GetDocument()
 begin
-  string 255 arg, type;
+  string 255 arg,type,arg2;
   LongInt id;
+  integer i1;
   
   WebSetContentType("text/xml"); 
   OutXmlHeader("GetDocument");
-  arg = WebGetArg("CredManNr");
-  id = StringToLongint(arg);
   type = WebGetArg("doctype");
   switch (type) begin
     case "schedule":
-      GetSchedulePDF(id);
+      arg = WebGetArg("CredManNr");
+      id = StringToLongint(arg);
+      arg2 = WebGetArg("nopdfoutput");
+      i1 = StringToInt(arg2);
+      GetSchedulePDF(id,i1);
+    case "invoice":
+      arg = WebGetArg("InvoiceNr");
+      id = StringToLongint(arg);
+      GetInvoicePDF(id);
   end;
+  WebOutString("</data>");
+  return;
+end;
+
+procedure GetVIVcDisburseList(LongInt visernr, var array date aPayDate, var array val aPayVal, var integer acnt, var val totpaid)
+begin
+//origin: VIInfoRn
+  record VIVc theVIr;
+  record OPrsVc OPrsr;
+  record OPVc OPr;
+  row OPVc OPrw;
+  record VIVc VIr;
+  row VIVc VIrw;  
+  record PurgeTRVc PurgeTRr;  
+  record TRVc TRr;  
+  row TRVc TRrw;  
+  record CLOutVc CLOutr;  
+  row CLOutVc CLOutrw;  
+  record CLInVc CLInr;  
+  row CLInVc CLInrw;  
+  boolean found, detfound,testf;
+  val bal,ppval;
+  val trval,trval2,trcurval;
+  integer i,rwcnt;
+  string 255 t2;
+  Integer typeofcur,oldstyle;
   
+  totpaid = blankval;
+  theVIr.SerNr = visernr;
+  if (ReadFirstMain(theVIr,1,true)==false) then begin goto LGetVIVcDisburseList; end;
+  OPrsr.VINr = visernr;
+  found = true;
+  while (LoopKey("VIKey",OPrsr,1,found)) begin
+    if (OPrsr.VINr<>visernr) then begin found = false; end;
+    if (found) then begin
+      detfound = false;
+      /* is it needed?
+      if (OPrsr.TransType==0) then begin
+        VIr.SerNr = OPrsr.TransNr;
+        if (ReadFirstMain(VIr,1,true)) then begin
+          if (VIr.Invalid==0) then begin
+            aPayDate[acnt] = VIr.InvDate;
+            detfound = true;
+            if (VIr.InvType==kInvoiceTypeCredit or VIr.InvType==kInvoiceTypeCreditSpecialSales) then begin
+              VIr.PayVal = -VIr.PayVal;
+            end;  
+            switch (VIr.InvType) begin
+              case kInvoiceTypeEmployee:
+                goto LkInvoiceTypeCash;
+              case kInvoiceTypeCashInvoiceReceiptPRT:
+                goto LkInvoiceTypeCash;
+              case kInvoiceTypeCash:
+LkInvoiceTypeCash:;              
+              case kInvoiceTypeCreditSpecialSales: 
+                goto LkInvoiceTypeCredit;
+              case kInvoiceTypeCredit:
+LkInvoiceTypeCredit:;
+                switch (theVIr.InvType) begin
+                  case kInvoiceTypeCash:
+                  case kInvoiceTypeEmployee:
+                  otherwise
+                    bal = bal + VIr.PayVal;
+                    GetPrePayments(VIr,ppval);
+          //          OutVal(480,0,bal,M4Val,true);
+                end;
+              otherwise
+                bal = bal + VIr.PayVal;
+                GetPrePayments(VIr,ppval);
+            end;
+            if (ppval<>0) then begin
+              bal = bal + ppval;
+            end;
+            if (VIr.WithHoldingTax<>0) then begin
+              if (VIr.InvType==kInvoiceTypeCredit or VIr.InvType==kInvoiceTypeCreditSpecialSales) then begin
+                VIr.WithHoldingTax = -VIr.WithHoldingTax;
+              end;  
+              bal = bal - VIr.WithHoldingTax;
+            end;  
+          end;
+        end;
+      end;
+      */
+      if (OPrsr.TransType==1) then begin/* payment */
+        OPr.SerNr = OPrsr.TransNr;
+        if (ReadFirstMain(OPr,1,true)) then begin            
+          if ((OPr.OrderedFlag!=0) and (OPr.RejectedFlag==0)) then begin
+            rwcnt = MatRowCnt(OPr);
+            for (i=0;i<rwcnt;i=i+1) begin
+              MatRowGet(OPr,i,OPrw);
+              if (OPrw.ovst==0) then begin
+                if ((OPrw.VISerNr==visernr) and
+                    (OPr.TransDate==OPrsr.TransDate)) then begin
+                  if (OPrw.stp!=7) then begin
+                    if (OPr.Invalid==0) then begin
+                      aPayDate[acnt] = OPr.TransDate;
+                      aPayVal[acnt] = OPrw.PInvVal;
+                      detfound = true;
+                    end;
+                  end;  
+                end;
+              end;
+            end;
+          end;
+        end;
+      end;
+      if (OPrsr.TransType==kOPrsTransTypePurgeNLTransaction) then begin/*NL payment */
+          PurgeTRr.Number = OPrsr.TransNr;
+          PurgeTRr.IntYc = GetIntYc(OPrsr.TransDate);
+          PurgeTRr.TransRow = OPrsr.TransRow;
+          if (ReadFirstMain(PurgeTRr,3,true)) then begin
+              if (PurgeTRr.Typ==2) then begin
+                if (theVIr.InvType==3) then begin
+                  trval = PurgeTRr.DebVal - PurgeTRr.CredVal;
+                  trval2 = PurgeTRr.DebVal2 - PurgeTRr.CredVal2;
+                  trcurval = PurgeTRr.CurDebVal - PurgeTRr.CurCredVal;
+                end else begin
+                  trval = PurgeTRr.DebVal - PurgeTRr.CredVal;
+                  trval2 = PurgeTRr.DebVal2 - PurgeTRr.CredVal2;
+                  trcurval = PurgeTRr.CurDebVal - PurgeTRr.CurCredVal;
+                end;
+                if (trval<>0) then begin
+                  if ((PurgeTRr.SerNr==theVIr.SerNr) and
+                      (PurgeTRr.TransDate==OPrsr.TransDate)) then begin
+                    PurgeTRExtYc(PurgeTRr,t2);
+                    aPayDate[acnt] = PurgeTRr.TransDate;
+                    detfound = true;
+                    if (nonblank(trcurval)) then begin
+                      //trcurval = -trcurval;
+                      aPayVal[acnt] = trcurval;
+                      //aCurncy[acnt] = PurgeTRr.Curncy;
+                    end else begin
+                      typeofcur = TypeOfCurncy(PurgeTRr.Curncy,oldstyle);   
+                      if (typeofcur==2) then begin
+                        //trval2 = -trval2;
+                        aPayVal[acnt] = trval2;
+                        //aCurncy[acnt] = PurgeTRr.Curncy;
+                      end else begin
+                        //trval = -trval;
+                        aPayVal[acnt] = trval2;
+                        //aCurncy[acnt] = PurgeTRr.Curncy;
+                      end;
+                    end;  
+                  end;
+                end;
+              end;
+          end;
+       end;
+      if (OPrsr.TransType==kOPrsTransTypeNLTransaction) then begin/*NL payment */
+        TRr.Number = OPrsr.TransNr;
+        TRr.IntYc = GetIntYc(OPrsr.TransDate);
+        if (ReadFirstMain(TRr,2,true)) then begin
+          rwcnt = MatRowCnt(TRr);
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(TRr,i,TRrw);
+            if (TRrw.Typ==2) then begin
+              if (theVIr.InvType==kInvoiceTypeCredit or theVIr.InvType==kInvoiceTypeCreditSpecialSales) then begin
+                trval = TRrw.DebVal - TRrw.CredVal;
+                trval2 = TRrw.DebVal2 - TRrw.CredVal2;
+                trcurval = TRrw.CurDebVal - TRrw.CurCredVal;
+              end else begin
+                trval = TRrw.DebVal - TRrw.CredVal;
+                trval2 = TRrw.DebVal2 - TRrw.CredVal2;
+                trcurval = TRrw.CurDebVal - TRrw.CurCredVal;
+              end;
+              if (trval<>0) then begin
+                if ((TRrw.SerNr==visernr) and
+                    (TRr.TransDate==OPrsr.TransDate)) then begin
+                  aPayDate[acnt] = TRr.TransDate;
+                  detfound = true;
+                  if (nonblank(trcurval)) then begin
+                    //trcurval = -trcurval;
+                    aPayVal[acnt] = trcurval;
+                  end else begin
+                    typeofcur = TypeOfCurncy(TRrw.Curncy,oldstyle);   
+                    if (typeofcur==2) then begin
+                      //trval2 = -trval2;
+                      aPayVal[acnt] = trval2;
+                    end else begin
+                      //trval = -trval;
+                       aPayVal[acnt] = trval;
+                    end;
+                  end;  
+                end;
+              end;
+            end;
+          end;
+        end;
+      end;
+      if (OPrsr.TransType==3) then begin /*cash out*/              
+        CLOutr.SerNr = OPrsr.TransNr;
+        if (ReadFirstMain(CLOutr,1,true)) then begin            
+          if (CLOutr.Invalid==0) then begin
+            rwcnt = MatRowCnt(CLOutr);
+            for (i=0;i<rwcnt;i=i+1) begin
+              MatRowGet(CLOutr,i,CLOutrw);
+              if (CLOutrw.Type==2) then begin
+                testf = false;
+                if (CLOutrw.Sum<>0) then begin
+                  if ((CLOutrw.TransNr==visernr) and
+                      (CLOutr.TransDate==OPrsr.TransDate)) then begin
+                    if (testf) then begin
+                      //temp = -CLOutrw.Sum;
+                      aPayVal[acnt] = CLOutrw.Sum;
+                      aPayDate[acnt] = CLOutr.TransDate;
+                      detfound = true;
+                    end;    
+                  end;
+                end;                
+              end;
+            end;
+          end;
+        end;
+      end;      
+      if (OPrsr.TransType==4) then begin/*cash in*/              
+        CLInr.SerNr = OPrsr.TransNr;
+        if (ReadFirstMain(CLInr,1,true)) then begin            
+          if (CLInr.Invalid==0) then begin
+          rwcnt = MatRowCnt(CLInr);
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(CLInr,i,CLInrw);
+            if (CLInrw.Type==2) then begin
+              testf = false;
+              if (CLInrw.Sum<>0) then begin
+                if ((CLInrw.TransNr==visernr) and
+                    (CLInr.TransDate==OPrsr.TransDate)) then begin
+                end;
+              end;                
+              if (testf) then begin
+                aPayDate[acnt] = CLInr.TransDate;
+                aPayVal[acnt] = -CLInrw.Sum;
+                detfound = true;
+              end;  
+            end;
+          end;
+        end;
+      end;            
+    end;
+    if (detfound) then begin
+      totpaid = totpaid + aPayVal[acnt];
+      acnt = acnt + 1;
+    end;
+    end;
+  end;
+  LGetVIVcDisburseList:;
+  return;
+end;
+
+procedure GetDisburseDetails()
+begin
+  record CredManVc CMr;
+  record VIVc VIr;
+  record OPVc OPr;
+  record OPrsVc OPrsr;
+  string 255 arg,curncy;
+  LongInt id;
+  boolean TrHs;
+  val totavail, totpaid1,totpaid,totsum;
+  array date aPayDate;
+  array val aPayVal;
+  integer i,acnt;
+  area a;
+  
+  arg = WebGetArg("CredManNr");
+  id = StringToLongInt(arg);
+  WebSetContentType("text/xml"); 
+  OutXmlHeader("GetDisburseDetails");
+  AddPlainXmlToArea(a,"<GetDisburseDetails>",0);
+  AddXMLTagToArea(a,"CredManNr","",arg,1);
+  AddPlainXmlToArea(a,"<Result>",1);
+  if (id!=-1) then begin
+    CMr.SerNr = id;
+    if (ReadFirstMain(CMr,1,true)) then begin
+      curncy = CMr.CurncyCode;
+      totsum = CMr.InvSum4 - CMr.DepositSum - CMr.ExtraDepositSum;
+    end;
+    VIr.CustCredManNr = id;
+    TrHs = true;
+    acnt = 0;
+    While (LoopKey("CustCredManNr",VIr,1,TrHs)) begin
+      if (VIr.CustCredManNr!=id) then begin
+        TrHs = false;
+      end;
+      if (TrHs) then begin
+        totavail = totavail + VIr.PayVal;
+        GetVIVcDisburseList(VIr.SerNr,aPayDate,aPayVal,acnt,totpaid1);
+      end;
+    end;
+  end;
+  AddPlainXmlToArea(a,"<Disbursements>",2);
+  for (i=0;i<acnt;i=i+1) begin
+    AddPlainXmlToArea(a,"<Disbursement>",3);
+    AddXMLTagToArea(a,"PayDate","",DateToString(aPayDate[i],"YYYY-MM-DD"),4);
+    AddXMLTagToArea(a,"PayVal","",ValToString(aPayVal[i],M4Val,"",".",0),4);
+    totpaid = totpaid + aPayVal[i];
+    AddPlainXmlToArea(a,"</Disbursement>",3);
+  end;  
+  AddPlainXmlToArea(a,"</Disbursements>",2);
+  AddXMLTagToArea(a,"TotAvailableDisbursements","",ValToString(totsum-totpaid,M4Val,"",".",0),2);
+  AddXMLTagToArea(a,"TotDisbursed","",ValToString(totpaid,M4Val,"",".",0),2);
+  AddXMLTagToArea(a,"CurncyCode","",curncy,2);
+  AddPlainXmlToArea(a,"</Result>",1);
+  AddPlainXmlToArea(a,"</GetDisburseDetails>",0);
+  WebOutArea2(a);
   WebOutString("</data>");
   return;
 end;
 
 global
-procedure WebFinAPI()
+updating procedure WebFinAPI()
 begin
   string 255 tstr,rep;
   string 20 compcode;
@@ -442,6 +806,8 @@ begin
       GetRepaidPrincipal;
     case "GetDocument":
       GetDocument;
+    case "GetDisburseDetails":
+      GetDisburseDetails;
   end;
   if (compset) then begin
     ResetCompany(oldcomp);

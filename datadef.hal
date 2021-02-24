@@ -2091,7 +2091,35 @@ begin
   KeySegment(SalesGroup);
   KeySegment(SerNr);
   EndRecord;
-
+  
+  RecordBegin(ManagerReplacementVc,0,"");
+  RecordField(SerNr,M4Long,0,0)
+  RecordField(ManagerFrom,M4Code,10,UserVc);
+  RecordField(ManagerTo,M4Code,10,UserVc);
+  RecordField(DateFrom,M4Date,0,0);
+  RecordField(DateTo,M4Date,0,0);
+  MainKeyBegin(SerNr,0);
+  KeySegment(SerNr);
+  KeyBegin(ManagerFrom);
+  KeySegment(ManagerFrom);
+  KeySegment(SerNr);
+  KeyBegin(ManagerTo);
+  KeySegment(ManagerTo);
+  KeySegment(SerNr);
+  KeyBegin(DateFrom);
+  KeySegment(DateFrom)
+  KeySegment(SerNr);
+  KeyBegin(DateTo);
+  KeySegment(DateTo);
+  KeySegment(SerNr);
+  KeyBegin(Unique);
+  KeySegment(ManagerFrom);
+  KeySegment(ManagerTo);
+  KeySegment(DateFrom);
+  KeySegment(DateTo);
+  KeySegment(SerNr);
+  EndRecord;
+  
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Estonian", 0);

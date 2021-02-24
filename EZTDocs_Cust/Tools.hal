@@ -400,7 +400,7 @@ begin
   BlockLoad(PCb);
   if (CUr.CustType==0) then begin
     regnr = CUr.RegNr1;
-    vVals["REGNRCOMMENT"] = PCb.RegNrComment;
+    vVals["F_REGNRCOMMENT"] = PCb.RegNrComment;
   end;
   BlockLoad(CIb);
   if (nonblank(CIb.ReplaceVATNr)) then begin
@@ -526,6 +526,27 @@ begin
   return;
 end;
 
+procedure RemoveDuplicateRecipients(var record MailVc Mailr)
+begin
+  row MailVc Mailrw,Mail2rw;
+  Integer i,j,rwcnt;
+
+  rwcnt = MatRowCnt(Mailr);
+  for (i=1;i<rwcnt;i=i+1) begin
+    MatRowGet(Mailr,i,Mailrw);
+    for (j=i+1;j<rwcnt;j=j+1) begin
+      MatRowGet(Mailr,j,Mail2rw);
+      if (Mail2rw.AddrCode==Mailrw.AddrCode) then begin
+        MatRowDelete(Mailr,j);
+        j = j - 1;
+        rwcnt = rwcnt -1;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
 global
 function Boolean Ext_AddCustomMailRecipients(record IVVc IVr,var record MailVc Mailr)
 begin
@@ -562,6 +583,9 @@ begin
     AddContactsByJobDescription(Mailr,CUr,CIb.SendToJobDescr);
     res = true;
   end;
+
+  RemoveDuplicateRecipients(Mailr);
+
   Ext_AddCustomMailRecipients = res;
   return;
 end;

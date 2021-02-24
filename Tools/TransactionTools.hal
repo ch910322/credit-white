@@ -254,7 +254,7 @@ begin
 end;
 
 global
-function string 255 AddCMTransactionControlAccounts(record CredManVc CredManr,var string shortacc,var string longacc,var val shortval,var val longval)
+procedure AddCMTransactionControlAccounts(record CredManVc CredManr,var string shortacc,var string longacc,var val shortval,var val longval)
 begin
   record CMInvoicingBlock CIb;
 

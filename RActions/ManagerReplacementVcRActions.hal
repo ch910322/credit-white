@@ -1,0 +1,84 @@
+global
+function LongInt ManagerReplacementVcRecordDefaults(var record ManagerReplacementVc MRr,record ManagerReplacementVc MR2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+ 
+  MRr.SerNr = -1;
+  if (SingleUserMode) then begin
+    MRr.SerNr = NextSerNr("ManagerReplacementVc",CurrentDate,-1,false,"");
+  end;
+  ManagerReplacementVcRecordDefaults = res;
+  return;
+END;  
+
+global
+function LongInt ManagerReplacementVcRecordDuplicate(var record ManagerReplacementVc MRr,record ManagerReplacementVc MR2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  
+  MRr.SerNr = -1;
+  if (SingleUserMode) then begin
+    MRr.SerNr = NextSerNr("ManagerReplacementVc",CurrentDate,-1,false,"");
+  end;
+  ManagerReplacementVcRecordDuplicate = res;
+  return;
+END;  
+
+global
+updating function LongInt ManagerReplacementVcRecordCheck(var record ManagerReplacementVc MRr,record ManagerReplacementVc MR2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res,oldnr;
+  record ManagerReplacementVc MWrtest;
+  record UserVc Userr;
+  
+  res = 0;
+  oldnr = MRr.SerNr;
+  if (MRr.SerNr<=0) then begin
+    MRr.SerNr = NextSerNr("ManagerReplacementVc",CurrentDate,-1,false,"");
+  end;
+  if (blank(MRr.ManagerFrom)) then begin
+    RecordCheckError(2210,"",-1,"ManagerFrom");
+    res = -1;
+    goto LManagerReplacementVcRecordCheck; 
+  end;
+  if (blank(MRr.ManagerTo)) then begin
+    RecordCheckError(2210,"",-1,"ManagerTo");
+    res = -1;
+    goto LManagerReplacementVcRecordCheck; 
+  end;
+  if (blank(MRr.DateFrom)) then begin
+    RecordCheckError(2210,"",-1,"DateFrom");
+    res = -1;
+    goto LManagerReplacementVcRecordCheck; 
+  end;
+  if (blank(MRr.DateTo)) then begin
+    RecordCheckError(2210,"",-1,"DateTo");
+    res = -1;
+    goto LManagerReplacementVcRecordCheck; 
+  end;
+  Userr.Code = MRr.ManagerFrom;
+  if (!ReadFirstMain(Userr,1,true)) then begin
+    RecordCheckError(1290,"",-1,"ManagerFrom");
+    res = -1;
+    goto LManagerReplacementVcRecordCheck;
+  end;
+  Userr.Code = MRr.ManagerTo;
+  if (!ReadFirstMain(Userr,1,true)) then begin
+    RecordCheckError(1290,"",-1,"ManagerTo");
+    res = -1;
+    goto LManagerReplacementVcRecordCheck;
+  end;
+  MWrtest.ManagerFrom = MRr.ManagerFrom;
+  MWrtest.ManagerTo = MRr.ManagerTo;
+  MWrtest.DateFrom = MRr.DateFrom;
+  MWrtest.DateTo = MRr.DateTo;
+  if (ReadFirstKey("Unique",MWrtest,4,true)) then begin
+    RecordCheckError(1032,"",-1,"ManagerFrom");
+    res = -1;
+    goto LManagerReplacementVcRecordCheck;
+  end;  
+  LManagerReplacementVcRecordCheck:;
+  if (res!=0) then begin MRr.SerNr = oldnr; end;
+  ManagerReplacementVcRecordCheck = res;
+  return;
+END;
