@@ -11,6 +11,7 @@ external inner function string 255 FindFirstContactPersonWithEmail(record CUVc);
 external function Boolean IsNovitiCustomer;
 external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
 external inner procedure StripSpace(var string,string);
+external procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 
 function string 255 GetCompanyType(record CUVc CUr,record InvegaReportBlock IRb)
 begin
@@ -448,6 +449,7 @@ begin
   string 255 tmp;
   Longint pos;
   Date limitdate;
+  record RcVc RepSpec2;
 
 
   num = 0;
@@ -522,7 +524,10 @@ begin
       end;
       LoadAgreementRateToDate(CredManr,RepSpec.sEndDate,rate);
       startbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.sStartDate);
-      endbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.sEndDate);
+      //endbal = GetFutureCredManBalance(CredManr,CredManSetb,RepSpec.sEndDate);
+      RepSpec2.d1 = RepSpec.sEndDate;
+      CheckBuyOutAgreement(CredManr,RepSpec2);
+      endbal = StringToVal(RepSpec2.f13,M4Val);
       translist = GetCredManTransactionList(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,paidval,princ,interest,overdues,true);
       GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,5,principlelatedays,principlelateamount,limitdate);
       GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,6,interestlatedays,interestlateamount,limitdate);
