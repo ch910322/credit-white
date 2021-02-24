@@ -298,10 +298,14 @@ begin
   boolean datedfound;
   string 255 fname, struuid;
   area a,atemp,abase64;
-  string 255 tstr;
-  longint asernr;
+  string 255 tstr,nrstr;
+  longint asernr,altsernr;
+  integer lnr;
   
   asernr = -1;
+  altsernr = -1;
+  nrstr = id;
+  lnr = len(nrstr);
   datedfound=false;
   ADr.RecordNr = id;
   ADr.Type = 2;
@@ -312,13 +316,16 @@ begin
       if (Attachr.Uploading==0) then begin
         if (right(Attachr.FileName,4)==".pdf") then begin
           if (FileExists("Attach/" & Attachr.UUID)) then begin
-            asernr = Attachr.SerNr;
-            l = len(Attachr.FileName);
-            if (Mid(Attachr.FileName,l-16,4)=="_new") then begin
-              d2 = DateFromString(Mid(Attachr.FileName,l-12,8),"YYYYMMDD");
-              if (d2>d1) then begin
-                datedfound = true; 
-                asernr = Attachr.SerNr;
+            if (right(Attachr.FileName,4+lnr)==nrstr & ".pdf") then begin
+              altsernr = Attachr.SerNr;
+            end else begin
+              l = len(Attachr.FileName);
+              if (Mid(Attachr.FileName,l-16,4)=="_new") then begin
+                d2 = DateFromString(Mid(Attachr.FileName,l-12,8),"YYYYMMDD");
+                if (d2>d1) then begin
+                  datedfound = true; 
+                  asernr = Attachr.SerNr;
+                end;
               end;
             end;
           end;
@@ -327,7 +334,7 @@ begin
       i = i + 1;
     end;
     if (!datedfound) then begin
-        //todo ?     
+       asernr = altsernr;
     end;
   end;
   if (asernr!=-1) then begin
@@ -358,13 +365,13 @@ begin
   return;
 end;
 
-updating procedure GetInvoicePDF(LongInt id)
+function LongInt GetInvoicePDFAttachNr(longint id)
 begin
   record IVVc IVr;
   record RLinkVc RLr;
   record Attach2Vc Attachr;
   date d1,d2;
-  integer l,i,livnr;
+  integer l,i,livnr,loffnr;
   string 255 fname, struuid;
   area a,atemp,abase64;
   string 255 ivnrstr;
@@ -375,36 +382,45 @@ begin
   ivnrstr = id;
   livnr = len(ivnrstr);
   if (ReadFirstMain(IVr,1,true)) then begin
+    loffnr = len(IVr.OfficialSerNr);
     i = 1;
     while (ReadRecordLink(IVr,i,Attachr,RLr)) begin
       if (Attachr.Uploading==0) then begin
-        if (right(Attachr.FileName,4+livnr)==ivnrstr & ".pdf") then begin
+        if ((right(Attachr.FileName,4+loffnr)==IVr.OfficialSerNr & ".pdf")) then begin
           if (FileExists("Attach/" & Attachr.UUID)) then begin
             asernr = Attachr.SerNr;
             goto LW1;
+          end;
+        end else begin
+          if (right(Attachr.FileName,4+livnr)==ivnrstr & ".pdf") then begin
+            if (FileExists("Attach/" & Attachr.UUID)) then begin
+              asernr = Attachr.SerNr;
+              goto LW1;
+            end;
           end;
         end;
       end;
       i = i + 1;
     end;
     LW1:;
-    if (asernr==-1) then begin
-      CreateInvoicePdfFile(IVr);
-      i = 1;
-      while (ReadRecordLink(IVr,i,Attachr,RLr)) begin
-        if (Attachr.Uploading==0) then begin
-          if (right(Attachr.FileName,4+livnr)==ivnrstr & ".pdf") then begin
-            if (FileExists("Attach/" & Attachr.UUID)) then begin
-              asernr = Attachr.SerNr;
-              goto LW2;
-            end;
-          end;
-        end;
-        i = i + 1;
-      end;
-      LW2:;
-    end;
   end;
+  GetInvoicePDFAttachNr = asernr;
+  return;
+end;
+
+updating procedure GetInvoicePDF(LongInt id)
+begin
+  record IVVc IVr;
+  record Attach2Vc Attachr;
+  string 255 fname;
+  area a,abase64;
+  longint asernr;
+  
+  asernr = GetInvoicePDFAttachNr(id);
+  if (asernr==-1) then begin
+    CreateInvoicePdfFile(IVr);
+  end;
+  asernr = GetInvoicePDFAttachNr(id);
   if (asernr!=-1) then begin
     Attachr.SerNr = asernr;
     if (ReadFirstMain(Attachr,1,true)) then begin
