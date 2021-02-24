@@ -786,7 +786,7 @@ begin
   if (ReadFirstMain(LTxtr,1,true)) then begin
     RecordNew(Mailr);
     Mailr.Header = LTxtr.Comment;    
-    FindUserMailboxName(CurrentUser,mailboxnr,mailboxname);
+//    FindUserMailboxName(CurrentUser,mailboxnr,mailboxname);//not using user anymore
     if (nonblank(mailboxname)) then begin
       ClearRow(Mailr,Mailrw,1);
       Mailrw.RowTyp = kMailRowTypeFrom;
