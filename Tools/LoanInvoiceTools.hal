@@ -2187,7 +2187,7 @@ begin
       rwcnt = MatRowCnt(CSr);
       for (i=0;i<rwcnt;i=i+1) begin
         MatRowGet(CSr,i,CSrw);
-        if (CSrw.InvDate==IVr.InvDate) then begin
+        if (CSrw.InvDate==IVr.InvDate and (IVr.CredFromDate==CSrw.FromDate or (nonblank(IVr.CredFromDate) and nonblank(CSrw.FromDate)))) then begin
           if (setf) then begin
             CSrw.Invoiced = 1;
             CSrw.InvoiceNr = IVr.SerNr;
