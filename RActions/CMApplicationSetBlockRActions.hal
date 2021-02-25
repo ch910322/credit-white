@@ -25,3 +25,27 @@ LCMApplicationSetBlockCheck:;
   return;
 end;
 
+
+global
+updating function LongInt CMInvoicingBlockCheck(var record CMInvoicingBlock CIb,record CMInvoicingBlock CI2b,LongInt stat,LongInt long4)
+BEGIN
+  Longint res;
+  Date td;
+  Time tt;
+
+  if (CIb.AutoInvoiceFlag==1) then begin
+    if (nonblank(CIb.AutoInvoiceTime)) then begin
+      td = CurrentDate;
+      tt = CIb.AutoInvoiceTime;
+      if (tt<CurrentTime) then begin
+        td = AddDay(td,1);
+      end;
+      RemoveTask("CredManAutoInvoiceTask_comp" & CurrentCompany);
+      NewTimedTask2("CredManAutoInvoiceTask_comp" & CurrentCompany,"CredManAutoInvoiceTask","CredManAutoInvoiceTask",CurrentCompany,td,tt,"","");
+    end;
+  end;
+
+
+  CMInvoicingBlockCheck = 0;
+  return;
+end;
