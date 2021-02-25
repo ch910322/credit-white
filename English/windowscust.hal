@@ -3503,10 +3503,10 @@ begin
   SpawnClass(ManagerReplacementDClass);
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Nr",SerNr,false,SerNr);
-  RlColKey(84,84,"From",ManagerFrom,false,ManagerFrom);
-  RlColKey(168,168,"To",ManagerTo,false,ManagerTo);
-  RlColKey(238,238,"From",DateFrom,false,DateFrom);
-  RlColKey(318,318,"To",DateTo,false,DateTo);
+  RlColKey(124,124,"Manager From",ManagerFrom,false,ManagerFrom);
+  RlColKey(228,228,"Manager To",ManagerTo,false,ManagerTo);
+  RlColKey(348,348,"Date From",DateFrom,false,DateFrom);
+  RlColKey(468,468,"Date To",DateTo,false,DateTo);
   SearchField("Search");
   EndWindow;
 end;
@@ -3517,14 +3517,14 @@ begin
   real v,vs,h,h2,h3,h4,h5;
   
   WindowBegin("Manager Replacement",ManagerReplacementDClass,CGView,-);
-  SetWRect(20,80,730,539);
+  SetWRect(20,80,800,539);
   UseView(ManagerReplacementVc);
-  vs = 20; h=60; h2=150; h3=300; h4 = 450; h5 = 600;
+  vs = 20; h=60; h2=200; h3=380; h4 = 540; h5 = 680;
   EditField(h,v=6,50,"Nr.",Normal,SerNr,false,0);
-  EditField(h2,v,100,"From",Normal,ManagerFrom,false,UserSClass);
-  EditField(h3,v,100,"To",Normal,ManagerTo,false,UserSClass);
-  EditField(h4,v,100,"From",Normal,DateFrom,false,PasteCurDate);
-  EditField(h5,v,100,"To",Normal,DateTo,false,PasteCurDate);
+  EditField(h2,v,80,"Manager From",Normal,ManagerFrom,false,UserSClass);
+  EditField(h3,v,80,"Manager To",Normal,ManagerTo,false,UserSClass);
+  EditField(h4,v,80,"Date From",Normal,DateFrom,false,PasteCurDate);
+  EditField(h5,v,80,"Date To",Normal,DateTo,false,PasteCurDate);
   EndWindow;
 end;
 

@@ -2,39 +2,59 @@ external inner function string 60 AddObjectToObjectList(string,string);
 external inner procedure ExtractObj(string,var Integer,var string);
 
 global
-updating function LongInt ActVcRecordCheck(var record ActVc Actr,record ActVc Act2r,LongInt stat,LongInt long4)
-BEGIN
-  LongInt res;
+function string 255 GetReplacementManager(string persons,date transdate)
+begin
   record ManagerReplacementVc MRr;
   string 255 tstr,usercode;
   Integer pos;
   boolean TrHs,foundf;
   
-  if ((Actr.OKFlag==0) and (Actr.TodoFlag==kTodoFlagTodo)) then begin
-    pos = 0;
-    ExtractObj(Actr.MainPersons,pos,usercode);
-    while (nonblank(usercode)) begin
-      ResetLoop(MRr);
-      MRr.ManagerFrom = usercode;
-      TrHs = true;
-      while (LoopKey("ManagerFrom",MRr,1,TrHs)) begin
-        foundf = false;
-        if (MRr.ManagerFrom!=usercode) then begin
-          TrHs = false;
+  pos = 0;
+  ExtractObj(persons,pos,usercode);
+  while (nonblank(usercode)) begin
+    ResetLoop(MRr);
+    MRr.ManagerFrom = usercode;
+    TrHs = true;
+    while (LoopKey("ManagerFrom",MRr,1,TrHs)) begin
+      foundf = false;
+      if (MRr.ManagerFrom!=usercode) then begin
+        TrHs = false;
+      end;
+      if (TrHs) then begin
+        if ((transdate>=MRr.DateFrom) and (transdate<=MRr.DateTo)) then begin
+          usercode = MRr.ManagerTo;
+          goto LWhile;
         end;
-        if (TrHs) then begin
-          if ((Actr.TransDate>=MRr.DateFrom) and (Actr.TransDate<=MRr.DateTo)) then begin
-            usercode = MRr.ManagerTo;
-            goto LWhile;
-          end;
-        end;
-      end;  
-      LWhile:;
-      tstr = AddObjectToObjectList(tstr,usercode);
-      ExtractObj(Actr.MainPersons,pos,usercode);
-    end;
-    Actr.MainPersons = tstr;
+      end;
+    end;  
+    LWhile:;
+    tstr = AddObjectToObjectList(tstr,usercode);
+    ExtractObj(persons,pos,usercode);
   end;
-  res = inner.ActVcRecordCheck(Actr,Act2r,stat,long4);
-  ActVcRecordCheck = res;
-END;  
+  GetReplacementManager = tstr;
+  return;
+end;
+
+global
+updating function LongInt ActVcRecordSave(var record ActVc Actr,record ActVc Act2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  
+  if ((Actr.OKFlag==0) and (Actr.TodoFlag==kTodoFlagTodo)) then begin
+    Actr.MainPersons = GetReplacementManager(Actr.MainPersons,Actr.TransDate);
+  end;
+  res = inner.ActVcRecordSave(Actr,Act2r,stat,long4);
+  return;
+END;
+
+global
+updating function LongInt ActVcRecordUpdate(var record ActVc Actr,record ActVc Act2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  
+  if ((Actr.OKFlag==0) and (Actr.TodoFlag==kTodoFlagTodo)) then begin
+    Actr.MainPersons = GetReplacementManager(Actr.MainPersons,Actr.TransDate);
+  end;
+  res = inner.ActVcRecordUpdate(Actr,Act2r,stat,long4);
+  return;
+END;
