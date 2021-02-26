@@ -2186,7 +2186,7 @@ begin
   EditField(h+200,v,140,"with",Normal,ReplaceVATNrWith,false,0);
   EditField(h,v+=vs,100,"Prolong Item",Normal,ProlongItem,false,INSClass);
   EditField(h,v+=vs,100,"Compensation Item",Normal,CompensationItem,false,INSClass);
-  //EditField(h,v+=vs,100,"Selling Item",Normal,SellingItem,false,INSClass);
+  EditField(h,v+=vs,100,"Selling Write-off Item",Normal,SellingItem,false,INSClass);
   EditField(h,v+=vs,100,"Bad Debt Sales A/C",Normal,SellingSalesAccount,false,AccSClass);
   
     
