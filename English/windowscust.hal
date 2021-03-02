@@ -24,7 +24,7 @@ begin
 
   BlockLoad(ISb);
   
-  SetWRect(10,80,700,298);
+  SetWRect(10,80,790,298);
   Sizeable(-1,-1,0,0);
   switch (type) begin
     case 1: SpawnClass(CredMan1DClass);
@@ -77,10 +77,11 @@ begin
   HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClassBtn","All");
   RecordList(4,v+=20,-21,-39);
   RlColKey(4,2,"N_o.",SerNr,false,TypeSerNr);
-  RlColKeyTL(90,90,"OK",M4Mark,OKFlag,false,TypeOKFlag);
-  RlColKeyTL(140,140,"Approved",M4Mark,Approved,false,TypeApproved);
-  RlColKey(200,200,"Cust.",CustCode,false,TypeCustCode);
-  RlColKey(270,270,"Name",Addr0,false,TypeName);
+  RlColKey(90,90,"Legal No.",OfficialSerNr,false,OfficialSerNr);
+  RlColKeyTL(160,160,"OK",M4Mark,OKFlag,false,TypeOKFlag);
+  RlColKeyTL(210,210,"Approved",M4Mark,Approved,false,TypeApproved);
+  RlColKey(270,270,"Cust.",CustCode,false,TypeCustCode);
+  RlColKey(340,340,"Name",Addr0,false,TypeName);
   RlColKey(-270,-270,"Start",startDate,false,TypestartDate);
   RlColKey(-180,-180,"End",endDate,false,TypeendDate);
   RlColKey(-90,-90,"Sum",InvSum4,false,TypeInvSum4);
