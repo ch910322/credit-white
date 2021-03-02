@@ -58,7 +58,7 @@ external function val AdjustFees(val,val,val);
 external function Boolean AgreementPaidOut2(record CredManVc,var val);
 external function Integer GetInterestPaymentType(record CredManVc);
 external function string 255 AgreementValToText(val);
-external inner  procedure GetMonthText(string,Date,var string);
+external inner procedure GetMonthText(string,Date,var string);
 
 procedure GetCredManCustContact(record CredManVc CredManr,var string contactid,var string contactname)
 begin
@@ -1251,6 +1251,31 @@ LGetCredManCity:;
   return;
 end;
 
+function string 255 GetCurncyComment(string curcode,string langcode)
+begin
+  record CurncyCodeVc CCr;
+  row CurncyCodeVc CCrw;
+  Integer i,rwcnt;
+  string 255 res;
+
+  res = "";
+  ccr.CurncyCode = curcode;
+  if (ReadFirstMain(ccr,1,true)) then begin
+    res = ccr.Comment;
+    rwcnt = MatRowCnt(CCr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(CCr,i,CCrw);
+      if (CCrw.LangCode==langcode) then begin
+        res = CCrw.RowCurText;
+      end;
+    end;
+  end;  
+
+  GetCurncyComment = res;
+  return;
+end;
+
+
 /*real surety agreement*/
 global
 procedure ExternalPrintSuretyAgreementForm(record CredManVc CredManr,var vector string vVals)
@@ -1302,9 +1327,10 @@ begin
   vVals["F_REGNUMBER1"] = CUr.RegNr1;//Customer Registration No. 1
   Ext_OutAddress(vVals,"F_ADRESS",CUr.Name,CUr.InvAddr0,CUr.InvAddr1,CUr.InvAddr2,CUr.InvAddr3,CUr.InvAddr4);
   Ext_PrintCurrencyCode(vVals,"F_VALUTA",CredManr.CurncyCode);
+  vVals["F_VALUTANAME"] = GetCurncyComment(vVals["F_VALUTA"],CredManr.LangCode);
   vVals["F_TOTSUM"] = CredManr.InvSum4;
   ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
-  vVals["F_TOTSUMINTEXT"] = tstr;
+  vVals["F_TOTSUMINTEXT"] = LowerCase(tstr);
   vVals["F_OVERDUEPRC"] = CredManr.OverduePercentage;
 
 
@@ -1327,7 +1353,7 @@ begin
   vVals["F_CREDHALFSUM"] = (CredManr.InvSum4/2);
   vVals["F_CREDCUSTCITY"] = GetCredManCity(CredManr);
   ValToText((CredManr.InvSum4/2),M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
-  vVals["F_CREDHALFSUMTEXT"] = tstr;
+  vVals["F_CREDHALFSUMTEXT"] = LowerCase(tstr);
 
   ExtPrintOwnBankDetails(vVals,CredManr.SerNr);
   vVals["F_NUMMER2"] = GetCredManNr(CredManr.SerNr);
