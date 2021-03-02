@@ -3362,6 +3362,7 @@ begin
   Checkbox(h2,v,0,"Approved",OKFlag);
   EditField(h,v+=vs,100,"Agreement No.",Normal,CredManNr,false,CredManSClass);
   EditField(h,v+=vs,100,"Date",Normal,TransDate,false,PasteCurDate);
+  EditField(h,v+=vs,100,"End Date",Normal,EndDate,false,PasteCurDate);
   EditField(h,v+=vs,100,"Prolong Months",Normal,ProlongMonths,false,0);
   EditField(h,v+=vs,100,"Pause Months",Normal,PauseMonths,false,0);
   EditField(h,v+=vs,100,"Extra Value",Normal,AddValue,false,0);
