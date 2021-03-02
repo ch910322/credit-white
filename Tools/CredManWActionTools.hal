@@ -2042,9 +2042,9 @@ begin
       GetItemName(aCredVal[i],spec);
       SetupInvoiceRowAndAdd(CredManr,IVr,aCredVal[i],spec,1,vCredVal[aCredVal[i]] * prc / 100,blankval,17,-1);
     end;
-    if (nonblank(CIb.SellingItem)) then begin
+    if (nonblank(CIb.SellingItem) and prc<100) then begin
       GetItemName(CIb.SellingItem,spec);
-      SetupInvoiceRowAndAdd(CredManr,IVr,aCredVal[i],spec,1,credval,blankval,17,-1);
+      SetupInvoiceRowAndAdd(CredManr,IVr,CIb.SellingItem,spec,1,credval * (100-prc) / 100,blankval,17,-1);
     end;
 
     StoreLoanInvoice(IVr,CredManr);
