@@ -972,7 +972,7 @@ begin
               end;
               AddPlainXmlToArea(a,"</Prepayments>",4);
               
-              AddPlainXmlToArea(a,"<CreditInvoices>",4);
+              AddPlainXmlToArea(a,"<CreditNotes>",4);
               ResetLoop(CredHist2r);
               CredHist2r.PreviousNr = CredHistr.SerNr;
               TrHs2 = true;
@@ -981,7 +981,7 @@ begin
                   TrHs2 = false;
                 end;
                 if ((TrHs2) and (CredHist2r.RecordType==3)) then begin
-                  AddPlainXmlToArea(a,"<CreditInvoice>",3);
+                  AddPlainXmlToArea(a,"<CreditNote>",3);
                   AddXMLTagToArea(a,"InvoiceNr","",CredHist2r.RecordNr,4); 
                   AddXMLTagToArea(a,"CredManNr","",CredHist2r.CredManNr,4);
                   AddXMLTagToArea(a,"InvDate","",DateToString(CredHist2r.TransDate,"YYYY-MM-DD"),4);
@@ -1004,10 +1004,10 @@ begin
                   //AddXMLTagToArea(a,"PaymentStatus","",0,4);
                   AddXMLTagToArea(a,"PaidFlag","",CredHist2r.PaidFlag,4);
                   AddXMLTagToArea(a,"CurncyCode","",curncy,4);
-                  AddPlainXmlToArea(a,"</CreditInvoice>",3);
+                  AddPlainXmlToArea(a,"</CreditNote>",3);
                 end;
               end;
-              AddPlainXmlToArea(a,"</CreditInvoices>",4);
+              AddPlainXmlToArea(a,"</CreditNotes>",4);
               //TODO:sorting
               AddPlainXmlToArea(a,"</Invoice>",3);
             end;
