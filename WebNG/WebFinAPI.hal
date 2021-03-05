@@ -885,12 +885,17 @@ begin
         if (nonblankdate(dto)) then begin
           testf = CredHistr.TransDate<=dto;
         end;
-        if (invoicenr!=-1) then begin
-          testf = CredHistr.RecordNr==invoicenr;
+        if (nonblank(item)) then begin
+          testf = CredHistr.ArtCode==item;
         end;
         if (testf) then begin
           if (CredHistr.RecordType!=0) then begin
             testf = false;
+          end;
+        end;
+        if (testf) then begin
+          if (invoicenr!=-1) then begin
+            testf = CredHistr.RecordNr==invoicenr;
           end;
         end;
         if (testf) then begin
