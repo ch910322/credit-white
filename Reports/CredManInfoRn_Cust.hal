@@ -512,6 +512,7 @@ begin
       IVr.SerNr = -1;
       AddInvoiceToList(CredManr,IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate,CredManSetb);
     end;
+    SortRows(SMr,"TransDate",true);
   end;
 
   gSilenceIVOpenPrepExists = false;
