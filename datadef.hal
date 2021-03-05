@@ -2122,6 +2122,12 @@ begin
   KeySegment(SerNr);
   EndRecord;
   
+  RecordAddBegin(RcVc,"RcVc_Cust");
+  RecordField(CustStr1,M4Str,200,0);
+  RecordField(CustStr2,M4Str,200,0);
+  RecordField(CustStr3,M4Str,200,0);
+  EndRecordAdd;
+
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Estonian", 0);

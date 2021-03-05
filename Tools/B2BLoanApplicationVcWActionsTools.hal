@@ -701,6 +701,9 @@ begin
     case "F_KUNDNAMN": res = RepSpec.f18;
     case "F_FORFALLODATUM": res = RepSpec.f20;
     case "F_INVMONTH": res = RepSpec.Comment;
+    case "F_LASTDAY2": res = RepSpec.CustStr1;
+    case "F_OPENAMOUNT2": res = RepSpec.CustStr2;
+    case "F_TOPAY3": res = RepSpec.CustStr3;
     otherwise
       res = LetVcReplaceTokenCust(RepSpec,token);
   end;
