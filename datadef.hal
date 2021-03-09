@@ -1032,6 +1032,13 @@ begin
   KeySegment(PaidFlag);  
   KeySegment(SerNr);
 */
+  KeyBegin(CustTransDate);
+  KeySegment(CustCode);
+  KeySegment(TransDate);
+  KeySegment(ArtCode);
+  KeySegment(RecordNr);
+  KeySegment(PayDate);
+  KeySegment(SerNr);
   EndRecord;
 
   RecordAddBegin(IVVc,"CredIVVc");

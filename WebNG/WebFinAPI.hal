@@ -28,6 +28,26 @@ external inner function string 255 StrReplace(string,string,string);
 external inner procedure SplitEclass(string,var Array string);
 external inner procedure SplitString(string,string,var array string);
 
+enum begin
+  kEventTypeNone = 0,
+  kEventTypeCalcInstalment = 1,
+  kEventTypeCalcInterest = 2,
+  kEventTypeCalcDeposit = 3,
+  kEventTypeCalcFees = 4,
+  kEventTypeIssueInstalment = 5,
+  kEventTypeIssueInterest = 6,
+  kEventTypeIssueDeposit = 7,
+  kEventTypeIssueFees = 8,
+  kEventTypeIssueLateFees = 9,
+  kEventTypePaidInterest = 13,
+  kEventTypePaidInstalment = 14,
+  kEventTypePaidDeposit = 15,
+  kEventTypePaidFees = 16,
+  kEventTypeSoldAgreement = 17,
+  kEventTypePayout = 18,
+  kEventTypePartialBuyout = 19,
+end;
+
 procedure AddXmlTag(string tag,string value,var Area a)
 begin
     
@@ -290,7 +310,7 @@ end;
 procedure GetRepaidPrincipal()
 begin
   LongInt id;
-  val tot;
+  val tot,paidint,paidinst;
   string 255 arg;
   area a;
   record CredManSetBlock CredManSetb;
@@ -311,11 +331,12 @@ begin
       rwcnt = MatRowCnt(CredManPayPlanr);
       for (i=0;i<rwcnt;i=i+1) begin
         MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
-        if (CredManPayPlanrw.PlanType==6) then begin
-          tot = tot + CredManPayPlanrw.Sum;
-        end;
-        if (CredManPayPlanrw.PlanType==5) then begin
-          tot = tot - CredManPayPlanrw.Sum;
+        switch (CredManPayPlanrw.PlanType) begin
+          case kEventTypeIssueInstalment:
+            tot = tot + CredManPayPlanrw.Sum;
+          case kEventTypeIssueInterest: tot = tot - CredManPayPlanrw.Sum;
+          case kEventTypePaidInterest: paidint = paidint + CredManPayPlanrw.Sum;
+          case kEventTypePaidInstalment: paidinst = paidinst + CredManPayPlanrw.Sum;
         end;
       end;
     end;
@@ -326,6 +347,10 @@ begin
   AddXMLTagToArea(a,"CredManNr","",arg,1);
   AddPlainXmlToArea(a,"<Result>",1);
   AddXMLTagToArea(a,"TotalPrincipal","",ValToString(tot,M4Val,"",".",0),2);
+  AddXMLTagToArea(a,"paidint","",ValToString(paidint,M4Val,"",".",0),2);
+  AddXMLTagToArea(a,"paidinst","",ValToString(paidinst,M4Val,"",".",0),2);
+  AddXMLTagToArea(a,"PaidPrincipalTest","",ValToString(paidinst-paidint,M4Val,"",".",0),2);
+  
   AddXMLTagToArea(a,"CurncyCode","",tstr,2);
   AddPlainXmlToArea(a,"</Result>",1);
   AddPlainXmlToArea(a,"</GetRepaidPrincipal>",0);
@@ -841,6 +866,7 @@ begin
   area a;
   date dfrom,dto;
   LongInt countout,curr,c2,rowoffset,rowlimit;
+  integer keys;
   
   custcode = WebGetArg("CustCode");
   credmanstr = WebGetArg("CredManNr");
@@ -870,7 +896,12 @@ begin
   if (nonblank(custcode)) then begin
     CredHistr.CustCode = custcode;
     TrHs = true;
-    while (LoopKey("CustPaid",CredHistr,1,TrHs)) begin
+    keys = 1;
+    if (nonblankdate(dfrom)) then begin
+      keys = 2;
+      CredHistr.TransDate = dfrom;
+    end;
+    while (LoopKey("CustTransDate",CredHistr,keys,TrHs)) begin
       testf = true;
       if (CredHistr.CustCode!=custcode) then begin
         TrHs = false;
@@ -879,24 +910,20 @@ begin
         if (nonblank(credmanstr)) then begin
           testf = SetInSet(CredHistr.CredManNr,credmanstr);
         end;
-        if (nonblankdate(dfrom)) then begin
+        if ((testf) and (nonblankdate(dfrom))) then begin
           testf = CredHistr.TransDate>=dfrom;
         end;
-        if (nonblankdate(dto)) then begin
+        if ((testf) and (nonblankdate(dto))) then begin
           testf = CredHistr.TransDate<=dto;
         end;
-        if (nonblank(item)) then begin
+        if ((testf) and (nonblank(item))) then begin
           testf = CredHistr.ArtCode==item;
         end;
-        if (testf) then begin
-          if (CredHistr.RecordType!=0) then begin
+        if ((testf) and (CredHistr.RecordType!=0)) then begin
             testf = false;
-          end;
         end;
-        if (testf) then begin
-          if (invoicenr!=-1) then begin
-            testf = CredHistr.RecordNr==invoicenr;
-          end;
+        if ((testf) and (invoicenr!=-1)) then begin
+          testf = CredHistr.RecordNr==invoicenr;
         end;
         if (testf) then begin
           skipf = false;
@@ -914,6 +941,7 @@ begin
               AddXMLTagToArea(a,"InvoiceNr","",CredHistr.RecordNr,4); 
               AddXMLTagToArea(a,"CredManNr","",CredHistr.CredManNr,4);
               AddXMLTagToArea(a,"InvDate","",DateToString(CredHistr.TransDate,"YYYY-MM-DD"),4);
+              AddXMLTagToArea(a,"DueDate","",DateToString(CredHistr.PayDate,"YYYY-MM-DD"),4);
               AddXMLTagToArea(a,"ArtCode","",ConvertXMLString(CredHistr.ArtCode,true),4);
               IVr.SerNr = CredHistr.RecordNr;
               tstr = "";
@@ -921,7 +949,6 @@ begin
                 tstr = ConvertXMLString(IVr.OfficialSerNr,true);
                 curncy = IVr.CurncyCode;
               end;
-              
               AddXMLTagToArea(a,"OfficialSerNr","",tstr,4);
               AddXMLTagToArea(a,"Sum","",ValToString(CredHistr.Sum,M4Val,"",".",0),4);
               AddXMLTagToArea(a,"PaidSum","",ValToString(CredHistr.PaidSum,M4Val,"",".",0),4);
