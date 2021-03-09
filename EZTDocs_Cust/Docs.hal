@@ -59,6 +59,7 @@ external function Boolean AgreementPaidOut2(record CredManVc,var val);
 external function Integer GetInterestPaymentType(record CredManVc);
 external function string 255 AgreementValToText(val);
 external inner procedure GetMonthText(string,Date,var string);
+external procedure BuildCredManPayPlanCust2(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean,Boolean);
 
 procedure GetCredManCustContact(record CredManVc CredManr,var string contactid,var string contactname)
 begin
@@ -102,7 +103,7 @@ begin
   BlockLoad(CredManSetb);
   
   if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
-    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+    BuildCredManPayPlanCust2(CredManr,CredManPayPlanr,CredManSetb,true,true,false);
     BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
   end;
 
