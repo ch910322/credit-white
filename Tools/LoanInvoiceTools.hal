@@ -1564,8 +1564,7 @@ begin
   return;
 end;
 
-global
-procedure CreateBuyOutInvoiceFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date td,var record IVVc IVr,BOolean testf,var Date sd)
+procedure CreateBuyOutInvoiceFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date td,var record IVVc IVr,BOolean testf,var Date sd,Boolean balancef)
 begin
   row CredManPayPlanVc CredManPayPlanrw;
   record CredManPayPlanVc CredManPayPlan2r;
@@ -1601,7 +1600,9 @@ begin
       MatRowGet(CredManPayPlan2r,i,CredManPayPlanrw);
       SetupInvoiceRowAndAdd(CredManr,IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
     end;
-    AddBuyOutFee(CredManr,IVr,balance);
+    if (balancef==false) then begin
+      AddBuyOutFee(CredManr,IVr,balance);
+    end;
     GetCredManOverdueInvoices(CredManr,CMb,td,lastinv,latedays,lateamount,lateformula,true,false,calcsd);
     BlockLoad(CIb);
     if (testf or CIb.OverdueIVType==0) then begin
@@ -1689,7 +1690,7 @@ begin
     BlockLoad(CMb);
     BlockLoad(CIb);
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
-    CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,td,IVr,false,sd);
+    CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,td,IVr,false,sd,false);
 
     CM_AddPrepayments(IVr,CredManr,CIb);
     if (IVr.SerNr>-1) then begin
@@ -1816,7 +1817,7 @@ begin
 end;
 
 global
-procedure CheckBuyOutAgreement(record CredManVc CredManr,var record RcVc RepSpec)
+procedure CheckBuyOutAgreement2(record CredManVc CredManr,var record RcVc RepSpec,Boolean balancef)
 begin
   record CredManSetBlock CMb;
   record CredManPayPlanVc CredManPayPlanr;
@@ -1834,7 +1835,7 @@ logtext(0,"CheckBuyOutAgreement start");
   gSilenceIVOpenPrepExists = true;
   BlockLoad(CMb);
     BuildCredManPayPlanCust2(CredManr,CredManPayPlanr,CMb,true,false,false);
-    CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,RepSpec.d1,IVr,true,sd2);
+    CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,RepSpec.d1,IVr,true,sd2,balancef);
 //  end;
   CheckUnpaidInvoices(CredManr,dueamount,openamount);
   sd = GetLastInvoiceDate(CredManr,RepSpec.d1);
@@ -1842,7 +1843,9 @@ logtext(0,"CheckBuyOutAgreement start");
   RepSpec.vals3 = GetActualBalance(CredManr,CredManPayPlanr,false);
 
   prepayval = GetPrepaymentValue(CredManr);
-  buyoutfee = GetBuyOutFee(CredManr,RepSpec.d1,RepSpec.vals3);
+  if (balancef==false) then begin
+    buyoutfee = GetBuyOutFee(CredManr,RepSpec.d1,RepSpec.vals3);
+  end;
   RepSpec.vals1 = IVr.Sum4;
   RepSpec.vals0 = dueamount;//should this be openamount?
   RepSpec.vals2 = openamount + IVr.Sum4 - prepayval;
@@ -1859,6 +1862,14 @@ logtext(0,"CheckBuyOutAgreement start");
 
 logtext(0,"CheckBuyOutAgreement end");
 
+  return;
+end;
+
+global
+procedure CheckBuyOutAgreement(record CredManVc CredManr,var record RcVc RepSpec)
+begin
+
+  CheckBuyOutAgreement2(CredManr,RepSpec,false);
   return;
 end;
 
@@ -2521,7 +2532,7 @@ begin
     RepSpec.d1 = CurrentDate;
     int_type = GetInterestPaymentType(CredManr);
     if (int_type!=2 or AgreementPaidOut(CredManr,paidout)) then begin
-      CheckBuyOutAgreement(CredManr,RepSpec);
+      CheckBuyOutAgreement2(CredManr,RepSpec,true);
       if (RepSpec.vals2==0) then begin
         BlockLoad(OCb);
         RecordCopy(oldCredManr,CredManr);
