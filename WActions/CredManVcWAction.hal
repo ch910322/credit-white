@@ -62,6 +62,7 @@ remote updating procedure PrintBuyOutSummary(record CredManVc,record RcVc,var st
 remote updating procedure CredManGracePeriodRemote(record RcVc,record CredManVc,var string);
 external function Boolean UseFullBuyoutProcedure();
 remote updating procedure RecreateAgreementSchedule4(record CredManVc,Boolean,Boolean);
+remote function Boolean FindFirstFeeInvoice(record CredManVc,var record IVVc);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -1830,7 +1831,7 @@ end;
 updating procedure CredManMakePayment(Integer wn,record CredManVc CredManr,Boolean receiptf,string ivno,val sendsum)
 begin
   record VIVc VIr;
-  record IVVc IVr;
+  record IVVc IVr,feeIVr;
   val sum;
   string 255 wstr;
   
@@ -1839,7 +1840,9 @@ begin
   WindowDoOK(wn,0);
   if (receiptf) then begin
     if (IVr.SerNr>0 and sum>0) then begin
-      asyncremote.CreatePaymentFakeReceipt(CredManr,IVr);
+      if (FindFirstFeeInvoice(CredManr,feeIVr)) then begin
+        asyncremote.CreatePaymentFakeReceipt(CredManr,feeIVr);
+      end;
       asyncremote.CM_CreatePaymentOrder(CredManr,VIr,sum);
     end;
     ReadFirstMain(CredManr,1,true);
