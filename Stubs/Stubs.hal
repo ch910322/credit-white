@@ -14,9 +14,19 @@ global
 function Boolean CanCredManMakePayment(record CredManVc CredManr,var string errstr)
 begin
   Boolean res;
+  record VIVc VIr;
 
   if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
     res = true;
+  end;
+  if (CredManr.VINr>0) then begin
+    VIr.SerNr = CredManr.VINr;
+    if (ReadFirstmain(VIr,1,true)) then begin
+      if (VIr.PayVal==CredManr.InvSum4) then begin
+        res = false;
+        errstr = UsetStr(200115) & VIr.SerNr;
+      end;
+    end;
   end;
 
   CanCredManMakePayment = res;

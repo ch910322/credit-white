@@ -661,6 +661,7 @@ begin
         MatRowGet(IVCreditr,i,IVrw);
         if (nonblank(IVrw.ArtCode)) then begin
           if (IVrw.Price>0) then begin
+            credval = credval + IVrw.Sum;
             if (ratio!=1) then begin
               IVrw.Price = IVrw.Price * ratio;
               MatRowPut(IVCreditr,i,IVrw);
@@ -683,7 +684,6 @@ begin
           end;
         end;
       end;
-      credval = credval + IVr.Sum1;
       if (RecordInsert(IVCreditr,true)) then begin
         RecordCopy(oldIVr,IVCreditr);
         IVCreditr.OKFlag = 1;
@@ -2042,6 +2042,11 @@ begin
       GetItemName(aCredVal[i],spec);
       SetupInvoiceRowAndAdd(CredManr,IVr,aCredVal[i],spec,1,vCredVal[aCredVal[i]] * prc / 100,blankval,17,-1);
     end;
+    if (nonblank(CIb.SellingItem) and prc<100) then begin
+      GetItemName(CIb.SellingItem,spec);
+      SetupInvoiceRowAndAdd(CredManr,IVr,CIb.SellingItem,spec,1,credval * (100-prc) / 100,blankval,17,-1);
+    end;
+
     StoreLoanInvoice(IVr,CredManr);
   end;
 

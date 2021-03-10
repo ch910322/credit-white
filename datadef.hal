@@ -1032,6 +1032,13 @@ begin
   KeySegment(PaidFlag);  
   KeySegment(SerNr);
 */
+  KeyBegin(CustTransDate);
+  KeySegment(CustCode);
+  KeySegment(TransDate);
+  KeySegment(ArtCode);
+  KeySegment(RecordNr);
+  KeySegment(PayDate);
+  KeySegment(SerNr);
   EndRecord;
 
   RecordAddBegin(IVVc,"CredIVVc");
@@ -2043,6 +2050,8 @@ begin
   RecordField(ValCrncyCode,M4Code,20,0);
   RecordField(BOEValueLangCode,M4Code,20,0);
   RecordField(RegNrComment,M4Str,255,0);
+  RecordField(ReimbItems,M4UStr,255,0);
+  RecordField(ReimbLanguages,M4UStr,255,0);
   
   EndBlock;
 

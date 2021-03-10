@@ -67,7 +67,7 @@ begin
             if (int_type==2) then begin
               AgreementPaidOut(CredManr,paidval);
               if (paidval==CredManr.InvSum4) then begin
-                CredManr.MoneyTransferDate = OPr.PayDate;
+                //CredManr.MoneyTransferDate = OPr.PayDate;
               end;
             end;
           end;

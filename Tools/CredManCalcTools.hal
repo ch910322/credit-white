@@ -1704,10 +1704,10 @@ logtext(0,"BuildCredManPayPlanCust end1 retry=" & tries);
   end;
 
 logtext(0,"BuildCredManPayPlanCust end2");
-  SortRows(CredManPayPlanr,"SortString",true);
-  RecordCopy(inCredManr,tCredManr);
 
 LBuildCredManPayPlanCust:;
+  SortRows(CredManPayPlanr,"SortString",true);
+  RecordCopy(inCredManr,tCredManr);
   return;
 end;
 

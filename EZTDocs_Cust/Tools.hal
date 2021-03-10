@@ -316,6 +316,7 @@ begin
 
   GetMonthText(IVr.LangCode,td,tstr);
   vVals["F_LASTDAY"] = tstr & " " & GetDay(td);
+  vVals["F_LASTDAY2"] = DateToString(td,"DD.MM.YYYY");
   vVals["F_OPENAMOUNT2"] = openamount2;
   vVals["F_TOPAY3"] = topay3;
   ValToText(topay3,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
