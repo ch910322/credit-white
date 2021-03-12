@@ -8,16 +8,16 @@ external procedure CM_ResetCompanyLanguage(string);
 external inner function LongInt TimeToMinutes(Time);
 
 global
-updating procedure CreateTaskActivityCredMan(record CredManVc CredManr,string person,string acttype,string acttext)
+updating procedure CreateTaskActivityCredMan(record CredManVc CredManr,string person,string acttype,string acttext,date TransDate,time StartTime)
 begin
   record ActVc Actr;
   string 255 warning;
   record CredManVc oldCredManr;
 
   if (ReadFirstMain(CredManr,1,true)) then begin
-    Actr.SerNr = NextSerNr("ActVc",CurrentDate,-1,false,"");
-    Actr.TransDate = CurrentDate;
-    Actr.StartTime = CurrentTime;
+    Actr.SerNr = NextSerNr("ActVc",TransDate,-1,false,"");
+    Actr.TransDate = TransDate;
+    Actr.StartTime = StartTime;
     Actr.Value = CredManr.InvSum4;
     Actr.CUCode = CredManr.CustCode;
     PasteCuInAct(Actr,warning);
@@ -39,16 +39,16 @@ begin
 end;
 
 global
-updating procedure CreateTaskActivityLoanApp(record B2BLoanApplicationVc LAr,string person,string acttype,string acttext)
+updating procedure CreateTaskActivityLoanApp(record B2BLoanApplicationVc LAr,string person,string acttype,string acttext,date TransDate,time StartTime)
 begin
   record ActVc Actr;
   string 255 warning;
   record B2BLoanApplicationVc oldLAr;
 
   if (ReadFirstMain(LAr,1,true)) then begin
-    Actr.SerNr = NextSerNr("ActVc",CurrentDate,-1,false,"");
-    Actr.TransDate = CurrentDate;
-    Actr.StartTime = CurrentTime;
+    Actr.SerNr = NextSerNr("ActVc",TransDate,-1,false,"");
+    Actr.TransDate = TransDate;
+    Actr.StartTime = StartTime;
     Actr.Value = LAr.Sum;
     Actr.CUCode = LAr.CustCode;
     PasteCuInAct(Actr,warning);
@@ -195,6 +195,8 @@ begin
   string 255 person;
   Integer j,comp,compcnt,oldcomp;
   record CompaniesBlock Compb;
+  Date actdate;
+  Time acttime;
   
   oldcomp = CurrentCompany;
   BlockLoad(Compb);
@@ -208,10 +210,21 @@ begin
       MatRowGet(ATb,i,ATbrw);
       td = AddDay(CurrentDate,-ATbrw.DelayDays);
       tt = CurrentTime;
+      actdate = AddDay(CurrentDate,ATbrw.DelayDays);
+      acttime = CurrentTime;
       if (ATbrw.DelayHours>0) then begin
         tt = AddHours(tt,-ATbrw.DelayHours);
+        acttime = AddHours(acttime,ATbrw.DelayHours);
         if (tt>CurrentTime) then begin
           td = AddDay(td,-1);
+        end;
+      end;
+      if (nonblanktime(ATbrw.AtTime)) then begin
+        if (acttime>ATbrw.AtTime) then begin
+          actdate = AddDay(actdate,1);
+          acttime = ATbrw.AtTime;
+        end else begin
+          acttime = ATbrw.AtTime;
         end;
       end;
   //LogText(0,"Checking agreements older than " & td & ":" & tt);
@@ -238,7 +251,7 @@ begin
                   LogText(0,"GetLeastWorkLoadManager " & ATbrw.ActType & " failed");
                 end; 
               end;  
-              qupdating.CreateTaskActivityCredMan(CredManr,person,ATbrw.ActType,ATbrw.ActText);
+              qupdating.CreateTaskActivityCredMan(CredManr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime);
             end;
           end;
         case 1://agreements
@@ -263,7 +276,7 @@ begin
                   LogText(0,"GetLeastWorkLoadManager " & ATbrw.ActType & " failed");
                 end; 
               end;
-              qupdating.CreateTaskActivityLoanApp(LAr,person,ATbrw.ActType,ATbrw.ActText);
+              qupdating.CreateTaskActivityLoanApp(LAr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime);
             end;
           end;
       end;

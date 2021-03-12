@@ -1742,10 +1742,11 @@ begin
   MatCol(1,130,"Class",0,OrderClass,false,OrderClassSClass);
   MatCol(1,200,"Del. Hours",0,DelayHours,false,0);
   MatCol(1,260,"Del. Days",0,DelayDays,false,0);
-  MatCol(1,320,"Person Type",0,PersonType,false,SetSClass);
-  MatCol(1,440,"Manager",0,Manager,false,UserSClass);
-  MatCol(1,510,"Act. Type",0,ActType,false,ActTypeSClass);
-  MatCol(1,580,"Act. Text",0,ActText,false,0);
+  MatCol(1,340,"Time",0,AtTime,false,0);
+  MatCol(1,400,"Person Type",0,PersonType,false,SetSClass);
+  MatCol(1,540,"Manager",0,Manager,false,UserSClass);
+  MatCol(1,620,"Act. Type",0,ActType,false,ActTypeSClass);
+  MatCol(1,680,"Act. Text",0,ActText,false,0);
   EndMatrix;
   EndWindow;
 end;
