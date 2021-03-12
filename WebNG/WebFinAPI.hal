@@ -332,10 +332,6 @@ begin
       for (i=0;i<rwcnt;i=i+1) begin
         MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
         switch (CredManPayPlanrw.PlanType) begin
-          case kEventTypeIssueInstalment:
-            tot = tot + CredManPayPlanrw.Sum;
-          case kEventTypeIssueInterest: tot = tot - CredManPayPlanrw.Sum;
-          case kEventTypePaidInterest: paidint = paidint + CredManPayPlanrw.Sum;
           case kEventTypePaidInstalment: paidinst = paidinst + CredManPayPlanrw.Sum;
         end;
       end;
@@ -346,11 +342,7 @@ begin
   AddPlainXmlToArea(a,"<GetRepaidPrincipal>",0);
   AddXMLTagToArea(a,"CredManNr","",arg,1);
   AddPlainXmlToArea(a,"<Result>",1);
-  AddXMLTagToArea(a,"TotalPrincipal","",ValToString(tot,M4Val,"",".",0),2);
-  AddXMLTagToArea(a,"paidint","",ValToString(paidint,M4Val,"",".",0),2);
-  AddXMLTagToArea(a,"paidinst","",ValToString(paidinst,M4Val,"",".",0),2);
-  AddXMLTagToArea(a,"PaidPrincipalTest","",ValToString(paidinst-paidint,M4Val,"",".",0),2);
-  
+  AddXMLTagToArea(a,"TotalPrincipal","",ValToString(paidinst,M4Val,"",".",0),2);
   AddXMLTagToArea(a,"CurncyCode","",tstr,2);
   AddPlainXmlToArea(a,"</Result>",1);
   AddPlainXmlToArea(a,"</GetRepaidPrincipal>",0);
