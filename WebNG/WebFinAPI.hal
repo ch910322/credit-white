@@ -909,7 +909,7 @@ begin
           testf = CredHistr.TransDate<=dto;
         end;
         if ((testf) and (nonblank(item))) then begin
-          testf = CredHistr.ArtCode==item;
+          testf = SetInSet(CredHistr.ArtCode,item);
         end;
         if ((testf) and (CredHistr.RecordType!=0)) then begin
             testf = false;
