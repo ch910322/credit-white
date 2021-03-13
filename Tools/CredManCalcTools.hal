@@ -968,6 +968,7 @@ begin
   return;
 end;
 
+global
 function Date GetLastInvDate(record CredManVc CredManr)
 begin
   Date res;

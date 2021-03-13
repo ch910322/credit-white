@@ -637,6 +637,17 @@ begin
   HalPushButton(h,v+=40,h+120,v+20,"RefinCredManPartialWClassSubmit","Confirm");
   EndWindow;
 
+  WindowBegin("Refinance Agreement - Partial Buy-out",RefinCredManPartial2WClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,500,440);
+  AutoSizeWindow(true);  
+  h = 150; h2 = 250; v=350;
+  StaticText(50,26,"Invoice in the Period already created, do you want to do Changes?",false);
+  HalPushButton(100,-30,200,-10,"RefinCredManPartial2WClassSubmit","OK");
+  HalPushButton(230,-30,330,-10,"SchedYesNoWClassClose","Cancel");
+  EndWindow;
+
+
   WindowBegin("Item Priority",ItemPriorityTClass,CGHBl,-);
   SetWRect(80,80,400,280);
   SetBlid(ItemPriorityBlock);

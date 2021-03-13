@@ -66,11 +66,18 @@ external function Boolean UseFullBuyoutProcedure();
 external procedure AddBuyOutFee(record CredManVc,var record IVVc,val);
 external procedure CheckAndAddHiddenPrinciple(var record IVVc,record CMInvoicingBlock);
 external function val GetActualBalance(record CredManVc,record CredManPayPlanVc,Boolean);
-remote procedure RefinCredManPartialWClassSubmitCallBack(string,Integer,Integer);
+remote procedure RefinCredManPartialWClassSubmitCallBack(string,Integer,Integer,Boolean);
 forward updating procedure CreateCredmanPurchaseInvoice(record CredManVc,val,var record VIVc,val,Boolean,Date);
 external inner procedure FindUserMailboxName(string,var string,var string);
 external inner function Boolean CheckAttachedFilesSizeToLetter(record LetVc);
 external procedure CheckBuyOutAgreementAsync(record CredManVc,Date,Integer);
+remote procedure RefinCredManPartial2WClassSubmitCallBack(Integer,record RcVc,Boolean);
+external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var val,Boolean,var Boolean);
+external inner procedure IPVc_PasteRecCurncy(var record IPVc,Integer);
+external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
+external inner procedure IPSumup(var record IPVc);
+external inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var LongInt);
+external function string 255 GetReceiptsPayMode(record IVVc);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -371,9 +378,10 @@ begin
 end;
 
 global
-updating procedure RecreateAgreementSchedule4(record CredManVc CredManr,Boolean fullf,Boolean resignf)
+procedure RecreateAgreementSchedule4(record CredManVc CredManr,Boolean fullf,Boolean resignf)
 begin
   record AgreementDocVc ADr;
+  transaction Boolean gSkipSchedRecalc;
 
   GenerateAgreementSchedule(CredManr,true,true);
   if (fullf) then begin
@@ -381,7 +389,7 @@ begin
     ADr.RecordNr = CredManr.SerNr;
     ADr.Type = 2;
     if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
-      RecreateAgreementDocument(ADr,resignf);
+      qupdating.RecreateAgreementDocument(ADr,resignf);
     end;
   end;
 
@@ -467,17 +475,6 @@ begin
           CreateCredmanPurchaseInvoice(CredManr,0,VIr,addval,true,td);
           GenerateAgreementSchedule(CredManr,true,true);
         end;
-        /*
-        GenerateAgreementSchedule(CredManr,true,true);
-        if (RepSpec.flags[1]==1) then begin
-          ADr.RecordType = 0;
-          ADr.RecordNr = CredManr.SerNr;
-          ADr.Type = 2;
-          if (ReadFirstKey("RecordNr",ADr,3,true)) then begin
-            RecreateAgreementDocument(ADr,true);
-          end;
-        end;
-        */
         setf = true;
       end else begin
         if (tmonths>0 or tprolongmonths>0 or rate>0 or addval>0) then begin
@@ -1573,8 +1570,162 @@ begin
   return;
 end;
 
+updating procedure UnlinkCredManInvoice(record IVVc IVr)
+begin
+  record CredHistVc CredHistr;
+  Boolean TrHs;
+  record IVVc oldIVr;
+  row IVVc IVrw;
+  Integer i,rwcnt;
+
+  TrHs = true;
+  CredHistr.RecordNr = IVr.SerNr;
+  CredHistr.RecordType = 0;
+  while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+    if (CredHistr.RecordNr!=IVr.SerNr or CredHistr.RecordType!=0) then begin
+      TrHs = false;
+    end else begin
+      RecordRemove(CredHistr);
+      StepBack(CredHistr);
+    end;
+  end;
+
+  RecordCopy(oldIVr,IVr);
+  IVr.CustCredManNr = -1;
+  rwcnt = MatRowCnt(IVr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    IVrw.ChargeType = 0;
+    IVrw.CredHistNr = -1;
+    MatRowPut(IVr,i,IVrw);
+  end;
+  RecordUpdate(oldIVr,IVr,false);
+
+  return;
+end;
+
+updating procedure ReturnInvoiceAndMakePrepaymentSeparate(record IVVc IVr)
+begin
+  row IPVc IPrw;
+  Integer rownr;
+  val chk;
+  Boolean installmentf;
+  Longint err;
+  record ARVc ARr;
+  val sum;
+  record IPVc oldIPr;
+  record IPVc IPr;
+
+  sum = IVr.Sum4;
+  ARr.InvoiceNr = IVr.SerNr;
+  if (ReadFirstMain(ARr,1,true)) then begin
+    if (ARr.RVal>=0) then begin
+      sum =   IVr.Sum4 - ARr.RVal;
+    end;
+  end;
+
+  if (sum>0) then begin
+    RecordNew(IPr);
+    IPr.TransDate = CurrentDate;
+    IPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
+    IPr.RegDate = CurrentDate;
+    IPr.OKFlag = 0;
+    IPr.PayMode = GetReceiptsPayMode(IVr);
+    IPPastePayMode(IPr);
+    rownr = 0;
+    ClearRow(IPr,IPrw,1);
+    IPrw.InvoiceNr = IVr.SerNr;
+    MatRowPut(IPr,rownr,IPrw);
+    PasteInvIn2IPr(IPr,rownr,IPr.TransDate,chk,false,installmentf);
+    MatRowGet(IPr,rownr,IPrw);
+    IPrw.RecVal = -sum;
+    MatRowPut(IPr,rownr,IPrw);
+    IPVc_PasteRecVal(IPr,rownr);
+
+    IPSumup(IPr);
+    if (RecordInsert(IPr,true)) then begin
+      RecordCopy(oldIPr,IPr);
+      IPr.OKFlag = 1;
+      RecordUpdate(oldIPr,IPr,true);
+    end;
+    
+    RecordClear(IPr);
+    RecordNew(IPr);
+    IPr.TransDate = AddDay(IVr.InvDate,-1);
+    IPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
+    IPr.RegDate = IPr.TransDate;
+    IPr.OKFlag = 0;
+    IPr.PayMode = GetReceiptsPayMode(IVr);
+    IPPastePayMode(IPr);
+
+    rownr = 0;
+    ClearRow(IPr,IPrw,1);
+    IPrw.CustCode = IVr.CustCode;
+    MatRowPut(IPr,rownr,IPrw);
+    IPVc_PasteCustCode(IPr,rownr,err);
+    MatRowGet(IPr,rownr,IPrw);
+    IPrw.RecVal = sum;
+    IPrw.CUPNr = IPr.SerNr;
+    MatRowPut(IPr,rownr,IPrw);
+    IPVc_PasteRecVal(IPr,rownr);
+
+    IPSumup(IPr);
+    if (RecordInsert(IPr,true)) then begin
+      RecordCopy(oldIPr,IPr);
+      IPr.OKFlag = 1;
+      RecordUpdate(oldIPr,IPr,true);
+    end;
+
+  end;
+  return;
+end;
+
 global
-updating procedure CredManPartialBuyoutDo(Date td,val buyoutval,Longint sernr,record RcVc RepSpec,Integer wn,Integer credmanwn)
+updating procedure CredManCreditBeforePartialBuyout(Integer wn,record RcVc RepSpec)
+begin
+  val credval;
+  vector val vCredVal;
+  record IPVc IPr;
+  Boolean res;
+  record IVVc IVr;
+  array record IVVc aIVr;
+  vector Boolean vInv;
+  record CredHistVc CredHistr;
+  record CredManVc CredManr;
+  Integer i;
+
+  CredManr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    CredHistr.TransDate = RepSpec.d1;  
+    while (LoopKey("CredManTransDate:" & CredManr.SerNr,CredHistr,1,true)) begin
+      if (CredHistr.RecordType==0 and CredHistr.MainRecord==1) then begin
+        if (vInv[CredHistr.RecordNr]==false) then begin
+          IVr.SerNr = CredHistr.RecordNr;
+          if (ReadFirstMain(IVr,1,true)) then begin
+            aIVr[aIVr.length] = IVr;
+            vInv[CredHistr.RecordNr] = true; 
+          end;
+        end;
+      end;
+    end;
+  end;
+  
+  for (i=0;i<aIVr.length;i=i+1) begin
+    IVr = aIVr[i];
+    RecordClear(IPr);
+    ReturnInvoiceAndMakePrepaymentSeparate(IVr);
+    UnlinkCredManInvoice(IVr);
+    CreditAndOKInvoice(IVr.SerNr,100,credval,vCredVal,IVr.Sum4,false,CurrentDate);
+    res = true;
+  end;
+
+  ClientRemoteAsync.RefinCredManPartial2WClassSubmitCallBack(wn,RepSpec,res);
+
+  return;
+end;
+
+global
+updating procedure CredManPartialBuyoutDo(Date td,val buyoutval,Longint sernr,record RcVc RepSpec,Integer wn,Integer credmanwn,Boolean regenf)
 begin
   record CredManVc CredManr,oldCredManr;
   record SMVc SMr;
@@ -1694,7 +1845,20 @@ begin
 LCredManPartialBuyoutDo:;
 
   CheckBuyOutAgreementAsync(CredManr,CurrentDate,credmanwn);
-  ClientRemoteAsync.RefinCredManPartialWClassSubmitCallBack(err,wn,credmanwn);
+  ClientRemoteAsync.RefinCredManPartialWClassSubmitCallBack(err,wn,credmanwn,regenf);
+  return;
+end;
+
+global
+procedure CredManPartialBuyoutFinish(Boolean regenivf,record CredManVc CredManr)
+begin
+  record IVVc tIVr;
+  
+  RecreateAgreementSchedule4(CredManr,true,false);
+  if (regenivf) then begin
+    qupdating.CreateSingleAgreementInvoice2(CredManr,CurrentDate,tIVr,"",false,true);
+  end;
+
   return;
 end;
 

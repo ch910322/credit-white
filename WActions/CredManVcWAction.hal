@@ -20,7 +20,7 @@ remote procedure PrepareAgreementDocSigningSession(record AgreementDocVc,var str
 remote function Boolean GetAgreementDoc(record CredManVc,Integer,var record AgreementDocVc);
 remote updating procedure CredManMakePaymentRemote(var record CredManVc,var record VIVc,var record IVVc,string,var val,Boolean,val);
 remote function Boolean GetAgreementDoc2(Longint,string,Integer,var record AgreementDocVc);
-remote updating procedure CredManPartialBuyoutDo(Date,val,Longint,record RcVc,Integer,Integer);
+remote updating procedure CredManPartialBuyoutDo(Date,val,Longint,record RcVc,Integer,Integer,Boolean);
 remote procedure GetPauseCredManNextDate(record CredManVc,var Date);
 remote updating procedure RecreateAgreementSchedule(record CredManVc);
 remote updating procedure RecreateAgreementSchedule2(record CredManVc,Boolean);
@@ -61,8 +61,11 @@ remote inner function Boolean ExternalDocumentEnabled(string);
 remote updating procedure PrintBuyOutSummary(record CredManVc,record RcVc,var string,area,var record MailVc);
 remote updating procedure CredManGracePeriodRemote(record RcVc,record CredManVc,var string);
 external function Boolean UseFullBuyoutProcedure();
-remote updating procedure RecreateAgreementSchedule4(record CredManVc,Boolean,Boolean);
 remote function Boolean FindFirstFeeInvoice(record CredManVc,var record IVVc);
+remote procedure RecreateAgreementSchedule4(record CredManVc,Boolean,Boolean);
+remote procedure CredManPartialBuyoutFinish(Boolean,record CredManVc);
+remote updating procedure CredManCreditBeforePartialBuyout(Integer,record RcVc);
+remote function Date GetLastInvDate(record CredManVc);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -1391,20 +1394,29 @@ begin
 end;
 
 global
-updating procedure RefinCredManPartialWClassSubmit()
+procedure RefinCredManPartialWClassSubmit()
 begin
   Integer wn;
   record RcVc RepSpec;
   string 255 err;
+  Date td;
+  record CredManVc CredManr;
 
   if (GetGlobalBoolean("PartialBuyoutInProcess")==false) then begin
     wn = CurWindow;
     DeselectWindow(wn,true);
     GetWindowRecord(wn,RepSpec);
-    SetGlobalBoolean("PartialBuyoutInProcess",true);
     
-    if (nonblank(RepSpec.d1) and RepSpec.d1<=CurrentDate and RepSpec.vals0>0) then begin
-      asyncremote.CredManPartialBuyoutDo(RepSpec.d1,RepSpec.vals0,RepSpec.long1,RepSpec,wn,RepSpec.flags[29]);
+    GetWindowRecord(RepSpec.flags[29],CredManr);
+    td = GetLastInvDate(CredManr);
+    if (nonblank(RepSpec.d1) and RepSpec.d1>td and RepSpec.vals0>0) then begin
+      SetGlobalBoolean("PartialBuyoutInProcess",true);
+      asyncremote.CredManPartialBuyoutDo(RepSpec.d1,RepSpec.vals0,RepSpec.long1,RepSpec,wn,RepSpec.flags[29],false);
+    end else begin
+      if (nonblank(RepSpec.d1) and RepSpec.vals0>0) then begin
+        RepSpec.flags[28] = wn;
+        OpenWindow("RefinCredManPartial2WClass",0,0,"","",RepSpec);
+      end;
     end;
   end;
 
@@ -1412,7 +1424,41 @@ begin
 end;
 
 global
-procedure RefinCredManPartialWClassSubmitCallBack(string err,Integer wn,Integer credmanwn)
+procedure RefinCredManPartial2WClassSubmit()
+begin
+  Integer wn;
+  record RcVc RepSpec;
+  string 255 err;
+
+  
+  if (GetGlobalBoolean("PartialBuyoutInProcess")==false) then begin
+    SetGlobalBoolean("PartialBuyoutInProcess",true);
+    wn = CurWindow;
+    DeselectWindow(wn,true);
+    GetWindowRecord(wn,RepSpec);
+    CloseWindow(wn);
+    asyncremote.CredManCreditBeforePartialBuyout(RepSpec.flags[28],RepSpec);
+  end;
+
+  return;
+end;
+
+global
+procedure RefinCredManPartial2WClassSubmitCallBack(Integer wn,record RcVc RepSpec,Boolean successf)
+begin
+  record CredManVc CredManr;
+
+  if (successf) then begin
+    asyncremote.CredManPartialBuyoutDo(RepSpec.d1,RepSpec.vals0,RepSpec.long1,RepSpec,wn,RepSpec.flags[29],true);
+  end else begin
+    SetGlobalBoolean("PartialBuyoutInProcess",false);
+  end;
+
+  return;
+end;
+
+global
+procedure RefinCredManPartialWClassSubmitCallBack(string err,Integer wn,Integer credmanwn,Boolean regenivf)
 begin
   record CredManVc CredManr;
 
@@ -1426,7 +1472,8 @@ begin
       CloseWindow(wn);
     end;
     GetWindowRecord(credmanwn,CredManr);
-    asyncremote.RecreateAgreementSchedule4(CredManr,true,false);
+
+    threadremoteasync.CredManPartialBuyoutFinish(regenivf,CredManr);
   end;
 
   return;

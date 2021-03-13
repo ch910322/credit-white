@@ -2595,6 +2595,7 @@ begin
   return;
 end;
 
+global
 function string 255 GetReceiptsPayMode(record IVVc IVr)
 begin
   Boolean foundf;
