@@ -1035,7 +1035,7 @@ begin
       TrHs = false;
     end else begin
  //     if (CredHistr.RecordType==0) then begin
-      if (CredHistr.ChargeType!=15 and CredHistr.ChargeType!=14 and CredHistr.RecordType!=5 and CredHistr.ChargeType!=17) then begin
+      if (CredHistr.ChargeType!=14 and CredHistr.RecordType!=5 and CredHistr.ChargeType!=17) then begin
         openamount = 0;
         switch (CredHistr.RecordType) begin
           case 0: 

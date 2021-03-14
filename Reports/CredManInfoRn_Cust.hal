@@ -280,7 +280,12 @@ begin
         case 9: 
           pen = pen + IVrw.Sum;
         case 15: 
-          extrafeef = true;
+          fees = fees + IVrw.Sum;
+          ClearRow(FMr,FMrw,1);
+          FMrw.ArtCode = IVrw.ArtCode;
+          FMrw.Sum = IVrw.Sum;
+          MatRowPut(FMr,MatRowCnt(FMr),FMrw);
+          addf = true;
 
       end;
     end;
