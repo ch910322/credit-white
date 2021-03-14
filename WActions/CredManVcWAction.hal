@@ -708,17 +708,21 @@ begin
 end;
 
 global
-procedure CalculateBuyOutValue()
+updating procedure CalculateBuyOutValue()
 begin
-  Integer wn;
+  Integer wn,mwn;
   record RcVc RepSpec;
   record CredManVc CredManr;
   
   wn = CurWindow;
   DeselectWindow(wn,true);
   GetWindowRecord(wn,RepSpec);
-  CredManr.SerNr = RepSpec.long1;
-  if (ReadFirstMain(CredManr,1,true)) then begin
+  mwn = MotherWindow(wn);
+  GetWindowRecord(mwn,CredManr);
+  CredManr.LetterOfDemand = StringToVal(RepSpec.f18,M4Val);
+  CredManr.InsuranceCost = StringToVal(RepSpec.f19,M4Val);
+  PutWindowRecord(mwn,CredManr);
+  if (WindowDoOK(mwn,0)) then begin
     threadremote.CheckBuyOutAgreement(CredManr,RepSpec);
     PutWindowRecord(wn,RepSpec);
   end;
@@ -760,12 +764,19 @@ begin
 end;
 
 global
-function Boolean CheckBuyoutValueWClassOnOpenWindow(Integer wn)
+updating function Boolean CheckBuyoutValueWClassOnOpenWindow(Integer wn)
 begin
   record RcVc RepSpec;
+  record CredManVc CredManr;
+  Integer mwn;
 
   GetWindowRecord(wn,RepSpec);
   RepSpec.d1 = CurrentDate;
+  RepSpec.flags[1] = 1;
+  mwn = MotherWindow(wn);
+  GetWindowRecord(mwn,CredManr);
+  RepSpec.f18 = CredManr.LetterOfDemand;
+  RepSpec.f19 = CredManr.InsuranceCost;
   PutWindowRecord(wn,RepSpec);
   CalculateBuyOutValue;
 

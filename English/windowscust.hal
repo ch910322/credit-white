@@ -484,24 +484,36 @@ begin
 
   WindowBegin("Check Buy-out Value",CheckBuyoutValueWClass,CGother,RcType);
   UseView(RcVc);
-  h = 220;
+  h = 320;
   if (ShowBuyOutFee) then begin
     h = h + 20;
   end;
   if (UseBuyoutSummary) then begin
     h = h + 40;
   end;
-  SetWRect(20,80,400,h);
+  SetWRect(20,80,450,h);
   AutoSizeWindow(false);  
   h = 150; h2 = 250; v=450;
   EditFieldTL(h,v=6,120,"Buy-out Date",M4Date,Normal,0,d1,false,PasteCurDate);
-  EditFieldTL(h,v+=vs,120,"Total Dept",M4Val,ViewOnly,0,vals0,true,0);
-  EditFieldTL(h,v+=vs,120,"Accumulated Penalty",M4Str,ViewOnly,255,f12,true,0);
+
+  EditFieldTL(h,v+=vs,120,"Principle Amount",M4Str,ViewOnly,255,f13,true,0);
+  EditFieldTL(h,v+=vs,120,"Interest Amount",M4Str,ViewOnly,255,f16,true,0);
+  EditFieldTL(h,v+=vs,120,"Overdue Invoices",M4Str,ViewOnly,255,f17,true,0);
+  EditFieldTL(h,v+=vs,120,"Credited Interest",M4Str,ViewOnly,255,f20,true,0);
+  CheckBox(h+140,v,0,"Credit Interest",flags[1]);
+
+
+  EditFieldTL(h,v+=vs,120,"Letter of Demand",M4Str,Normal,20,f18,true,0);
+  EditFieldTL(h,v+=vs,120,"Insurance Cost",M4Str,Normal,20,f19,true,0);
+
   if (ShowBuyOutFee) then begin
     EditFieldTL(h,v+=vs,120,"Premature Term. Fee",M4Str,ViewOnly,255,f14,true,0);
   end;
-  EditFieldTL(h,v+=vs,120,"Last Invoice Value",M4Val,ViewOnly,0,vals1,true,0);
-  EditFieldTL(h,v+=vs,120,"Expected Payment",M4Val,ViewOnly,0,vals2,true,0);
+  EditFieldTL(h,v+=vs,120,"Not invoiced Overdues",M4Str,ViewOnly,255,f12,true,0);
+  EditFieldTL(h,v+=vs,120,"Total Dept",M4Val,ViewOnly,0,vals2,true,0);
+
+//  EditFieldTL(h,v+=vs,120,"Last Invoice Value",M4Val,ViewOnly,0,vals1,true,0);
+//  EditFieldTL(h,v+=vs,120,"Expected Payment",M4Val,ViewOnly,0,vals2,true,0);
 
   HalPushButton(h,v+=vs,h+120,v+20,"CalculateBuyOutValue","Calculate");
   if (UseBuyoutSummary) then begin
@@ -2200,6 +2212,10 @@ begin
   EditField(h,v+=vs,100,"Prolong Item",Normal,ProlongItem,false,INSClass);
   EditField(h,v+=vs,100,"Compensation Item",Normal,CompensationItem,false,INSClass);
   EditField(h,v+=vs,100,"Selling Write-off Item",Normal,SellingItem,false,INSClass);
+  EditField(h,v+=vs,100,"Letter of Demand Item",Normal,LetterOfDemand,false,INSClass);
+  EditField(h,v+=vs,100,"Insurance Cost Item",Normal,InsuranceCost,false,INSClass);
+
+
   EditField(h,v+=vs,100,"Bad Debt Sales A/C",Normal,SellingSalesAccount,false,AccSClass);
   
     

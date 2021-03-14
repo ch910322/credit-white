@@ -65,7 +65,6 @@ external function Integer GetInterestPaymentType(record CredManVc);
 external function Boolean UseFullBuyoutProcedure();
 external procedure AddBuyOutFee(record CredManVc,var record IVVc,val);
 external procedure CheckAndAddHiddenPrinciple(var record IVVc,record CMInvoicingBlock);
-external function val GetActualBalance(record CredManVc,record CredManPayPlanVc,Boolean);
 remote procedure RefinCredManPartialWClassSubmitCallBack(string,Integer,Integer,Boolean);
 forward updating procedure CreateCredmanPurchaseInvoice(record CredManVc,val,var record VIVc,val,Boolean,Date);
 external inner procedure FindUserMailboxName(string,var string,var string);
