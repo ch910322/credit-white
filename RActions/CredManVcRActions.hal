@@ -436,6 +436,7 @@ global
 updating function LongInt CredManVcRecordUpdateAfter(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
 begin
   Longint res;
+  record CredManSchedVc CSr;
 
   res = 0;
 
@@ -444,6 +445,12 @@ begin
   end;
   if (CredManr.OfficialSerNr!=CredMan2r.OfficialSerNr) then begin
     StoreCredOffSerNrIV(CredManr.SerNr,"CredManVc",CredManr.OfficialSerNr)
+  end;
+  if (CredManr.Status==2 and CredMan2r.Status<2) then begin
+    CSr.CredManNr = CredManr.SerNr;
+    if (ReadFirstMain(CSr,1,true)==false) then begin
+      NewTimedTask2("CreateCredManSched" & CredManr.SerNr,"CreateCredManSched","CreateCredManSchedTask",CredManr.SerNr,CurrentDate,AddSeconds(CurrentTime,1),"","");
+    end;
   end;
 
   res = inner.CredManVcRecordUpdateAfter(CredManr,CredMan2r,stat,long4);

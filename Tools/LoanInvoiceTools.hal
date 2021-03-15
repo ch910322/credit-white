@@ -2595,6 +2595,19 @@ logtext(0,"GenerateAgreementSchedule2");
 end;
 
 global
+procedure CreateCredManSchedTask(string args)
+begin
+  record CredManVc CredManr;
+  
+  CredManr.SerNr = StringToLongint(args);
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    GenerateAgreementSchedule(CredManr,false,true);
+  end;
+
+  return;
+end;
+
+global
 function Boolean AgreementPaidOut(record CredManVc CredManr,var val paidout)
 begin
   Boolean res;
