@@ -77,6 +77,7 @@ external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
 external inner procedure IPSumup(var record IPVc);
 external inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var LongInt);
 external function string 255 GetReceiptsPayMode(record IVVc);
+remote procedure CredManCreditBeforePauseCallBack(Integer,Integer,record RcVc);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -1679,8 +1680,7 @@ begin
   return;
 end;
 
-global
-updating procedure CredManCreditBeforePartialBuyout(Integer wn,record RcVc RepSpec)
+updating function Boolean CredManClearIssuedInvoices(record CredManVc CredManr,Date td)
 begin
   val credval;
   vector val vCredVal;
@@ -1690,25 +1690,20 @@ begin
   array record IVVc aIVr;
   vector Boolean vInv;
   record CredHistVc CredHistr;
-  record CredManVc CredManr;
   Integer i;
-
-  CredManr.SerNr = RepSpec.long1;
-  if (ReadFirstMain(CredManr,1,true)) then begin
-    CredHistr.TransDate = RepSpec.d1;  
-    while (LoopKey("CredManTransDate:" & CredManr.SerNr,CredHistr,1,true)) begin
-      if (CredHistr.RecordType==0 and CredHistr.MainRecord==1) then begin
-        if (vInv[CredHistr.RecordNr]==false) then begin
-          IVr.SerNr = CredHistr.RecordNr;
-          if (ReadFirstMain(IVr,1,true)) then begin
-            aIVr[aIVr.length] = IVr;
-            vInv[CredHistr.RecordNr] = true; 
-          end;
+  
+  CredHistr.TransDate = td;  
+  while (LoopKey("CredManTransDate:" & CredManr.SerNr,CredHistr,1,true)) begin
+    if (CredHistr.RecordType==0 and CredHistr.MainRecord==1) then begin
+      if (vInv[CredHistr.RecordNr]==false) then begin
+        IVr.SerNr = CredHistr.RecordNr;
+        if (ReadFirstMain(IVr,1,true)) then begin
+          aIVr[aIVr.length] = IVr;
+          vInv[CredHistr.RecordNr] = true; 
         end;
       end;
     end;
   end;
-  
   for (i=0;i<aIVr.length;i=i+1) begin
     IVr = aIVr[i];
     RecordClear(IPr);
@@ -1718,6 +1713,21 @@ begin
     res = true;
   end;
 
+  CredManClearIssuedInvoices = res;
+  return;
+end;
+
+global
+updating procedure CredManCreditBeforePartialBuyout(Integer wn,record RcVc RepSpec)
+begin
+  record CredManVc CredManr;
+  Boolean res;
+
+  CredManr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    res = CredManClearIssuedInvoices(CredManr,RepSpec.d1);
+  end;
+  
   ClientRemoteAsync.RefinCredManPartial2WClassSubmitCallBack(wn,RepSpec,res);
 
   return;
@@ -1855,6 +1865,36 @@ begin
   
   RecreateAgreementSchedule4(CredManr,true,false);
   if (regenivf) then begin
+    qupdating.CreateSingleAgreementInvoice2(CredManr,CurrentDate,tIVr,"",false,true);
+  end;
+
+  return;
+end;
+
+
+global
+updating procedure CredManCreditBeforePause(Integer wn,Integer mwn,record RcVc RepSpec)
+begin
+  record CredManVc CredManr;
+  Boolean res
+
+  CredManr.SerNr = RepSpec.long1;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    CredManClearIssuedInvoices(CredManr,RepSpec.d1);
+  end;
+  
+  ClientRemoteAsync.CredManCreditBeforePauseCallBack(wn,mwn,RepSpec);
+
+  return;
+end;
+
+global
+procedure CredManDoPauseFinish(record CredManVc CredManr,Boolean fullf,Boolean invf)
+begin
+  record IVVc tIVr;
+  
+  RecreateAgreementSchedule4(CredManr,true,fullf);
+  if (invf) then begin
     qupdating.CreateSingleAgreementInvoice2(CredManr,CurrentDate,tIVr,"",false,true);
   end;
 

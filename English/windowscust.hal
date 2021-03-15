@@ -659,6 +659,15 @@ begin
   HalPushButton(230,-30,330,-10,"SchedYesNoWClassClose","Cancel");
   EndWindow;
 
+  WindowBegin("Register Agreement Changes",PauseCredManForceWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,500,440);
+  AutoSizeWindow(true);  
+  h = 150; h2 = 250; v=350;
+  StaticText(50,26,"Invoice in the Period already created, do you want to do Changes?",false);
+  HalPushButton(100,-30,200,-10,"PauseCredManForceWClassPause","OK");
+  HalPushButton(230,-30,330,-10,"SchedYesNoWClassClose","Cancel");
+  EndWindow;
 
   WindowBegin("Item Priority",ItemPriorityTClass,CGHBl,-);
   SetWRect(80,80,400,280);

@@ -66,6 +66,8 @@ remote procedure RecreateAgreementSchedule4(record CredManVc,Boolean,Boolean);
 remote procedure CredManPartialBuyoutFinish(Boolean,record CredManVc);
 remote updating procedure CredManCreditBeforePartialBuyout(Integer,record RcVc);
 remote function Date GetLastInvDate(record CredManVc);
+remote procedure CredManDoPauseFinish(record CredManVc,Boolean,Boolean);
+remote updating procedure CredManCreditBeforePause(Integer,Integer,record RcVc);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -905,7 +907,10 @@ begin
           SelectWindow(iwn);
         end;
       end else begin
-        MessageBox(200109,"");
+        //CredManCreditBeforePartialBuyout
+        closedf = true;
+        OpenWindow("PauseCredManForceWClass",1,wn,"","",RepSpec);
+        //MessageBox(200109,"");
       end;
       //SetWindowState(mwn,Rs_Normal);
     end;
@@ -930,6 +935,47 @@ begin
 
   return;
 end;
+
+global
+procedure PauseCredManForceWClassPause()
+begin
+  Integer wn,mwn,credwn;
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  mwn = MotherWindow(wn);
+  credwn = MotherWindow(mwn);
+  GetWindowRecord(credwn,CredManr);
+  RepSpec.long1 = CredManr.SerNr;
+  asyncremote.CredManCreditBeforePause(credwn,mwn,RepSpec);
+  CloseWindow(wn);
+
+  return;
+end;
+
+global 
+updating procedure CredManCreditBeforePauseCallBack(Integer wn,Integer mwn,record RcVc RepSpec)
+begin
+  record CredManVc CredManr;
+  Boolean res,setf,closedf;
+  record IVVc IVr;
+
+  GetWindowRecord(wn,CredManr);
+  DoPauseCredMan(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr);
+  if (res) then begin
+    PutWindowRecord(wn,CredManr);
+    if (WindowDoOK(wn,0)) then begin
+      asyncremote.CredManDoPauseFinish(CredManr,RepSpec.flags[1]==1,RepSpec.flags[3]==0);
+    end;
+  end;
+  CloseWindow(mwn);
+
+  return;
+end;
+
 
 global
 updating procedure ManualExtraFeeWClassCreate()
