@@ -919,8 +919,6 @@ begin
   HalPushButton(230,-25,280,-5,"CredManDClassSignSchedule","Open");
 
   if (SimplifiedSureties) then begin
-    CheckBox(285,-41,0,"Bill of Exchange signed",SignVekselis);
-    HalPushButton(430,-47,480,-5,"CredManDClassSignVekselis","Open");
     if (ShowToDisburse) then begin
       SoftEditField(410,-21,70,"Not disbursed",ViewOnly,"topayout",true,0,M4Val,0);
     end;
