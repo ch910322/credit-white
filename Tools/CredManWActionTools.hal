@@ -2278,6 +2278,17 @@ begin
       MatRowPut(Mailr,1,Mailrw);
     end;
     tRepSpec.f1 = CredManr.CustCode;
+
+    tRepSpec.d1  = RepSpec.d1;
+    tRepSpec.f13 = RepSpec.f13;
+    tRepSpec.f16 = RepSpec.f16;
+    tRepSpec.f17 = RepSpec.f17;
+    tRepSpec.f18 = RepSpec.f18;
+    tRepSpec.f19 = RepSpec.f19;
+    tRepSpec.f12 = RepSpec.f12;
+    tRepSpec.vals2 = RepSpec.vals2;
+
+
 //    tRepSpec.f8 = GetCredManNr(CredManr.SerNr);
     if (LTxtr.HtmlFlag==0) then begin
       ParseTextField(a,LTxtr,tRepSpec,"LtxtVcReplaceToken");

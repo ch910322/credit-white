@@ -1592,6 +1592,15 @@ begin
  
   Ext_CommonDocumentFields(vVals);
 
+  vVals["F_BUYOUTDATE"] = RepSpec.d1;
+  vVals["F_BUYOUTPRINC"] = RepSpec.f13;
+  vVals["F_BUYOUTINT"] = RepSpec.f16;
+  vVals["F_BUYOUTOVERDUE"] = RepSpec.f17;
+  vVals["F_BUYOUTLETTER"] = RepSpec.f18;
+  vVals["F_BUYOUTINSURANCE"] = RepSpec.f19;
+  vVals["F_BUYOUTNOTINVOVERDUE"] = RepSpec.f12;
+  vVals["F_BUYOUTTOTAL"] = RepSpec.vals2;
+
   return;
 end;
 
