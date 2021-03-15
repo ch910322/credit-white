@@ -246,7 +246,7 @@ begin
                 person = ATbrw.Manager;
               end;
               if (ATBrw.PersonType==2) then begin
-                person = GetLeastWorkLoadManager(ATbrw.ActType,CredManr.Type,td);
+                person = GetLeastWorkLoadManager(ATbrw.ActType,CredManr.Type,actdate);
                 if (blank(person)) then begin
                   LogText(0,"GetLeastWorkLoadManager " & ATbrw.ActType & " failed");
                 end; 
@@ -271,7 +271,7 @@ begin
                 person = ATbrw.Manager;
               end;
               if (ATBrw.PersonType==2) then begin
-                person = GetLeastWorkLoadManager(ATbrw.ActType,CredManr.Type,td);
+                person = GetLeastWorkLoadManager(ATbrw.ActType,CredManr.Type,actdate);
                 if (blank(person)) then begin
                   LogText(0,"GetLeastWorkLoadManager " & ATbrw.ActType & " failed");
                 end; 
@@ -283,7 +283,6 @@ begin
     end;
   end;
   ResetCompany(oldcomp);
-
   return;
 end;
 
