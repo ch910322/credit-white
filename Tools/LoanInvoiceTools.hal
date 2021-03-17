@@ -478,6 +478,7 @@ begin
     if (Changer.CredManNr!=CredManr.SerNr) then begin
       TrHs = false;
     end else begin
+      testf = false;
       if (Changer.OKFlag==1 and Changer.LateFeeDays>-1) then begin
         if (DateInRange(sd,Changer.TransDate,Changer.EndDate)) then begin
           testf = true;
@@ -485,7 +486,7 @@ begin
         if (DateInRange(ed,Changer.TransDate,Changer.EndDate)) then begin
           testf = true;
         end;
-        if (res) then begin
+        if (testf) then begin
           res = Changer.LateFeeDays;
           TrHs = false;
         end;
