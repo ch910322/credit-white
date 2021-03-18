@@ -69,14 +69,14 @@ begin
   return;
 end;
 
-function longint GetManagerWorkLoadEvaluation(string user,Integer EvaluationType,date d)
+function boolean GetManagerWorkLoadEvaluation(string user,Integer EvaluationType,date d,var longint ev)
 begin
   record ActVc Actr;
-  longint ev;
-  boolean testf,foundf;
+  boolean testf,foundf,res;
   string 255 keystr;
 
   ev = 0;
+  res = false;
   keystr = "OKFlagUserMain:" & user;
   Actr.OKFlag = 0;
   Actr.MainPersons = user;
@@ -93,22 +93,25 @@ begin
         case 0: 
           if (Actr.TransDate == d) then begin
             ev = ev + TimeToMinutes(Actr.CostTime);
+            res = true;
           end;
         case 1:
           if (Actr.TransDate == d) then begin
             ev = ev +1;
+            res = true;
           end;    
         case 2:
-          ev = ev +1;      
+          ev = ev +1;  
+          res = true;          
       end;  
     end;  
   end;  
-  // TimeToVal2, TimeToMinutes?
-  GetManagerWorkLoadEvaluation = ev;
+  GetManagerWorkLoadEvaluation = res;
   return;
 end;
 
-function string 10 GetLeastWorkLoadManager(string ActType, string CredManType, date d)
+global
+function string 10 GetLeastWorkLoadManager(string ActType,string CredManType,date d)
 begin
   record ManagerWorkloadVc MWr;
   record CredManTypeVc CMTyper;
@@ -123,7 +126,7 @@ begin
 
   foundf=false;
   res = "";
-  prevev = 0;
+  prevev = -1;
   if (nonblank(CredManType)) then begin
     MWr.ActType = ActType;
     MWr.CredManType = CredManType;
@@ -169,11 +172,12 @@ begin
          TrHs = false;
       end;
       if (TrHs) then begin
-        ev = GetManagerWorkLoadEvaluation(Userr.Code,MWr.EvaluationType,d);
-        if (ev <= prevev) then begin
-          res = Userr.Code;
-        end;  
-        prevev = ev;
+        if (GetManagerWorkLoadEvaluation(Userr.Code,MWr.EvaluationType,d,ev)) then begin
+          if ((prevev==-1) or (ev <= prevev)) then begin
+            res = Userr.Code;
+            prevev = ev;  
+          end;  
+        end;
       end;  
     end;
   end;
