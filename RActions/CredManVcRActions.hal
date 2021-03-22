@@ -372,7 +372,7 @@ BEGIN
       CredManr.OfficialSerNr = NextLegalSerNr("CredManVc",CredManr.SerNr,CredManr.startDate,LegalInvNrrw.Serie,LegalInvNrrw.TSerStart,LegalInvNrrw.TSerEnd);
     end;
   end;
-  if (CredManr.Approved==1) then begin
+  if ((CredManr.Approved==1) and ((CredManr.Status==2) or (CredManr.Status==3))) then begin
     CreateCredManObject(CredManr,true);
   end;
   res = inner.CredManVcRecordSave(CredManr,CredMan2r,stat,long4);
@@ -413,7 +413,7 @@ BEGIN
       CredManr.OfficialSerNr = NextLegalSerNr("CredManVc",CredManr.SerNr,CredManr.startDate,LegalInvNrrw.Serie,LegalInvNrrw.TSerStart,LegalInvNrrw.TSerEnd);
     end;
   end;
-  if (CredManr.Approved==1) then begin
+  if ((CredManr.Approved==1) and ((CredManr.Status==2) or (CredManr.Status==3))) then begin
     CreateCredManObject(CredManr,true);
   end;
   res = inner.CredManVcRecordUpdate(CredManr,CredMan2r,stat,long4);
