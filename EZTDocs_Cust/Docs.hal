@@ -378,6 +378,22 @@ begin
   return;
 end;
 
+procedure GetSuretyValues4(record CredManVc CredManr,Integer num,var string signManager)
+begin
+  record UserVc USr;
+  
+  signManager = GetFieldValueByName(CredManr,"Surety" & num & "SignManager",-1);
+  
+  if(blank(signManager))then begin
+  	if(nonblank(CredManr.SalesMan))then begin
+  		USr.Code = CredManr.SalesMan;
+  		if(readfirstmain(USr,1,true))then begin
+  			signManager = USr.Name;
+  		end;
+  	end;
+  end;
+  return;
+end;
 
 procedure GetSuretyValues3(record CredManVc CredManr,Integer num,var string name,var string phone,var string mobile,var string email,var string id,var string addr0,var string addr1,var string addr2,var string addr3,var string addr4,var string saddr0,var string saddr1,var string saddr2,var string saddr3,var string saddr4,var string value,var string signer,var string td,var string idcard,var string iddate,var string signerphone,var string signermobile,var string signeremail,var string signerid,var string signeridcard,var string signeriddate,var string legalid,var Integer comptype)
 begin
@@ -444,7 +460,7 @@ begin
   string 255 tstr;
   val calcfees,fixfees;
   record UserVc Userr;
-  string 255 saddr0,saddr1,saddr2,saddr3,saddr4,idcard,iddate;
+  string 255 saddr0,saddr1,saddr2,saddr3,saddr4,idcard,iddate,signManager;
   string 255 signerphone,signermobile,signeremail,signerid,signeridcard,signeriddate,legalid,idstring;
   Integer comptype;
 
@@ -475,7 +491,12 @@ begin
     vVals[fs & "F_CONTACTSIGNERIDCARD"] = signeridcard;
     vVals[fs & "F_CONTACTSIGNERIDCARDDATE"] = signeriddate;
     Ext_OutAddress(vVals,fs & "F_CONTACTSIGNERADRESS",name,saddr0,saddr1,saddr2,saddr3,saddr4);
-
+		
+		if(num>0)then begin
+			GetSuretyValues4(CredManr,num,signManager);
+		end;
+		vVals[fs & "F_SIGNMANAGERNAME"] = signManager;
+		
   return;
 end;
 

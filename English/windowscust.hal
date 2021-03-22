@@ -3593,3 +3593,26 @@ begin
 
   return;
 end;
+
+window UserNameSClass:8
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer,android,iPad,iPhone")
+begin
+  real h,v;
+  WindowBegin("Paste Person",UserNameSClass,CGslist,UserView);
+  Sizeable(-1,-1,0,0);
+  UseView(UserVc);
+//  SpawnClass(USDClass);
+  Modality(kModalityAboveParent);
+  SetWRect(64,80,509,298);
+  if (GuiType==kGuiiPhone) then begin
+    RecordList(0,0,-1,-1);
+    RLCellKey(10,6,280,19,Name,false,12,patM4blue,Name);
+    RLCellKey(10,26,280,39,Code,false,12,patM4black,Code);
+  end else begin    
+		RecordList(4,17,-21,-39);
+    RlColKey(4,4,  "Sign.",Name,false,ActName);
+    RlColKey(81,81,"Name",Code,false,ActCode);
+  end;
+  SearchField("Search");
+  EndWindow;
+end;
