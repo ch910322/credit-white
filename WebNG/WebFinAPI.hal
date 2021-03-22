@@ -860,6 +860,7 @@ begin
   date dfrom,dto,blankd;
   LongInt countout,curr,c2,rowoffset,rowlimit;
   integer keys,paidflag;
+  string 255 offinvnr;
   
   custcode = WebGetArg("CustCode");
   credmanstr = WebGetArg("CredManNr");
@@ -869,6 +870,7 @@ begin
   item = WebGetArg("artcode");
   invoicenrstr = WebGetArg("invoicenr");
   invoicenr = StringToLongint(invoicenrstr);
+  offinvnr = WebGetArg("officialinvoicenr");
   tstr=WebGetArg("rowoffset");
   countout = 0;
   curr = 0;
@@ -917,6 +919,16 @@ begin
         end;
         if ((testf) and (invoicenr!=-1)) then begin
           testf = CredHistr.RecordNr==invoicenr;
+        end;
+        if (testf) then begin
+          if (nonblank(offinvnr)) then begin
+            IVr.OfficialSerNr = offinvnr;
+            if (ReadFirstKey("OfficialSerNr",IVr,1,true)) then begin
+              testf = CredHistr.RecordNr==IVr.SerNr;
+            end else begin
+              testf = false;
+            end;
+          end;
         end;
         if (testf) then begin
           skipf = false;

@@ -41,6 +41,7 @@ external function Boolean FindCredManAcc(record CredManVc,var record CredManAccV
 external function Boolean IsPartialBuyoutType(Integer);
 external function Boolean CredManCanInvoiceOverdues(record CredManVc);
 external function val GetCredHistOpenAmount(record CredHistVc,Integer);
+external inner function string 60 AddObjectToObjectList(string,string);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -198,8 +199,9 @@ begin
   row IVVc IVrw;
   string 255 oldlang;
   record CMInvoicingBlock CIb;
+  record CredManAccVc CMAr;
   string 255 del;
-
+  
   BlockLoad(LMb);
   BlockLoad(CIb);
   if (fullf) then begin
@@ -240,7 +242,9 @@ begin
   end else begin
     IVr.LangCode = CredManr.LangCode;
   end;
-
+   if (FindCredManAcc(CredManr,CMAr)) then begin
+     IVr.Objects = AddObjectToObjectList(IVr.Objects,CMAr.Objects);
+   end;
   //we should always have in the plan first row instalment or interest where we have start and end date
   if (CIb.DetailedInvoice==1) then begin
     ClearRow(IVr,IVrw,1);

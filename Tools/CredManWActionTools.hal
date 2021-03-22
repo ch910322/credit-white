@@ -78,6 +78,7 @@ external inner procedure IPSumup(var record IPVc);
 external inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var LongInt);
 external function string 255 GetReceiptsPayMode(record IVVc);
 remote procedure CredManCreditBeforePauseCallBack(Integer,Integer,record RcVc);
+external function Boolean FindCredManAcc(record CredManVc,var record CredManAccVc);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -1367,6 +1368,7 @@ begin
   record CMInvoicingBlock CIb;
   record VIVc oldVIr;
   row VIVc VIrw;
+  record CredManAccVc CMAr;
   val ct;
   string 255 warning,tstr;
   val sum;
@@ -1394,6 +1396,9 @@ begin
   VIr.PayDeal = CIb.PaymentPayDeal;
   VIVc_PastePayDeal(VIr);
   VIr.Objects =  AddObjectToObjectList(VIr.Objects,CIb.PaymentObject);
+  if (FindCredManAcc(CredManr,CMAr)) then begin
+    VIr.Objects = AddObjectToObjectList(VIr.Objects,CMAr.Objects);
+  end;
   VIr.PayVal = sum;
   VIr.CustCredManNr = CredManr.SerNr;
   if (extrapayment) then begin
@@ -2450,5 +2455,64 @@ begin
   end;
 
   FindFirstFeeInvoice = res;
+  return;
+end;
+
+global 
+function integer GenCredManObj(record CredManVc CMr, record CMApplicationSetBlock CMAb,var record ObjVc Objr)
+begin
+  record OTVc OTr;
+  Integer err;
+  
+  OTr.Code = CMAb.AutoOTCode;
+  ReadFirstMain(OTr,1,true);
+  Objr.Code = OTr.Start & CMr.SerNr;
+  if (ReadFirstMain(Objr,1,true)==false) then begin
+    Objr.Code = OTr.Start & CMr.SerNr;
+    if (nonblank(CMr.OfficialSerNr)) then begin
+      Objr.Comment = CMr.Addr0 & " " & CMr.OfficialSerNr;
+    end else begin
+      Objr.Comment = CMr.Addr0 & " " & CMr.SerNr;
+    end;
+    Objr.OTCode = CMAb.AutoOTCode;
+    if (OTr.Length>0) then begin
+      if (len(Objr.Code)!=OTr.Length) then begin
+        err = 20444;
+      end;
+    end;
+    if (err!=0) then begin
+      Objr.Code = "";
+    end;
+  end;
+  GenCredManObj = err; 
+  return;
+end;
+ 
+global
+updating procedure CreateCredManObject(var record CredManVc CMr,Boolean autof)
+begin
+  record CMApplicationSetBlock CMAb;
+  record OTVc OTr;
+  record ObjVc Objr;
+  Boolean testf;
+  Integer err;
+  
+  BlockLoad(CMAb);
+  testf = false;
+  if (autof) then begin
+    if (CMAb.AutoCreateObject!=0) then begin testf = true; end;
+  end else begin
+    testf = true;
+  end;
+  if (testf) then begin
+    err = GenCredManObj(CMr,CMAb,Objr);
+    if (err!=0) then begin
+      MessageBox(err,"");
+      Objr.Code = "";
+    end else begin
+      RecordStore(Objr,false);
+    end;
+    CMr.Objects = AddObjectToObjectList(CMr.Objects,Objr.Code);
+  end;
   return;
 end;
