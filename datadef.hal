@@ -765,6 +765,12 @@ begin
   RecordField(LetterOfDemand,M4Val,0,0);
   RecordField(InsuranceCost,M4Val,0,0);
   ChangeField(Addr0,M4Str,255,0);
+  RecordField(Surety1SignManager,M4Str,100,0);
+  RecordField(Surety2SignManager,M4Str,100,0);
+  RecordField(Surety3SignManager,M4Str,100,0);
+  RecordField(Surety4SignManager,M4Str,100,0);
+  RecordField(Surety5SignManager,M4Str,100,0);
+  RecordField(Surety6SignManager,M4Str,100,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
