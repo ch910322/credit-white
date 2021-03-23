@@ -373,6 +373,8 @@ begin
   RecordField(NumberLangCode,M4Code,20,0);
   RecordField(BuyoutText,M4Code,20,LTxtVc);
   RecordField(BuyoutLangCode,M4Code,20,0);
+  RecordField(AutoCreateObject,M4Int,0,0);
+  RecordField(AutoOTCode,M4Code,5,OTVc);
   EndBlock;
   
   RecordAddBegin(CUVc,"CredCUVc");
@@ -760,7 +762,15 @@ begin
   RecordField(Subordination5Signer,M4Str,255,0);
   RecordField(Subordination5DueDate,M4Date,0,0);
   RecordField(MaxMonthlyPrinciple,M4Val,0,0);
+  RecordField(LetterOfDemand,M4Val,0,0);
+  RecordField(InsuranceCost,M4Val,0,0);
   ChangeField(Addr0,M4Str,255,0);
+  RecordField(Surety1SignManager,M4Str,100,0);
+  RecordField(Surety2SignManager,M4Str,100,0);
+  RecordField(Surety3SignManager,M4Str,100,0);
+  RecordField(Surety4SignManager,M4Str,100,0);
+  RecordField(Surety5SignManager,M4Str,100,0);
+  RecordField(Surety6SignManager,M4Str,100,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -1588,7 +1598,8 @@ begin
   RecordField(SellingSalesAccount,M4Code,20,0);
   RecordField(OverduePayTerm,M4Code,20,0);
   RecordField(InterestFirstDay,M4Int,0,0);
-  
+  RecordField(LetterOfDemand,M4Code,20,0);
+  RecordField(InsuranceCost,M4Code,20,0);
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
@@ -1683,7 +1694,9 @@ begin
   RecordField(AgeType,M4Int,0,0);
   RecordField(ProductionDate,M4Date,0,0);
   RecordField(ProducerName,M4Str,255,0);
-
+  RecordField(LivingAreaSize,M4Qty,0,0);
+  RecordField(LivingUnit,M4Code,10,UnitVc);
+  RecordField(UsagePermit,M4Int,0,0);
   ArrayBegin(Math,-,1);
   ArrayField(OwnerCode,M4Code,20,CUVc);
   ArrayField(OwnerName,M4Str,255,0);
@@ -1888,6 +1901,7 @@ begin
   RecordField(ControlAccShort,M4Code,20,AccVc);
   RecordField(ControlAccLong,M4Code,20,AccVc);
   RecordField(CustCat,M4Code,20,CCatVc);
+  RecordField(Objects,M4Code,60,ObjVc);
   ArrayBegin(Math,-,1);
   ArrayField(ArtCode,M4Code,20,INVc);
   ArrayField(CreditAcc,M4Code,20,AccVc);

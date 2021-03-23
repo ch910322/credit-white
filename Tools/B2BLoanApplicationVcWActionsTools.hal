@@ -634,15 +634,24 @@ begin
   string 255 res;
 
   switch (token) begin
-    case "F_PERIODLENGTH":     res = GetLoanAppField(RepSpec,"Months");
-    case "F_VALUTA":           res = GetLoanAppField(RepSpec,"CurncyCode");
-    case "F_SUMMA":            res = GetLoanAppField(RepSpec,"Sum");
-    case "F_CREDTOTINT":       res = GetScheduleTotalAmount(RepSpec,"interest");
-    case "F_CREDTOTPAY":       res = GetScheduleTotalAmount(RepSpec,"tot");
-    case "F_CREDTOTFEES":      res = GetScheduleTotalAmount(RepSpec,"fees");
-    case "schedulerow":        res = ConvertScheduleRow(RepSpec,token);
-    case "F_NUMMER":           res = RepSpec.f8;
-    
+    case "F_PERIODLENGTH":        res = GetLoanAppField(RepSpec,"Months");
+    case "F_VALUTA":              res = GetLoanAppField(RepSpec,"CurncyCode");
+    case "F_SUMMA":               res = GetLoanAppField(RepSpec,"Sum");
+    case "F_CREDTOTINT":          res = GetScheduleTotalAmount(RepSpec,"interest");
+    case "F_CREDTOTPAY":          res = GetScheduleTotalAmount(RepSpec,"tot");
+    case "F_CREDTOTFEES":         res = GetScheduleTotalAmount(RepSpec,"fees");
+    case "schedulerow":           res = ConvertScheduleRow(RepSpec,token);
+    case "F_NUMMER":              res = RepSpec.f8;
+
+    case "F_BUYOUTDATE":          res = RepSpec.d1;
+    case "F_BUYOUTPRINC":         res = RepSpec.f13;
+    case "F_BUYOUTINT":           res = RepSpec.f16;
+    case "F_BUYOUTOVERDUE":       res = RepSpec.f17;
+    case "F_BUYOUTLETTER":        res = RepSpec.f18;
+    case "F_BUYOUTINSURANCE":     res = RepSpec.f19;
+    case "F_BUYOUTNOTINVOVERDUE": res = RepSpec.f12;
+    case "F_BUYOUTTOTAL":         res = RepSpec.vals2;
+
   otherwise
     res = LetVcDoReplaceToken(RepSpec,token);
   end;

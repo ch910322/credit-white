@@ -942,7 +942,8 @@ begin
   return;
 end;
 
-function val GetCredHistOpenAmount(record CredHistVc CredHistr)
+global
+function val GetCredHistOpenAmount(record CredHistVc CredHistr,Integer checktype)
 begin
   val res,paid;
   Boolean TrHs;
@@ -950,7 +951,7 @@ begin
   record CredHistVc CredHist2r;
 
   type = GetCredHistType(CredHistr.ArtCode,-1,false); 
-  if (type==kEventTypeIssueInstalment) then begin
+  if (type==checktype) then begin
     TrHs = true;
     CredHist2r.PreviousNr = CredHistr.SerNr;
     while (LoopKey("PreviousNr",CredHist2r,1,TrHs)) begin
@@ -968,6 +969,7 @@ begin
   return;
 end;
 
+global
 function Date GetLastInvDate(record CredManVc CredManr)
 begin
   Date res;
@@ -1033,12 +1035,12 @@ begin
       TrHs = false;
     end else begin
  //     if (CredHistr.RecordType==0) then begin
-      if (CredHistr.ChargeType!=15 and CredHistr.ChargeType!=14 and CredHistr.RecordType!=5 and CredHistr.ChargeType!=17) then begin
+      if (CredHistr.ChargeType!=14 and CredHistr.RecordType!=5 and CredHistr.ChargeType!=17) then begin
         openamount = 0;
         switch (CredHistr.RecordType) begin
           case 0: 
             type = GetCredHistType(CredHistr.ArtCode,CredHistr.ChargeType,false); 
-            openamount = GetCredHistOpenAmount(CredHistr);
+            openamount = GetCredHistOpenAmount(CredHistr,kEventTypeIssueInstalment);
           case 4: 
             type = GetCredHistType(CredHistr.ArtCode,CredHistr.ChargeType,false); 
           otherwise

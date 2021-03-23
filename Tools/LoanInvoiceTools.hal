@@ -40,6 +40,8 @@ external inner procedure IVVc_PastePayDeal2(var record IVVc,string,string,Boolea
 external function Boolean FindCredManAcc(record CredManVc,var record CredManAccVc);
 external function Boolean IsPartialBuyoutType(Integer);
 external function Boolean CredManCanInvoiceOverdues(record CredManVc);
+external function val GetCredHistOpenAmount(record CredHistVc,Integer);
+external inner function string 60 AddObjectToObjectList(string,string);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -197,8 +199,9 @@ begin
   row IVVc IVrw;
   string 255 oldlang;
   record CMInvoicingBlock CIb;
+  record CredManAccVc CMAr;
   string 255 del;
-
+  
   BlockLoad(LMb);
   BlockLoad(CIb);
   if (fullf) then begin
@@ -239,7 +242,9 @@ begin
   end else begin
     IVr.LangCode = CredManr.LangCode;
   end;
-
+   if (FindCredManAcc(CredManr,CMAr)) then begin
+     IVr.Objects = AddObjectToObjectList(IVr.Objects,CMAr.Objects);
+   end;
   //we should always have in the plan first row instalment or interest where we have start and end date
   if (CIb.DetailedInvoice==1) then begin
     ClearRow(IVr,IVrw,1);
@@ -477,6 +482,7 @@ begin
     if (Changer.CredManNr!=CredManr.SerNr) then begin
       TrHs = false;
     end else begin
+      testf = false;
       if (Changer.OKFlag==1 and Changer.LateFeeDays>-1) then begin
         if (DateInRange(sd,Changer.TransDate,Changer.EndDate)) then begin
           testf = true;
@@ -484,7 +490,7 @@ begin
         if (DateInRange(ed,Changer.TransDate,Changer.EndDate)) then begin
           testf = true;
         end;
-        if (res) then begin
+        if (testf) then begin
           res = Changer.LateFeeDays;
           TrHs = false;
         end;
@@ -1515,6 +1521,24 @@ begin
 end;
 
 global
+procedure AddInsuranceCost(record CredManVc CredManr,var record IVVc IVr,record CMInvoicingBlock CIb)
+begin
+  string 255 spec;
+  val buyoutfee;
+  
+  if (nonblank(CIb.LetterOfDemand) and CredManr.LetterOfDemand>0) then begin
+    GetItemName(CIb.LetterOfDemand,spec);
+    SetupInvoiceRowAndAdd(CredManr,IVr,CIb.LetterOfDemand,spec,1,CredManr.LetterOfDemand,blankval,15,-1);
+  end;
+  if (nonblank(CIb.InsuranceCost) and CredManr.InsuranceCost>0) then begin
+    GetItemName(CIb.InsuranceCost,spec);
+    SetupInvoiceRowAndAdd(CredManr,IVr,CIb.InsuranceCost,spec,1,CredManr.InsuranceCost,blankval,15,-1);
+  end;
+
+  return;
+end;
+
+global
 procedure GetBuyOutData(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,var Date lastinv,var val balance)
 begin
   record CredHistVc CredHistr;
@@ -1603,8 +1627,9 @@ begin
     if (balancef==false) then begin
       AddBuyOutFee(CredManr,IVr,balance);
     end;
-    GetCredManOverdueInvoices(CredManr,CMb,td,lastinv,latedays,lateamount,lateformula,true,false,calcsd);
     BlockLoad(CIb);
+    AddInsuranceCost(CredManr,IVr,CIb);
+    GetCredManOverdueInvoices(CredManr,CMb,td,lastinv,latedays,lateamount,lateformula,true,false,calcsd);
     if (testf or CIb.OverdueIVType==0) then begin
       AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
     end else begin
@@ -1816,6 +1841,100 @@ begin
   return;
 end;
 
+function val FindUpdaidCredHistType(Longint ivnr)
+begin
+  record CredHistVc CredHistr;
+  Boolean TrHs;
+  val res;
+  
+  TrHs = true;
+  CredHistr.RecordNr = ivnr;
+  CredHistr.RecordType = 0;
+  while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+    if (CredHistr.RecordNr!=ivnr or CredHistr.RecordType!=0) then begin
+      TrHs = false;
+    end else begin
+      if (CredHistr.ChargeType==kEventTypeIssueInterest and CredHistr.PaidFlag==0) then begin
+        res = res + GetCredHistOpenAmount(CredHistr,kEventTypeIssueInterest);
+      end;
+    end;
+  end;
+
+  FindUpdaidCredHistType = res;
+  return;
+end;
+
+function val GetInterestAmount(record CredManVc CredManr,Date td)
+begin
+  val res;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  Integer i,rwcnt;
+  Integer diff,diff2;
+  
+  CSr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CSr,1,true)) then begin
+    rwcnt = MatRowCnt(CSr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(CSr,i,CSrw);
+      if (CSrw.FromDate<=td) then begin
+        if (CSrw.Interest>0) then begin
+          if (CSrw.Invoiced==1) then begin
+            res = res + FindUpdaidCredHistType(CSrw.InvoiceNr);
+          end else begin
+            if (CSrw.ToDate>td) then begin
+              diff = DateDiff(CSrw.ToDate,CSrw.FromDate)+1;
+              diff2 = DateDiff(td,CSrw.FromDate)+1;
+              res = res + CSrw.Interest*diff2/diff;
+            end else begin
+              res = res + CSrw.Interest;
+            end;
+          end;
+        end;
+      end else begin
+        i = rwcnt;
+      end;
+    end;
+  end;
+
+  GetInterestAmount = res;
+  return;
+end;
+
+function val GetCreditedInterest(record CredManVc CredManr,Date td)
+begin
+  val res;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  Integer i,rwcnt;
+  Integer diff,diff2;
+
+  CSr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CSr,1,true)) then begin
+    rwcnt = MatRowCnt(CSr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(CSr,i,CSrw);
+      if (CSrw.FromDate<=td) then begin
+        if (CSrw.ToDate>td) then begin
+          if (CSrw.Interest>0) then begin
+            if (CSrw.Invoiced==1) then begin
+              diff = DateDiff(CSrw.ToDate,CSrw.FromDate)+1;
+              diff2 = DateDiff(CSrw.ToDate,td)+1;
+              res = res + CSrw.Interest*diff2/diff;
+            end;
+          end;
+        end;
+      end else begin
+        i = rwcnt;
+      end; 
+    end;
+  end;
+
+
+  GetCreditedInterest = res;
+  return;
+end;
+
 global
 procedure CheckBuyOutAgreement2(record CredManVc CredManr,var record RcVc RepSpec,Boolean balancef)
 begin
@@ -1830,6 +1949,8 @@ begin
   array string 255 lateformula;
   Boolean schedf;
   Date calcsd;
+  val creditedint;
+
 logtext(0,"CheckBuyOutAgreement start");
 
   gSilenceIVOpenPrepExists = true;
@@ -1856,8 +1977,14 @@ logtext(0,"CheckBuyOutAgreement start");
   RepSpec.vals4 = dueamount;
   RepSpec.f12 = lateamount;//(RepSpec.vals2-RepSpec.vals3-RepSpec.vals4);
   //BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
+  if (RepSpec.flags[1]==1) then begin
+    RepSpec.f20 = GetCreditedInterest(CredManr,RepSpec.d1);  
+  end;
   
   RepSpec.f13 = GetActualBalance(CredManr,CredManPayPlanr,true);
+  RepSpec.f17 = openamount;
+  RepSpec.f16 = GetInterestAmount(CredManr,RepSpec.d1);
+
   gSilenceIVOpenPrepExists = false;
 
 logtext(0,"CheckBuyOutAgreement end");
@@ -2473,6 +2600,19 @@ logtext(0,"GenerateAgreementSchedule2");
 end;
 
 global
+procedure CreateCredManSchedTask(string args)
+begin
+  record CredManVc CredManr;
+  
+  CredManr.SerNr = StringToLongint(args);
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    GenerateAgreementSchedule(CredManr,false,true);
+  end;
+
+  return;
+end;
+
+global
 function Boolean AgreementPaidOut(record CredManVc CredManr,var val paidout)
 begin
   Boolean res;
@@ -2595,6 +2735,7 @@ begin
   return;
 end;
 
+global
 function string 255 GetReceiptsPayMode(record IVVc IVr)
 begin
   Boolean foundf;

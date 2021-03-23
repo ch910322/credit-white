@@ -215,7 +215,8 @@ begin
   end else begin
     v = v + 30;
   end;  
-  
+  CheckBox(h2,v,0,"Automatically create Tags/Objects on Agreement",AutoCreateObject);
+  EditField(h2,v+=30,50,"Object Type",Normal,AutoOTCode,false,OTSClass);
   EndWindow;
 
   WindowBegin("Scoring",ScoringSupLClass,CGmlist,-);
@@ -484,24 +485,36 @@ begin
 
   WindowBegin("Check Buy-out Value",CheckBuyoutValueWClass,CGother,RcType);
   UseView(RcVc);
-  h = 220;
+  h = 320;
   if (ShowBuyOutFee) then begin
     h = h + 20;
   end;
   if (UseBuyoutSummary) then begin
     h = h + 40;
   end;
-  SetWRect(20,80,400,h);
+  SetWRect(20,80,450,h);
   AutoSizeWindow(false);  
   h = 150; h2 = 250; v=450;
   EditFieldTL(h,v=6,120,"Buy-out Date",M4Date,Normal,0,d1,false,PasteCurDate);
-  EditFieldTL(h,v+=vs,120,"Total Dept",M4Val,ViewOnly,0,vals0,true,0);
-  EditFieldTL(h,v+=vs,120,"Accumulated Penalty",M4Str,ViewOnly,255,f12,true,0);
+
+  EditFieldTL(h,v+=vs,120,"Principle Amount",M4Str,ViewOnly,255,f13,true,0);
+  EditFieldTL(h,v+=vs,120,"Interest Amount",M4Str,ViewOnly,255,f16,true,0);
+  EditFieldTL(h,v+=vs,120,"Overdue Invoices",M4Str,ViewOnly,255,f17,true,0);
+  EditFieldTL(h,v+=vs,120,"Credited Interest",M4Str,ViewOnly,255,f20,true,0);
+  CheckBox(h+140,v,0,"Credit Interest",flags[1]);
+
+
+  EditFieldTL(h,v+=vs,120,"Letter of Demand",M4Str,Normal,20,f18,true,0);
+  EditFieldTL(h,v+=vs,120,"Insurance Cost",M4Str,Normal,20,f19,true,0);
+
   if (ShowBuyOutFee) then begin
     EditFieldTL(h,v+=vs,120,"Premature Term. Fee",M4Str,ViewOnly,255,f14,true,0);
   end;
-  EditFieldTL(h,v+=vs,120,"Last Invoice Value",M4Val,ViewOnly,0,vals1,true,0);
-  EditFieldTL(h,v+=vs,120,"Expected Payment",M4Val,ViewOnly,0,vals2,true,0);
+  EditFieldTL(h,v+=vs,120,"Not invoiced Overdues",M4Str,ViewOnly,255,f12,true,0);
+  EditFieldTL(h,v+=vs,120,"Total Dept",M4Val,ViewOnly,0,vals2,true,0);
+
+//  EditFieldTL(h,v+=vs,120,"Last Invoice Value",M4Val,ViewOnly,0,vals1,true,0);
+//  EditFieldTL(h,v+=vs,120,"Expected Payment",M4Val,ViewOnly,0,vals2,true,0);
 
   HalPushButton(h,v+=vs,h+120,v+20,"CalculateBuyOutValue","Calculate");
   if (UseBuyoutSummary) then begin
@@ -635,6 +648,26 @@ begin
   end;
 
   HalPushButton(h,v+=40,h+120,v+20,"RefinCredManPartialWClassSubmit","Confirm");
+  EndWindow;
+
+  WindowBegin("Refinance Agreement - Partial Buy-out",RefinCredManPartial2WClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,500,440);
+  AutoSizeWindow(true);  
+  h = 150; h2 = 250; v=350;
+  StaticText(50,26,"Invoice in the Period already created, do you want to do Changes?",false);
+  HalPushButton(100,-30,200,-10,"RefinCredManPartial2WClassSubmit","OK");
+  HalPushButton(230,-30,330,-10,"SchedYesNoWClassClose","Cancel");
+  EndWindow;
+
+  WindowBegin("Register Agreement Changes",PauseCredManForceWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,500,440);
+  AutoSizeWindow(true);  
+  h = 150; h2 = 250; v=350;
+  StaticText(50,26,"Invoice in the Period already created, do you want to do Changes?",false);
+  HalPushButton(100,-30,200,-10,"PauseCredManForceWClassPause","OK");
+  HalPushButton(230,-30,330,-10,"SchedYesNoWClassClose","Cancel");
   EndWindow;
 
   WindowBegin("Item Priority",ItemPriorityTClass,CGHBl,-);
@@ -2189,6 +2222,10 @@ begin
   EditField(h,v+=vs,100,"Prolong Item",Normal,ProlongItem,false,INSClass);
   EditField(h,v+=vs,100,"Compensation Item",Normal,CompensationItem,false,INSClass);
   EditField(h,v+=vs,100,"Selling Write-off Item",Normal,SellingItem,false,INSClass);
+  EditField(h,v+=vs,100,"Letter of Demand Item",Normal,LetterOfDemand,false,INSClass);
+  EditField(h,v+=vs,100,"Insurance Cost Item",Normal,InsuranceCost,false,INSClass);
+
+
   EditField(h,v+=vs,100,"Bad Debt Sales A/C",Normal,SellingSalesAccount,false,AccSClass);
   
     
@@ -2549,7 +2586,10 @@ begin
   end;
   if (type==2) then begin
     EditField(h,v+=vs,100,"Land Area",Normal,EstateAreaSize,false,0);
-    EditField(h2,v,150,"Land Unit",Normal,EstateUnit,false,UnitSClass);
+    EditField(h2,v,100,"Land Unit",Normal,EstateUnit,false,UnitSClass);
+    EditField(h,v+=vs,100,"Living Area",Normal,LivingAreaSize,false,0);
+    EditField(h2,v,100,"Living Unit",Normal,LivingUnit,false,UnitSClass);
+    CheckBox(h2+120,v,0,"Usage Permission",UsagePermit);
   end;
   if (type==2) then begin
     EditField(h,v+=vs,150,"Country",Normal,Addr1,false,CountrySClass);
@@ -3222,6 +3262,7 @@ begin
   UseView(CredManAccVc);
   SetWRect(64,80,599,475);
   EditField(h=145,v=6,100, "Type",Normal,CredManType,false,CredManTypeSClass);
+  EditField(h,v+=vs,100, "Object",Normal,Objects,false,ObjSClass);
   EditField(h,v+=vs,100, "Customer Category",Normal,CustCat,false,CCatSClass);
   EditField(h,v+=vs,-40,"Name",Normal,Comment,false,0);
   EditField(h,v+=vs,100,"P/L Debit Account",Normal,PLDebitAcc,false,AccSClass);
@@ -3551,4 +3592,27 @@ begin
   EndWindow;
 
   return;
+end;
+
+window UserNameSClass:8
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer,android,iPad,iPhone")
+begin
+  real h,v;
+  WindowBegin("Paste Person",UserNameSClass,CGslist,UserView);
+  Sizeable(-1,-1,0,0);
+  UseView(UserVc);
+//  SpawnClass(USDClass);
+  Modality(kModalityAboveParent);
+  SetWRect(64,80,509,298);
+  if (GuiType==kGuiiPhone) then begin
+    RecordList(0,0,-1,-1);
+    RLCellKey(10,6,280,19,Name,false,12,patM4blue,Name);
+    RLCellKey(10,26,280,39,Code,false,12,patM4black,Code);
+  end else begin    
+		RecordList(4,17,-21,-39);
+    RlColKey(4,4,  "Sign.",Name,false,ActName);
+    RlColKey(81,81,"Name",Code,false,ActCode);
+  end;
+  SearchField("Search");
+  EndWindow;
 end;

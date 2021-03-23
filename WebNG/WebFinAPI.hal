@@ -18,6 +18,7 @@ external inner procedure LogAreaToFile(string,area);
 remote procedure TestInvoiceBasedOnScheduleRow(record CredManSchedVc,row CredManSchedVc,var record IVVc);
 external inner procedure AddAreaAfterArea(var area,area);
 external procedure BuildCredManPayPlanCust2(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean,Boolean);
+external function val GetCredHistOpenValueOnDate(Longint,Date);
 external inner updating procedure CreateInvoicePdfFile(record IVVc);
 external inner procedure BitSafeBase64EncodeAnArea(var area); 
 external inner procedure GetPrePayments(record VIVc,var val);
@@ -856,9 +857,10 @@ begin
   array string 255 aCredManNr;
   integer i,acnt,pos;
   area a;
-  date dfrom,dto;
+  date dfrom,dto,blankd;
   LongInt countout,curr,c2,rowoffset,rowlimit;
-  integer keys;
+  integer keys,paidflag;
+  string 255 offinvnr;
   
   custcode = WebGetArg("CustCode");
   credmanstr = WebGetArg("CredManNr");
@@ -868,6 +870,7 @@ begin
   item = WebGetArg("artcode");
   invoicenrstr = WebGetArg("invoicenr");
   invoicenr = StringToLongint(invoicenrstr);
+  offinvnr = WebGetArg("officialinvoicenr");
   tstr=WebGetArg("rowoffset");
   countout = 0;
   curr = 0;
@@ -918,6 +921,16 @@ begin
           testf = CredHistr.RecordNr==invoicenr;
         end;
         if (testf) then begin
+          if (nonblank(offinvnr)) then begin
+            IVr.OfficialSerNr = offinvnr;
+            if (ReadFirstKey("OfficialSerNr",IVr,1,true)) then begin
+              testf = CredHistr.RecordNr==IVr.SerNr;
+            end else begin
+              testf = false;
+            end;
+          end;
+        end;
+        if (testf) then begin
           skipf = false;
           if ((rowoffset>0) and (curr<rowoffset)) then begin
             skipf = true;
@@ -943,14 +956,17 @@ begin
               end;
               AddXMLTagToArea(a,"OfficialSerNr","",tstr,4);
               AddXMLTagToArea(a,"Sum","",ValToString(CredHistr.Sum,M4Val,"",".",0),4);
-              AddXMLTagToArea(a,"PaidSum","",ValToString(CredHistr.PaidSum,M4Val,"",".",0),4);
+              t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
+              paidflag = 0;
+              if (t==0.0) then begin
+                paidflag = 1;
+              end;
+              AddXMLTagToArea(a,"PaidSum","",ValToString(CredHistr.Sum-t,M4Val,"",".",0),4);  
               AddXMLTagToArea(a,"InvSum","",ValToString(CredHistr.InvSum,M4Val,"",".",0),4);
               AddXMLTagToArea(a,"Balance","",ValToString(CredHistr.Balance,M4Val,"",".",0),4);
-              //AddXMLTagToArea(a,"ItemPaidAmount","",ValToString(0,M4Val,"",".",0),4); TODO?
-              t = CredHistr.InvSum-CredHistr.PaidSum;
               AddXMLTagToArea(a,"OpenAmount","",ValToString(t,M4Val,"",".",0),4);
               //AddXMLTagToArea(a,"PaymentStatus","",0,4);
-              AddXMLTagToArea(a,"PaidFlag","",CredHistr.PaidFlag,4);
+              AddXMLTagToArea(a,"PaidFlag","",paidflag,4);
               AddXMLTagToArea(a,"CurncyCode","",curncy,4);
               AddPlainXmlToArea(a,"<Payments>",4);
               

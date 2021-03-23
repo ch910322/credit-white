@@ -13,6 +13,9 @@ external inner function Boolean GetAccName(string,var string,Integer);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 external function Boolean CheckCredManSchedule();
 external function Boolean UseDisburseUntil();
+external updating procedure CreateCredManObject(var record CredManVcVc,Boolean);
+external function integer GenCredManObj(record CredManVc, record CMApplicationSetBlock,var record ObjVc);
+external inner function string 60 RemoveObjectFromObjectList(string,string);
 
 global
 function LongInt CredManVcRecordDefaults(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
@@ -50,10 +53,20 @@ BEGIN
   LongInt res;
   record BaseCurBlock BCb;
   record CredManSetBlock CMb;
+  record CMApplicationSetBlock CMAb;
+  record ObjVc Objr;
   val t;
-
+  integer err;
+  
   BlockLoad(BCb);
   BlockLoad(CMb);
+  BlockLoad(CMAb);
+  if (CMAb.AutoCreateObject!=0) then begin
+    err = GenCredManObj(CredManr,CMAb,Objr);
+    if (err==0) then begin     
+      CredManr.Objects = RemoveObjectFromObjectList(CredManr.Objects,Objr.Code);
+    end;
+  end;
   CredManr.CurncyCode = BCb.BaseCur1;
   CredManr.MonthlyPaymentDay = CMb.InvDay;
   CredManr.StateChangeDate = CurrentDate;
@@ -184,7 +197,6 @@ BEGIN
   record CMApplicationSetBlock CMb;
 
   res = 0;
-
   if (CredManr.InstalmentType==4) then begin
 /*
     if (CredManr.FactInvAmount<=0) then begin
@@ -360,7 +372,9 @@ BEGIN
       CredManr.OfficialSerNr = NextLegalSerNr("CredManVc",CredManr.SerNr,CredManr.startDate,LegalInvNrrw.Serie,LegalInvNrrw.TSerStart,LegalInvNrrw.TSerEnd);
     end;
   end;
-
+  if ((CredManr.Approved==1) and ((CredManr.Status==2) or (CredManr.Status==3))) then begin
+    CreateCredManObject(CredManr,true);
+  end;
   res = inner.CredManVcRecordSave(CredManr,CredMan2r,stat,long4);
   
   CredManVcRecordSave = res;
@@ -399,7 +413,9 @@ BEGIN
       CredManr.OfficialSerNr = NextLegalSerNr("CredManVc",CredManr.SerNr,CredManr.startDate,LegalInvNrrw.Serie,LegalInvNrrw.TSerStart,LegalInvNrrw.TSerEnd);
     end;
   end;
-
+  if ((CredManr.Approved==1) and ((CredManr.Status==2) or (CredManr.Status==3))) then begin
+    CreateCredManObject(CredManr,true);
+  end;
   res = inner.CredManVcRecordUpdate(CredManr,CredMan2r,stat,long4);
   
   CredManVcRecordUpdate = res;
@@ -436,6 +452,7 @@ global
 updating function LongInt CredManVcRecordUpdateAfter(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
 begin
   Longint res;
+  record CredManSchedVc CSr;
 
   res = 0;
 
@@ -444,6 +461,12 @@ begin
   end;
   if (CredManr.OfficialSerNr!=CredMan2r.OfficialSerNr) then begin
     StoreCredOffSerNrIV(CredManr.SerNr,"CredManVc",CredManr.OfficialSerNr)
+  end;
+  if (CredManr.Status==2 and CredMan2r.Status<2) then begin
+    CSr.CredManNr = CredManr.SerNr;
+    if (ReadFirstMain(CSr,1,true)==false) then begin
+      NewTimedTask2("CreateCredManSched" & CredManr.SerNr,"CreateCredManSched","CreateCredManSchedTask",CredManr.SerNr,CurrentDate,AddSeconds(CurrentTime,1),"","");
+    end;
   end;
 
   res = inner.CredManVcRecordUpdateAfter(CredManr,CredMan2r,stat,long4);
