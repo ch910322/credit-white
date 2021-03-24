@@ -1901,7 +1901,7 @@ begin
   RecordField(ControlAccShort,M4Code,20,AccVc);
   RecordField(ControlAccLong,M4Code,20,AccVc);
   RecordField(CustCat,M4Code,20,CCatVc);
-  RecordField(Objects,M4Code,60,ObjVc);
+  RecordField(Objects,M4UStr,60,ObjVc);
   ArrayBegin(Math,-,1);
   ArrayField(ArtCode,M4Code,20,INVc);
   ArrayField(CreditAcc,M4Code,20,AccVc);
