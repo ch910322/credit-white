@@ -1,0 +1,20 @@
+//<halrule>server-only</halrule>
+
+global
+function LongInt EuriborRatesVcRecordCheck(var record EuriborRatesVc EuriborRatesr,record EuriborRatesVc EuriborRates2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  
+
+  res = 0;
+ 	if(blankdate(EuriborRatesr.Date))then begin
+ 		RecordCheckError(1058,"",-1,"Date");
+		res = -1;
+		goto LEuriborRatesVcRecordCheck;
+ 	end;
+ 
+  
+LEuriborRatesVcRecordCheck:;
+  EuriborRatesVcRecordCheck = res;
+  return;
+END;

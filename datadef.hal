@@ -2144,6 +2144,13 @@ begin
   KeySegment(SerNr);
   EndRecord;
   
+  RecordBegin(EuriborRatesVc,-,"");
+  RecordField(Date,M4Date,0,0);
+  RecordField(Rate,M45Val,0,0);
+  MainKeyBegin(Date,0);
+  KeySegment(Date);
+  EndRecord;
+  
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Estonian", 0);

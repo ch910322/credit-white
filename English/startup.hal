@@ -53,7 +53,7 @@ begin
   Setting("Payment Condition Text",PaymentConditionTextWClass,modCredMan);
   Setting("Other Condition Text",PaymentConditionTextWClass,modCredMan);
   Setting("Managers Workload",ManagerWorkloadLClass,modCredMan);
-
+	Setting("Euribor Rates",EuriborRatesLClass,modCredMan);
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
 	Report("Application Overview",LoanApplicationListRClass,LoanApplicationListRn,0,modCredMan);

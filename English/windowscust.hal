@@ -3616,3 +3616,31 @@ begin
   SearchField("Search");
   EndWindow;
 end;
+
+window EuriborRatesDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm,h2;
+  WindowBegin("Euribor Rates",EuriborRatesDClass,CGview,-);
+  SetWRect(20,80,400,239);
+  UseView(EuriborRatesVc);
+  vs=20; h=70; h2=220; vs2=16; hm=-100;
+  EditField(h,v=6,80,"Date",Normal,Date,false,PasteCurDate);
+  EditField(h2,v,70,"Rate",Normal,Rate,false,0);
+  EndWindow;
+end;
+
+window EuriborRatesLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Euribor Rates",EuriborRatesLClass,CGmlist,-);
+  SetWRect(20,80,100,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(EuriborRatesDClass);
+  UseView(EuriborRatesVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Date",Date,false,Date);
+  RlCol(-134,-134,"Rate",Rate,false);
+  SearchField("Search");
+  EndWindow;
+end;
