@@ -245,6 +245,7 @@ begin
    if (FindCredManAcc(CredManr,CMAr)) then begin
      IVr.Objects = AddObjectToObjectList(IVr.Objects,CMAr.Objects);
    end;
+   IVr.Objects = AddObjectToObjectList(IVr.Objects,CredManr.Objects);
   //we should always have in the plan first row instalment or interest where we have start and end date
   if (CIb.DetailedInvoice==1) then begin
     ClearRow(IVr,IVrw,1);
