@@ -653,6 +653,7 @@ procedure PrintCMConstants(var vector string vVals,record CredManVc CredManr)
 begin
   record CMPrintConstantsBlock PCb;
   Boolean haspropf;
+  transaction integer gIsDigitalDocument;
 
   BlockLoad(PCb);
 
@@ -673,6 +674,12 @@ begin
   PrintSingleConstant(vVals,"F_SCHEDULECONST",PCb,"Schedule",HasSchedule(CredManr),"");
   PrintSingleConstant(vVals,"F_SUBORDCONST",PCb,"Subordination",HasSubordinations(CredManr),"");
 
+	if(gIsDigitalDocument==1)then begin
+		vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrDigital;
+	end else begin
+		vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrNotDigital;
+	end;
+	
   return;
 end;
 

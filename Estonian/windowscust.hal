@@ -1,0 +1,25 @@
+SetLangMode(LangEstonian,"EST",0);
+
+window CredManLClass:1
+  wtag("language","EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Krediidilepingud",CredManLClass,CGmlist,-);
+  SetWRect(10,80,820,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManDClass);
+  UseView(CredManVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,2,"N_r.",SerNr,false,SerNr);
+  RlColKey(90,90,"Ametlik nr.",OfficialSerNr,false,OfficialSerNr);
+  RlColKeyTL(200,200,"OK",M4Mark,OKFlag,false,OKFlag);
+  RlColKeyTL(250,250,"Kin.",M4Mark,Approved,false,Approved);
+  RlColKey(310,310,"Klient",CustCode,false,CustCode);
+  RlColKey(380,380,"Nimi",Addr0,false,Name);
+  RlColKey(-270,-270,"Algus",startDate,false,startDate);
+  RlColKey(-180,-180,"L›pp",endDate,false,endDate);
+  RlColKey(-90,-90,"Summa",InvSum4,false,InvSum4);
+  SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0);
+  SpecialMenu("Laekumine",'r',1,"ReceiptCredManLsm");
+  SearchField("Otsi");
+  EndWindow;
+end;

@@ -1354,6 +1354,7 @@ begin
   RecordField(RecordType,M4Set,2019,0);
   RecordField(CustCode,M4Code,20,CUVc);
   RecordField(SentReminder,M4Int,0,0);
+  RecordField(DigitalFlag,M4Int,0,0);
   ArrayBegin(Math,-,1);
   ArrayField(CustCode,M4Code,20,CUVc);
   ArrayField(CustName,M4Str,255,0);
@@ -2068,6 +2069,9 @@ begin
   RecordField(ReimbItems,M4UStr,255,0);
   RecordField(ReimbLanguages,M4UStr,255,0);
   
+  RecordField(AgrDigital,M4Str,255,0);
+  RecordField(AgrNotDigital,M4Str,255,0);
+  
   EndBlock;
 
   RecordAddBegin(LangNrVc,"LangNrVc_Cust");
@@ -2142,6 +2146,13 @@ begin
   KeySegment(DateFrom);
   KeySegment(DateTo);
   KeySegment(SerNr);
+  EndRecord;
+  
+  RecordBegin(EuriborRatesVc,-,"");
+  RecordField(Date,M4Date,0,0);
+  RecordField(Rate,M45Val,0,0);
+  MainKeyBegin(Date,0);
+  KeySegment(Date);
   EndRecord;
   
   SourceFile("halcust\\LoanApp\\English", 0);
