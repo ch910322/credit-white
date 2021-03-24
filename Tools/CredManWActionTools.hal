@@ -1399,6 +1399,7 @@ begin
   if (FindCredManAcc(CredManr,CMAr)) then begin
     VIr.Objects = AddObjectToObjectList(VIr.Objects,CMAr.Objects);
   end;
+  VIr.Objects = AddObjectToObjectList(VIr.Objects,CredManr.Objects);
   VIr.PayVal = sum;
   VIr.CustCredManNr = CredManr.SerNr;
   if (extrapayment) then begin
