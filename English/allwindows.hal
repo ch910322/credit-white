@@ -821,7 +821,6 @@ begin
     end;
     EditField(h3,v+=vs,72,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
   end;
-
 //  EditField(h3,v+=vs,72,"Surety Interest Rate",Normal,SuretyInterestRate,false,0);
   EditField(h3,v+=vs,72,"Std Prolongation Fee",Normal,StdProlongFee,false,0);
   EditField(h3,v+=vs,72,"Std Prolongation Fee %",Normal,StdProlongPrc,false,0);

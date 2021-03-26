@@ -92,6 +92,39 @@ begin
   return;
 end;
 
+function integer IsVATApplied(record CredManSchedVc CMr)
+begin
+  integer res,i,cnt;
+  row CredManSchedVc CMrw;
+  record IVVc IVr;
+  boolean testf;
+  val t;
+  
+  res = 0;
+  cnt=MatRowCnt(CMr);
+  for (i=0;i<cnt;i=i+1) begin
+    testf = true;
+    MatRowGet(CMr,i,CMrw);
+    t = blankval;
+    if (CMrw.Type==0) then begin
+      if (nonblank(CMrw.InvoiceNr)) then begin
+        IVr.SerNr = StringToLongInt(CMrw.InvoiceNr);
+        if (ReadFirstMain(IVr,1,true)) then begin
+          t = IVr.Sum3;        
+        end;
+      end else begin
+        TestInvoiceBasedOnScheduleRow(CMr,CMrw,IVr);
+        t = IVr.Sum3;
+      end;
+      if ((t!=blankval) and (t!=0.00)) then begin
+        res = 1;
+        i = cnt;
+      end;
+    end;
+  end;
+  IsVATApplied = res;
+end;
+ 
 procedure OutputRecordCredManSchedVc(record CredManSchedVc CMr, vector string vFilter,LongInt rowoffset,LongInt rowlimit)
 begin
   row CredManSchedVc CMrw;
@@ -141,7 +174,8 @@ begin
           if (nooutputf==false) then begin
             SetAreaZeroSize(a);
             AddPlainXmlToArea(a,"<CredManSchedVc>",0);
-            AddXMLTagToArea(a,"CredManNr","",CMr.CredManNr,1);//todo
+            AddXMLTagToArea(a,"CredManNr","",CMr.CredManNr,1);
+            AddXMLTagToArea(a,"VATApplied","",IsVATApplied(CMr),1);
             AddXMLTagToArea(a,"CustCode","",ConvertXMLString(CMr.CustCode,true),1);
             AddXMLTagToArea(a,"CustName","",ConvertXMLString(CMr.CustName,true),1);
             AddXMLTagToArea(a,"TransDate","",DateToString(CMr.TransDate,"YYYY-MM-DD"),1);
