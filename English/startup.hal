@@ -208,7 +208,8 @@ begin
   SString(200114,"Bill of Exchange");
   SString(200115,"Invoice already created with Number ");
   SString(200116,"Importing of Bank Account Statement from an unrecognized Account is not allowed");
-
+  
+  
 /*Web Codes 200200-200230*/
   SString(200200,"Banner with this type already registered in these days");
   SString(200201,"Content with this URL already exists");
@@ -304,7 +305,8 @@ begin
 
   SString(200302,"Specify Max late Days");
   SString(200303,"Grace Period already registered");
-
+  SString(200309,"Only one of ""Premature Term. Fee %"" or ""Premature Term. Months"" should be filled in");
+  
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");
   StrSetText(B2BLoanApplicationVc,"Loan Applications");

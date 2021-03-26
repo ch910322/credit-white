@@ -75,6 +75,7 @@ external outer function Boolean UseDisburseUntil();
 external outer function Boolean UseCompensationInvoices();
 external outer function Boolean ShowToDisburse();
 external outer function Boolean UseBuyoutSummary();
+external outer function Boolean ShowBuyOutFeePrcAllTypes();
 //CUST-END
 
 window CUDClass:14
@@ -815,13 +816,19 @@ begin
     EditField(h3,v+=vs,72,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
   end else begin
     if (type==7 or type==8) then begin
-      EditField(h3,v+=vs,72,"Not Used Amount Fee %",Normal,BuyoutFeePrc,true,0);
+      if (!ShowBuyOutFeePrcAllTypes) then begin
+        EditField(h3,v+=vs,72,"Not Used Amount Fee %",Normal,BuyoutFeePrc,true,0);
+      end;  
     end else begin
-      EditField(h3,v+=vs,72,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
+      if (!ShowBuyOutFeePrcAllTypes) then begin
+        EditField(h3,v+=vs,72,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
+      end;
     end;
     EditField(h3,v+=vs,72,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
   end;
-
+  if (ShowBuyOutFeePrcAllTypes) then begin
+    EditField(h3,v+=vs,72,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
+  end;
 //  EditField(h3,v+=vs,72,"Surety Interest Rate",Normal,SuretyInterestRate,false,0);
   EditField(h3,v+=vs,72,"Std Prolongation Fee",Normal,StdProlongFee,false,0);
   EditField(h3,v+=vs,72,"Std Prolongation Fee %",Normal,StdProlongPrc,false,0);
