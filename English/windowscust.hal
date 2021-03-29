@@ -3647,3 +3647,35 @@ begin
   SearchField("Search");
   EndWindow;
 end;
+
+window OverdueCalcTextWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,h2;
+  WindowBegin("Overdue calculations text",OverdueCalcTextWClass,CGOther,-);
+  UseView(CUVc);
+  SetWRect(64,80,900,300);
+  AutoSizeWindow(false);
+  ToolBar;
+  HalPushButton(-140,5,-80,22,"OverdueCalcTextWClassSave","Save");
+  EndToolBar;
+  h = 20; v = 27; vs = 20; h2 = 120;
+  
+  Checkbox(-170,v=15,0,"Use new text",blockedFlag);
+  StaticText(h,v=15,"Invoice no.",false);
+  StaticText(h,v+=vs,"Value",false);
+  StaticText(h,v+=vs,"Period",false);
+  StaticText(h,v+=vs,"Days",false);
+  StaticText(h,v+=vs,"Overdue Percent",false);
+  StaticText(h,v+=vs,"Row Sum",false);
+  
+  StaticText(h2,v=15,"?InvNo?",false);
+  StaticText(h2,v+=vs,"?Value?",false);
+  StaticText(h2,v+=vs,"?Period?",false);
+  StaticText(h2,v+=vs,"?Days?",false);
+  StaticText(h2,v+=vs,"?Rate?",false);
+  StaticText(h2,v+=vs,"?RowSum?",false);
+  
+  TextField(h,v+=vs,-20,-24,Math2,0);
+  EndWindow;
+end;
