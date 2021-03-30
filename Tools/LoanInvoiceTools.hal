@@ -42,6 +42,8 @@ external function Boolean IsPartialBuyoutType(Integer);
 external function Boolean CredManCanInvoiceOverdues(record CredManVc);
 external function val GetCredHistOpenAmount(record CredHistVc,Integer);
 external inner function string 60 AddObjectToObjectList(string,string);
+external inner function string 255 StrReplace(string,string,string);
+
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -503,7 +505,7 @@ begin
   return;
 end;
 
-procedure GetLatePaymentPlan(record CredManVc CredManr,record CredHistVc CredHistr,Date sd,Date ed,Date overduetd,var array val amounts,var array Integer daycnt)
+procedure GetLatePaymentPlan(record CredManVc CredManr,record CredHistVc CredHistr,Date sd,Date ed,Date overduetd,var array val amounts,var array Integer daycnt,var array string period)
 begin
   Date tempsd,tempsd2;
   record CredHistVc CredPayr;//CredPayr - same credhistvc register, just for payments
@@ -545,6 +547,8 @@ begin
             for (i=0;i<daydiff;i=i+1) begin
               amounts[amounts.length] = paysum;
               daycnt[daycnt.length] = GetMonthDays(AddDay(tempsd,i));
+              period[period.length] = tempsd & " - " & AddDay(tempsd,i);
+              logtext(0,tempsd & " - " & AddDay(tempsd,i));
             end;
           end;
         end;
@@ -568,12 +572,51 @@ begin
       for (i=0;i<daydiff;i=i+1) begin
         amounts[amounts.length] = paysum;
         daycnt[daycnt.length] = GetMonthDays(AddDay(tempsd,i));
+        period[period.length] = tempsd & " - " & AddDay(tempsd,i);
+        logtext(0,tempsd & " - " & AddDay(tempsd,i));
       end;
     end;
   end;
 
   return;
 end;
+
+
+function string 255 replaceOverdueStr(string InvNo, val Value, string Period, integer Days,string Rate, val RowSum)
+begin
+	record OverdueCalcTextVc OCTr;
+	string 255 tstr,txInvNo,txValue,txPeriod,txDays,txRate,txRowSum;
+	
+	OCTr.Code = "OCTXT";
+	readfirstmain(OCTr,1,true);
+
+	txValue = Value;
+	if(Value==0)then begin
+		txValue = "0.00";
+	end;
+
+	txRowSum = RowSum;
+	if(RowSum==0)then begin
+		txRowSum = "0.00";
+	end;
+	
+	txInvNo = InvNo;
+	if(blank(txInvNo))then begin
+		txInvNo = "No";
+	end;
+	
+	tstr = LineTextGet2(OCTr,0);
+	tstr = StrReplace(tstr,"?InvNo?",txInvNo);
+	tstr = StrReplace(tstr,"?Value?",txValue);
+	tstr = StrReplace(tstr,"?Period?",Period);
+	tstr = StrReplace(tstr,"?Days?",Days);
+	tstr = StrReplace(tstr,"?Rate?",Rate);
+	tstr = StrReplace(tstr,"?RowSum?",txRowSum);
+	
+	replaceOverdueStr = tstr;
+return;
+end;
+
 
 global
 procedure CheckOverdueInvoicesForItem(record CredManVc CredManr,record CredManSetBlock CMb,val maxmonths,Date invdate,Date prevtd,var Integer latedays,var val lateamount,string item,Date overduetd,var array string lateformula,Integer ratetype)
@@ -586,7 +629,16 @@ begin
   Integer i,odays,lastdaycnt;
   val overdueprc,lastamount;
   Date mindate;
-
+  record OverdueCalcTextVc OCTr;
+  string 255 tstr,rate,invoicenr,lastperiod;
+  val rowsum;
+  record IVVc IVr;
+  array string 30 periods;
+	
+	
+	OCTr.Code = "OCTXT";
+	readfirstmain(OCTr,1,true);
+	
   if (maxmonths>0) then begin
     mindate = AddMonth(invdate,-maxmonths);
   end;
@@ -604,9 +656,10 @@ begin
     end else begin
       if (blank(mindate) or CredHistr.TransDate>=mindate) then begin
         //Construct an array of days with amount that is over due starting with the first day of period
-        GetLatePaymentPlan(CredManr,CredHistr,prevtd,invdate,overduetd,amounts,daycnt);
+        GetLatePaymentPlan(CredManr,CredHistr,prevtd,invdate,overduetd,amounts,daycnt,periods);
         lastamount = 0;
         odays = 0;
+        lastperiod = "";
         for (i=0;i<amounts.length;i=i+1) begin
           if (ratetype==0) then begin //as default
             latefee = latefee + (amounts[i]*(overdueprc/100));
@@ -615,21 +668,92 @@ begin
           end;
           if ((lastamount!=amounts[i] and lastamount>0) or (ratetype==1 and lastdaycnt!=daycnt[i])) then begin
             if (ratetype==0) then begin //as default
-              lateformula[lateformula.length] = odays & " Days " &  " - " & item & " - " & lastamount & " * " & ValToString((overdueprc/100),M45Val,"",",",0) & "=" & (lastamount*(overdueprc/100) * odays);
+            	rowsum = lastamount*(overdueprc/100) * odays;
+            	rate = ValToString((overdueprc/100),M45Val,"",",",0);
+            	tstr = odays & " Days " &  " - " & item & " - " & lastamount & " * " & rate & "=" & rowsum;
+              if(OCTr.UseNewCalc==1)then begin
+              	invoicenr = "";
+              	
+            	logtext(0,"CredHistr " & CredHistr.RecordType & " ==== " & CredHistr.RecordNr);
+            	logtext(0,"CredHistr prevtd " & prevtd & " ==== " & invdate & " ==== " & overduetd);
+              	if(CredHistr.RecordType==0)then begin
+              		if(CredHistr.RecordNr>-1)then begin
+              			IVr.SerNr = CredHistr.RecordNr;
+              			if(readfirstmain(IVr,1,true))then begin
+              				invoicenr = IVr.OfficialSerNr;
+              			end;
+              		end;
+              	end;
+              	rowsum = lastamount*(overdueprc/100) * odays;
+              	tstr = replaceOverdueStr(invoicenr,lastamount,lastperiod,odays,rate,rowsum);
+              end;
+              lateformula[lateformula.length] = tstr;
             end else begin
-              lateformula[lateformula.length] = odays & " Days " &  " - " & item & " - " & lastamount & " * " & ValToString((overdueprc/100),M45Val,"",",",0) & "/" & lastdaycnt & "=" & (lastamount * odays*(overdueprc/100)/lastdaycnt);
+            	invoicenr = "";
+            	logtext(0,"CredHistr " & CredHistr.RecordType & " ==== " & CredHistr.RecordNr);
+            	logtext(0,"CredHistr prevtd " & prevtd & " ==== " & invdate & " ==== " & overduetd);
+							if(CredHistr.RecordType==0)then begin
+								if(CredHistr.RecordNr>-1)then begin
+									IVr.SerNr = CredHistr.RecordNr;
+									if(readfirstmain(IVr,1,true))then begin
+										invoicenr = IVr.OfficialSerNr;
+									end;
+								end;
+							end;
+            	rowsum = lastamount * odays*(overdueprc/100)/lastdaycnt;
+            	rate = ValToString((overdueprc/100),M45Val,"",",",0);
+            	tstr = odays & " Days " &  " - " & item & " - " & lastamount & " * " & rate & "/" & lastdaycnt & "=" & rowsum;
+              if(OCTr.UseNewCalc==1)then begin
+              	tstr = replaceOverdueStr(invoicenr,lastamount,lastperiod,odays,rate,rowsum);
+              end;
+              lateformula[lateformula.length] = tstr;
             end;
             odays = 0;
           end;
           odays = odays + 1;
           lastamount = amounts[i];
           lastdaycnt = daycnt[i];
+          lastperiod = periods[i];
         end;
         if (odays>0) then begin
           if (ratetype==0) then begin //as default
-            lateformula[lateformula.length] = odays & " Days " &  " - " & item & " - " & lastamount & " * " & ValToString((overdueprc/100),M45Val,"",",",0) & "=" & (lastamount*(overdueprc/100) * odays);
+          	invoicenr = "";
+          	logtext(0,"CredHistr " & CredHistr.RecordType & " ==== " & CredHistr.RecordNr);
+          	logtext(0,"CredHistr prevtd " & prevtd & " ==== " & invdate & " ==== " & overduetd);
+						if(CredHistr.RecordType==0)then begin
+							if(CredHistr.RecordNr>-1)then begin
+								IVr.SerNr = CredHistr.RecordNr;
+								if(readfirstmain(IVr,1,true))then begin
+									invoicenr = IVr.OfficialSerNr;
+								end;
+							end;
+						end;
+          	rowsum = (lastamount*(overdueprc/100) * odays);
+          	rate = ValToString((overdueprc/100),M45Val,"",",",0);
+          	tstr = odays & " Days " &  " - " & item & " - " & lastamount & " * " & rate & "=" & rowsum;
+            if(OCTr.UseNewCalc==1)then begin
+							tstr = replaceOverdueStr(invoicenr,lastamount,lastperiod,odays,rate,rowsum);
+						end;
+            lateformula[lateformula.length] = tstr;
           end else begin
-            lateformula[lateformula.length] = odays & " Days " &  " - " & item & " - " & lastamount & " * " & ValToString((overdueprc/100),M45Val,"",",",0) & "/" & lastdaycnt & "=" & (lastamount * odays*(overdueprc/100)/lastdaycnt);
+          	invoicenr = "";
+          	logtext(0,"CredHistr " & CredHistr.RecordType & " ==== " & CredHistr.RecordNr);
+          	logtext(0,"CredHistr prevtd " & prevtd & " ==== " & invdate & " ==== " & overduetd);
+						if(CredHistr.RecordType==0)then begin
+							if(CredHistr.RecordNr>-1)then begin
+								IVr.SerNr = CredHistr.RecordNr;
+								if(readfirstmain(IVr,1,true))then begin
+									invoicenr = IVr.OfficialSerNr;
+								end;
+							end;
+						end;
+          	rowsum = (lastamount * odays*(overdueprc/100)/lastdaycnt);
+          	rate = ValToString((overdueprc/100),M45Val,"",",",0);
+          	tstr = odays & " Days " &  " - " & item & " - " & lastamount & " * " & rate & "/" & lastdaycnt & "=" & rowsum;
+            if(OCTr.UseNewCalc==1)then begin
+							tstr = replaceOverdueStr(invoicenr,lastamount,periods[i],odays,rate,rowsum);
+						end;
+            lateformula[lateformula.length] = tstr;
           end;
         end;
       end;

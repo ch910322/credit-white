@@ -1,0 +1,47 @@
+remote updating function Boolean GetConditionText(Longint,Integer,string,var record ConditionTextVc);
+
+global
+updating procedure OverdueCalcTextWClassSave()
+begin
+  Integer wn;
+  record OverdueCalcTextVc OCTr;
+  record CUVc CUr;
+  Longint i,pos,cnt;
+  string 255 tstr;
+  
+  wn = CurWindow;
+  SetTextField(OCTr,"");
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,CUr);
+  for (i=0;i<LineTextCnt2(CUr);i=i+1) begin
+    LineTextPut2(OCTr,i,LineTextGet2(CUr,i));
+  end;
+  OCTr.Code = "OCTXT";
+  OCTr.UseNewCalc = CUr.blockedFlag;
+  RecordStore(OCTr,true);
+  CloseWindow(wn);
+
+  return;
+end;
+
+
+global
+function Boolean OverdueCalcTextWClassOnOpenWindow(Integer wn)
+begin
+  record OverdueCalcTextVc OCTr;
+  record CUVc CUr;
+  Longint i;
+  string 255 tstr;
+
+  SetTextField(CUr,"");
+  OCTr.Code = "OCTXT";
+  ReadFirstMain(OCTr,1,true);
+  CUr.blockedFlag = OCTr.UseNewCalc;
+  for (i=0;i<LineTextCnt2(OCTr);i=i+1) begin
+    LineTextPut2(CUr,i,LineTextGet(OCTr,i));
+  end;
+  PutWindowRecord(wn,CUr);
+
+  OverdueCalcTextWClassOnOpenWindow = false;
+  return;
+end;

@@ -2155,6 +2155,14 @@ begin
   KeySegment(Date);
   EndRecord;
   
+  RecordBegin(OverdueCalcTextVc,-,"");
+  RecordField(Code,M4Code,20,0);
+  RecordField(UseNewCalc,M4Int,0,0);
+  RecordField(Text,M4TextField,0,0);
+  MainKeyBegin(Code,0);
+  KeySegment(Code);
+  EndRecord;
+  
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Estonian", 0);
