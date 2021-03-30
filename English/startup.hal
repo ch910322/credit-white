@@ -304,6 +304,7 @@ begin
 
   SString(200302,"Specify Max late Days");
   SString(200303,"Grace Period already registered");
+  SString(200309,"Only one of ""Premature Term. Fee %"" or ""Premature Term. Months"" should be filled in");
 
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");
