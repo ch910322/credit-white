@@ -548,7 +548,6 @@ begin
               amounts[amounts.length] = paysum;
               daycnt[daycnt.length] = GetMonthDays(AddDay(tempsd,i));
               period[period.length] = tempsd & " - " & AddDay(tempsd,i);
-              logtext(0,tempsd & " - " & AddDay(tempsd,i));
             end;
           end;
         end;
@@ -573,7 +572,6 @@ begin
         amounts[amounts.length] = paysum;
         daycnt[daycnt.length] = GetMonthDays(AddDay(tempsd,i));
         period[period.length] = tempsd & " - " & AddDay(tempsd,i);
-        logtext(0,tempsd & " - " & AddDay(tempsd,i));
       end;
     end;
   end;
@@ -674,8 +672,6 @@ begin
               if(OCTr.UseNewCalc==1)then begin
               	invoicenr = "";
               	
-            	logtext(0,"CredHistr " & CredHistr.RecordType & " ==== " & CredHistr.RecordNr);
-            	logtext(0,"CredHistr prevtd " & prevtd & " ==== " & invdate & " ==== " & overduetd);
               	if(CredHistr.RecordType==0)then begin
               		if(CredHistr.RecordNr>-1)then begin
               			IVr.SerNr = CredHistr.RecordNr;
@@ -690,8 +686,6 @@ begin
               lateformula[lateformula.length] = tstr;
             end else begin
             	invoicenr = "";
-            	logtext(0,"CredHistr " & CredHistr.RecordType & " ==== " & CredHistr.RecordNr);
-            	logtext(0,"CredHistr prevtd " & prevtd & " ==== " & invdate & " ==== " & overduetd);
 							if(CredHistr.RecordType==0)then begin
 								if(CredHistr.RecordNr>-1)then begin
 									IVr.SerNr = CredHistr.RecordNr;
@@ -718,8 +712,6 @@ begin
         if (odays>0) then begin
           if (ratetype==0) then begin //as default
           	invoicenr = "";
-          	logtext(0,"CredHistr " & CredHistr.RecordType & " ==== " & CredHistr.RecordNr);
-          	logtext(0,"CredHistr prevtd " & prevtd & " ==== " & invdate & " ==== " & overduetd);
 						if(CredHistr.RecordType==0)then begin
 							if(CredHistr.RecordNr>-1)then begin
 								IVr.SerNr = CredHistr.RecordNr;
@@ -737,8 +729,6 @@ begin
             lateformula[lateformula.length] = tstr;
           end else begin
           	invoicenr = "";
-          	logtext(0,"CredHistr " & CredHistr.RecordType & " ==== " & CredHistr.RecordNr);
-          	logtext(0,"CredHistr prevtd " & prevtd & " ==== " & invdate & " ==== " & overduetd);
 						if(CredHistr.RecordType==0)then begin
 							if(CredHistr.RecordNr>-1)then begin
 								IVr.SerNr = CredHistr.RecordNr;
