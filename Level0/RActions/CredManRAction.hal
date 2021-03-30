@@ -17,7 +17,7 @@ external procedure AddCredManTypeMatrix(var record CredManVc,record CredManTypeV
 external function val GetIntRate(string,Date);
 external outer procedure AddCMTransactionControlAccounts(record CredManVc,var string,var string,var val,var val);
 external outer function string 255 CM_GetTransactionDebtorsAcc(record CredManVc,string);
-
+external function string 60 AddObjectToObjectList(string,string);
 
 global
 function LongInt CredManVcRecordDefaults(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
@@ -219,6 +219,9 @@ LAddAccount:;
     controlacc = CredManSetb.ARAcc;
   end;
   otxt = CredManr.ARAccObject;
+  //CUST-BEGIN
+  otxt = AddObjectToObjectList(otxt,CredManr.Objects);
+  //CUST-END
   if (invfound) then begin
     ftxt = "" & CredManr.IVNr & " " & CredManr.Addr0;
   end;
