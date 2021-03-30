@@ -233,6 +233,59 @@ begin
   return;
 end;
 
+
+function val findOpenlateFeeInvoices(record IVVc origIVr)
+begin	
+	record ARVc ARr;
+	record IVVc IVr;
+	row IVVc IVrw;
+	boolean TrHs,testf;
+	val res;
+	record CredManSetBlock CMb;
+	integer i,rwcnt;
+	
+	blockload(CMb);
+	
+	if(nonblank(CMb.LateFeeItem))then begin
+		ARr.CustCode = origIVr.CustCode;
+		TrHs = true;
+		while (LoopKey("CustCode",ARr,1,TrHs)) begin
+			testf = true;
+			if (TrHs) then begin
+				if (origIVr.CustCode!=ARr.CustCode) then begin TrHs = false; end;
+			end;
+			if(ARr.InvoiceNr==origIVr.SerNr)then begin
+				testf = false;
+			end;
+			
+			if (TrHs==false) then begin testf = false; end;
+			if (testf) then begin    
+				IVr.SerNr = ARr.InvoiceNr;
+
+				if(ReadFirstMain(IVr,1,true))then begin
+					rwcnt = matrowcnt(IVr);
+					for(i=0;i<rwcnt;i=i+1)begin
+						matrowget(IVr,i,IVrw);
+						if(IVrw.stp==kInvoiceRowTypeNormal)then begin
+							if(IVrw.ArtCode==CMb.LateFeeItem)then begin
+								res = res + IVrw.Sum;
+							end;
+						end;
+						if(IVrw.stp==kInvoiceRowTypeHidden)then begin
+							i = rwcnt;
+						end;
+					end;
+				end;
+			
+			end;
+		end;	
+	end;
+	
+	findOpenlateFeeInvoices = res;
+	
+return;
+end;
+
 global
 procedure Ext_PrintCustomInvoiceFields(var vector string vVals,record IVVc IVr)
 begin
@@ -264,7 +317,7 @@ begin
   Array val debbal;
   Integer debcnt;
   Array string 10 debaccs;
-  val rval,rval2,tval;
+  val rval,rval2,tval,LateFeeItemSum,OpenLateFeeItemSum;
   record CMPrintConstantsBlock PCb;
   Boolean hiddenf;
 
@@ -348,6 +401,11 @@ begin
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(IVr,i,IVrw);
     if (IVrw.stp==kInvoiceRowTypeNormal) then begin
+    	if(nonblank(CMb.LateFeeItem))then begin
+				if(IVrw.ArtCode==CMb.LateFeeItem)then begin
+					LateFeeItemSum = LateFeeItemSum + IVrw.Sum;
+				end;
+			end;
       FindVATCodeRow(IVrw.VATCode,VATb,VATbrw);
       if (nonblank(VATbrw.TaxRules)) then begin
         TRr.Code = VATbrw.TaxRules;
@@ -383,6 +441,19 @@ begin
       end;
     end;
   end;
+	
+	if(LateFeeItemSum!=0)then begin
+		vVals["F_LATEFEEITEMSUM"] = LateFeeItemSum;
+	end else begin
+		vVals["F_LATEFEEITEMSUM"] = "0,00";
+	end;
+	
+	OpenLateFeeItemSum = findOpenlateFeeInvoices(IVr);
+	if(OpenLateFeeItemSum!=0)then begin
+		vVals["F_OPENLATEFEEITEMSUM"] = OpenLateFeeItemSum;
+	end else begin
+		vVals["F_OPENLATEFEEITEMSUM"] = "0,00";
+	end;
 
   vVals["F_CREDITIVNO"] = credivno;
 
