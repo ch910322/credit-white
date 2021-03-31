@@ -328,7 +328,7 @@ begin
   string 255 vatnr,del,regnr;
   record CUVc CUr;
   record CredManVc CredManr;
-  val topay2,topay3,openamount,openamount2;
+  val topay2,topay3,openamount,openamount2,topay4;
   string 255 credivno;
   record IVVc IVCreditr;
   record UserVc Userr;
@@ -377,6 +377,7 @@ begin
     end; 
   end;
   topay3 = topay3 + abovehiddenbase + abovehiddenvat;
+  topay4 = topay3;
   if (hiddenf) then begin
     topay3 = topay3 + GetCredManItemValue(IVr,CMb.InstalmentItem,true);
   end; 
@@ -386,6 +387,10 @@ begin
   if (topay3<0) then begin
     topay3 = 0;
   end;
+  if (topay4<0) then begin
+    topay4 = 0;
+  end;
+  
   vVals["F_OPENAMOUNT"] = openamount;
   vVals["F_TOPAY2"] = topay2;
   ValToText(topay2,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
@@ -398,6 +403,10 @@ begin
   vVals["F_TOPAY3"] = topay3;
   ValToText(topay3,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
   vVals["F_TOPAY3_TEXT"] = tstr;
+  
+  vVals["F_TOPAY4"] = topay4;
+  ValToText(topay4,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
+  vVals["F_TOPAY4_TEXT"] = tstr;
 
 
   vVals["F_ABOVEHIDDENBASE"] = abovehiddenbase;
