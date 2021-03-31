@@ -710,6 +710,29 @@ LFindAllContactsWithJobTitle_Next:;
   return;
 end;
 
+function string 255 GetCredManCity(record CredManVc CredManr)
+begin
+  string 255 res,tstr;
+  record CredManClassVc Classr;
+  record CMApplicationSetBlock CMb;
+  Longint pos;
+
+  BlockLoad(CMb);
+  if (nonblank(CMb.CityAgreementClassType)) then begin
+    while (GetNextSubString(CredManr.Classifications,pos,",",tstr)) begin
+      Classr.Code = tstr;
+      if (ReadFirstMain(Classr,1,true)) then begin
+        if (Classr.Type==CMb.CityAgreementClassType) then begin
+          res = Classr.Comment;
+          goto LGetCredManCity;
+        end;
+      end;
+    end;
+  end;
+LGetCredManCity:;
+  GetCredManCity = res;
+  return;
+end;
 
 procedure GetListOfContacts(string custcode,Integer type,var array record CUVc aCUr)
 begin
@@ -726,6 +749,57 @@ begin
 
   return;
 end;
+
+procedure CommonDocumentFieldsWord(var vector string vVals)
+BEGIN
+  record CYBlock CompYear;
+
+  BlockLoad(CompYear);
+	vVals["F_EGENEMAIL"] = CompYear.emailAddr;
+	vVals["F_EGENWWWADDRESS"] = CompYear.wwwAddr;
+	vVals["F_EGETNAMN"] = CompYear.CompName;
+	vVals["F_BUSINESSNAME"] = CompYear.BusinessName;
+	vVals["F_EGENTEL"] = CompYear.Phone;
+	vVals["F_EGENFAX"] = CompYear.Fax;
+	vVals["F_EGENBG"] = CompYear.Bank1;
+	vVals["F_EGENPG"] = CompYear.Bank2;
+	vVals["F_EGENBANKKOD"] = CompYear.BankCode;
+	vVals["F_EGETORGNR"] = CompYear.OrgNr;
+	vVals["F_EGETMOMSNR"] = CompYear.VATNr;
+	vVals["F_EGENGLN"] = CompYear.GLN;
+	vVals["F_EGENCOUNTRYCODE"] = CompYear.CountryCode;
+	vVals["F_HOMECOMMUN"] = CompYear.HomeCommunity;
+	vVals["F_COMMREGNO"] = CompYear.OrgNr2;
+	vVals["F_MANAGER"] = CompYear.Manager;
+	vVals["F_CHIEFACCOUNTAT"] = CompYear.ChiefAccountant;    
+	vVals["F_OWNLINEOFBUSINESS"] = CompYear.LineOfBusiness;    
+	vVals["F_OWNSHARECAPITAL"] = CompYear.ShareCapital;    
+	vVals["F_OWNANACODE"] = CompYear.ANACode; 
+	vVals["F_OWNSORTCODE"] = CompYear.SortCode; 
+	
+	if(nonblank(CompYear.CompName))then begin
+		vVals["F_EGENADRESS"] = CompYear.CompName & "\\n";
+	end;
+	if(nonblank(CompYear.Addr0))then begin
+		vVals["F_EGENADRESS"] = vVals["F_EGENADRESS"] & CompYear.Addr0 & "\\n";
+	end;
+	if(nonblank(CompYear.Addr1))then begin
+		vVals["F_EGENADRESS"] = vVals["F_EGENADRESS"] & CompYear.Addr1 & "\\n";
+	end;
+	if(nonblank(CompYear.Addr2))then begin
+		vVals["F_EGENADRESS"] = vVals["F_EGENADRESS"] & CompYear.Addr2 & "\\n";
+	end;
+	if(nonblank(CompYear.Addr3))then begin
+		vVals["F_EGENADRESS"] = vVals["F_EGENADRESS"] & CompYear.Addr3 & "\\n";
+	end;
+	if(nonblank(CompYear.Addr4))then begin
+		vVals["F_EGENADRESS"] = vVals["F_EGENADRESS"] & CompYear.Addr4 & "\\n";
+	end;
+
+
+  RETURN;
+END;
+
 
 procedure CredManHeader(var vector string vVals,record CredManVc CredManr)
 begin
@@ -874,6 +948,12 @@ begin
   
   vVals["F_BANKACC"] = CUr.BankAccount;
   Bankr.Code = CUr.AccOperator;
+  
+	vVals["F_CREDCUSTCITY"] = GetCredManCity(CredManr);
+	vVals["F_CONTACTIDCARD"] = CUr.UserStr1;
+  vVals["F_CONTACTIDCARDDATE"] = CUr.UserStr2;
+  CommonDocumentFieldsWord(vVals);
+  
   ReadFirstMain(Bankr,1,true);
   vVals["F_ACCOUNTOPERATORNAME"] = Bankr.Name;
   vVals["F_CREDHALFSUM"] = (CredManr.InvSum4/2);
@@ -1067,7 +1147,6 @@ begin
 
   PrintFirstPrincipleDueDate(vVals,CredManr);
   PrintCMConstants(vVals,CredManr);
-
   return;
 end;
 
@@ -1255,30 +1334,6 @@ begin
     addr0 = ""; addr1 = ""; addr2 = ""; addr3 = ""; addr4 = ""; 
   end;
 
-  return;
-end;
-
-function string 255 GetCredManCity(record CredManVc CredManr)
-begin
-  string 255 res,tstr;
-  record CredManClassVc Classr;
-  record CMApplicationSetBlock CMb;
-  Longint pos;
-
-  BlockLoad(CMb);
-  if (nonblank(CMb.CityAgreementClassType)) then begin
-    while (GetNextSubString(CredManr.Classifications,pos,",",tstr)) begin
-      Classr.Code = tstr;
-      if (ReadFirstMain(Classr,1,true)) then begin
-        if (Classr.Type==CMb.CityAgreementClassType) then begin
-          res = Classr.Comment;
-          goto LGetCredManCity;
-        end;
-      end;
-    end;
-  end;
-LGetCredManCity:;
-  GetCredManCity = res;
   return;
 end;
 
