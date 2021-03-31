@@ -598,13 +598,8 @@ begin
 		txRowSum = "0.00";
 	end;
 	
-	txInvNo = InvNo;
-	if(blank(txInvNo))then begin
-		txInvNo = "No";
-	end;
-	
 	tstr = LineTextGet2(OCTr,0);
-	tstr = StrReplace(tstr,"?InvNo?",txInvNo);
+	tstr = StrReplace(tstr,"?InvNo?",InvNo);
 	tstr = StrReplace(tstr,"?Value?",txValue);
 	tstr = StrReplace(tstr,"?Period?",Period);
 	tstr = StrReplace(tstr,"?Days?",Days);
@@ -677,6 +672,9 @@ begin
               			IVr.SerNr = CredHistr.RecordNr;
               			if(readfirstmain(IVr,1,true))then begin
               				invoicenr = IVr.OfficialSerNr;
+              				if(blank(invoicenr))then begin
+              					invoicenr = IVr.SerNr;
+              				end;
               			end;
               		end;
               	end;
@@ -691,6 +689,9 @@ begin
 									IVr.SerNr = CredHistr.RecordNr;
 									if(readfirstmain(IVr,1,true))then begin
 										invoicenr = IVr.OfficialSerNr;
+										if(blank(invoicenr))then begin
+              					invoicenr = IVr.SerNr;
+              				end;
 									end;
 								end;
 							end;
@@ -717,6 +718,9 @@ begin
 								IVr.SerNr = CredHistr.RecordNr;
 								if(readfirstmain(IVr,1,true))then begin
 									invoicenr = IVr.OfficialSerNr;
+									if(blank(invoicenr))then begin
+										invoicenr = IVr.SerNr;
+									end;
 								end;
 							end;
 						end;
@@ -734,6 +738,9 @@ begin
 								IVr.SerNr = CredHistr.RecordNr;
 								if(readfirstmain(IVr,1,true))then begin
 									invoicenr = IVr.OfficialSerNr;
+									if(blank(invoicenr))then begin
+										invoicenr = IVr.SerNr;
+									end;
 								end;
 							end;
 						end;
