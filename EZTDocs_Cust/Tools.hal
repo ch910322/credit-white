@@ -286,6 +286,30 @@ begin
 return;
 end;
 
+procedure printHiddenStrings(record IVVc IVr, var vector string vVals)
+begin
+	integer i,rwcnt;
+	row IVVc IVrw;
+	boolean ishidden;
+	
+	rwcnt = matrowcnt(IVr);
+	for(i=0;i<rwcnt;i=i+1)begin
+		matrowget(IVr,i,IVrw);
+		
+		if(ishidden)then begin
+			if(nonblank(IVrw.Spec))then begin
+				vVals["F_HIDDENROWSSPEC"] = vVals["F_HIDDENROWSSPEC"] & IVrw.Spec  & "\\n";
+			end;
+		end;
+		
+		if(IVrw.stp==kInvoiceRowTypeHidden)then begin
+			ishidden = true;
+		end;
+	end;
+	
+return;
+end;
+
 global
 procedure Ext_PrintCustomInvoiceFields(var vector string vVals,record IVVc IVr)
 begin
@@ -492,7 +516,7 @@ begin
   if (IVr.ManualInvoice==1) then begin
     vVals["F_NETTINGTEXT"] = PCb.InvoiceText;
   end;
-
+	printHiddenStrings(IVr,vVals);
 
   return;
 end;
