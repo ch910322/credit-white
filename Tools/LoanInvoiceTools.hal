@@ -627,7 +627,9 @@ begin
   val rowsum;
   record IVVc IVr;
   array string 30 periods;
+  record CMInvoicingBlock CMIb;
 	
+	blockload(CMIb);
 	
 	OCTr.Code = "OCTXT";
 	readfirstmain(OCTr,1,true);
@@ -635,7 +637,13 @@ begin
   if (maxmonths>0) then begin
     mindate = AddMonth(invdate,-maxmonths);
   end;
-
+  
+  if(nonblankdate(CMIb.OverdueFrom))then begin
+  	if(mindate<CMIb.OverdueFrom)then begin
+  		mindate = CMIb.OverdueFrom;
+  	end;
+  end;
+	
   overdueprc = CredManr.OverduePercentage;
   if (CredManr.AnnualRate==1) then begin
     //overdueprc = overdueprc/12; overdues should not be affected by annual
