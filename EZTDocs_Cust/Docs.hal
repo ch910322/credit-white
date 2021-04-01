@@ -1172,6 +1172,28 @@ begin
   return;
 end;
 
+function integer calcAgreementChanges(record CredManVc CredManr)
+begin
+		record CredManChangeVc CredManCh2r;
+		integer res;
+		boolean TrHs;
+		
+		res = 1;
+		
+		TrHs = true;
+		CredManCh2r.CredManNr = CredManr.SerNr;
+		while(loopkey("CredManDate",CredManCh2r,1,TrHs))begin
+			if(CredManCh2r.CredManNr!=CredManr.SerNr)then begin TrHs = false; end;
+			
+			if(TrHs)then begin
+				res = res + 1;
+			end;
+		end;
+		
+		calcAgreementChanges = res;
+return;
+end;
+
 global
 procedure ExternalPrintCredManScheduleForm(record CredManVc CredManr,var vector string vVals)
 begin
@@ -1268,8 +1290,9 @@ LNextRow:;
   vVals["F_CREDTOTPAY"] = totpayment;
   vVals["F_CREDFULLTOTPAY"] = totfullpayment;
   vVals["F_CREDTOTVAT"] = totfullvat;
-  vVals["F_REIMBURSMENT"] = reimbsum;
-
+  vVals["F_REIMBURSMENT"] = reimbsum;	
+	vVals["F_ANNEXNUMBER"] = calcAgreementChanges(CredManr);
+	
   openamount = GetCustomerOpenAmount(CredManr.CustCode,IVr);
 
   topay2 = openamount;
