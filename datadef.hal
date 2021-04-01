@@ -1602,6 +1602,7 @@ begin
   RecordField(LetterOfDemand,M4Code,20,0);
   RecordField(InsuranceCost,M4Code,20,0);
   RecordField(OverdueFrom,M4Date,0,0);
+  RecordField(NewCalcForGrace,M4Int,0,0);
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");

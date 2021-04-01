@@ -509,10 +509,13 @@ procedure GetLatePaymentPlan(record CredManVc CredManr,record CredHistVc CredHis
 begin
   Date tempsd,tempsd2;
   record CredHistVc CredPayr;//CredPayr - same credhistvc register, just for payments
-  Integer i,daydiff,daydiff2;
+  Integer i,daydiff,daydiff2,daydiff3;
   Boolean TrHs;
   val paysum;
   Longint latefeedays;
+  record CMInvoicingBlock CMIb;
+  
+  blockload(CMIb);
   
   paysum = CredHistr.Sum;
   tempsd = sd;//this is the start date when this item should have been paid since
@@ -543,8 +546,15 @@ begin
         if (CredPayr.TransDate>tempsd and CredPayr.TransDate<=ed) then begin
           daydiff = DateDiff(CredPayr.TransDate,tempsd)+1;//or DateDiff2 to get daydiff+1 days
           daydiff2 = DateDiff(CredPayr.TransDate,CredHistr.PayDate);//or DateDiff2 to get daydiff+1 days
+          
+          daydiff3 = daydiff;
+          if(CMIb.NewCalcForGrace==1)then begin
+						if(addday(CredHistr.PayDate,latefeedays)>=addday(CredPayr.TransDate,-daydiff+1))then begin
+								daydiff3 = daydiff2;
+						end;
+          end;
           if (latefeedays<daydiff2) then begin
-            for (i=0;i<daydiff;i=i+1) begin
+            for (i=0;i<daydiff3;i=i+1) begin
               amounts[amounts.length] = paysum;
               daycnt[daycnt.length] = GetMonthDays(AddDay(tempsd,i));
               period[period.length] = tempsd & " - " & AddDay(tempsd,i);
@@ -567,15 +577,22 @@ begin
   if (paysum>0 and tempsd<=ed) then begin
     daydiff = DateDiff(ed,tempsd)+1;
     daydiff2 = DateDiff(ed,CredHistr.PayDate);
+    
+    daydiff3 = daydiff;
+    if(CMIb.NewCalcForGrace==1)then begin
+			if(CredManr.LateFeeDays>daydiff2-daydiff)then begin
+				daydiff3 = daydiff2;
+			end;   
+    end; 
+    
     if (CredManr.LateFeeDays<daydiff2) then begin
-      for (i=0;i<daydiff;i=i+1) begin
+      for (i=0;i<daydiff3;i=i+1) begin
         amounts[amounts.length] = paysum;
         daycnt[daycnt.length] = GetMonthDays(AddDay(tempsd,i));
         period[period.length] = tempsd & " - " & AddDay(tempsd,i);
       end;
     end;
   end;
-
   return;
 end;
 
