@@ -345,7 +345,11 @@ BEGIN
       goto LCredManVcRecordCheck;
     end;
   end;
-
+  if ((CredManr.BuyoutFeePrc!=blankval) and (CredManr.BuyoutFeeMonths>-1)) then begin
+    RecordCheckError(200309,"",-1,"BuyoutFeePrc");
+    res = -1;
+    goto LCredManVcRecordCheck;
+  end;
   res = inner.CredManVcRecordCheck(CredManr,CredMan2r,stat,long4);
   
 LCredManVcRecordCheck:;
