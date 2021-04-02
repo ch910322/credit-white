@@ -515,8 +515,7 @@ begin
   Longint latefeedays;
   record CMInvoicingBlock CMIb;
   date ed;
-  
-  
+  string 100 newperiod;
   
   blockload(CMIb);
   
@@ -560,13 +559,19 @@ begin
           if(CMIb.NewCalcForGrace==1)then begin
 						if(addday(CredHistr.PayDate,latefeedays)>=addday(CredPayr.TransDate,-daydiff+1))then begin
 								daydiff3 = daydiff2;
+								newperiod = addday(CredHistr.PayDate,1) & " - ";
+								messagebox(0,newperiod);
 						end;
           end;
           if (latefeedays<daydiff2) then begin
             for (i=0;i<daydiff3;i=i+1) begin
               amounts[amounts.length] = paysum;
               daycnt[daycnt.length] = GetMonthDays(AddDay(tempsd,i));
-              period[period.length] = tempsd & " - " & AddDay(tempsd,i);
+              if(nonblank(newperiod))then begin
+								period[period.length] = newperiod & ed;
+							end else begin
+								period[period.length] = tempsd & " - " & AddDay(tempsd,i);
+							end;
             end;
           end;
         end;
@@ -591,6 +596,7 @@ begin
     if(CMIb.NewCalcForGrace==1)then begin
 			if(CredManr.LateFeeDays>daydiff2-daydiff)then begin
 				daydiff3 = daydiff2;
+				newperiod = addday(CredHistr.PayDate,1) & " - ";
 			end;   
     end; 
     
@@ -598,7 +604,11 @@ begin
       for (i=0;i<daydiff3;i=i+1) begin
         amounts[amounts.length] = paysum;
         daycnt[daycnt.length] = GetMonthDays(AddDay(tempsd,i));
-        period[period.length] = tempsd & " - " & AddDay(tempsd,i);
+        if(nonblank(newperiod))then begin
+        	period[period.length] = newperiod & ed;
+        end else begin
+					period[period.length] = tempsd & " - " & AddDay(tempsd,i);
+        end;
       end;
     end;
   end;
