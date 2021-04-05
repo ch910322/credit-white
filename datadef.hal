@@ -1746,7 +1746,8 @@ begin
   ArrayField(PledgeVal,M4Val,0,0);
   ArrayField(PledgeDate,M4Date,0,0);
   ArrayField(SerialNo,M4Str,255,0);
-  
+  ArrayField(Address,M4Str,255,0);
+  ArrayField(LivingArea,M4Str,255,0);
   EndArray;
   MainKeyBegin(CredManNr,0);
   KeySegment(CredManNr);
