@@ -366,7 +366,8 @@ begin
   CustAged(CUr,td,bd,td,ARSSumod,ARSsactod,ARSs0od,ARSs1od,ARSs16od,ARSs31od,ARSs61od,ARSs91od,ARSs121od,ARSs151od,0);
   GetOnAccBalance(RepSpec,CUr.Code,CUr.CurncyCode,false,0,ARSOnAccBalB1,rval2,ARSOnAccBal,sumbooked,sumnow,sumcurncy,sumdiff,CurTotalsr,debaccs,debbal,debcnt);//ObjStr
   
-  openamount2 = ARSSumod + ARSOnAccBal;
+  //openamount2 = ARSSumod + ARSOnAccBal;
+  openamount2 = ARSOnAccBal;
   topay3 = openamount2;
   hiddenf = InvoiceHasHiddenLine(IVr);
   topay2 = openamount;
