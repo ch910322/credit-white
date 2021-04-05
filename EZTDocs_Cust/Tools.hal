@@ -310,6 +310,27 @@ begin
 return;
 end;
 
+
+function val usedPrepaymentinIV(record IVVc IVr)
+begin
+	row IVVc IVrw;
+	integer i,rwcnt;
+	val res;
+	
+	if(IVr.OKFlag==1)then begin
+		rwcnt = matrowcnt(IVr);
+		for(i=0;i<rwcnt;i=i+1)begin
+			matrowget(IVr,i,IVrw);
+			if(IVrw.stp==kInvoiceRowTypePrepayment)then begin
+				res = res + IVrw.Sum;
+			end;
+		end;
+	end;
+	
+	usedPrepaymentinIV = res;
+return;
+end;
+
 global
 procedure Ext_PrintCustomInvoiceFields(var vector string vVals,record IVVc IVr)
 begin
@@ -341,7 +362,7 @@ begin
   Array val debbal;
   Integer debcnt;
   Array string 10 debaccs;
-  val rval,rval2,tval,LateFeeItemSum,OpenLateFeeItemSum;
+  val rval,rval2,tval,LateFeeItemSum,OpenLateFeeItemSum,usedprepay;
   record CMPrintConstantsBlock PCb;
   Boolean hiddenf;
 
@@ -367,7 +388,9 @@ begin
   GetOnAccBalance(RepSpec,CUr.Code,CUr.CurncyCode,false,0,ARSOnAccBalB1,rval2,ARSOnAccBal,sumbooked,sumnow,sumcurncy,sumdiff,CurTotalsr,debaccs,debbal,debcnt);//ObjStr
   
   //openamount2 = ARSSumod + ARSOnAccBal; //ARSSumod already included ARSOnAccBal
-  openamount2 = ARSSumod;
+  usedprepay = usedPrepaymentinIV(IVr);
+  openamount2 = ARSSumod - usedprepay;
+  
 	
   topay3 = openamount2;
   hiddenf = InvoiceHasHiddenLine(IVr);
