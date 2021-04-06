@@ -23,6 +23,7 @@ external inner  procedure GetMonthText(string,Date,var string);
 external inner procedure StripLeadingSpaces(var string);
 external inner procedure StripEndingSpaces(var string);
 external function Boolean InvoiceHasHiddenLine(record IVVc);
+external inner procedure OneARSFormOpenOnDate(record RcVc,record CUVc,Integer,var val,var Integer,var Integer);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -310,27 +311,6 @@ begin
 return;
 end;
 
-
-function val usedPrepaymentinIV(record IVVc IVr)
-begin
-	row IVVc IVrw;
-	integer i,rwcnt;
-	val res;
-	
-	if(IVr.OKFlag==1)then begin
-		rwcnt = matrowcnt(IVr);
-		for(i=0;i<rwcnt;i=i+1)begin
-			matrowget(IVr,i,IVrw);
-			if(IVrw.stp==kInvoiceRowTypePrepayment)then begin
-				res = res + IVrw.Sum;
-			end;
-		end;
-	end;
-	
-	usedPrepaymentinIV = res;
-return;
-end;
-
 global
 procedure Ext_PrintCustomInvoiceFields(var vector string vVals,record IVVc IVr)
 begin
@@ -360,9 +340,9 @@ begin
   record SMVc CurTotalsr;
   val sumbooked,sumnow,sumcurncy,sumdiff;
   Array val debbal;
-  Integer debcnt;
+  Integer debcnt,custcnt,invcnt;
   Array string 10 debaccs;
-  val rval,rval2,tval,LateFeeItemSum,OpenLateFeeItemSum,usedprepay;
+  val rval,rval2,tval,LateFeeItemSum,OpenLateFeeItemSum;
   record CMPrintConstantsBlock PCb;
   Boolean hiddenf;
 
@@ -384,12 +364,13 @@ begin
   GetHiddenInvoiceValues(IVr,abovehiddenbase,abovehiddenvat);
   openamount = GetCustomerOpenAmount(IVr.CustCode,IVr);
   td = AddDay(IVr.InvDate,-1);
-  CustAged(CUr,td,bd,td,ARSSumod,ARSsactod,ARSs0od,ARSs1od,ARSs16od,ARSs31od,ARSs61od,ARSs91od,ARSs121od,ARSs151od,0);
-  GetOnAccBalance(RepSpec,CUr.Code,CUr.CurncyCode,false,0,ARSOnAccBalB1,rval2,ARSOnAccBal,sumbooked,sumnow,sumcurncy,sumdiff,CurTotalsr,debaccs,debbal,debcnt);//ObjStr
-  
+  //CustAged(CUr,td,bd,td,ARSSumod,ARSsactod,ARSs0od,ARSs1od,ARSs16od,ARSs31od,ARSs61od,ARSs91od,ARSs121od,ARSs151od,0);
+  //GetOnAccBalance(RepSpec,CUr.Code,CUr.CurncyCode,false,0,ARSOnAccBalB1,rval2,ARSOnAccBal,sumbooked,sumnow,sumcurncy,sumdiff,CurTotalsr,debaccs,debbal,debcnt);//ObjStr
+	RepSpec.d1 = td;
+	OneARSFormOpenOnDate(RepSpec,CUr,1,ARSSumod,custcnt,invcnt);//Used this function to calc user balance
+
   //openamount2 = ARSSumod + ARSOnAccBal; //ARSSumod already included ARSOnAccBal
-  usedprepay = usedPrepaymentinIV(IVr);
-  openamount2 = ARSSumod - usedprepay;
+  openamount2 = ARSSumod;
   
 	
   topay3 = openamount2;
