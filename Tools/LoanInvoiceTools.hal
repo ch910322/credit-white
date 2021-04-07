@@ -567,7 +567,7 @@ begin
             for (i=0;i<daydiff3;i=i+1) begin
               amounts[amounts.length] = paysum;
               daycnt[daycnt.length] = GetMonthDays(AddDay(tempsd,i));
-              period[period.length] = addday(df,-i) & " - " & df;
+              period[period.length] = addday(df,-daydiff3+1) & " - " & df;
             end;
           end;
         end;
@@ -601,7 +601,7 @@ begin
       for (i=0;i<daydiff3;i=i+1) begin
         amounts[amounts.length] = paysum;
         daycnt[daycnt.length] = GetMonthDays(AddDay(tempsd,i));
-        period[period.length] = addday(df,-i) & " - " & df;
+        period[period.length] = addday(df,-daydiff3+1) & " - " & df;
       end;
     end;
   end;
