@@ -134,7 +134,7 @@ begin
   date frPayDate, toPayDate;
   string 255 tstr;
   record IVVc IVr;
-  val t;
+  val t,subtotal,total;
   LongInt countout,curr,c2;
   
   headoutf = false;
@@ -191,24 +191,32 @@ begin
           AddXMLTagToArea(a,"Principle","",ValToString(CMrw.Principle,M4Val,"",".",0),3);
           AddXMLTagToArea(a,"Interest","",ValToString(CMrw.Interest,M4Val,"",".",0),3);
           //AddXMLTagToArea(a,"Fees","",ValToString(CMrw.Fees,M4Val,"",".",0),3); customer request: do not output
-          //Sum1 - Amunt ex vat
+          //Sum1 - Amunt ex vat,Sum4 - total incl VAT
           tstr = "";
           t = blankval;
+          total = blankval;
+          subtotal = blankval;
           if (CMrw.Type==0) then begin
             if (nonblank(CMrw.InvoiceNr)) then begin
               IVr.SerNr = StringToLongInt(CMrw.InvoiceNr);
               if (ReadFirstMain(IVr,1,true)) then begin
-                t = IVr.Sum3;        
+                t = IVr.Sum3;
+                subtotal = IVr.Sum1;                
+                total = IVr.Sum4;
                 tstr = IVr.CurncyCode;
               end;
             end else begin
               TestInvoiceBasedOnScheduleRow(CMr,CMrw,IVr);
               t = IVr.Sum3;
+              subtotal = IVr.Sum1;                
+              total = IVr.Sum4;
               tstr = IVr.CurncyCode;
             end;
           end;
+          AddXMLTagToArea(a,"SubTotal","",ValToString(subtotal,M4Val,"",".",0),3);//should be same as CMrw.Total
           AddXMLTagToArea(a,"VATTotal","",ValToString(t,M4Val,"",".",0),3);
-          AddXMLTagToArea(a,"Total","",ValToString(CMrw.Total,M4Val,"",".",0),3);
+          //AddXMLTagToArea(a,"Total","",ValToString(CMrw.Total,M4Val,"",".",0),3);
+          AddXMLTagToArea(a,"Total","",ValToString(total,M4Val,"",".",0),3);
           AddXMLTagToArea(a,"Invoiced","",ConvertXmlString(StringFromSet(432,CMrw.Invoiced),true),3);
           AddXMLTagToArea(a,"FromDate","",DateToString(CMrw.FromDate,"YYYY-MM-DD"),3);
           AddXMLTagToArea(a,"ToDate","",DateToString(CMrw.ToDate,"YYYY-MM-DD"),3);
@@ -877,6 +885,141 @@ begin
   return;
 end;
 
+procedure InsertInvoiceInArray(record IVVc IVr,string ExtraValue,integer ValueType, var array record IVVc arrIVr)
+begin
+  record IVVc nIVr;
+  
+  RecordCopy(nIVr,IVr);
+  if (ValueType==M4Str) then begin
+    nIVr.Sorting = ExtraValue;
+  end else begin
+    nIVr.Points = StringToVal(ExtraValue,ValueType);
+  end;
+  arrIVr[arrIvr.length] = nIVr;
+  return;
+end;
+
+procedure AddCredManInvoiceToArea(record IVVc IVr, var area a)
+begin
+  record CredHistVc CredHistr,CredHist2r;
+  record CredManVc CMr;
+  record OPVc OPr;
+  record OPrsVc OPrsr;
+  string 255 custcode,credmanstr,tstr,invoicenrstr,curncy,item;
+  LongInt CredManNr,invoicenr;
+  boolean TrHs,testf,TrHs2,skipf;
+  val totavail, totpaid1,totpaid,totsum,t;
+  array string 255 aCredManNr;
+  integer i,acnt,pos;
+  date dfrom,dto,blankd;
+  LongInt countout,curr,c2,rowoffset,rowlimit;
+  integer keys,paidflag;
+
+  CredHistr.RecordNr = IVr.SerNr;
+  CredHistr.RecordType = 0;
+  if (ReadFirstKey("RecordNr",CredHistr,2,true)) then begin
+    //not nice...
+    AddPlainXmlToArea(a,"<Invoice>",3);
+    AddXMLTagToArea(a,"InvoiceNr","",IVr.SerNr,4); 
+    AddXMLTagToArea(a,"CredManNr","",CredHistr.CredManNr,4);
+    AddXMLTagToArea(a,"InvDate","",DateToString(IVr.TransDate,"YYYY-MM-DD"),4);
+    AddXMLTagToArea(a,"DueDate","",DateToString(IVr.PayDate,"YYYY-MM-DD"),4);
+    AddXMLTagToArea(a,"ArtCode","",ConvertXMLString(CredHistr.ArtCode,true),4);
+    
+    AddXMLTagToArea(a,"OfficialSerNr","",tstr,4);
+    AddXMLTagToArea(a,"Sum","",ValToString(CredHistr.Sum,M4Val,"",".",0),4);
+    
+    AddXMLTagToArea(a,"PaidSum","",ValToString(CredHistr.Sum-t,M4Val,"",".",0),4);  
+    AddXMLTagToArea(a,"InvSum","",ValToString(CredHistr.InvSum,M4Val,"",".",0),4);
+    AddXMLTagToArea(a,"Balance","",ValToString(CredHistr.Balance,M4Val,"",".",0),4);
+    AddXMLTagToArea(a,"OpenAmount","",ValToString(t,M4Val,"",".",0),4);
+    //AddXMLTagToArea(a,"PaymentStatus","",0,4);
+    AddXMLTagToArea(a,"PaidFlag","",paidflag,4);
+    AddXMLTagToArea(a,"CurncyCode","",curncy,4);
+    AddPlainXmlToArea(a,"<Payments>",4);
+    
+    ResetLoop(CredHist2r);
+    CredHist2r.PreviousNr = CredHistr.SerNr;
+    TrHs2 = true;
+    While (LoopKey("PreviousNr",CredHist2r,1,TrHs2)) begin
+      if (CredHist2r.PreviousNr!=CredHistr.SerNr) then begin
+        TrHs2 = false;
+      end;
+      if ((TrHs2) and (CredHist2r.RecordType==1)) then begin
+        AddPlainXmlToArea(a,"<Payment>",5);  
+        AddXMLTagToArea(a,"PaymentNr","",CredHist2r.RecordNr,6);
+        //TODO: CurncyCode
+        AddXMLTagToArea(a,"PayDate","",DateToString(CredHist2r.PayDate,"YYYY-MM-DD"),6);
+        AddXMLTagToArea(a,"Sum","",ValToString(CredHist2r.Sum,M4Val,"",".",0),6);
+        AddXMLTagToArea(a,"CredManNr","",CredHist2r.CredManNr,6);
+        //AddXMLTagToArea(a,"CredFromDate","",DateToString(CredHist2r.CredFromDate,"YYYY-MM-DD"),6);
+        //AddXMLTagToArea(a,"CredToDate","",DateToString(CredHist2r.CredToDate,"YYYY-MM-DD"),6);
+        AddPlainXmlToArea(a,"</Payment>",5);
+      end;
+    end;
+    AddPlainXmlToArea(a,"</Payments>",4);
+    AddPlainXmlToArea(a,"<Prepayments>",4);
+    ResetLoop(CredHist2r);
+    CredHist2r.PreviousNr = CredHistr.SerNr;
+    TrHs2 = true;
+    While (LoopKey("PreviousNr",CredHist2r,1,TrHs2)) begin
+      if (CredHist2r.PreviousNr!=CredHistr.SerNr) then begin
+        TrHs2 = false;
+      end;
+      if ((TrHs2) and (CredHist2r.RecordType==2)) then begin
+        AddPlainXmlToArea(a,"<Prepayment>",5);  
+        AddXMLTagToArea(a,"PrepaymentNr","",CredHist2r.RecordNr,6);
+        //TODO: CurncyCode
+        AddXMLTagToArea(a,"PayDate","",DateToString(CredHist2r.PayDate,"YYYY-MM-DD"),6);
+        AddXMLTagToArea(a,"Sum","",ValToString(CredHist2r.Sum,M4Val,"",".",0),6);
+        AddXMLTagToArea(a,"CredManNr","",CredHist2r.CredManNr,6);
+        //AddXMLTagToArea(a,"CredFromDate","",DateToString(CredHist2r.CredFromDate,"YYYY-MM-DD"),6);
+        //AddXMLTagToArea(a,"CredToDate","",DateToString(CredHist2r.CredToDate,"YYYY-MM-DD"),6);
+        AddPlainXmlToArea(a,"</Prepayment>",5);
+      end;
+    end;
+    AddPlainXmlToArea(a,"</Prepayments>",4);
+    
+    AddPlainXmlToArea(a,"<CreditNotes>",4);
+    ResetLoop(CredHist2r);
+    CredHist2r.PreviousNr = CredHistr.SerNr;
+    TrHs2 = true;
+    While (LoopKey("PreviousNr",CredHist2r,1,TrHs2)) begin
+      if (CredHist2r.PreviousNr!=CredHistr.SerNr) then begin
+        TrHs2 = false;
+      end;
+      if ((TrHs2) and (CredHist2r.RecordType==3)) then begin
+        AddPlainXmlToArea(a,"<CreditNote>",3);
+        AddXMLTagToArea(a,"InvoiceNr","",CredHist2r.RecordNr,4); 
+        AddXMLTagToArea(a,"CredManNr","",CredHist2r.CredManNr,4);
+        AddXMLTagToArea(a,"InvDate","",DateToString(CredHist2r.TransDate,"YYYY-MM-DD"),4);
+        AddXMLTagToArea(a,"ArtCode","",ConvertXMLString(CredHist2r.ArtCode,true),4);
+        IVr.SerNr = CredHist2r.RecordNr;
+        tstr = "";
+        if (ReadFirstMain(IVr,1,true)) then begin
+          tstr = ConvertXMLString(IVr.OfficialSerNr,true);
+          curncy = IVr.CurncyCode;
+        end;
+        
+        AddXMLTagToArea(a,"OfficialSerNr","",tstr,4);
+        AddXMLTagToArea(a,"Sum","",ValToString(-CredHist2r.Sum,M4Val,"",".",0),4);
+        AddXMLTagToArea(a,"PaidSum","",ValToString(-CredHist2r.PaidSum,M4Val,"",".",0),4);
+        AddXMLTagToArea(a,"InvSum","",ValToString(-CredHist2r.InvSum,M4Val,"",".",0),4);
+        AddXMLTagToArea(a,"Balance","",ValToString(CredHist2r.Balance,M4Val,"",".",0),4);
+        //AddXMLTagToArea(a,"ItemPaidAmount","",ValToString(0,M4Val,"",".",0),4); TODO?
+        t = -CredHist2r.InvSum+CredHist2r.PaidSum;
+        AddXMLTagToArea(a,"OpenAmount","",ValToString(t,M4Val,"",".",0),4);
+        //AddXMLTagToArea(a,"PaymentStatus","",0,4);
+        AddXMLTagToArea(a,"PaidFlag","",CredHist2r.PaidFlag,4);
+        AddXMLTagToArea(a,"CurncyCode","",curncy,4);
+        AddPlainXmlToArea(a,"</CreditNote>",3);
+      end;
+    end;
+    AddPlainXmlToArea(a,"</CreditNotes>",4);
+    AddPlainXmlToArea(a,"</Invoice>",3);
+  end;  
+end;
+
 procedure GetCustomerInvoiceDetails()
 begin
   record CredHistVc CredHistr,CredHist2r;
@@ -895,6 +1038,10 @@ begin
   LongInt countout,curr,c2,rowoffset,rowlimit;
   integer keys,paidflag;
   string 255 offinvnr;
+  array record IVVc arrIVr;
+  string 255 ExtraValue;
+  integer ValueType;
+  string 255 sort,sorttype;
   
   custcode = WebGetArg("CustCode");
   credmanstr = WebGetArg("CredManNr");
@@ -905,7 +1052,9 @@ begin
   invoicenrstr = WebGetArg("invoicenr");
   invoicenr = StringToLongint(invoicenrstr);
   offinvnr = WebGetArg("officialinvoicenr");
-  tstr=WebGetArg("rowoffset");
+  tstr = WebGetArg("rowoffset");
+  sort = WebGetArg("sort");
+  sorttype = WebGetArg("sorttype");
   countout = 0;
   curr = 0;
   rowoffset = StringToLongInt(tstr);
@@ -976,119 +1125,76 @@ begin
           if (!skipf) then begin
             countout = countout + 1;
             if (CredHistr.RecordType==0) then begin
-              AddPlainXmlToArea(a,"<Invoice>",3);
-              AddXMLTagToArea(a,"InvoiceNr","",CredHistr.RecordNr,4); 
-              AddXMLTagToArea(a,"CredManNr","",CredHistr.CredManNr,4);
-              AddXMLTagToArea(a,"InvDate","",DateToString(CredHistr.TransDate,"YYYY-MM-DD"),4);
-              AddXMLTagToArea(a,"DueDate","",DateToString(CredHistr.PayDate,"YYYY-MM-DD"),4);
-              AddXMLTagToArea(a,"ArtCode","",ConvertXMLString(CredHistr.ArtCode,true),4);
               IVr.SerNr = CredHistr.RecordNr;
               tstr = "";
               if (ReadFirstMain(IVr,1,true)) then begin
                 tstr = ConvertXMLString(IVr.OfficialSerNr,true);
                 curncy = IVr.CurncyCode;
               end;
-              AddXMLTagToArea(a,"OfficialSerNr","",tstr,4);
-              AddXMLTagToArea(a,"Sum","",ValToString(CredHistr.Sum,M4Val,"",".",0),4);
               t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
               paidflag = 0;
               if (t==0.0) then begin
                 paidflag = 1;
               end;
-              AddXMLTagToArea(a,"PaidSum","",ValToString(CredHistr.Sum-t,M4Val,"",".",0),4);  
-              AddXMLTagToArea(a,"InvSum","",ValToString(CredHistr.InvSum,M4Val,"",".",0),4);
-              AddXMLTagToArea(a,"Balance","",ValToString(CredHistr.Balance,M4Val,"",".",0),4);
-              AddXMLTagToArea(a,"OpenAmount","",ValToString(t,M4Val,"",".",0),4);
-              //AddXMLTagToArea(a,"PaymentStatus","",0,4);
-              AddXMLTagToArea(a,"PaidFlag","",paidflag,4);
-              AddXMLTagToArea(a,"CurncyCode","",curncy,4);
-              AddPlainXmlToArea(a,"<Payments>",4);
-              
-              ResetLoop(CredHist2r);
-              CredHist2r.PreviousNr = CredHistr.SerNr;
-              TrHs2 = true;
-              While (LoopKey("PreviousNr",CredHist2r,1,TrHs2)) begin
-                if (CredHist2r.PreviousNr!=CredHistr.SerNr) then begin
-                  TrHs2 = false;
-                end;
-                if ((TrHs2) and (CredHist2r.RecordType==1)) then begin
-                  AddPlainXmlToArea(a,"<Payment>",5);  
-                  AddXMLTagToArea(a,"PaymentNr","",CredHist2r.RecordNr,6);
-                  //TODO: CurncyCode
-                  AddXMLTagToArea(a,"PayDate","",DateToString(CredHist2r.PayDate,"YYYY-MM-DD"),6);
-                  AddXMLTagToArea(a,"Sum","",ValToString(CredHist2r.Sum,M4Val,"",".",0),6);
-                  AddXMLTagToArea(a,"CredManNr","",CredHist2r.CredManNr,6);
-                  //AddXMLTagToArea(a,"CredFromDate","",DateToString(CredHist2r.CredFromDate,"YYYY-MM-DD"),6);
-                  //AddXMLTagToArea(a,"CredToDate","",DateToString(CredHist2r.CredToDate,"YYYY-MM-DD"),6);
-                  AddPlainXmlToArea(a,"</Payment>",5);
-                end;
+              switch (sort) begin
+                case "OfficialSerNr":
+                  ValueType = M4Str;
+                  ExtraValue = IVr.OfficialSerNr;
+                case "ArtCode":
+                  ValueType = M4Str;
+                  ExtraValue = CredHistr.ArtCode;
+                case "InvDate":
+                  ValueType = M4Str;
+                  ExtraValue = CredHistr.TransDate;
+                case "DueDate":
+                  ValueType = M4Str;
+                  ExtraValue = CredHistr.PayDate;
+                case "PaidFlag":
+                  ValueType = M4Str;
+                  ExtraValue = paidflag;
+                case "Sum":
+                  ValueType = M4Val;
+                  ExtraValue = CredHistr.Sum;
+                case "InvSum":
+                  ValueType = M4Val;
+                  ExtraValue = CredHistr.InvSum;
+                case "PaidSum":
+                  ValueType = M4Val;
+                  ExtraValue = CredHistr.Sum-t;
+                case "OpenAmount":
+                  ValueType = M4Val;
+                  ExtraValue = CredHistr.Sum-t;
+                otherwise
+                  ValueType = M4Str;
+                  ExtraValue = "";
               end;
-              AddPlainXmlToArea(a,"</Payments>",4);
-              AddPlainXmlToArea(a,"<Prepayments>",4);
-              ResetLoop(CredHist2r);
-              CredHist2r.PreviousNr = CredHistr.SerNr;
-              TrHs2 = true;
-              While (LoopKey("PreviousNr",CredHist2r,1,TrHs2)) begin
-                if (CredHist2r.PreviousNr!=CredHistr.SerNr) then begin
-                  TrHs2 = false;
-                end;
-                if ((TrHs2) and (CredHist2r.RecordType==2)) then begin
-                  AddPlainXmlToArea(a,"<Prepayment>",5);  
-                  AddXMLTagToArea(a,"PrepaymentNr","",CredHist2r.RecordNr,6);
-                  //TODO: CurncyCode
-                  AddXMLTagToArea(a,"PayDate","",DateToString(CredHist2r.PayDate,"YYYY-MM-DD"),6);
-                  AddXMLTagToArea(a,"Sum","",ValToString(CredHist2r.Sum,M4Val,"",".",0),6);
-                  AddXMLTagToArea(a,"CredManNr","",CredHist2r.CredManNr,6);
-                  //AddXMLTagToArea(a,"CredFromDate","",DateToString(CredHist2r.CredFromDate,"YYYY-MM-DD"),6);
-                  //AddXMLTagToArea(a,"CredToDate","",DateToString(CredHist2r.CredToDate,"YYYY-MM-DD"),6);
-                  AddPlainXmlToArea(a,"</Prepayment>",5);
-                end;
-              end;
-              AddPlainXmlToArea(a,"</Prepayments>",4);
-              
-              AddPlainXmlToArea(a,"<CreditNotes>",4);
-              ResetLoop(CredHist2r);
-              CredHist2r.PreviousNr = CredHistr.SerNr;
-              TrHs2 = true;
-              While (LoopKey("PreviousNr",CredHist2r,1,TrHs2)) begin
-                if (CredHist2r.PreviousNr!=CredHistr.SerNr) then begin
-                  TrHs2 = false;
-                end;
-                if ((TrHs2) and (CredHist2r.RecordType==3)) then begin
-                  AddPlainXmlToArea(a,"<CreditNote>",3);
-                  AddXMLTagToArea(a,"InvoiceNr","",CredHist2r.RecordNr,4); 
-                  AddXMLTagToArea(a,"CredManNr","",CredHist2r.CredManNr,4);
-                  AddXMLTagToArea(a,"InvDate","",DateToString(CredHist2r.TransDate,"YYYY-MM-DD"),4);
-                  AddXMLTagToArea(a,"ArtCode","",ConvertXMLString(CredHist2r.ArtCode,true),4);
-                  IVr.SerNr = CredHist2r.RecordNr;
-                  tstr = "";
-                  if (ReadFirstMain(IVr,1,true)) then begin
-                    tstr = ConvertXMLString(IVr.OfficialSerNr,true);
-                    curncy = IVr.CurncyCode;
-                  end;
-                  
-                  AddXMLTagToArea(a,"OfficialSerNr","",tstr,4);
-                  AddXMLTagToArea(a,"Sum","",ValToString(-CredHist2r.Sum,M4Val,"",".",0),4);
-                  AddXMLTagToArea(a,"PaidSum","",ValToString(-CredHist2r.PaidSum,M4Val,"",".",0),4);
-                  AddXMLTagToArea(a,"InvSum","",ValToString(-CredHist2r.InvSum,M4Val,"",".",0),4);
-                  AddXMLTagToArea(a,"Balance","",ValToString(CredHist2r.Balance,M4Val,"",".",0),4);
-                  //AddXMLTagToArea(a,"ItemPaidAmount","",ValToString(0,M4Val,"",".",0),4); TODO?
-                  t = -CredHist2r.InvSum+CredHist2r.PaidSum;
-                  AddXMLTagToArea(a,"OpenAmount","",ValToString(t,M4Val,"",".",0),4);
-                  //AddXMLTagToArea(a,"PaymentStatus","",0,4);
-                  AddXMLTagToArea(a,"PaidFlag","",CredHist2r.PaidFlag,4);
-                  AddXMLTagToArea(a,"CurncyCode","",curncy,4);
-                  AddPlainXmlToArea(a,"</CreditNote>",3);
-                end;
-              end;
-              AddPlainXmlToArea(a,"</CreditNotes>",4);
-              //TODO:sorting
-              AddPlainXmlToArea(a,"</Invoice>",3);
-            end;
+              InsertInvoiceInArray(IVr,ExtraValue,ValueType,arrIVr);
+            end;//RecordType==0
           end;//!skip
         end;
       end;
     end;
+  end;
+  
+  if (nonblank(sort))then begin
+    if (ValueType==M4Str) then begin
+      SortRecordArray(arrIVr,"Sorting");
+    end else begin
+      SortRecordArray(arrIVr,"Points");
+    end;
+  end;
+  
+  acnt = arrIVr.length;
+  if (sorttype=="desc") then begin
+    for (i=acnt-1;i>=0;i=i-1) begin
+      IVr = arrIVr[i];
+      AddCredManInvoiceToArea(IVr,a);
+    end;
+  end else begin
+    for (i=0;i<acnt;i=i+1) begin
+      IVr = arrIVr[i];
+      AddCredManInvoiceToArea(IVr,a);
+    end;  
   end;
   AddXMLTagToArea(a,"RowCount","",curr,3);
   c2 = rowoffset+countout;
