@@ -463,6 +463,9 @@ begin
   string 255 saddr0,saddr1,saddr2,saddr3,saddr4,idcard,iddate,signManager;
   string 255 signerphone,signermobile,signeremail,signerid,signeridcard,signeriddate,legalid,idstring;
   Integer comptype;
+  record CMPrintConstantsBlock PCb;
+  
+  blockload(PCb);
 
     GetSuretyValues3(CredManr,num,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,saddr0,saddr1,saddr2,saddr3,saddr4,value,signer,td,idcard,iddate,signerphone,signermobile,signeremail,signerid,signeridcard,signeriddate,legalid,comptype);
     vVals[fs & "F_CONTACTNAME"] = name;
@@ -473,6 +476,16 @@ begin
     vVals[fs & "F_CONTACTMAIL"] = email;
     vVals[fs & "F_CONTACTID"] = id;
     vVals[fs & "F_CONTACTVALUE"] = value;
+    if (nonblank(PCb.BOEValueLangCode)) then begin
+			ValToText(stringtoval(value,M4Val),M4Val,CredManr.CurncyCode,PCb.BOEValueLangCode,tstr);
+		end else begin
+			ValToText(stringtoval(value,M4Val),M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+		end;
+		tstr = StrReplace(tstr,"  "," ");
+		tstr = StrReplace(tstr,"  "," ");
+		vVals[fs & "F_CONTACTVALUEINWORDS"] = tstr;
+    
+    
     vVals[fs & "F_CONTACTDATE"] = td;
     vVals[fs & "F_CONTACTIDCARD"] = idcard;
     vVals[fs & "F_CONTACTIDCARDDATE"] = iddate;
@@ -490,7 +503,7 @@ begin
     vVals[fs & "F_CONTACTSIGNERID"] = signerid;
     vVals[fs & "F_CONTACTSIGNERIDCARD"] = signeridcard;
     vVals[fs & "F_CONTACTSIGNERIDCARDDATE"] = signeriddate;
-    Ext_OutAddress(vVals,fs & "F_CONTACTSIGNERADRESS",name,saddr0,saddr1,saddr2,saddr3,saddr4);
+    Ext_OutAddress(vVals,fs & "F_CONTACTSIGNERADRESS",name,saddr0,saddr1,saddr2,saddr3,saddr4);		
 		
 		if(num>0)then begin
 			GetSuretyValues4(CredManr,num,signManager);
