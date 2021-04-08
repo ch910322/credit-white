@@ -776,27 +776,7 @@ BEGIN
 	vVals["F_OWNSHARECAPITAL"] = CompYear.ShareCapital;    
 	vVals["F_OWNANACODE"] = CompYear.ANACode; 
 	vVals["F_OWNSORTCODE"] = CompYear.SortCode; 
-	
-	if(nonblank(CompYear.CompName))then begin
-		vVals["F_EGENADRESS"] = CompYear.CompName & "\\n";
-	end;
-	if(nonblank(CompYear.Addr0))then begin
-		vVals["F_EGENADRESS"] = vVals["F_EGENADRESS"] & CompYear.Addr0 & "\\n";
-	end;
-	if(nonblank(CompYear.Addr1))then begin
-		vVals["F_EGENADRESS"] = vVals["F_EGENADRESS"] & CompYear.Addr1 & "\\n";
-	end;
-	if(nonblank(CompYear.Addr2))then begin
-		vVals["F_EGENADRESS"] = vVals["F_EGENADRESS"] & CompYear.Addr2 & "\\n";
-	end;
-	if(nonblank(CompYear.Addr3))then begin
-		vVals["F_EGENADRESS"] = vVals["F_EGENADRESS"] & CompYear.Addr3 & "\\n";
-	end;
-	if(nonblank(CompYear.Addr4))then begin
-		vVals["F_EGENADRESS"] = vVals["F_EGENADRESS"] & CompYear.Addr4 & "\\n";
-	end;
-
-
+	Ext_OutAddress(vVals,"F_EGENADRESS",CompYear.CompName,CompYear.Addr0,CompYear.Addr1,CompYear.Addr2,CompYear.Addr3,CompYear.Addr4);
   RETURN;
 END;
 
@@ -1399,7 +1379,7 @@ begin
   string 255 signerphone,signermobile,signeremail,signerid,signeridcard,signeriddate,legalid;
 
   Ext_CommonDocumentFields(vVals);
-
+	CommonDocumentFieldsWord(vVals);
   if (gSuretyNumber==-1) then begin
     GetSuretyValues(CredManr,1,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
     vVals["F_CONTACTNAME"] = name;
