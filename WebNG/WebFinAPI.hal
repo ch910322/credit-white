@@ -913,19 +913,24 @@ begin
   integer i,acnt,pos;
   date dfrom,dto,blankd;
   LongInt countout,curr,c2,rowoffset,rowlimit;
-  integer keys,paidflag;
+  integer paidflag;
 
   CredHistr.RecordNr = IVr.SerNr;
   CredHistr.RecordType = 0;
   if (ReadFirstKey("RecordNr",CredHistr,2,true)) then begin
     //not nice...
+    t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
+    paidflag = 0;
+    if (t==0.0) then begin
+      paidflag = 1;
+    end;
     AddPlainXmlToArea(a,"<Invoice>",3);
     AddXMLTagToArea(a,"InvoiceNr","",IVr.SerNr,4); 
     AddXMLTagToArea(a,"CredManNr","",CredHistr.CredManNr,4);
     AddXMLTagToArea(a,"InvDate","",DateToString(IVr.TransDate,"YYYY-MM-DD"),4);
     AddXMLTagToArea(a,"DueDate","",DateToString(IVr.PayDate,"YYYY-MM-DD"),4);
     AddXMLTagToArea(a,"ArtCode","",ConvertXMLString(CredHistr.ArtCode,true),4);
-    
+    tstr = ConvertXMLString(IVr.OfficialSerNr,true);
     AddXMLTagToArea(a,"OfficialSerNr","",tstr,4);
     AddXMLTagToArea(a,"Sum","",ValToString(CredHistr.Sum,M4Val,"",".",0),4);
     
@@ -935,7 +940,7 @@ begin
     AddXMLTagToArea(a,"OpenAmount","",ValToString(t,M4Val,"",".",0),4);
     //AddXMLTagToArea(a,"PaymentStatus","",0,4);
     AddXMLTagToArea(a,"PaidFlag","",paidflag,4);
-    AddXMLTagToArea(a,"CurncyCode","",curncy,4);
+    AddXMLTagToArea(a,"CurncyCode","",IVr.CurncyCode,4);
     AddPlainXmlToArea(a,"<Payments>",4);
     
     ResetLoop(CredHist2r);
@@ -1000,7 +1005,6 @@ begin
           tstr = ConvertXMLString(IVr.OfficialSerNr,true);
           curncy = IVr.CurncyCode;
         end;
-        
         AddXMLTagToArea(a,"OfficialSerNr","",tstr,4);
         AddXMLTagToArea(a,"Sum","",ValToString(-CredHist2r.Sum,M4Val,"",".",0),4);
         AddXMLTagToArea(a,"PaidSum","",ValToString(-CredHist2r.PaidSum,M4Val,"",".",0),4);
@@ -1132,6 +1136,7 @@ begin
                 curncy = IVr.CurncyCode;
               end;
               t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
+              LogText(0, "CredHistr.SerNr=" & CredHistr.SerNr & " openamount=" & t & " CredHistr.PaidFlag=" & CredHistr.PaidFlag);
               paidflag = 0;
               if (t==0.0) then begin
                 paidflag = 1;
