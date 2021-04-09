@@ -885,11 +885,12 @@ begin
   return;
 end;
 
-procedure InsertInvoiceInArray(record IVVc IVr,string ExtraValue,integer ValueType, var array record IVVc arrIVr)
+procedure InsertInvoiceInArray(record IVVc IVr,longint CredHistNr,string ExtraValue,integer ValueType, var array record IVVc arrIVr)
 begin
   record IVVc nIVr;
   
   RecordCopy(nIVr,IVr);
+  nIVr.SVONr = CredHistNr;
   if (ValueType==M4Str) then begin
     nIVr.Sorting = ExtraValue;
   end else begin
@@ -915,9 +916,8 @@ begin
   LongInt countout,curr,c2,rowoffset,rowlimit;
   integer paidflag;
 
-  CredHistr.RecordNr = IVr.SerNr;
-  CredHistr.RecordType = 0;
-  if (ReadFirstKey("RecordNr",CredHistr,2,true)) then begin
+  CredHistr.SerNr = IVr.SVONr;
+  if (ReadFirstMain(CredHistr,1,true)) then begin
     //not nice...
     t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
     paidflag = 0;
@@ -1136,7 +1136,6 @@ begin
                 curncy = IVr.CurncyCode;
               end;
               t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
-              LogText(0, "CredHistr.SerNr=" & CredHistr.SerNr & " openamount=" & t & " CredHistr.PaidFlag=" & CredHistr.PaidFlag);
               paidflag = 0;
               if (t==0.0) then begin
                 paidflag = 1;
@@ -1173,7 +1172,7 @@ begin
                   ValueType = M4Str;
                   ExtraValue = "";
               end;
-              InsertInvoiceInArray(IVr,ExtraValue,ValueType,arrIVr);
+              InsertInvoiceInArray(IVr,CredHistr.SerNr,ExtraValue,ValueType,arrIVr);
             end;//RecordType==0
           end;//!skip
         end;
