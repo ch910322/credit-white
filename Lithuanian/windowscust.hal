@@ -992,6 +992,8 @@ begin
   EditFieldTL(h,v+=20,150,"Balance Date",M4Date,Normal,0,d1,false,PasteCurDate);
   EditFieldTL(h,v+=20,150,"Classifications",M4UStr,Normal,255,f4,false,CredManClassSClass);
   EditFieldTL(h,v+=20,150,"Manager",M4UStr,Normal,255,f5,false,UserSClass);
+  EditField(h,v+=20,150,"First Invoice Period",Normal,Period2Str2,false,PerSClass);
+	EditFieldTL(h,v+=20,150,"End Period",M4UStr,Normal,21,Stext,false,PerSClass);
   CheckBox(h,v+=30,0,"Include unapproved",flags[3]);
   CheckBox(h,v+=30,0,"Not OK'ed",flags[4]);
   CheckBox(h,v+=30,0,"Include Completed",flags[5]);
