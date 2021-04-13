@@ -713,6 +713,7 @@ begin
     case "F_LASTDAY2": res = RepSpec.ObjStr;
     case "F_OPENAMOUNT2": res = RepSpec.Stext;
     case "F_TOPAY3": res = RepSpec.FirstAcc;
+    case "F_TOPAY4": res = RepSpec.LastAcc;
     otherwise
       res = LetVcReplaceTokenCust(RepSpec,token);
   end;

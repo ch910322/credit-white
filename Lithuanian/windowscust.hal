@@ -1868,9 +1868,10 @@ begin
   Tile(2,500,false,"2",DetailedInvoice);
   CheckBox(h,v=6,0,"Overdue Calculation below hidden Line",AddOverdueDetails);
 
-
   EditField(h,v+=vs,100,"Overdue Item Class",Normal,OverdueItemClass,false,DISClass);
   EditField(h,v+=30,100,"Overdue Months",Normal,OverdueMonths,false,0);
+  EditField(h,v+=vs,100,"Overdue Payment Terms",Normal,OverduePayTerm,false,PDSClass);
+  EditField(h,v+=vs,100,"Overdue From",Normal,OverdueFrom,false,PasteCurDate);
 
   ButtonFrame(h,v+=40,400,3,"Overdue Invoicing");
   RadioButton(h,v,0,0,"With Principle, same Invoice",OverdueIVType);

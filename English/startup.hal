@@ -53,7 +53,8 @@ begin
   Setting("Payment Condition Text",PaymentConditionTextWClass,modCredMan);
   Setting("Other Condition Text",PaymentConditionTextWClass,modCredMan);
   Setting("Managers Workload",ManagerWorkloadLClass,modCredMan);
-
+	Setting("Euribor Rates",EuriborRatesLClass,modCredMan);
+	Setting("Overdue calculations text",OverdueCalcTextWClass,modCredMan);
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
 	Report("Application Overview",LoanApplicationListRClass,LoanApplicationListRn,0,modCredMan);
@@ -306,7 +307,7 @@ begin
   SString(200302,"Specify Max late Days");
   SString(200303,"Grace Period already registered");
   SString(200309,"Only one of ""Premature Term. Fee %"" or ""Premature Term. Months"" should be filled in");
-  
+
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");
   StrSetText(B2BLoanApplicationVc,"Loan Applications");

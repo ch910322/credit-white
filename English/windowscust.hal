@@ -485,7 +485,7 @@ begin
 
   WindowBegin("Check Buy-out Value",CheckBuyoutValueWClass,CGother,RcType);
   UseView(RcVc);
-  h = 320;
+  h = 380;
   if (ShowBuyOutFee) then begin
     h = h + 20;
   end;
@@ -500,6 +500,8 @@ begin
   EditFieldTL(h,v+=vs,120,"Principle Amount",M4Str,ViewOnly,255,f13,true,0);
   EditFieldTL(h,v+=vs,120,"Interest Amount",M4Str,ViewOnly,255,f16,true,0);
   EditFieldTL(h,v+=vs,120,"Overdue Invoices",M4Str,ViewOnly,255,f17,true,0);
+  EditFieldTL(h,v+=vs,120," of which Interest",M4Str,ViewOnly,255,f11,true,0);
+  EditFieldTL(h,v+=vs,120," of which Principle",M4Str,ViewOnly,255,f10,true,0);
   EditFieldTL(h,v+=vs,120,"Credited Interest",M4Str,ViewOnly,255,f20,true,0);
   CheckBox(h+140,v,0,"Credit Interest",flags[1]);
 
@@ -1675,6 +1677,7 @@ begin
   EditField(h+180,v,90,"Date",ViewOnly,SignedByUsDate,false,0);
   EditField(h+280,v,90,"",ViewOnly,SignedByUsTime,false,0);
   CheckBox(h,v+=vs,0,"Reminder Sent",SentReminder);
+  CheckBox(h+180,v,0,"Digital",DigitalFlag);
 
   HalPushButton(-300,7,-230,27,"AgreementDocDClassSign","Sign");
   HalPushButton(-220,7,-150,27,"AgreementDocDClassRegen","Regenerate");
@@ -2261,6 +2264,8 @@ begin
   EditField(h,v+=30,100,"Overdue Item Class",Normal,OverdueItemClass,false,DISClass);
   EditField(h,v+=vs,100,"Overdue Months",Normal,OverdueMonths,false,0);
   EditField(h,v+=vs,100,"Overdue Payment Terms",Normal,OverduePayTerm,false,PDSClass);
+  EditField(h,v+=vs,100,"Overdue From",Normal,OverdueFrom,false,PasteCurDate);
+  CheckBox(h+200,v,0,"New calculation for Grace periods",NewCalcForGrace);
 
   ButtonFrame(h,v+=40,400,3,"Overdue Invoicing");
   RadioButton(h,v,0,0,"With Principle, same Invoice",OverdueIVType);
@@ -2761,10 +2766,10 @@ begin
   vs=20; h=120; vs2=16; hm=-100;
   MatrixBegin(10,20,-40,-20,-,99);
   MatCol(1,24,"Property",0,Property,false,CMPropertySClass);
-  MatCol(1,104,"Name",0,Addr0,false,0);
+  MatCol(1,104,"Address",0,Address,false,0);
   if (type==3) then begin
-    MatCol(1,-530,"ID",0,OfficialSerNr,false,0);
-    MatCol(1,-440,"Reported Value",0,RepVal,true,0);
+    MatCol(1,-530,"Serial No.",0,SerialNo,false,0);
+    MatCol(1,-440,"Living Area",0,LivingArea,true,0);
     MatCol(1,-350,"Evaluated Value",0,EvalVal,true,0);
     MatCol(1,-260,"Pledge Type",0,PledgeType,false,SetSClass);
     MatCol(1,-170,"Pledge Val",0,PledgeVal,true,0);
@@ -3019,11 +3024,11 @@ begin
   EditField(h,v=6,140,"Yes",Normal,ScheduleYes,false,0);
   EditField(h,v+=vs,140,"No",Normal,ScheduleNo,false,0);
   EditField(h,v+=vs,140,"If Yes, then",Normal,ScheduleYes2,false,0);
+  EditField(h,v+=vs,140,"Reimburs. Items",Normal,ReimbItems,false,INSClass);
+  EditField(h+280,v,140,"Reimburs. Lang.",Normal,ReimbLanguages,false,LangSClass);
   Tile(5,50,false,"5",InvoiceText);
   EditField(h,v=6,140,"Netting Text",Normal,InvoiceText,false,0);
   EditField(h,v+=vs,140,"Company Reg. No. Comment",Normal,RegNrComment,false,0);
-  EditField(h,v+=vs,140,"Reimburs. Items",Normal,ReimbItems,false,INSClass);
-  EditField(h+280,v,140,"Reimburs. Lang.",Normal,ReimbLanguages,false,LangSClass);
 
   Tile(6,60,false,"6",SubordinationYes);
   EditField(h,v=6,140,"Yes",Normal,SubordinationYes,false,0);
@@ -3037,6 +3042,8 @@ begin
 
   EditField(h,v+=vs,140,"Company Prefix",Normal,CompPrefix,false,0);
   EditField(h,v+=vs,140,"Person Prefix",Normal,PersPrefix,false,0);
+	EditField(h,v+=vs,140,"Digital",Normal,AgrDigital,false,0);
+	EditField(h,v+=vs,140,"Not Digital",Normal,AgrNotDigital,false,0);
 
   EndWindow;
 end;
@@ -3614,5 +3621,65 @@ begin
     RlColKey(81,81,"Name",Code,false,ActCode);
   end;
   SearchField("Search");
+  EndWindow;
+end;
+
+window EuriborRatesDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm,h2;
+  WindowBegin("Euribor Rates",EuriborRatesDClass,CGview,-);
+  SetWRect(20,80,400,239);
+  UseView(EuriborRatesVc);
+  vs=20; h=70; h2=220; vs2=16; hm=-100;
+  EditField(h,v=6,80,"Date",Normal,Date,false,PasteCurDate);
+  EditField(h2,v,70,"Rate",Normal,Rate,false,0);
+  EndWindow;
+end;
+
+window EuriborRatesLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Euribor Rates",EuriborRatesLClass,CGmlist,-);
+  SetWRect(20,80,100,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(EuriborRatesDClass);
+  UseView(EuriborRatesVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Date",Date,false,Date);
+  RlCol(-134,-134,"Rate",Rate,false);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window OverdueCalcTextWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,h2;
+  WindowBegin("Overdue calculations text",OverdueCalcTextWClass,CGOther,-);
+  UseView(CUVc);
+  SetWRect(64,80,900,300);
+  AutoSizeWindow(false);
+  ToolBar;
+  HalPushButton(-140,5,-80,22,"OverdueCalcTextWClassSave","Save");
+  EndToolBar;
+  h = 20; v = 27; vs = 20; h2 = 120;
+  
+  Checkbox(-170,v=15,0,"Use new text",blockedFlag);
+  StaticText(h,v=15,"Invoice no.",false);
+  StaticText(h,v+=vs,"Value",false);
+  StaticText(h,v+=vs,"Period",false);
+  StaticText(h,v+=vs,"Days",false);
+  StaticText(h,v+=vs,"Overdue Percent",false);
+  StaticText(h,v+=vs,"Row Sum",false);
+  
+  StaticText(h2,v=15,"?InvNo?",false);
+  StaticText(h2,v+=vs,"?Value?",false);
+  StaticText(h2,v+=vs,"?Period?",false);
+  StaticText(h2,v+=vs,"?Days?",false);
+  StaticText(h2,v+=vs,"?Rate?",false);
+  StaticText(h2,v+=vs,"?RowSum?",false);
+  
+  TextField(h,v+=vs,-20,-24,Math2,0);
   EndWindow;
 end;

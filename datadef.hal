@@ -958,6 +958,7 @@ begin
   RecordField(SuretyLangCode2,M4Code,10,0);
   RecordField(SuretyPersonLangCode2,M4Code,10,0);
   RecordField(BuyOutLangCode,M4Code,10,0);
+  RecordField(InvOverdLangCode,M4Code,10,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -1354,6 +1355,7 @@ begin
   RecordField(RecordType,M4Set,2019,0);
   RecordField(CustCode,M4Code,20,CUVc);
   RecordField(SentReminder,M4Int,0,0);
+  RecordField(DigitalFlag,M4Int,0,0);
   ArrayBegin(Math,-,1);
   ArrayField(CustCode,M4Code,20,CUVc);
   ArrayField(CustName,M4Str,255,0);
@@ -1600,6 +1602,8 @@ begin
   RecordField(InterestFirstDay,M4Int,0,0);
   RecordField(LetterOfDemand,M4Code,20,0);
   RecordField(InsuranceCost,M4Code,20,0);
+  RecordField(OverdueFrom,M4Date,0,0);
+  RecordField(NewCalcForGrace,M4Int,0,0);
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
@@ -1743,7 +1747,8 @@ begin
   ArrayField(PledgeVal,M4Val,0,0);
   ArrayField(PledgeDate,M4Date,0,0);
   ArrayField(SerialNo,M4Str,255,0);
-  
+  ArrayField(Address,M4Str,255,0);
+  ArrayField(LivingArea,M4Str,255,0);
   EndArray;
   MainKeyBegin(CredManNr,0);
   KeySegment(CredManNr);
@@ -2068,6 +2073,9 @@ begin
   RecordField(ReimbItems,M4UStr,255,0);
   RecordField(ReimbLanguages,M4UStr,255,0);
   
+  RecordField(AgrDigital,M4Str,255,0);
+  RecordField(AgrNotDigital,M4Str,255,0);
+  
   EndBlock;
 
   RecordAddBegin(LangNrVc,"LangNrVc_Cust");
@@ -2142,6 +2150,21 @@ begin
   KeySegment(DateFrom);
   KeySegment(DateTo);
   KeySegment(SerNr);
+  EndRecord;
+  
+  RecordBegin(EuriborRatesVc,-,"");
+  RecordField(Date,M4Date,0,0);
+  RecordField(Rate,M45Val,0,0);
+  MainKeyBegin(Date,0);
+  KeySegment(Date);
+  EndRecord;
+  
+  RecordBegin(OverdueCalcTextVc,-,"");
+  RecordField(Code,M4Code,20,0);
+  RecordField(UseNewCalc,M4Int,0,0);
+  RecordField(Text,M4TextField,0,0);
+  MainKeyBegin(Code,0);
+  KeySegment(Code);
   EndRecord;
   
   SourceFile("halcust\\LoanApp\\English", 0);
