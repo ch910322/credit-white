@@ -313,7 +313,7 @@ begin
   RepSpec.flags[6] = StringToInt(arg10);
   RepSpec.flags[7] = StringToInt(arg11);
   RepSpec.flags[8] = StringToInt(arg12);
-  RepSpec.FirstAcc = StringToInt(arg14);
+  RepSpec.FirstAcc = arg14;
   IVToMailMnRun(RepSpec);
 
   if (oldcomp!=CurrentCompany) then begin
