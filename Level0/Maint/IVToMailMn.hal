@@ -129,17 +129,60 @@ begin
 end;
 
 global
-updating procedure MarkAllMailsAsSent(array record MailVc aMailr)
+updating function Boolean PreviousEmailQueueCreated(Longint sernr)
+begin
+  record EMailQueVc EQr;
+  Boolean res;
+  
+  EQr.FileName = "MailVc";
+  EQr.OrgSerNr = sernr;
+  if (ReadFirstKey("OrgSerNr",EQr,2,true)) then begin
+    res = true;
+  end;
+
+  PreviousEmailQueueCreated = res;
+  return;
+end;
+
+global
+updating function Longint MarkSingleMailAsSent(record MailVc Mailr)
+begin
+  record MailVc oldMailr;
+  Longint res;
+
+  if (ReadFirstMain(Mailr,1,true)) then begin
+    RecordCopy(OldMailr,Mailr);
+    Mailr.SendFlag = 1;
+    if (RecordUpdate(OldMailr,Mailr,true)==0) then begin
+      if (ReadFirstMain(Mailr,1,true) and Mailr.LockedFlag==1) then begin
+        res = Mailr.SerNr;
+      end;
+    end;
+  end;
+  
+  MarkSingleMailAsSent = res;
+  return;
+end;
+
+global
+procedure MarkAllMailsAsSent(array record MailVc aMailr)
 begin
   record MailVc Mailr,oldMailr;
   Integer i;
+  Longint prev;
+  Boolean testf;
 
   for (i=0;i<aMailr.length;i=i+1) begin
     Mailr = aMailr[i];
-    ReadFirstMain(Mailr,1,true);
-    RecordCopy(OldMailr,Mailr);
-    Mailr.SendFlag = 1;
-    RecordUpdate(OldMailr,Mailr,true);
+    testf = false;
+    while (testf==false) begin
+      if (prev==-1 or qupdating.PreviousEmailQueueCreated(prev)) then begin
+        prev = qupdating.MarkSingleMailAsSent(Mailr);
+        testf = true;
+      end else begin
+        sleep(1);
+      end;
+    end;
   end;
 
   return;
@@ -265,7 +308,7 @@ begin
   end;
 
   if (RepSpec.flags[1]==1) then begin
-    qupdating.MarkAllMailsAsSent(aMailr);
+    MarkAllMailsAsSent(aMailr);
   end;
   return;
 end;
