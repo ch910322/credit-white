@@ -774,7 +774,12 @@ begin
     HalPushButton(th,v,th+120,v+20,"CredManDClassMoneyReceivers","Money Receivers");
   end;
 
-  EditField(h2,v=vm,82,"Start Date",Normal,startDate,false,PasteCurDate);
+  if (CanEditCredManCreateDate) then begin
+    EditField(h2,v=vm,82,"Agreement Date",Normal,TransDate,false,PasteCurDate);
+  end else begin
+    EditField(h2,v=vm,82,"Create Date",ViewOnly,TransDate,false,PasteCurDate);
+  end;
+  EditField(h2,v+=vs,82,"Start Date",Normal,startDate,false,PasteCurDate);
 //CUST-BEGIN switched fields and renamed FirstIntDate
 //CUST-BEGIN
   if (HasMoneyTransferDate) then begin
@@ -791,11 +796,6 @@ begin
 //CUST-BEGIN
   if (UseDisburseUntil) then begin
     EditField(h2,v+=vs,82,"Disburse Until",Normal,DisburseUntil,false,PasteCurDate);
-  end;
-  if (CanEditCredManCreateDate) then begin
-    EditField(h2,v+=vs,82,"Agreement Date",Normal,TransDate,false,PasteCurDate);
-  end else begin
-    EditField(h2,v+=vs,82,"Create Date",ViewOnly,TransDate,false,PasteCurDate);
   end;
   if (type!=1 and type!=4 and type!=5) then begin
     EditField(h2,v+=vs,82,"Monthly Paym. Day",Normal,MonthlyPaymentDay,false,0);
