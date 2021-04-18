@@ -483,7 +483,7 @@ begin
 		end;
 		tstr = StrReplace(tstr,"  "," ");
 		tstr = StrReplace(tstr,"  "," ");
-		vVals[fs & "F_CONTACTVALUEINWORDS"] = tstr;
+		vVals[fs & "F_CONTACTVALUEINWORDS"] = trim(tstr);
     
     
     vVals[fs & "F_CONTACTDATE"] = td;
@@ -1200,7 +1200,7 @@ begin
   record CUVc CUr;
   Integer num;
   string 255 strnum,tstr;
-  val topay2,openamount,paidout;
+  val topay2,openamount,paidout,totfees;
   record IVVc IVr;
   Integer int_type;
   record CMPrintConstantsBlock PCb;
@@ -1236,7 +1236,7 @@ begin
   rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(SMr,i,SMrw);
-    if (SMrw.TransDate<CredManr.FirstInvDate and SMrw.DebVal==0 and SMrw.CredVal==0) then begin//i==0 and 
+    if (SMrw.TransDate<CredManr.FirstInvDate and SMrw.DebVal==0 and SMrw.CredVal==0/* and SMrw.BaseRate1==0*/) then begin//i==0 and 
       goto LNextRow;
     end;
     if (SMrw.RowSimStat==5) then begin
@@ -1255,6 +1255,11 @@ begin
     vVals["ROW_" & strnum & "_F_ROWNR"] = num;
     vVals["ROW_" & strnum & "_F_VATROWSUM"] = SMrw.FrRate;//vat amount;
     vVals["ROW_" & strnum & "_F_TOTROWSUM"] = SMrw.CurDebVal;//total amount;
+    if(ValToString(SMrw.BaseRate1,M4Val,"",DecimalSeparator,0)=="")then begin
+    	SMrw.BaseRate1 = 0;
+    end;
+    vVals["ROW_" & strnum & "_F_FEESROW"] = ValToString(SMrw.BaseRate1,M4Val,"",DecimalSeparator,0);//valtostring(SMrw.BaseRate1,M42Val,"",DecimalSeparator,0);//fees;
+    totfees = totfees + SMrw.BaseRate1;
     totinterest = totinterest + (SMrw.CredVal+SMrw.DebVal2);
     totpayment = totpayment + (SMrw.CredVal+SMrw.DebVal2) + SMrw.DebVal;
     totfullpayment = totfullpayment + SMrw.CurDebVal;
@@ -1277,7 +1282,7 @@ begin
     end;
 LNextRow:;
   end;
-
+	vVals["F_TOTFEES"] = totfees;
   vVals["F_CREDTOTINT"] = totinterest;
   vVals["F_CREDTOTINSTAL"] = totinstalment;
   vVals["F_CREDTOTPAY"] = totpayment;
@@ -1539,7 +1544,7 @@ begin
     end;
     tstr = StrReplace(tstr,"  "," ");
     tstr = StrReplace(tstr,"  "," ");
-    vVals["F_CONTACTVALUEINWORDS"] = tstr;
+    vVals["F_CONTACTVALUEINWORDS"] = trim(tstr);
     vVals["F_CONTACTSIGNER"] = signer;
     vVals["F_CONTACTDATE"] = td;
     tstr = DateInWords(td,CredManr.LangCode,2);
