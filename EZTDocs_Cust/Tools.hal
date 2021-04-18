@@ -615,8 +615,10 @@ begin
     if (CRr.Invalid==0) then begin
       ContactCUr.Code = CRr.ContactCode;
       if (ReadFirstMain(ContactCUr,1,true)) then begin
-        if (SetInSet(ContactCUr.JobDesc,jobdescr)) then begin
-          AddSingleRecipient(Mailr,ContactCUr.eMail);
+      	if(nonblank(ContactCUr.JobDesc))then begin
+					if (SetInSet(ContactCUr.JobDesc,jobdescr)) then begin
+						AddSingleRecipient(Mailr,ContactCUr.eMail);
+					end;
         end;
       end;
     end;
