@@ -1,3 +1,4 @@
+external inner procedure In2Period(var string,var Date,var Date);
 
 global
 procedure CreditAgreementsRClassReportDefaults(Integer wn)
@@ -14,6 +15,28 @@ BEGIN
   RETURN;
 END;
 
+global
+function Boolean CreditAgreementsRClassAfterEditField(Integer wn,string fieldname,Integer fn,Integer rownr,Integer changed)
+begin
+  Boolean res;
+  record RcVc RepSpec;
+  Date d1,d2;
+  string 255 tstr;
+  
+  res = false;
+  switch (fieldname) begin
+    case "Stext":
+      GetWindowRecord(wn,RepSpec);
+      In2Period(RepSpec.Stext,d1,d2);
+      tstr = d1;
+      tstr = tstr & ":";
+      tstr = tstr & d2;
+      RepSpec.Stext = tstr;
+      PutWindowRecord(wn,RepSpec);
+  end;
+  CreditAgreementsRClassAfterEditField = res;
+  return;
+end;
 
 global
 procedure DblCredManTypeVc(string dblstr,string l,Integer currepwn)
