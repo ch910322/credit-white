@@ -793,6 +793,54 @@ BEGIN
   RETURN;
 END;
 
+function integer calcAgreementChanges(record CredManVc CredManr)
+begin
+		record CredManChangeVc CredManCh2r;
+		integer res;
+		boolean TrHs;
+		
+		res = 1;
+		
+		TrHs = true;
+		CredManCh2r.CredManNr = CredManr.SerNr;
+		while(loopkey("CredManDate",CredManCh2r,1,TrHs))begin
+			if(CredManCh2r.CredManNr!=CredManr.SerNr)then begin TrHs = false; end;
+			
+			if(TrHs)then begin
+				res = res + 1;
+			end;
+		end;
+		
+		calcAgreementChanges = res;
+return;
+end;
+
+global procedure GetCredManChangePurpose(record CredManVc CredManr,var vector string vVals)
+begin
+	record CredManChangeVc CredManCh2r;
+	integer res;
+	boolean TrHs;
+	record AgrChangesPurpVc ACPr;
+	
+	res = 1;
+	
+	TrHs = true;
+	CredManCh2r.CredManNr = CredManr.SerNr;
+	while(loopkey("CredManDate",CredManCh2r,1,TrHs))begin
+		if(CredManCh2r.CredManNr!=CredManr.SerNr)then begin TrHs = false; end;
+		
+		if(TrHs)then begin
+			if(nonblank(CredManCh2r.ChangePurpose))then begin
+				ACPr.Code = CredManCh2r.ChangePurpose;
+				if(readfirstmain(ACPr,1,true))then begin
+					vVals["F_AGREECHANGEPURPOSE"] = ACPr.Name;
+				end;
+			end;
+		end;
+	end;
+	
+return;
+end;
 
 procedure CredManHeader(var vector string vVals,record CredManVc CredManr)
 begin
@@ -824,7 +872,9 @@ begin
   if (ReadFirstMain(IVr,1,true)==false) then begin
     RecordClear(IVr);
   end;
-
+	
+	GetCredManChangePurpose(CredManr,vVals);
+	
   vVals["F_KUNDNR"] = CredManr.CustCode;
   vVals["F_KUNDNAMN"] = CredManr.Addr0;
   vVals["F_NUMMER"] = CredManr.SerNr;
@@ -1165,27 +1215,6 @@ begin
   return;
 end;
 
-function integer calcAgreementChanges(record CredManVc CredManr)
-begin
-		record CredManChangeVc CredManCh2r;
-		integer res;
-		boolean TrHs;
-		
-		res = 1;
-		
-		TrHs = true;
-		CredManCh2r.CredManNr = CredManr.SerNr;
-		while(loopkey("CredManDate",CredManCh2r,1,TrHs))begin
-			if(CredManCh2r.CredManNr!=CredManr.SerNr)then begin TrHs = false; end;
-			
-			if(TrHs)then begin
-				res = res + 1;
-			end;
-		end;
-		
-		calcAgreementChanges = res;
-return;
-end;
 
 global
 procedure ExternalPrintCredManScheduleForm(record CredManVc CredManr,var vector string vVals)
@@ -1207,7 +1236,9 @@ begin
   string 255 months;
   record CredFeesMatrixVc FMr;
   row CredFeesMatrixVc FMrw;
- 
+ 	
+ 	GetCredManChangePurpose(CredManr,vVals);
+ 	
   CUr.Code = CredManr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
   end;

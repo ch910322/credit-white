@@ -9,7 +9,7 @@ remote inner procedure SetupCustPS2Rn(string,var record RcVc);
 remote procedure CredManSetDatesCust(var record CredManVc,Boolean);
 remote procedure GetCredManEventList(record CredManVc,var record ORVc);
 external procedure GetCredManEventList2(Longint,var record ORVc);
-remote updating procedure DoPauseCredMan(var record CredManVc,val,val,Date,var Boolean,var Boolean,record RcVc,var record IVVc);
+remote updating procedure DoPauseCredMan(var record CredManVc,val,val,Date,var Boolean,var Boolean,record RcVc,var record IVVc,string);
 remote procedure PasteSuretyInCredMan(var record CredManVc,string,Integer,var string);
 remote procedure GetRefinCredManData(Longint,Integer,var record RcVc,Boolean);
 remote updating function Boolean DoRefinCredMan(record RcVc,var string,var record CredManVc);
@@ -891,7 +891,7 @@ begin
         goto LPauseCredManWClassPause;
       end;
       GetWindowRecord(mwn,CredManr);
-      DoPauseCredMan(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr);
+      DoPauseCredMan(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr,RepSpec.f1);
       if (res) then begin
         PutWindowRecord(mwn,CredManr);
         if (WindowDoOK(mwn,0)) then begin
@@ -964,7 +964,7 @@ begin
   record IVVc IVr;
 
   GetWindowRecord(wn,CredManr);
-  DoPauseCredMan(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr);
+  DoPauseCredMan(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr,"");
   if (res) then begin
     PutWindowRecord(wn,CredManr);
     if (WindowDoOK(wn,0)) then begin

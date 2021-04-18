@@ -24,6 +24,7 @@ external inner procedure StripLeadingSpaces(var string);
 external inner procedure StripEndingSpaces(var string);
 external function Boolean InvoiceHasHiddenLine(record IVVc);
 external inner procedure OneARSFormOpenOnDate(record RcVc,record CUVc,Integer,var val,var Integer,var Integer);
+external procedure GetCredManChangePurpose(record CredManVc,var vector string);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -349,7 +350,7 @@ begin
   Ext_PrintInvoiceSigner(vVals);
 
   ExtPrintOwnBankDetails(vVals,IVr.CustCredManNr);
-
+	
   CUr.Code = IVr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin end;
 
@@ -430,6 +431,7 @@ begin
   CredManr.SerNr = IVr.CustCredManNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
     vVals["F_CREDMANCREATEDATE"] = CredManr.TransDate;
+    GetCredManChangePurpose(CredManr,vVals);
   end;
 
   BlockLoad(CMb);
