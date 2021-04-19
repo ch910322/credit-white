@@ -1,0 +1,25 @@
+//<halrule>server-only</halrule>
+
+global
+function LongInt AgrChangesPurpVcRecordCheck(var record AgrChangesPurpVc AgrChangesPurpr,record AgrChangesPurpVc AgrChangesPurp2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  
+
+  res = 0;
+ 	if(blankdate(AgrChangesPurpr.Code))then begin
+ 		RecordCheckError(1058,"",-1,"Code");
+		res = -1;
+		goto LAgrChangesPurpVcRecordCheck;
+ 	end;
+ 	if(blankdate(AgrChangesPurpr.Name))then begin
+ 		RecordCheckError(1058,"",-1,"Name");
+		res = -1;
+		goto LAgrChangesPurpVcRecordCheck;
+ 	end;
+ 
+  
+LAgrChangesPurpVcRecordCheck:;
+  AgrChangesPurpVcRecordCheck = res;
+  return;
+END;

@@ -475,14 +475,28 @@ begin
   record CredManSchedVc CSr;
   row CredManSchedVc CSrw;
   Integer i,rwcnt;
-  Boolean res;
+  Boolean res,ischanged;
   val calcbal;
   array record IVVc aIVr;
   record IVVc IVr;
   transaction Boolean gSilenceIVOpenPrepExists;
   Integer int_type;
-  Date enddate;
-  
+  Date enddate,changedate;
+  record CredManChangeVc CredManChr;
+  integer lastrow;
+  row SMVc SMrw;
+
+
+  CredManChr.CredManNr = CredManr.SerNr;
+  CredManChr.TransDate = currentdate;
+  if(readlastkey("CredManDate",CredManChr,2,false))then begin
+    if(nonblankdate(CredManChr.TransDate))then begin
+      if(CredManChr.CredManNr==CredManr.SerNr)then begin
+        ischanged = true;
+        changedate = CredManChr.TransDate;
+      end;
+    end;
+  end;
   enddate = CredManr.endDate;
   if (nonblank(ed)) then begin
     enddate = ed;
@@ -500,15 +514,38 @@ begin
     rwcnt = MatRowCnt(CSr);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CSr,i,CSrw);
-      switch (CSrw.Type) begin
-        case 0:
-          if (CSrw.Invoiced==1) then begin
-            AddScheduleToList(CredManr,CSrw,SMr,calcbal);
-          end;
-        case 4:
-          AddBuyOutToList(CSrw.Total,CSrw.InvDate,SMr,calcbal);
-        case 5:
-          AddPayOutToList(CSrw.Principle,CSrw.InvDate,SMr,calcbal);
+      if(blankdate(changedate) or changedate<=CSrw.InvDate)then begin
+        switch (CSrw.Type) begin
+          case 0:
+            if (CSrw.Invoiced==1) then begin
+              lastrow = matrowcnt(SMr);
+              AddScheduleToList(CredManr,CSrw,SMr,calcbal);
+              if(lastrow==matrowcnt(SMr)-1)then begin
+                matrowget(SMr,lastrow,SMrw);
+                  logtext(0,matrowcnt(SMr) & " CSrw.Fees " & CSrw.Fees);
+                  SMrw.BaseRate1 = CSrw.Fees;
+                matrowput(SMr,lastrow,SMrw);
+              end;
+            end;
+          case 4:
+            logtext(0,"CSrw.Fees " & CSrw.Fees);
+            lastrow = matrowcnt(SMr);
+            AddBuyOutToList(CSrw.Total,CSrw.InvDate,SMr,calcbal);
+            if(lastrow==matrowcnt(SMr)-1)then begin
+              matrowget(SMr,lastrow,SMrw);
+                SMrw.BaseRate1 = CSrw.Fees;
+              matrowput(SMr,lastrow,SMrw);
+            end;
+          case 5:
+            logtext(0,"CSrw.Fees " & CSrw.Fees);
+            lastrow = matrowcnt(SMr);
+            AddPayOutToList(CSrw.Principle,CSrw.InvDate,SMr,calcbal);
+            if(lastrow==matrowcnt(SMr)-1)then begin
+              matrowget(SMr,lastrow,SMrw);
+                SMrw.BaseRate1 = CSrw.Fees;
+              matrowput(SMr,lastrow,SMrw);
+            end;
+        end;
       end;
     end;
     TestInvoiceBasedOnSchedule(CredManr,CSr,enddate,aIVr);

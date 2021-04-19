@@ -28,7 +28,7 @@ begin
 	res = blankval;
 	rwcnt = MatRowCnt(CredManPayr);
 	for (i=rwcnt-1;i>=0;i=i-1) begin
-		MatRowGet(CredManPayr,i,CredManPayrw);
+  	MatRowGet(CredManPayr,i,CredManPayrw);
     open = open + CredManPayrw.OpenAmount;
 		if (CredManPayrw.TransDate<=baldate and blank(res) and (CredManPayrw.ArtCode==CredManSetb.InstalmentItem)) then begin
   		res = CredManPayrw.Bal;
@@ -88,9 +88,11 @@ begin
   row CredManPayPlanVc CredManPayrw;
   
   rwcnt = MatRowCnt(CredManPayr);
-  MatRowGet(CredManPayr,rwcnt-1,CredManPayrw);
-  res = MonthDiff(CredManr.FirstInvDate,CredManPayrw.TransDate)+1;
-
+  if (rwcnt>0) then begin
+    MatRowGet(CredManPayr,rwcnt-1,CredManPayrw);
+    res = MonthDiff(CredManr.FirstInvDate,CredManPayrw.TransDate)+1;
+  end;
+  
   GetActualMonths = res;
   return;
 end;
@@ -122,7 +124,7 @@ begin
   array Integer rp;
   Integer realmonths;
   val realrate;
-  Date ratedate;
+  Date ratedate,startdate,enddate;
   record CredManPayPlanVc CredManPayr;
 
 	BlockLoad(CredManSetb);
@@ -135,14 +137,14 @@ begin
   end;
 
   rp[2] = 50;
-  rp[15] = 130;
+  rp[125] = 130;
   rp[3] = 200;
   rp[4] = 270;
   rp[5] = 400;
   rp[6] = 470;
   rp[7] = 540;
   rp[8] = 600;
-  rp[9] = 670;
+  rp[9] = 660;//670
   rp[10] = 720;
   rp[11] = 770;
   rp[12] = 850;
@@ -163,7 +165,7 @@ begin
 			OutString(70,0,USetStr(200286),false);
 			OutString(70,0,USetStr(200287),false);
 		end;
-		OutString(rp[15],0,USetStr(200288),false);
+		OutString(rp[125],0,USetStr(200288),false);
 		OutString(rp[3],0,USetStr(200289),false);
 //		OutString(35,0,"Klientas",false);
 		OutString(rp[4],0,USetStr(200290),false);
@@ -209,6 +211,18 @@ begin
 		if(CredManr.startDate>RepSpec.sEndDate)then begin testf = false; TrHs = false; end;
 		if(nonblank(RepSpec.Period2Str2) and DateInRange(CredManr.FirstInvDate,RepSpec.sStartDate2,RepSpec.sEndDate2)==false)then begin testf = false; end;
 		
+    if(nonblank(RepSpec.Stext))then begin
+      if(CredManr.Status==7)then begin
+        startdate = StringToDate(FirstInRange(RepSpec.Stext,10));
+        enddate = StringToDate(LastInRange(RepSpec.Stext,10));
+        if(DateInRange(CredManr.StateChangeDate,startdate,enddate)==false)then begin
+          testf = false; 
+        end;
+      end else begin
+        testf = false; 
+      end;
+    end;
+
 		if (testf) then begin
       RecordClear(CredManPayr);
       BuildCredManPayPlanCust(CredManr,CredManPayr,CredManSetb,true,false);
@@ -234,7 +248,7 @@ begin
         OutString(70,0,Checkbocout(CredManr.OKFlag==0),false);
         OutString(70,0,Checkbocout(curbal==0),false);
       end;
-      OutString(rp[15],"DblCUVc",CUr.Code,false);
+      OutString(rp[125],"DblCUVc",CUr.Code,false);
       OutStringID(rp[3],"DblCUVc",CUr.RegNr1,false,CUr.Code);
 //      OutString(35,"DblCUVc",CredManr.CustCode,false);
       OutString(rp[4],0,CredManr.Addr0,false);
@@ -272,6 +286,7 @@ begin
   StartFormat(15);
   OutString(0,0,"",false);
   OutString(rp[2],0,"",false);
+  OutString(rp[125],0,"",false);
   OutString(rp[3],0,"",false);
   OutString(rp[4],0,"",false);
   OutString(rp[5],0,"",false);

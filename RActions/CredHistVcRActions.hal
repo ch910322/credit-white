@@ -20,7 +20,7 @@ begin
 end; 
 
 global
-updating procedure CreatePauseRecord(Longint sernr,Date td,val months,val months2,val rate,val addval,Integer okflag)
+updating procedure CreatePauseRecord(Longint sernr,Date td,val months,val months2,val rate,val addval,Integer okflag,string purpose)
 begin
   record CredManChangeVc Changer;
   
@@ -33,6 +33,7 @@ begin
   Changer.AddValue = addval;
   Changer.OKFlag = okflag;
   Changer.CredManNr = sernr;
+  Changer.ChangePurpose = purpose;
   RecordStore(Changer,true);
 
   return;

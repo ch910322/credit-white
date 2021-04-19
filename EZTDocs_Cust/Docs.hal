@@ -61,6 +61,32 @@ external function string 255 AgreementValToText(val);
 external inner procedure GetMonthText(string,Date,var string);
 external procedure BuildCredManPayPlanCust2(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean,Boolean);
 
+global procedure Ext_OutAddressOneLine(var vector string vVals,string keyame,string name,string addr0,string addr1,string addr2,string addr3,string addr4)
+begin
+
+  if(nonblank(trim(name)))then begin
+    vVals[keyame] = trim(name) & ", ";
+  end;
+  if(nonblank(trim(addr0)))then begin
+    vVals[keyame] = vVals[keyame] & trim(addr0) & ", ";
+  end;
+  if(nonblank(trim(addr1)))then begin
+    vVals[keyame] = vVals[keyame] & trim(addr1) & ", ";
+  end;
+  if(nonblank(trim(addr2)))then begin
+    vVals[keyame] = vVals[keyame] & trim(addr2) & ", ";
+  end;
+  if(nonblank(trim(addr3)))then begin
+    vVals[keyame] = vVals[keyame] & trim(addr3) & ", ";
+  end;
+  if(nonblank(trim(addr4)))then begin
+    vVals[keyame] = vVals[keyame] & trim(addr4) & ", ";
+  end;
+  vVals[keyame] = left(vVals[keyame],len(vVals[keyame])-2);
+  
+return;
+end;
+
 procedure GetCredManCustContact(record CredManVc CredManr,var string contactid,var string contactname)
 begin
   record CUVc ContactCUr;
@@ -483,7 +509,7 @@ begin
 		end;
 		tstr = StrReplace(tstr,"  "," ");
 		tstr = StrReplace(tstr,"  "," ");
-		vVals[fs & "F_CONTACTVALUEINWORDS"] = tstr;
+		vVals[fs & "F_CONTACTVALUEINWORDS"] = trim(tstr);
     
     
     vVals[fs & "F_CONTACTDATE"] = td;
@@ -495,15 +521,7 @@ begin
     AddToList(vVals,"F_SURETYCOND_LIST",tstr);
 
     Ext_OutAddress(vVals,fs & "F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
-
-    vVals[fs & "F_CONTACTSIGNER"] = signer;
-    vVals[fs & "F_CONTACTSIGNERPHONE"] = signerphone;
-    vVals[fs & "F_CONTACTSIGNERMOBILE"] = signermobile;
-    vVals[fs & "F_CONTACTSIGNERMAIL"] = signeremail;
-    vVals[fs & "F_CONTACTSIGNERID"] = signerid;
-    vVals[fs & "F_CONTACTSIGNERIDCARD"] = signeridcard;
-    vVals[fs & "F_CONTACTSIGNERIDCARDDATE"] = signeriddate;
-    Ext_OutAddress(vVals,fs & "F_CONTACTSIGNERADRESS",name,saddr0,saddr1,saddr2,saddr3,saddr4);		
+    Ext_OutAddressOneLine(vVals,fs & "F_CONTACTADRESS2","",addr0,addr1,addr2,addr3,addr4);    
 		
 		if(num>0)then begin
 			GetSuretyValues4(CredManr,num,signManager);
@@ -790,9 +808,60 @@ BEGIN
 	vVals["F_OWNANACODE"] = CompYear.ANACode; 
 	vVals["F_OWNSORTCODE"] = CompYear.SortCode; 
 	Ext_OutAddress(vVals,"F_EGENADRESS",CompYear.CompName,CompYear.Addr0,CompYear.Addr1,CompYear.Addr2,CompYear.Addr3,CompYear.Addr4);
+	Ext_OutAddressOneLine(vVals,"F_EGENADRESS3","",CompYear.Addr0,CompYear.Addr1,CompYear.Addr2,CompYear.Addr3,CompYear.Addr4);
+	
+	
   RETURN;
 END;
 
+function integer calcAgreementChanges(record CredManVc CredManr)
+begin
+		record CredManChangeVc CredManCh2r;
+		integer res;
+		boolean TrHs;
+		
+		res = 1;
+		
+		TrHs = true;
+		CredManCh2r.CredManNr = CredManr.SerNr;
+		while(loopkey("CredManDate",CredManCh2r,1,TrHs))begin
+			if(CredManCh2r.CredManNr!=CredManr.SerNr)then begin TrHs = false; end;
+			
+			if(TrHs)then begin
+				res = res + 1;
+			end;
+		end;
+		
+		calcAgreementChanges = res;
+return;
+end;
+
+global procedure GetCredManChangePurpose(record CredManVc CredManr,var vector string vVals)
+begin
+	record CredManChangeVc CredManCh2r;
+	integer res;
+	boolean TrHs;
+	record AgrChangesPurpVc ACPr;
+	
+	res = 1;
+	
+	TrHs = true;
+	CredManCh2r.CredManNr = CredManr.SerNr;
+	while(loopkey("CredManDate",CredManCh2r,1,TrHs))begin
+		if(CredManCh2r.CredManNr!=CredManr.SerNr)then begin TrHs = false; end;
+		
+		if(TrHs)then begin
+			if(nonblank(CredManCh2r.ChangePurpose))then begin
+				ACPr.Code = CredManCh2r.ChangePurpose;
+				if(readfirstmain(ACPr,1,true))then begin
+					vVals["F_AGREECHANGEPURPOSE"] = ACPr.Name;
+				end;
+			end;
+		end;
+	end;
+	
+return;
+end;
 
 procedure CredManHeader(var vector string vVals,record CredManVc CredManr)
 begin
@@ -824,7 +893,9 @@ begin
   if (ReadFirstMain(IVr,1,true)==false) then begin
     RecordClear(IVr);
   end;
-
+	
+	GetCredManChangePurpose(CredManr,vVals);
+	
   vVals["F_KUNDNR"] = CredManr.CustCode;
   vVals["F_KUNDNAMN"] = CredManr.Addr0;
   vVals["F_NUMMER"] = CredManr.SerNr;
@@ -1165,27 +1236,6 @@ begin
   return;
 end;
 
-function integer calcAgreementChanges(record CredManVc CredManr)
-begin
-		record CredManChangeVc CredManCh2r;
-		integer res;
-		boolean TrHs;
-		
-		res = 1;
-		
-		TrHs = true;
-		CredManCh2r.CredManNr = CredManr.SerNr;
-		while(loopkey("CredManDate",CredManCh2r,1,TrHs))begin
-			if(CredManCh2r.CredManNr!=CredManr.SerNr)then begin TrHs = false; end;
-			
-			if(TrHs)then begin
-				res = res + 1;
-			end;
-		end;
-		
-		calcAgreementChanges = res;
-return;
-end;
 
 global
 procedure ExternalPrintCredManScheduleForm(record CredManVc CredManr,var vector string vVals)
@@ -1200,14 +1250,16 @@ begin
   record CUVc CUr;
   Integer num;
   string 255 strnum,tstr;
-  val topay2,openamount,paidout;
+  val topay2,openamount,paidout,totfees;
   record IVVc IVr;
   Integer int_type;
   record CMPrintConstantsBlock PCb;
   string 255 months;
   record CredFeesMatrixVc FMr;
   row CredFeesMatrixVc FMrw;
- 
+ 	
+ 	GetCredManChangePurpose(CredManr,vVals);
+ 	
   CUr.Code = CredManr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
   end;
@@ -1236,7 +1288,7 @@ begin
   rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(SMr,i,SMrw);
-    if (SMrw.TransDate<CredManr.FirstInvDate and SMrw.DebVal==0 and SMrw.CredVal==0) then begin//i==0 and 
+    if (SMrw.TransDate<CredManr.FirstInvDate and SMrw.DebVal==0 and SMrw.CredVal==0 and SMrw.BaseRate1==0) then begin//i==0 and 
       goto LNextRow;
     end;
     if (SMrw.RowSimStat==5) then begin
@@ -1247,7 +1299,7 @@ begin
     vVals["ROW_" & strnum & "_F_TRANSDATUM"] = SMrw.TransDate;//Transaction Date (transdate
     vVals["ROW_" & strnum & "_F_CREDINTEREST"] = SMrw.CredVal;//interest
     vVals["ROW_" & strnum & "_F_CREDFEES"] = SMrw.DebVal2;//fees
-    vVals["ROW_" & strnum & "_F_CREDINTEREST2"] = (SMrw.CredVal+SMrw.DebVal2);//interest+fees   
+    vVals["ROW_" & strnum & "_F_CREDINTEREST2"] = (SMrw.CredVal/*+SMrw.DebVal2*/);//interest+fees   //19/04/2021 SMrw.DebVal2 removed from this
     vVals["ROW_" & strnum & "_F_CREDINSTAL"] = SMrw.DebVal;//instalment
     vVals["ROW_" & strnum & "_F_CREDBAL"] = SMrw.CurCredVal;//Balance
     vVals["ROW_" & strnum & "_F_DUEDATE"] = SMrw.DueDate;//Due date
@@ -1255,7 +1307,12 @@ begin
     vVals["ROW_" & strnum & "_F_ROWNR"] = num;
     vVals["ROW_" & strnum & "_F_VATROWSUM"] = SMrw.FrRate;//vat amount;
     vVals["ROW_" & strnum & "_F_TOTROWSUM"] = SMrw.CurDebVal;//total amount;
-    totinterest = totinterest + (SMrw.CredVal+SMrw.DebVal2);
+    if(ValToString(SMrw.BaseRate1,M4Val,"",DecimalSeparator,0)=="")then begin
+    	SMrw.BaseRate1 = 0;
+    end;
+    vVals["ROW_" & strnum & "_F_FEESROW"] = ValToString(SMrw.BaseRate1,M4Val,"",DecimalSeparator,0);//valtostring(SMrw.BaseRate1,M42Val,"",DecimalSeparator,0);//fees;
+    totfees = totfees + SMrw.BaseRate1;
+    totinterest = totinterest + (SMrw.CredVal/*+SMrw.DebVal2*/);//19/04/2021 SMrw.DebVal2 removed from this
     totpayment = totpayment + (SMrw.CredVal+SMrw.DebVal2) + SMrw.DebVal;
     totfullpayment = totfullpayment + SMrw.CurDebVal;
     totfullvat = totfullvat + SMrw.FrRate;
@@ -1277,7 +1334,7 @@ begin
     end;
 LNextRow:;
   end;
-
+	vVals["F_TOTFEES"] = totfees;
   vVals["F_CREDTOTINT"] = totinterest;
   vVals["F_CREDTOTINSTAL"] = totinstalment;
   vVals["F_CREDTOTPAY"] = totpayment;
@@ -1401,6 +1458,7 @@ begin
     vVals["F_CONTACTMAIL"] = email;
     vVals["F_CONTACTID"] = id;
     Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
+    Ext_OutAddressOneLine(vVals,"F_CONTACTADRESS2","",addr0,addr1,addr2,addr3,addr4);
 
     GetSuretyValues(CredManr,2,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
     vVals["F_CONTACT2NAME"] = name;
@@ -1539,7 +1597,7 @@ begin
     end;
     tstr = StrReplace(tstr,"  "," ");
     tstr = StrReplace(tstr,"  "," ");
-    vVals["F_CONTACTVALUEINWORDS"] = tstr;
+    vVals["F_CONTACTVALUEINWORDS"] = trim(tstr);
     vVals["F_CONTACTSIGNER"] = signer;
     vVals["F_CONTACTDATE"] = td;
     tstr = DateInWords(td,CredManr.LangCode,2);
@@ -1548,7 +1606,7 @@ begin
     tstr = DateInWords(duedate,CredManr.LangCode,1);
     vVals["F_CONTACTDUEDATEINWORDS"] = tstr;
     Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
-
+    Ext_OutAddressOneLine(vVals,"F_CONTACTADRESS2","",addr0,addr1,addr2,addr3,addr4);
     PrintBOESureties(vVals,CredManr,gBOENumber,"",gnum);
   end else begin
     GetSuretyValues2(CredManr,1,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
@@ -1928,6 +1986,8 @@ begin
     OUTFORMFIELD("F_CONTACTMAIL",email)
     OUTFORMFIELD("F_CONTACTID",id)
     Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
+    Ext_OutAddressOneLine(vVals,"F_CONTACTADRESS2","",addr0,addr1,addr2,addr3,addr4);
+    
   end;
 
   return;

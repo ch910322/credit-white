@@ -55,6 +55,7 @@ begin
   Setting("Managers Workload",ManagerWorkloadLClass,modCredMan);
 	Setting("Euribor Rates",EuriborRatesLClass,modCredMan);
 	Setting("Overdue calculations text",OverdueCalcTextWClass,modCredMan);
+	Setting("Agreement changes purposes",AgrChangesPurpLClass,modCredMan);
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
 	Report("Application Overview",LoanApplicationListRClass,LoanApplicationListRn,0,modCredMan);
