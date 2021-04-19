@@ -766,6 +766,7 @@ end;
 procedure CommonDocumentFieldsWord(var vector string vVals)
 BEGIN
   record CYBlock CompYear;
+  string 255 adress;
 
   BlockLoad(CompYear);
 	vVals["F_EGENEMAIL"] = CompYear.emailAddr;
@@ -790,6 +791,15 @@ BEGIN
 	vVals["F_OWNANACODE"] = CompYear.ANACode; 
 	vVals["F_OWNSORTCODE"] = CompYear.SortCode; 
 	Ext_OutAddress(vVals,"F_EGENADRESS",CompYear.CompName,CompYear.Addr0,CompYear.Addr1,CompYear.Addr2,CompYear.Addr3,CompYear.Addr4);
+	
+	adress = CompYear.Addr0 & " " & CompYear.Addr1 & " " & CompYear.Addr2 & " " &  CompYear.Addr3 & " " &  CompYear.Addr4;
+	adress = StrReplace(adress,"  "," ");
+	adress = StrReplace(adress,"  "," ");
+	adress = StrReplace(adress,"  "," ");
+	adress = StrReplace(adress,"  "," ");
+	adress = trim(adress);
+	vVals["F_EGENADRESS2"] = adress; 
+	
   RETURN;
 END;
 
@@ -1267,7 +1277,7 @@ begin
   rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(SMr,i,SMrw);
-    if (SMrw.TransDate<CredManr.FirstInvDate and SMrw.DebVal==0 and SMrw.CredVal==0/* and SMrw.BaseRate1==0*/) then begin//i==0 and 
+    if (SMrw.TransDate<CredManr.FirstInvDate and SMrw.DebVal==0 and SMrw.CredVal==0 and SMrw.BaseRate1==0) then begin//i==0 and 
       goto LNextRow;
     end;
     if (SMrw.RowSimStat==5) then begin
@@ -1424,7 +1434,7 @@ begin
   val calcfees,fixfees;
   transaction Longint gSuretyNumber;
   record UserVc Userr;
-  string 255 saddr0,saddr1,saddr2,saddr3,saddr4,idcard,iddate;
+  string 255 saddr0,saddr1,saddr2,saddr3,saddr4,idcard,iddate,adress;
   string 255 signerphone,signermobile,signeremail,signerid,signeridcard,signeriddate,legalid;
 
   Ext_CommonDocumentFields(vVals);
@@ -1437,6 +1447,14 @@ begin
     vVals["F_CONTACTMAIL"] = email;
     vVals["F_CONTACTID"] = id;
     Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
+    
+    adress = addr0 & " " & addr1 & " " & addr2 & " " &  addr3 & " " &  addr4;
+    adress = StrReplace(adress,"  "," ");
+    adress = StrReplace(adress,"  "," ");
+    adress = StrReplace(adress,"  "," ");
+    adress = StrReplace(adress,"  "," ");
+    adress = trim(adress);
+    vVals["F_CONTACTADRESS2"] = adress; 
 
     GetSuretyValues(CredManr,2,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
     vVals["F_CONTACT2NAME"] = name;
@@ -1549,7 +1567,7 @@ begin
   transaction Longint gBOENumber;
   record BOESuretyVc BSr;
   Integer num;
-  string 255 strnum;
+  string 255 strnum,adress;
   record CredManTypeVc CMTr;
   Date enddate,duedate,td;
   Integer gnum;
@@ -1584,6 +1602,14 @@ begin
     tstr = DateInWords(duedate,CredManr.LangCode,1);
     vVals["F_CONTACTDUEDATEINWORDS"] = tstr;
     Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
+    
+    adress = addr0 & " " & addr1 & " " & addr2 & " " &  addr3 & " " &  addr4;
+    adress = StrReplace(adress,"  "," ");
+    adress = StrReplace(adress,"  "," ");
+    adress = StrReplace(adress,"  "," ");
+    adress = StrReplace(adress,"  "," ");
+    adress = trim(adress);
+    vVals["F_CONTACTADRESS2"] = adress; 
 
     PrintBOESureties(vVals,CredManr,gBOENumber,"",gnum);
   end else begin
@@ -1952,7 +1978,7 @@ global
 procedure ExternalPrintSuretyAppForm(record B2BLoanApplicationVc LAr,var vector string vVals)
 begin
   record CUVc CUr;
-  string 255 name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4;
+  string 255 name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,adress;
   Integer surety;
 
   Ext_CommonDocumentFields(vVals);
@@ -1964,6 +1990,14 @@ begin
     OUTFORMFIELD("F_CONTACTMAIL",email)
     OUTFORMFIELD("F_CONTACTID",id)
     Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
+    
+    adress = addr0 & " " & addr1 & " " & addr2 & " " &  addr3 & " " &  addr4;
+    adress = StrReplace(adress,"  "," ");
+    adress = StrReplace(adress,"  "," ");
+    adress = StrReplace(adress,"  "," ");
+    adress = StrReplace(adress,"  "," ");
+    adress = trim(adress);
+    vVals["F_CONTACTADRESS2"] = adress; 
   end;
 
   return;
