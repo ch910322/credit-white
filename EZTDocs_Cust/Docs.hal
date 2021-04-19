@@ -61,6 +61,32 @@ external function string 255 AgreementValToText(val);
 external inner procedure GetMonthText(string,Date,var string);
 external procedure BuildCredManPayPlanCust2(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean,Boolean);
 
+global procedure Ext_OutAddressOneLine(var vector string vVals,string keyame,string name,string addr0,string addr1,string addr2,string addr3,string addr4)
+begin
+
+  if(nonblank(trim(name)))then begin
+    vVals[keyame] = trim(name) & ", ";
+  end;
+  if(nonblank(trim(addr0)))then begin
+    vVals[keyame] = vVals[keyame] & trim(addr0) & ", ";
+  end;
+  if(nonblank(trim(addr1)))then begin
+    vVals[keyame] = vVals[keyame] & trim(addr1) & ", ";
+  end;
+  if(nonblank(trim(addr2)))then begin
+    vVals[keyame] = vVals[keyame] & trim(addr2) & ", ";
+  end;
+  if(nonblank(trim(addr3)))then begin
+    vVals[keyame] = vVals[keyame] & trim(addr3) & ", ";
+  end;
+  if(nonblank(trim(addr4)))then begin
+    vVals[keyame] = vVals[keyame] & trim(addr4) & ", ";
+  end;
+  vVals[keyame] = left(vVals[keyame],len(vVals[keyame])-2);
+  
+return;
+end;
+
 procedure GetCredManCustContact(record CredManVc CredManr,var string contactid,var string contactname)
 begin
   record CUVc ContactCUr;
@@ -495,15 +521,7 @@ begin
     AddToList(vVals,"F_SURETYCOND_LIST",tstr);
 
     Ext_OutAddress(vVals,fs & "F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
-
-    vVals[fs & "F_CONTACTSIGNER"] = signer;
-    vVals[fs & "F_CONTACTSIGNERPHONE"] = signerphone;
-    vVals[fs & "F_CONTACTSIGNERMOBILE"] = signermobile;
-    vVals[fs & "F_CONTACTSIGNERMAIL"] = signeremail;
-    vVals[fs & "F_CONTACTSIGNERID"] = signerid;
-    vVals[fs & "F_CONTACTSIGNERIDCARD"] = signeridcard;
-    vVals[fs & "F_CONTACTSIGNERIDCARDDATE"] = signeriddate;
-    Ext_OutAddress(vVals,fs & "F_CONTACTSIGNERADRESS",name,saddr0,saddr1,saddr2,saddr3,saddr4);		
+    Ext_OutAddressOneLine(vVals,fs & "F_CONTACTADRESS2","",addr0,addr1,addr2,addr3,addr4);    
 		
 		if(num>0)then begin
 			GetSuretyValues4(CredManr,num,signManager);
@@ -766,7 +784,6 @@ end;
 procedure CommonDocumentFieldsWord(var vector string vVals)
 BEGIN
   record CYBlock CompYear;
-  string 255 adress;
 
   BlockLoad(CompYear);
 	vVals["F_EGENEMAIL"] = CompYear.emailAddr;
@@ -791,14 +808,8 @@ BEGIN
 	vVals["F_OWNANACODE"] = CompYear.ANACode; 
 	vVals["F_OWNSORTCODE"] = CompYear.SortCode; 
 	Ext_OutAddress(vVals,"F_EGENADRESS",CompYear.CompName,CompYear.Addr0,CompYear.Addr1,CompYear.Addr2,CompYear.Addr3,CompYear.Addr4);
+	Ext_OutAddressOneLine(vVals,"F_EGENADRESS3","",CompYear.Addr0,CompYear.Addr1,CompYear.Addr2,CompYear.Addr3,CompYear.Addr4);
 	
-	adress = CompYear.Addr0 & " " & CompYear.Addr1 & " " & CompYear.Addr2 & " " &  CompYear.Addr3 & " " &  CompYear.Addr4;
-	adress = StrReplace(adress,"  "," ");
-	adress = StrReplace(adress,"  "," ");
-	adress = StrReplace(adress,"  "," ");
-	adress = StrReplace(adress,"  "," ");
-	adress = trim(adress);
-	vVals["F_EGENADRESS2"] = adress; 
 	
   RETURN;
 END;
@@ -1434,7 +1445,7 @@ begin
   val calcfees,fixfees;
   transaction Longint gSuretyNumber;
   record UserVc Userr;
-  string 255 saddr0,saddr1,saddr2,saddr3,saddr4,idcard,iddate,adress;
+  string 255 saddr0,saddr1,saddr2,saddr3,saddr4,idcard,iddate;
   string 255 signerphone,signermobile,signeremail,signerid,signeridcard,signeriddate,legalid;
 
   Ext_CommonDocumentFields(vVals);
@@ -1447,14 +1458,7 @@ begin
     vVals["F_CONTACTMAIL"] = email;
     vVals["F_CONTACTID"] = id;
     Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
-    
-    adress = addr0 & " " & addr1 & " " & addr2 & " " &  addr3 & " " &  addr4;
-    adress = StrReplace(adress,"  "," ");
-    adress = StrReplace(adress,"  "," ");
-    adress = StrReplace(adress,"  "," ");
-    adress = StrReplace(adress,"  "," ");
-    adress = trim(adress);
-    vVals["F_CONTACTADRESS2"] = adress; 
+    Ext_OutAddressOneLine(vVals,"F_CONTACTADRESS2","",addr0,addr1,addr2,addr3,addr4);
 
     GetSuretyValues(CredManr,2,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
     vVals["F_CONTACT2NAME"] = name;
@@ -1567,7 +1571,7 @@ begin
   transaction Longint gBOENumber;
   record BOESuretyVc BSr;
   Integer num;
-  string 255 strnum,adress;
+  string 255 strnum;
   record CredManTypeVc CMTr;
   Date enddate,duedate,td;
   Integer gnum;
@@ -1602,15 +1606,7 @@ begin
     tstr = DateInWords(duedate,CredManr.LangCode,1);
     vVals["F_CONTACTDUEDATEINWORDS"] = tstr;
     Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
-    
-    adress = addr0 & " " & addr1 & " " & addr2 & " " &  addr3 & " " &  addr4;
-    adress = StrReplace(adress,"  "," ");
-    adress = StrReplace(adress,"  "," ");
-    adress = StrReplace(adress,"  "," ");
-    adress = StrReplace(adress,"  "," ");
-    adress = trim(adress);
-    vVals["F_CONTACTADRESS2"] = adress; 
-
+    Ext_OutAddressOneLine(vVals,"F_CONTACTADRESS2","",addr0,addr1,addr2,addr3,addr4);
     PrintBOESureties(vVals,CredManr,gBOENumber,"",gnum);
   end else begin
     GetSuretyValues2(CredManr,1,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
@@ -1978,7 +1974,7 @@ global
 procedure ExternalPrintSuretyAppForm(record B2BLoanApplicationVc LAr,var vector string vVals)
 begin
   record CUVc CUr;
-  string 255 name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4,adress;
+  string 255 name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4;
   Integer surety;
 
   Ext_CommonDocumentFields(vVals);
@@ -1990,14 +1986,8 @@ begin
     OUTFORMFIELD("F_CONTACTMAIL",email)
     OUTFORMFIELD("F_CONTACTID",id)
     Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
+    Ext_OutAddressOneLine(vVals,"F_CONTACTADRESS2","",addr0,addr1,addr2,addr3,addr4);
     
-    adress = addr0 & " " & addr1 & " " & addr2 & " " &  addr3 & " " &  addr4;
-    adress = StrReplace(adress,"  "," ");
-    adress = StrReplace(adress,"  "," ");
-    adress = StrReplace(adress,"  "," ");
-    adress = StrReplace(adress,"  "," ");
-    adress = trim(adress);
-    vVals["F_CONTACTADRESS2"] = adress; 
   end;
 
   return;
