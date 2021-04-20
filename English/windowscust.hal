@@ -2769,10 +2769,10 @@ begin
   vs=20; h=120; vs2=16; hm=-100;
   MatrixBegin(10,20,-40,-20,-,99);
   MatCol(1,24,"Property",0,Property,false,CMPropertySClass);
-  MatCol(1,104,"Address",0,Address,false,0);
+  MatCol(1,104,"Name",0,Addr0,false,0);
   if (type==3) then begin
-    MatCol(1,-530,"Serial No.",0,SerialNo,false,0);
-    MatCol(1,-440,"Living Area",0,LivingArea,true,0);
+    MatCol(1,-530,"ID",0,OfficialSerNr,false,0);
+    MatCol(1,-440,"Reported Value",0,RepVal,true,0);
     MatCol(1,-350,"Evaluated Value",0,EvalVal,true,0);
     MatCol(1,-260,"Pledge Type",0,PledgeType,false,SetSClass);
     MatCol(1,-170,"Pledge Val",0,PledgeVal,true,0);
