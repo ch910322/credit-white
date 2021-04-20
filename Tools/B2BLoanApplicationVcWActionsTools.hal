@@ -81,6 +81,7 @@ begin
     LAr.Addr3 = CUr.InvAddr3;
     LAr.Addr4 = CUr.InvAddr4;
     LAr.BankCode = CUr.AccOperator;
+    LAr.CustRegNr1 = CUr.RegNr1;
     Bankr.Code = CUr.AccOperator;
     if (ReadFirstMain(Bankr,1,true)) then begin
       LAr.BankName = Bankr.Name;

@@ -248,6 +248,7 @@ begin
   RecordField(WorkplaceName,M4Str,200,0);
   RecordField(BeneficiaryName,M4Str,200,0);
   RecordField(MonthlyRepayment,M4Val,0,0);
+  RecordField(CustRegNr1,M4Str,20,0);
  //ak_end  
   ArrayBegin(Math,-,1);
   ArrayField(Period,M4Str,10,0);
