@@ -2180,6 +2180,24 @@ begin
   KeySegment(Code);
   EndRecord;
   
+  RecordBegin(PlegListDataVc,-,"");
+  RecordField(CredManNr,M4Long,0,0);
+  RecordField(RecordType,M4Int,0,0);
+  RecordField(RowNr,M4Int,0,0);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(CompCode,M4Code,50,0);
+  ArrayField(CompName,M4Str,255,0);
+  ArrayField(Value,M4Val,0,0);
+  ArrayField(Bal,M4Val,0,0);
+  ArrayField(BalDate,M4Date,0,0);
+  EndArray;
+  MainKeyBegin(CredManNr,0);
+  KeySegment(CredManNr);
+  KeySegment(RecordType);
+  KeySegment(RowNr);
+  EndRecord;  
+  
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Estonian", 0);

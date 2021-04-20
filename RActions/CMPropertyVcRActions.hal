@@ -65,3 +65,42 @@ LCMPropertyVcRecordCheck:;
   return;
 end;
 
+
+global
+updating function LongInt CredManPropertiesVcRecordCheck(var record CredManPropertiesVc Propr,record CredManPropertiesVc Prop2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  integer i,rwcnt;
+  row CredManPropertiesVc Proprw;
+  record PlegListDataVc PlegListDatar;
+  boolean TrHs, testf;
+  
+  res = 0;
+  rwcnt = matrowcnt(Propr);
+  
+  PlegListDatar.CredManNr = Propr.CredManNr;
+  PlegListDatar.RecordType = Propr.RecordType;
+  PlegListDatar.RowNr = 0;
+  TrHs = true;
+  while(loopmain(PlegListDatar,3,TrHs))begin
+    if(PlegListDatar.CredManNr!=Propr.CredManNr)then begin TrHs = false; end;
+    if(PlegListDatar.RecordType!=Propr.RecordType)then begin TrHs = false; end;
+    
+    if(TrHs)then begin
+      if(PlegListDatar.RowNr>=rwcnt)then begin
+        recorddelete(PlegListDatar);
+        stepback(PlegListDatar);
+      end else begin
+        matrowget(Propr,PlegListDatar.RowNr,Proprw);
+          Proprw.PledgeType = 1;
+        matrowput(Propr,PlegListDatar.RowNr,Proprw);
+      end;
+    end;
+  end;
+
+
+LCredManPropertiesVcRecordCheck:;
+  CredManPropertiesVcRecordCheck = res;
+  return;
+end;
+

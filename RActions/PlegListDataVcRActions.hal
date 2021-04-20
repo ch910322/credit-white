@@ -1,0 +1,77 @@
+//<halrule>server-only</halrule>
+
+global
+updating function LongInt PlegListDataVcRecordCheck(var record PlegListDataVc PListr,record PlegListDataVc PList2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  Boolean TrHs;
+  integer i,rwcnt;
+  row PlegListDataVc PListrw;
+  record CredManPropertiesVc Propr,oldPropr;
+
+  res = 0;
+  
+  rwcnt = matrowcnt(PListr);
+  if(rwcnt==0)then begin
+    RecordCheckError(1058,"",0,"CompCode");      
+    res = -1; 
+    goto LPlegListDataVcRecordCheck;
+  end else begin
+    for(i=0;i<rwcnt;i=i+1)begin
+      matrowget(PListr,i,PListrw);
+      if(blank(PListrw.CompCode))then begin
+        RecordCheckError(1058,"",0,"CompCode");      
+        res = -1; 
+        goto LPlegListDataVcRecordCheck;
+      end;
+    end;
+  end;
+  
+LPlegListDataVcRecordCheck:;
+  PlegListDataVcRecordCheck = res;
+  return;
+end;
+
+global
+updating function LongInt PlegListDataVcRecordSaveAfter(var record PlegListDataVc PListr,record PlegListDataVc PList2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  Boolean TrHs;
+  integer i,rwcnt;
+  row PlegListDataVc PListrw;
+  record CredManPropertiesVc Propr,oldPropr;
+  
+  Propr.CredManNr = PListr.CredManNr;
+  Propr.RecordType = PListr.RecordType;
+  if(readfirstmain(Propr,2,true))then begin
+    recordcopy(oldPropr,Propr);
+    recordupdate(oldPropr,Propr,true);
+  end;
+
+
+  PlegListDataVcRecordSaveAfter = res;
+  return;
+end;
+
+global
+updating function LongInt PlegListDataVcRecordUpdateAfter(var record PlegListDataVc PListr,record PlegListDataVc PList2r,LongInt stat,LongInt long4)
+begin
+  LongInt res;
+  Boolean TrHs;
+  integer i,rwcnt;
+  row PlegListDataVc PListrw;
+  record CredManPropertiesVc Propr,oldPropr;
+  
+  Propr.CredManNr = PListr.CredManNr;
+  Propr.RecordType = PListr.RecordType;
+  if(readfirstmain(Propr,2,true))then begin
+    recordcopy(oldPropr,Propr);
+    recordupdate(oldPropr,Propr,true);
+  end;
+
+
+  PlegListDataVcRecordUpdateAfter = res;
+  return;
+end;
+
+

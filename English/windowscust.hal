@@ -2769,10 +2769,10 @@ begin
   vs=20; h=120; vs2=16; hm=-100;
   MatrixBegin(10,20,-40,-20,-,99);
   MatCol(1,24,"Property",0,Property,false,CMPropertySClass);
-  MatCol(1,104,"Name",0,Addr0,false,0);
+  MatCol(1,104,"Address",0,Address,false,0);
   if (type==3) then begin
-    MatCol(1,-530,"ID",0,OfficialSerNr,false,0);
-    MatCol(1,-440,"Reported Value",0,RepVal,true,0);
+    MatCol(1,-530,"Serial No.",0,SerialNo,false,0);
+    MatCol(1,-440,"Living Area",0,LivingArea,true,0);
     MatCol(1,-350,"Evaluated Value",0,EvalVal,true,0);
     MatCol(1,-260,"Pledge Type",0,PledgeType,false,SetSClass);
     MatCol(1,-170,"Pledge Val",0,PledgeVal,true,0);
@@ -2787,6 +2787,9 @@ begin
     MatCol(1,-170,"Reported Value",0,RepVal,true,0);
     MatCol(1,-80,"Evaluated Value",0,EvalVal,true,0);
   end;
+  RowMenuBegin("");
+  RowMenuItem(0,"Open Pledges List",'I','I',0,"CredManPropertiesOpenPLListDsm");
+  EndRowMenu;
   EndMatrix;
   EndWindow;
 end;
@@ -3729,5 +3732,26 @@ begin
   RlColKey(4,4,"Code",Code,false,Code);
   RlColKey(70,70,"Name",Name,false,Name);
   SearchField("Search");
+  EndWindow;
+end;
+
+
+window PlegListDataDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+
+  WindowBegin("Money Receivers",PlegListDataDClass,CGview,-);
+  SetWRect(20,80,760,339);
+  DynamicWindow;
+  UseView(PlegListDataVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  MatrixBegin(0,16,-16,-50,-,10);
+  MatCol(1,24,"Company",0,CompCode,false,Companies2SClass);
+  MatCol(1,120,"Name",0,CompName,false,0);
+  MatCol(1,-240,"Value",0,Value,true,0);
+  MatCol(1,-160,"Balance",0,Bal,true,0);
+  MatCol(1,-80,"Balance Date",0,BalDate,true,0);
+  EndMatrix;
   EndWindow;
 end;
