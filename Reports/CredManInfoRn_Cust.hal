@@ -486,14 +486,15 @@ begin
   integer lastrow;
   row SMVc SMrw;
 
-
-  CredManChr.CredManNr = CredManr.SerNr;
-  CredManChr.TransDate = currentdate;
-  if(readlastkey("CredManDate",CredManChr,2,false))then begin
-    if(nonblankdate(CredManChr.TransDate))then begin
-      if(CredManChr.CredManNr==CredManr.SerNr)then begin
-        ischanged = true;
-        changedate = CredManChr.TransDate;
+  if(SMr.FileName=="PrintScheldue")then begin
+    CredManChr.CredManNr = CredManr.SerNr;
+    CredManChr.TransDate = currentdate;
+    if(readlastkey("CredManDate",CredManChr,2,false))then begin
+      if(nonblankdate(CredManChr.TransDate))then begin
+        if(CredManChr.CredManNr==CredManr.SerNr)then begin
+          ischanged = true;
+          changedate = CredManChr.TransDate;
+        end;
       end;
     end;
   end;
