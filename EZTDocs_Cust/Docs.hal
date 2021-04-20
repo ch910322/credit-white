@@ -1257,7 +1257,8 @@ begin
   string 255 months;
   record CredFeesMatrixVc FMr;
   row CredFeesMatrixVc FMrw;
- 	
+
+  BlockLoad(PCb);
  	GetCredManChangePurpose(CredManr,vVals);
  	
   CUr.Code = CredManr.CustCode;
@@ -1272,7 +1273,9 @@ begin
       CredManr.RealInterestFlag = int_type;
     end;
   end;
-  SMr.FileName = "PrintScheldue";
+  if(PCb.ScheduleFromLastAgrCh==1)then begin
+    SMr.FileName = "PrintScheldue";
+  end;
   if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
     ReadFirstMain(CredManr,1,true);
@@ -1282,8 +1285,6 @@ begin
   
   CredManHeader(vVals,CredManr);
   Ext_CommonDocumentFields(vVals);
-
-  BlockLoad(PCb);
 
   ReadFirstMain(CredManr,1,true);
   rwcnt = MatRowCnt(SMr);

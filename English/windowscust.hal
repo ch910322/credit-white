@@ -3025,6 +3025,7 @@ begin
 
   Tile(4,700,false,"4",ScheduleYes);
   EditField(h,v=6,140,"Yes",Normal,ScheduleYes,false,0);
+  CheckBox(h+150,v,0,"Schedules from last Agreement change",ScheduleFromLastAgrCh);
   EditField(h,v+=vs,140,"No",Normal,ScheduleNo,false,0);
   EditField(h,v+=vs,140,"If Yes, then",Normal,ScheduleYes2,false,0);
   EditField(h,v+=vs,140,"Reimburs. Items",Normal,ReimbItems,false,INSClass);
