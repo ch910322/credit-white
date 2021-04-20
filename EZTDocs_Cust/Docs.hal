@@ -1272,6 +1272,7 @@ begin
       CredManr.RealInterestFlag = int_type;
     end;
   end;
+  SMr.FileName = "PrintScheldue";
   if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
     ReadFirstMain(CredManr,1,true);
