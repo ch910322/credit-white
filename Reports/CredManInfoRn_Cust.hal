@@ -523,13 +523,11 @@ begin
               AddScheduleToList(CredManr,CSrw,SMr,calcbal);
               if(lastrow==matrowcnt(SMr)-1)then begin
                 matrowget(SMr,lastrow,SMrw);
-                  logtext(0,matrowcnt(SMr) & " CSrw.Fees " & CSrw.Fees);
                   SMrw.BaseRate1 = CSrw.Fees;
                 matrowput(SMr,lastrow,SMrw);
               end;
             end;
           case 4:
-            logtext(0,"CSrw.Fees " & CSrw.Fees);
             lastrow = matrowcnt(SMr);
             AddBuyOutToList(CSrw.Total,CSrw.InvDate,SMr,calcbal);
             if(lastrow==matrowcnt(SMr)-1)then begin
@@ -538,7 +536,6 @@ begin
               matrowput(SMr,lastrow,SMrw);
             end;
           case 5:
-            logtext(0,"CSrw.Fees " & CSrw.Fees);
             lastrow = matrowcnt(SMr);
             AddPayOutToList(CSrw.Principle,CSrw.InvDate,SMr,calcbal);
             if(lastrow==matrowcnt(SMr)-1)then begin
