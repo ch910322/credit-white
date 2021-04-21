@@ -490,6 +490,7 @@ begin
   string 255 signerphone,signermobile,signeremail,signerid,signeridcard,signeriddate,legalid,idstring;
   Integer comptype;
   record CMPrintConstantsBlock PCb;
+  transaction integer gIsDigitalDocument
   
   blockload(PCb);
 
@@ -527,6 +528,12 @@ begin
 			GetSuretyValues4(CredManr,num,signManager);
 		end;
 		vVals[fs & "F_SIGNMANAGERNAME"] = signManager;
+		
+		if(gIsDigitalDocument==1)then begin
+      vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrDigital;
+    end else begin
+      vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrNotDigital;
+    end;
 		
   return;
 end;
@@ -1257,7 +1264,8 @@ begin
   string 255 months;
   record CredFeesMatrixVc FMr;
   row CredFeesMatrixVc FMrw;
-
+  transaction integer gIsDigitalDocument;
+  
   BlockLoad(PCb);
  	GetCredManChangePurpose(CredManr,vVals);
  	
@@ -1355,7 +1363,13 @@ LNextRow:;
   vVals["F_TOPAY2"] = topay2;
   ValToText(topay2,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
   vVals["F_TOPAY2_TEXT"] = tstr;
-
+  
+  if(gIsDigitalDocument==1)then begin
+    vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrDigital;
+  end else begin
+    vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrNotDigital;
+  end;
+  
   return;
 end;
 

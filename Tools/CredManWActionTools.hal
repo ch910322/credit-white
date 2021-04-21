@@ -1019,7 +1019,9 @@ begin
   val paidout;
   
   ArchiveExistingDocument(ADr,oldname);
-
+  if(ADr.DigitalFlag==1)then begin
+    gIsDigitalDocument = 1;
+  end;
   scnt = GetSuretyCnt(CredManr);
   switch (ADr.Type) begin
     case 1://agreement
@@ -1030,14 +1032,8 @@ begin
         if (CredManr.MaxMonthlyPayment>0) then begin
           RepSpec.flags[10] = 1;
         end;
-        if(ADr.DigitalFlag==1)then begin
-        	gIsDigitalDocument = 1;
-        end;
         PrintEBSDocument("CredManForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
       end else begin
-      	if(ADr.DigitalFlag==1)then begin
-        	gIsDigitalDocument = 1;
-        end;
         PrintCredManDocument("CredManForm",fn,CredManr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
         //PrintMultiDocDocument("CredManLongForm",fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
       end;
