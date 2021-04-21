@@ -25,11 +25,15 @@ BEGIN
   LongInt res;
   record CredManTypeVc CredManTyper;
   record CredManSetBlock CredManSetb;
+  record CMInterfaceSetBlock CMSBb;
   
   BlockLoad(CredManSetb);
+  blockload(CMSBb);
   CredManr.SerNr = -1;
   CredManr.SalesMan = CurrentUser;
+  if(CMSBb.ManualAgreeDate==0)then begin
   CredManr.TransDate = CurrentDate;
+  end;
   CredManr.startDate = CurrentDate;
   CredManr.FirstInvDate = AddMonth(CredManr.startDate,1);
   CredManr.FirstInvDate = AddDay(CredManr.FirstInvDate,CredManSetb.InvDay - GetDay(CredManr.FirstInvDate));
@@ -265,6 +269,11 @@ BEGIN
   insertmode = 1;
   updatemode = 2;
   oldnr = CredManr.SerNr;
+  if(blankdate(CredManr.TransDate))then begin
+    RecordCheckError(1058,"",-1,"TransDate");
+    res = -1;
+    goto LCredManVcRecordCheck;
+  end;
   if (CredManr.SerNr<=0) then begin
     CredManr.SerNr = NextSerNr("CredManVc",CredManr.TransDate,-1,false,"");
   end;

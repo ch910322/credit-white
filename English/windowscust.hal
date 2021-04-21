@@ -3355,11 +3355,11 @@ begin
   end;
   CheckBox(h,v+=16,0,"Display Credit Line",ShowLoanType7);
   CheckBox(h,v+=16,0,"Display Credit Limit",ShowLoanType8);
-
+  vs = 16;
   CheckBox(h,v+=30,0,"Show VAT Data",ShowVAT);
   CheckBox(h,v+=vs,0,"Show 'Int. based on Money Transfer'",ShowRealInterestFlag);
   CheckBox(h,v+=vs,0,"Use Days In Month in Agreement",UseCredManDaysInMonth);
-  
+  CheckBox(h,v+=vs,0,"Manual Agreement Date",ManualAgreeDate);
   
   EndWindow;
 end;

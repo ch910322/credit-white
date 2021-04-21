@@ -1963,6 +1963,7 @@ begin
   RecordField(UseCredManDaysInMonth,M4Int,0,0);
   RecordField(ShowLoanType7,M4Int,0,0);
   RecordField(ShowLoanType8,M4Int,0,0);
+  RecordField(ManualAgreeDate,M4Int,0,0);
   EndBlock;
 
   RecordBegin(CredManChangeVc,-,"");
