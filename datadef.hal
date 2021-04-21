@@ -2079,6 +2079,7 @@ begin
   RecordField(AgrDigital,M4Str,255,0);
   RecordField(AgrNotDigital,M4Str,255,0);
   RecordField(ScheduleFromLastAgrCh,M4Int,0,0);
+  RecordField(AgrDigital2,M4Str,255,0);
   
   EndBlock;
 
