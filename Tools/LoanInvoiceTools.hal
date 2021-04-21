@@ -433,10 +433,7 @@ begin
   if (nonblank(CIb.OverduePayTerm)) then begin
     IVr.PayDeal = CIb.OverduePayTerm;
     IVVc_PastePayDeal2(IVr,"","",serf);
-  end;
-  
-  SetOverdueLangCode(IVr,CredManr);
-  
+  end;  
   return;
 end;
 
@@ -1070,6 +1067,8 @@ updating procedure StoreLoanInvoice(var record IVVc IVr,record CredManVc CredMan
 begin
   record IVVc oldIVr;
   
+  SetOverdueLangCode(IVr,CredManr);
+  
   if (IVr.Sum4>0) then begin
     IVr.SerNr = NextSerNr("IVVc",IVr.InvDate,-1,false,"");
     if (RecordInsert(IVr,true)) then begin
@@ -1507,7 +1506,6 @@ begin
             IVr.ManualInvoice = 1;
           end;
           StoreLoanInvoice(IVr,CredManr);
-
           //if (firstf==false) then begin
             RecordCopy(firstIVr,IVr);
           //  firstf = true;
