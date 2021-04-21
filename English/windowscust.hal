@@ -2771,7 +2771,7 @@ begin
   MatCol(1,24,"Property",0,Property,false,CMPropertySClass);
   MatCol(1,104,"Address",0,Address,false,0);
   if (type==3) then begin
-    MatCol(1,-530,"Serial No.",0,SerialNo,false,0);
+    MatCol(1,-530,"Cadastral Code",0,SerialNo,false,0);
     MatCol(1,-440,"Living Area",0,LivingArea,true,0);
     MatCol(1,-350,"Evaluated Value",0,EvalVal,true,0);
     MatCol(1,-260,"Pledge Type",0,PledgeType,false,SetSClass);
