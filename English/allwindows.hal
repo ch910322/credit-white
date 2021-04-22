@@ -52,6 +52,7 @@ external function Boolean ReadPOSButtons(string,string,longint,var string,var st
 external function Boolean IsSessionOpen(string,string,Date,Time);
 external procedure DisplayRecordDetails_ENG(LongInt,LongInt,string,date,time,string,string,string,string,string,string,string,string,string,string,string,Integer,string,string,string,val,string,Boolean,string,string);
 external procedure DrawPOSInterface2_ENG(string,string,record POSButtonsVc,string,Integer,Integer);
+external procedure ARS2RClass_ENG();
 
 //CUST-BEGIN TAG TOOLS
 external outer function Boolean HasMoneyTransferDate();
@@ -3370,5 +3371,13 @@ begin
     RadioButton(h,v+=16,1,0,"Name",flags[1]);
     
   end;
+  EndWindow;
+end;
+
+window ARS2RClass:2
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Specify Open Invoice Customer Statement",ARS2RClass,CGRcW,RcType);
+  ARS2RClass_ENG;
   EndWindow;
 end;

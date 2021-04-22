@@ -1,0 +1,195 @@
+/* EngWindowFunctions.hal */
+external function string 255 F_Label(string);
+external procedure SplitButton(LongInt,LongInt,LongInt,LongInt,LongInt,string,string,string,string,LongInt);
+external function Boolean TouchScreenLookVertical();
+external function Boolean HasModPL();
+external function Boolean HasModPP();
+external function Boolean HasModSL();
+external function Boolean HasModHotel();
+
+external function Boolean HasApprovals();
+external function Boolean HasCCPayments();
+external function Boolean HasAdvancedPricing();
+external function Boolean HasBar();
+external function Boolean HasBase2();
+external function Boolean HasCategories();
+external function Boolean HasConsignmentStock();
+external function Boolean HasContactClassification();
+external function Boolean HasDeliveryAddress();
+external function Boolean HasDepartments();
+external function Boolean HasExtraNLComment();
+external function Boolean HasHotelInterface();
+external function Boolean HasJewelleryInterface();
+external function Boolean HasItemClassification();
+external function Boolean HasItemGroups();
+external function Boolean HasKPIs();
+external function Boolean HasLanguages();
+external function Boolean HasLimitedAccess();
+external function Boolean HasLocalMachines();
+external function Boolean HasMultiCurrency();
+external function Boolean HasMultiLocations();
+external function Boolean HasLoyaltyCards();
+external function Boolean HasObjects();
+external function Boolean HasOfficialSerNr();
+external function Boolean HasPreferedOfficialSerNr();
+external function Boolean HasNumberSeries();
+external function Boolean HasPocketScreen();
+external function Boolean HasPositions();
+external function Boolean HasProjects();
+external function Boolean HasPriceLists();
+external function Boolean HasReconLevel2();
+external function Boolean HasSalesman();
+external function Boolean HasSecondQuantity();
+external function Boolean HasSerialNumbers();
+external function Boolean HasSettlementDiscount();
+external function Boolean HasSimulations();
+external function Boolean HasSkypeConnection();
+external function Boolean HasSimulations();
+external function Boolean HasSIPServerConnection();
+external function Boolean HasTaxMatrix();
+external function Boolean HasTestFeatures();
+external function Boolean HasTouchScreenDevice();
+external function Boolean HasTouchScreenLook();
+external function Boolean HasTREO();
+external function Boolean HasVarieties();
+
+external function Boolean HasStandardCRM();
+external function Boolean HasStandardOrganizer();
+external function Boolean HasStandardCommunicator();
+
+external function Boolean HasEMail();
+external function Boolean HasExternalEMail();
+
+external function Boolean HasModAT2();
+external function Boolean HasModCheck();
+external function Boolean HasModCL();
+external function Boolean HasModCO();
+external function Boolean HasModCRM();
+external function Boolean HasModExp();
+external function Boolean HasModIN();
+external function Boolean HasModNL();
+external function Boolean HasModPO();
+external function Boolean HasModPOS();
+external function Boolean HasModPL();
+external function Boolean HasModPP();
+external function Boolean HasModProd();
+external function Boolean HasModQT();
+external function Boolean HasModRent();
+external function Boolean HasModRest();
+external function Boolean HasModSO();
+external function Boolean HasModSL();
+external function Boolean HasModSVO();
+external function Boolean HasModTS();
+external function Boolean HasModWHM();
+
+external function val AbsoluteVal(val);
+external procedure ExtractObj(string,var Integer,var string);
+external procedure AddTouchScreenPasteButton(integer,integer,Integer,Integer,string,integer,string,integer);
+external procedure AddTouchScreenPasteButton2(integer,integer,Integer,Integer,string,string,integer,string,integer,integer);
+external procedure AddTouchScreenPasteButtonWithPicture(integer,integer,Integer,Integer,string,string,integer,string,integer,integer,string,string);
+external procedure MakeUserDefinedTile(longint);
+external function real GenericFunctionButton(real,real,real,real,string,string,LongInt,string);
+external function string 255 SetVATZoneLabel();
+external function string 20 GetMenuCode(string);
+external function Integer NumberofBarTabTiles();
+
+external function Boolean IsEnterprise();
+
+external function Boolean HasLimitedAccess();
+external function Boolean HasLocalMachines();
+
+external function Boolean HasMultiLocations();
+
+external function Boolean HasModIN();
+external function Boolean HasModNL();
+external function Boolean HasModPOS();
+external function Boolean HasModSO();
+external function Boolean HasModRest();
+external function Boolean DisplayLoginKeypadSingleToken();
+
+event DefineWindows
+begin
+  Real h,h1,h2,h3,h4,h5,h6,h7,hm,v,v2,v3,l,vs,vm,f,t,x;
+  string 255 label;
+
+  SetLangMode(LangEnglish,"ENG",2);
+  return;
+end;
+
+global
+procedure ARS2RClass_ENG()
+begin
+  real h,v,vm,vs;
+
+  if (IsEnterprise()) then begin 
+    SetWRect(20,80,450,450);
+  end else begin
+    SetWRect(20,80,410,250);
+  end;  
+  
+  vs=20;
+  if (IsEnterprise) then begin
+    h = 180;
+  end else begin
+    h = 130;
+  end;
+  EditFieldTL(h,v=6, 150,"Customer",   M4UStr,Normal,30,f1,false,CUSClass);
+  //CUST-BEGIN
+  EditFieldTL(h,v+=20,150,"Agreement Nr.",M4UStr,Normal,200,f15,false,CredManSClass);
+  //CUST-END
+
+  if (HasCategories) then begin
+    EditFieldTL(h,v+=20,50, "Category",   M4UStr,Normal,5,f3,false,CCatSClass);
+  end;
+  if (HasObjects) then begin
+    EditFieldTL(h,v+=20,150, "Tag/Object",   M4UStr,Normal,20,ObjStr,false,ObjSClass);
+  end;
+  if (HasContactClassification) then begin
+    EditFieldTL(h,v+=20,50, "Classification",   M4UStr,Normal,30,f4,false,CClassSClass);
+  end;
+  if (IsEnterprise()) then begin
+    EditFieldTL(h,v+=20,20, "Days of delay (not less than)",   M4Int,Normal,5,Comparison,false,0);
+    // EditFieldTL(h,v+=vs ,80,"Min. Turnover",M4Val,Normal,0,vals0,true,0);// this is too slow
+    EditFieldTL(h,v+=20,80, "Main Partner",   M4UStr,Normal,20,LastAcc,false,CUSClass);
+    EditFieldTL(h,v+=vs ,80,"Min. Balance",M4Val,Normal,0,vals2,true,0);
+    EditFieldTL(h,v+=vs ,80,"Min. no. of Invoices",M4Long,Normal,0,long1,true,0);
+    EditFieldTL(h,v+=20,80,"On Date",M4Date,Normal,0,d1,false,PasteCurDate);
+    // CheckBox(20,v+=20,0,"Endast kunder med saldo",flags[1]);
+  end;
+  
+  ButtonFrame(h=30,vm=(v+=40),123,2,"Invoices");
+  RadioButton(h,v,0,0,"Open",flags[0]);
+  RadioButton(h,v+=16,2,0,"Overdue",flags[0]);
+
+  if (HasMultiCurrency or HasBase2) then begin
+    ButtonFrame(h,v+=40,123,2,"Amounts");
+    RadioButton(h,v,0,0,"Base Currency",flags[4]);
+    RadioButton(h,v+=16,1,0,"Currency",flags[4]);
+  end;
+  if (IsEnterprise()) then begin
+    CheckBox(h,v+=30,0,"Down payment Receipts Only",flags[10]);
+    CheckBox(h,v+=16,0,"Show Prepayment No.",flags[14]);
+    CheckBox(h,v+=16,0,"Show #Instalments#",flags[19]);
+    CheckBox(h,v+=16,0,"Include Open #Credit Notes#",flags[9]);
+  end;
+  if (HasOfficialSerNr) then begin
+    if (IsEnterprise) then begin 
+      v = v + 16;
+    end else begin
+      v = v + 25;
+    end;
+    CheckBox(h,v,0,"Show Official No.",flags[15]);
+  end;
+  ButtonFrame(h+=195,v=vm,125,3,"Function");
+  RadioButton(h,v,1,0,"Summary",flags[5]);
+  RadioButton(h,v+=16,2,0,"Per Customer",flags[5]);
+  RadioButton(h,v+=16,0,0,"Detailed",flags[5]);
+  
+  if (IsEnterprise()) then begin
+    ButtonFrame(h,v+=40,125,3,"Status");
+    CheckBox(h,v,0,"Skip Disputed",flags[11]);
+    CheckBox(h,v+=16,0,"Skip No Reminder",flags[12]);
+    CheckBox(h,v+=16,0,"Skip No Collection",flags[13]);
+  end;
+  return;
+end;
