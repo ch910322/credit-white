@@ -31,7 +31,7 @@ begin
       CreateRecordLink(CredManr,CurrentCompany,Actr,CurrentCompany);
       RecordCopy(oldCredManr,CredManr);
       CredManr.StateNotified = 1;
-      RecordUpdate(oldCredManr,CredManr,true)
+      RecordUpdate(oldCredManr,CredManr,true);
     end;
   end;
 
@@ -62,12 +62,44 @@ begin
       CreateRecordLink(LAr,CurrentCompany,Actr,CurrentCompany);
       RecordCopy(oldLAr,LAr);
       LAr.StateNotified = 1;
-      RecordUpdate(oldLAr,LAr,true)
+      RecordUpdate(oldLAr,LAr,true);
     end;
   end;
 
   return;
 end;
+
+global
+updating procedure CreateTaskActivityPropertyInsurance(record CMPropertyVc CMpr,string person,string acttype,string acttext,date TransDate,time StartTime)
+begin
+  record ActVc Actr;
+  string 255 warning;
+  record CMPropertyVc oldCMpr;
+
+  if (ReadFirstMain(CMpr,1,true)) then begin
+    Actr.SerNr = NextSerNr("ActVc",TransDate,-1,false,"");
+    Actr.TransDate = TransDate;
+    Actr.StartTime = StartTime;
+    Actr.Value = CMpr.InsuredVal;
+    Actr.CUCode = CMpr.InsuranceCompany;
+    PasteCuInAct(Actr,warning);
+    Actr.ActType = acttype;
+    PasteActTypeInAct2("",Actr,warning);
+    Actr.MainPersons = person;
+    Actr.Comment = acttext;
+    Actr.TodoFlag = kTodoFlagTodo;
+    if (RecordInsert(Actr,true)) then begin
+      CreateRecordLink(Actr,CurrentCompany,CMpr,CurrentCompany);
+      CreateRecordLink(CMpr,CurrentCompany,Actr,CurrentCompany);
+      RecordCopy(oldCMpr,CMpr);
+      CMpr.StateNotified = 1;
+      RecordUpdate(oldCMpr,CMpr,true);
+    end;
+  end;
+
+  return;
+end;
+
 
 function boolean GetManagerWorkLoadEvaluation(string user,Integer EvaluationType,date d,var longint ev)
 begin
@@ -192,6 +224,7 @@ begin
   row CredmanAutoTaskBlock ATbrw;
   record CredManVc CredManr;
   record B2BLoanApplicationVc LAr;
+  record CMPropertyVc CMpr;
   Integer i,rwcnt;
   Date td;
   Time tt;
@@ -258,7 +291,7 @@ begin
               qupdating.CreateTaskActivityCredMan(CredManr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime);
             end;
           end;
-        case 1://agreements
+        case 1://loan applications
           RecordClear(LAr);
           ResetLoop(LAr);
           TrHs = true;
@@ -283,6 +316,44 @@ begin
               qupdating.CreateTaskActivityLoanApp(LAr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime);
             end;
           end;
+        case 2: //property insurance
+          ResetLoop(CMpr);
+          CMpr.StateNotified = 0;
+          //CMpr.StateChangeDate = td;
+          //CMpr.StateChangeTime = tt;
+          TrHs = true;
+          while (LoopBackKey("StateNotified",CMpr,1,TrHs)) begin
+            if (CMpr.StateNotified!=0) then begin
+              TrHs = false;
+            end else begin
+              if (nonblankdate(CMpr.InsuredUntil)) then begin
+                actdate = AddDay(CMpr.InsuredUntil,-ATbrw.DelayDays);
+                acttime = CurrentTime;
+                if (ATbrw.DelayHours>0) then begin
+                  acttime = AddHours(acttime,-ATbrw.DelayHours);
+                end;
+                if (nonblanktime(ATbrw.AtTime)) then begin
+                  if (acttime>ATbrw.AtTime) then begin
+                    actdate = AddDay(actdate,-1);
+                    acttime = ATbrw.AtTime;
+                  end else begin
+                    acttime = ATbrw.AtTime;
+                  end;
+                end;
+                if (ATBrw.PersonType==1) then begin
+                  person = ATbrw.Manager;
+                end;
+                if (ATBrw.PersonType==2) then begin
+                  person = GetLeastWorkLoadManager(ATbrw.ActType,CredManr.Type,actdate);
+                  if (blank(person)) then begin
+                    LogText(0,"GetLeastWorkLoadManager " & ATbrw.ActType & " failed");
+                  end; 
+                end;
+                qupdating.CreateTaskActivityPropertyInsurance(CMpr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime);
+              end;
+            end;
+          end;
+          
       end;
     end;
   end;

@@ -496,6 +496,7 @@ begin
   SetBegin(2020);
   SetText(0,"Credit Agreement");
   SetText(1,"Loan Application");
+  SetText(2,"Property Insurance");
   EndSet;
 
   SetBegin(2021);

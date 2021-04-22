@@ -23,7 +23,9 @@ begin
   res = 1;  
 
   Propr.SerNr = -1;
-
+  Propr.StateChangeDate = CurrentDate;
+  Propr.StateChangeTime = CurrentTime;
+  Propr.StateNotified = 0;
   CMPropertyVcRecordDuplicate = res; 
   return;
 end;
@@ -59,7 +61,11 @@ begin
       end;
     end;
   end;
-
+  if (Propr.InsuredUntil!=Prop2r.InsuredUntil) then begin
+    Propr.StateChangeDate = CurrentDate;
+    Propr.StateChangeTime = CurrentTime;
+    Propr.StateNotified = 0;
+  end;
 LCMPropertyVcRecordCheck:;
   CMPropertyVcRecordCheck = res;
   return;
