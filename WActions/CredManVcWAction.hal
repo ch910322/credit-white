@@ -105,7 +105,8 @@ begin
     PutWindowString(wn,"remainingprinciple",RepSpec.f13);
     PutWindowString(wn,"totaldue",RepSpec.vals4);
     PutWindowString(wn,"acumpenalty",RepSpec.f12);
-
+    PutWindowString(wn,"lateprincipal",RepSpec.f10);
+    PutWindowString(wn,"lateinterest",RepSpec.f11);
   return;
 end;
 

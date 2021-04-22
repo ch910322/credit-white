@@ -999,6 +999,7 @@ begin
   EditField(h,vm=(v+=vs),100,"Quotation",ViewOnly,QTNr,false,0);
 //CUST-BEGIN
   EditField(h,v+=vs,30,"Pay. Terms",Normal,PayDeal,false,PDSClass);
+  EditField(h,v+=vs,30,"Force Pay. Term",Normal,ForcePayDeal,false,PDSClass);
   EditField(h,v+=vs,82,"Invoice",ViewOnly,VINr,false,0);
   EditField(h,v+=vs,82,"Interest From Date",Normal,FirstIntDate,false,PasteCurDate);
 //CUST-END
