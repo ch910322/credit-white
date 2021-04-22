@@ -1,0 +1,35 @@
+external function Boolean IsEnterprise();
+external function Boolean HasLocalMachines();
+
+external procedure In2Period(var string,var Date,var Date);
+external function Boolean UserHasLimitedAccess(var string,var string);
+
+global
+procedure IVJRClassReportDefaults(Integer wn)
+begin
+  record RcVc RepSpec;
+  string 255 tstr;
+  
+  DeselectWindow(wn,false);
+  GetWindowRecord(wn,RepSpec);
+  ReportDefaults(RepSpec,"IVJRClass");  
+  RepSpec.ArtMode = 0;
+  RepSpec.flags[1] = 0;
+  RepSpec.flags[2] = 1;
+  RepSpec.flags[3] = 1;
+  RepSpec.flags[4] = 1;
+  RepSpec.flags[5] = 1;
+  RepSpec.flags[6] = 1;
+  if (HasLocalization("ITA") and IsStandardProduct) then begin
+    RepSpec.flags[15] = 1;
+    RepSpec.flags[16] = 1;
+  end;
+  //CUST-BEGIN
+  RepSpec.flags[24] = 1;
+  //CUST-END
+  if (UserHasLimitedAccess(RepSpec.AccStr,RepSpec.f14)) then begin
+  end;
+  PutWindowRecord(wn,RepSpec);
+  SelectWindow(wn);
+  return;
+end;

@@ -45,6 +45,8 @@ external procedure GetFullCurncyRateText(Boolean,var string,val,val,val,val,val)
 external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
 external procedure OutEmpty(record RcVc,Integer);
 
+external outer function string 255 GetCredManNr(Longint);
+
 function string 255 GetRateAsText(string curncycode,Date td)
 begin
   Integer oldstyle;
@@ -799,8 +801,13 @@ begin
       end;
       StartFormat(15);
       OutString(0,0,USetStr(2352),false);//0
+      //CUST-BEGIN
+      if (RepSpec.flags[24]==1) then begin
+        OutString(30,0,USetStr(9000010),false);
+      end;
+      //CUST-END
       if (RepSpec.flags[16]!=0 and RepSpec.flags[10]!=3) then begin
-        OutString(60,0,USetStr(3509),false);
+        OutString(60,0,USetStr(3509),false);//60
         OutString(120,0,USetStr(2353),false);
         if (overviewpervatcodef) then begin
           OutString(170,0,USetStr(2358),false);
@@ -809,8 +816,8 @@ begin
           OutString(305,0,USetStr(2358),false);
         end;
       end else begin
-        OutString(60,0,USetStr(2353),false);//60
-        OutString(110,0,USetStr(2354),false);//110
+        OutString(100,0,USetStr(2353),false);//60
+        OutString(140,0,USetStr(2354),false);//110
         if (overviewpervatcodef) then begin
           OutString(170,0,USetStr(2358),false);//280
         end else begin
@@ -1619,6 +1626,11 @@ LkInvoiceTypeCredit1:;
               StartFormat(15);
               if (RepSpec.flags[16]!=0 and RepSpec.flags[10]!=3) then begin
                 OutStringOvst(0,"DblCustPS2",IVr.SerNr,false,IVr.Invalid);
+                //CUST-BEGIN
+                if (RepSpec.flags[24]==1) then begin
+                  OutStringID(30,"DblCredManVc",GetCredManNr(IVr.CustCredManNr),false,IVr.CustCredManNr);  
+                end;
+                //CUST-END
                 OutStringOvst(60,0,IVr.OfficialSerNr,false,IVr.Invalid);
                 OutDate(120,0,IVr.InvDate,false);
                 OutStringCut(170,270,0,IVr.Addr0,false,0);
@@ -1633,8 +1645,13 @@ LkInvoiceTypeCredit1:;
                 end else begin
                   OutStringOvst(0,"DblCustPS2",CreateInvoiceNumber(IVr.SerNr,IVr.OfficialSerNr),false,IVr.Invalid);
                 end;
-                OutDate(60,0,IVr.InvDate,false);
-                OutStringCut(110,220,0,IVr.Addr0,false,0);
+                //CUST-BEGIN
+                if (RepSpec.flags[24]==1) then begin
+                  OutStringID(30,"DblCredManVc",GetCredManNr(IVr.CustCredManNr),false,IVr.CustCredManNr);  
+                end;
+                //CUST-END
+                OutDate(100,0,IVr.InvDate,false);//60
+                OutStringCut(140,220,0,IVr.Addr0,false,0);//110
                 if (IVr.InvType==kInvoiceTypeCredit or IVr.InvType==kInvoiceTypeCreditSpecialSales) then begin
                   if (nonblank(IVr.Reason)) then begin
                     OutString(275,0,tstr & " (" & IVr.Reason & ")",false);
@@ -1712,8 +1729,11 @@ LkInvoiceTypeCredit1:;
             end;
             EndFormat;
             StartFormat(15);
+          OutEmpty(RepSpec,1);
             if (RepSpec.flags[16]!=0) then begin
               OutString(12,0,IVr.OfficialSerNr,false);
+          end else begin
+            OutEmpty(RepSpec,1);
             end;
             if (HasMultiCurrency) then begin 
               OutString(130,0,IVr.CurncyCode,false);
