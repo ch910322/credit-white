@@ -1,8 +1,9 @@
 external function Boolean IsEnterprise();
 external function Boolean HasLocalMachines();
-
 external procedure In2Period(var string,var Date,var Date);
 external function Boolean UserHasLimitedAccess(var string,var string);
+
+external outer function Boolean ShowCredManNrInvoiceJournal();
 
 global
 procedure IVJRClassReportDefaults(Integer wn)
@@ -25,7 +26,9 @@ begin
     RepSpec.flags[16] = 1;
   end;
   //CUST-BEGIN
-  RepSpec.flags[24] = 1;
+  if (ShowCredManNrInvoiceJournal()) then begin
+    RepSpec.flags[24] = 1;
+  end;
   //CUST-END
   if (UserHasLimitedAccess(RepSpec.AccStr,RepSpec.f14)) then begin
   end;

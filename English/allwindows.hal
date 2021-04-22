@@ -80,6 +80,7 @@ external outer function Boolean UseCompensationInvoices();
 external outer function Boolean ShowToDisburse();
 external outer function Boolean UseBuyoutSummary();
 external outer function Boolean ShowBuyOutFeePrcAllTypes();
+external outer function Boolean ShowCredManNrInvoiceJournal();
 //CUST-END
 
 window CUDClass:14
@@ -3566,7 +3567,9 @@ begin
     CheckBox(h,v+=16,0,"Invoices with Total amount equal zero",flags[20]);
     CheckBox(h,v+=16,0,"Exported to Factoring only",flags[22]);
     //CUST-BEGIN
-    CheckBox(h,v+=16,0,"Show Agreement number",flags[24]);
+    if (ShowCredManNrInvoiceJournal()) then begin
+      CheckBox(h,v+=16,0,"Show Agreement number",flags[24]);
+    end;
     //CUST-END
     CheckBox(h+=hs,v=vm,0,"Show Official No.",flags[16]);
     
