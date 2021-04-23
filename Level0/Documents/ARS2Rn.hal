@@ -668,8 +668,10 @@ done queued
       IVr.SerNr = ARr.InvoiceNr;
       if (ReadFirstMain(IVr,1,true)) then begin end;
       //CUST-BEGIN
-      if (SetInSet(IVr.CustCredManNr,RepSpec.f15)==false) then begin
-        goto L20OneARSFormOpen;
+      if (nonblank(RepSpec.f15)) then begin
+        if (SetInSet(IVr.CustCredManNr,RepSpec.f15)==false) then begin
+          goto L20OneARSFormOpen;
+        end;
       end;
       //CUST-END
       if (IVr.Invalid!=0) then begin goto L20OneARSFormOpen; end;

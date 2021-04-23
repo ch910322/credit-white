@@ -1627,7 +1627,7 @@ LkInvoiceTypeCredit1:;
               if (RepSpec.flags[16]!=0 and RepSpec.flags[10]!=3) then begin
                 OutStringOvst(0,"DblCustPS2",IVr.SerNr,false,IVr.Invalid);
                 //CUST-BEGIN
-                if (RepSpec.flags[24]==1) then begin
+                if ((RepSpec.flags[24]==1) and (IVr.CustCredManNr!=-1)) then begin
                   OutStringID(30,"DblCredManVc",GetCredManNr(IVr.CustCredManNr),false,IVr.CustCredManNr);  
                 end;
                 //CUST-END
@@ -1646,7 +1646,7 @@ LkInvoiceTypeCredit1:;
                   OutStringOvst(0,"DblCustPS2",CreateInvoiceNumber(IVr.SerNr,IVr.OfficialSerNr),false,IVr.Invalid);
                 end;
                 //CUST-BEGIN
-                if (RepSpec.flags[24]==1) then begin
+                if ((RepSpec.flags[24]==1) and (IVr.CustCredManNr!=-1)) then begin
                   OutStringID(30,"DblCredManVc",GetCredManNr(IVr.CustCredManNr),false,IVr.CustCredManNr);  
                 end;
                 //CUST-END
