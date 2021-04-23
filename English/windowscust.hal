@@ -2239,6 +2239,8 @@ begin
   EditField(h,v+=vs,100,"Default Item Priority",Normal,ItemPriorityCode,false,CMItemPrioritySCLass);  
   EditField(h,v+=vs,100,"First Invoice Paym. Term",Normal,FirstInvPayDeal,false,PDSClass);  
 
+  EditField(h2=400,v,100,"Buyout Paym. Term",Normal,BuyOutPayDeal,false,PDSClass);  
+
   EditField(h,v+=vs,100,"Period Delimiter",Normal,PeriodDelimiter,false,0);  
   EditField(h,v+=vs,100,"Max overpaid Amount %",Normal,MaxOverpaidPrc,false,0);
   

@@ -48,6 +48,7 @@ external function Integer GetProlongMonths(record CredManVc);
 external function Date GetLastInvoiceDate(record CredManVc,Date);
 external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string,Boolean,Boolean,var Date);
 external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var record IVVc,Date,Date,Date,Boolean,Boolean,string,Integer,Boolean);
+external procedure SetupLoanInvoice2(record CredManVc,record CredManSetBlock,var record IVVc,Date,Date,Date,Boolean,Boolean,string,Integer,Boolean,string);
 external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val,array string);
 external procedure SetupOverdueLangCode(var record IVVc,record CredManVc);
 external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
@@ -1779,6 +1780,7 @@ begin
     lateamount = 0;
     invdate = td;
     BlockLoad(CMb);
+    BlockLoad(CIb);
     fullf = UseFullBuyoutProcedure;
     if (RepSpec.flags[1]==1) then begin
       sd = GetLastInvoiceDate(CredManr,invdate);
@@ -1834,8 +1836,7 @@ begin
 
     //create a new invoice and creata receipt
     BlockLoad(CMb);
-    BlockLoad(CIb);
-    SetupLoanInvoice(CredManr,CMb,IVr,td,"","",true,false,"",1,true);
+    SetupLoanInvoice2(CredManr,CMb,IVr,td,"","",true,false,"",1,true,CIb.BuyOutPayDeal);
     if (fullf==false) then begin
       IVr.OfficialSerNr = "";
       IVr.NoEmailFlag = 1;
@@ -1853,7 +1854,7 @@ begin
     end;
 
 //    if (fullf==false) then begin
-      SetupLoanInvoice(CredManr,CMb,IVr,td,"","",true,false,"",1,true);
+      SetupLoanInvoice2(CredManr,CMb,IVr,td,"","",true,false,"",1,true,CIb.BuyOutPayDeal);
       GetItemName(CMb.InstalmentItem,spec);
       AddBuyoutFee(CredManr,IVr,buyoutval-tval);
       StoreLoanInvoice(IVr,CredManr);

@@ -203,7 +203,7 @@ begin
 end;
 
 global
-procedure SetupLoanInvoice(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Date invdate,Date fromdate,Date todate,Boolean sernrf,Boolean forcecustf,string ivno,Integer invtype,Boolean fullf)
+procedure SetupLoanInvoice2(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Date invdate,Date fromdate,Date todate,Boolean sernrf,Boolean forcecustf,string ivno,Integer invtype,Boolean fullf,string paydeal)
 begin
   record LocalMachineBlock LMb;
   string 255 warning,errstr,prepstr,invdatewarn,transdatewarn;
@@ -227,7 +227,11 @@ begin
   IVr.InvDate = invdate;//from seting?
   IVr.CustCode = CredManr.CustCode;
   PasteCust2InInv(IVr,LMb,"",false,warning,errstr,prepstr,invdatewarn,transdatewarn);
-  IVr.PayDeal = CredManr.PayDeal;
+  if (nonblank(paydeal)) then begin
+    IVr.PayDeal = paydeal;
+  end else begin
+    IVr.PayDeal = CredManr.PayDeal;
+  end;
   IVVc_PastePayDeal(IVr,"",LMb.DefReturnLocation);
   IVr.SalesMan = CredManr.SalesMan;
   IVVc_PasteSalesMan(IVr,"");
@@ -248,10 +252,15 @@ begin
   IVr.CredToDate = todate;
   if (invdate<CredManr.FirstInvDate and blank(fromdate)) then begin//First invoice language
     IVr.LangCode = CredManr.LangCode2;
-    if (nonblank(CIb.FirstInvPayDeal)) then begin
-      IVr.PayDeal = CIb.FirstInvPayDeal;
-      IVVc_PastePayDeal(IVr,"",LMb.DefReturnLocation);
+    if (nonblank(paydeal)) then begin
+      IVr.PayDeal = CredManr.PayDeal;
       doforcepaydeal = false;
+    end else begin
+      if (nonblank(CIb.FirstInvPayDeal)) then begin
+        IVr.PayDeal = CIb.FirstInvPayDeal;
+        IVVc_PastePayDeal(IVr,"",LMb.DefReturnLocation);
+        doforcepaydeal = false;
+      end;
     end;
   end else begin
     IVr.LangCode = CredManr.LangCode;
@@ -287,12 +296,19 @@ begin
     IVrw.Spec = " ";
     MatRowPut(IVr,MatRowCnt(IVr),IVrw);
   end;
-  if (nonblank(CredManr.ForcePayDeal)) and (doforcepaydeal) then begin
+  if ((nonblank(CredManr.ForcePayDeal)) and (doforcepaydeal) and (blank(paydeal))) then begin
     IVr.PayDeal = CredManr.ForcePayDeal;
     IVVc_PastePayDeal(IVr,"",LMb.DefReturnLocation);
   end;
   CM_ResetCompanyLanguage(oldlang);
 
+  return;
+end;
+
+global
+procedure SetupLoanInvoice(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Date invdate,Date fromdate,Date todate,Boolean sernrf,Boolean forcecustf,string ivno,Integer invtype,Boolean fullf)
+begin
+  SetupLoanInvoice2(CredManr,CMb,IVr,invdate,fromdate,todate,sernrf,forcecustf,ivno,invtype,fullf,"");
   return;
 end;
 
@@ -1835,11 +1851,12 @@ begin
 1. Get the last invoice date and the balance
 2. Set up and create an invoice
 */ 
-
+  BlockLoad(CIb);
+  BlockLoad(CMb);
   GetBuyOutData(CredManr,CredManPayPlanr,CMb,lastinv,balance);
 
   if (balance>0) then begin
-    SetupLoanInvoice(CredManr,CMb,IVr,td,lastinv,td,true,false,"",1,true);
+    SetupLoanInvoice2(CredManr,CMb,IVr,td,lastinv,td,true,false,"",1,true,CIb.BuyOutPayDeal);
     AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td);
     RecordCopy(tCredManr,CredManr);
     tCredManr.InvSum4 = balance;
@@ -1855,7 +1872,6 @@ begin
     if (balancef==false) then begin
       AddBuyOutFee(CredManr,IVr,balance);
     end;
-    BlockLoad(CIb);
     AddInsuranceCost(CredManr,IVr,CIb);
     GetCredManOverdueInvoices(CredManr,CMb,td,lastinv,latedays,lateamount,lateformula,true,false,calcsd);
     if (testf or CIb.OverdueIVType==0) then begin
