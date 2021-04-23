@@ -1852,7 +1852,6 @@ begin
 2. Set up and create an invoice
 */ 
   BlockLoad(CIb);
-  BlockLoad(CMb);
   GetBuyOutData(CredManr,CredManPayPlanr,CMb,lastinv,balance);
 
   if (balance>0) then begin
