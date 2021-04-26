@@ -3592,3 +3592,45 @@ begin
   end;
   EndWindow;
 end;
+
+window IPRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h2,v,vm,vs;
+  WindowBegin("Specify Receipt Journal",IPRClass,CGRcW,RcType);
+  SetWRect(20,80,450,310);
+  vs = 20;
+  PeriodField(h=125,v=6,"Period");
+  EditFieldTL(h,v+=vs,150,"Receipt No.",   M4Str,Normal,30,f1,false,0);
+  EditFieldTL(h,v+=vs ,20,"Payment Mode",M4UStr,Normal,2,f3,false,PMSClass);
+  if (IsEnterprise) then begin
+    EditFieldTL(h,v+=vs ,100,"Customer",M4UStr,Normal,20,AccStr,false,CUSClass);
+    EditFieldTL(h,v+=vs ,100,"Reference",M4Str,Normal,20,TransStr,false,0);
+    EditFieldTL(h,v+=vs ,50,"Sign",M4UStr,Normal,10,f4,false,UserSClass);
+  end;
+  //CUST-BEGIN
+  EditFieldTL(h,v+=vs,150,"Agreement Nr.",M4UStr,Normal,200,f15,false,CredManSClass);
+  //CheckBox(h,v+=16,0,"Show Agreement number",flags[25]); TODO?
+  //CUST-END
+  if (IsEnterprise) then begin
+    h = 70;
+  end;
+  v=v+vs+20;   h2=220;
+  ButtonFrame(h,vm=v,123,2,"Status");
+  CheckBox(h,v,0,"Not OKed",flags[1]);
+  CheckBox(h,v+=16,0,"O_Ked",flags[2]);
+  //CheckBox(h,v+=16,0,"Received",flags[3]);
+  //CheckBox(h,v+=16,0,"Rejected",flags[4]);
+  //CheckBox(h,v+=16,0,"Reconciled",flags[5]);
+  if (IsEnterprise) then begin
+    ButtonFrame(h2,v=vm,123,2,"Show");
+    RadioButton(h2,v,0,0,"Rec. Value",flags[6]);
+    RadioButton(h2,v+=16,1,0,"Bank Value",flags[6]);
+    CheckBox(h2,v+=24,0,"Show Official No.",flags[16]);
+  end else begin
+    if (HasInvoiceOfficialSerNr) then begin
+      CheckBox(h2,v+=24,0,"Show Official No.",flags[16]);
+    end;
+  end;
+  EndWindow;
+end;

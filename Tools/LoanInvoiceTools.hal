@@ -3161,3 +3161,66 @@ begin
   end;
   return;
 end;
+
+global
+function boolean CustomerHasAgreement(string cucode,string agreementlist)
+begin
+  Longint pos2;
+  string 255 tmp;
+  record CredManVc CredManr;
+  boolean testf;
+  
+  testf = false;
+  pos2 = -1;
+  while (GetNextSubstring(agreementlist,pos2,",",tmp)) begin
+    CredManr.SerNr = StringToLongint(tmp);
+    LogText(0,"CustomerHasAgreement: " & cucode & " " & agreementlist & " tmp=" & tmp);
+    if (ReadFirstMain(CredManr,1,true)) then begin
+      if (CredManr.CustCode==cucode) then begin
+        testf = true;
+        goto LWhile;
+      end;
+    end;
+  end;
+  LWhile:;
+  CustomerHasAgreement = testf;
+  return;
+end;
+
+global
+function boolean CheckIPCredManNr(longint credmannr,record IPVc IPr)
+begin
+  record CredHistVc CredHistr;
+  boolean res;
+  
+  res = false;
+  CredHistr.RecordNr = IPr.SerNr;
+  CredHistr.RecordType = kCredHistRecTypeReceipt;
+  if (ReadFirstKey("RecordNr",CredHistr,2,true)) then begin
+    if (CredHistr.CredManNr==credmannr) then begin
+      res = true;
+    end;
+  end;
+  CheckIPCredManNr = res;
+  return;
+end;
+
+global
+function boolean IsCredManNrInvoice(longint credmannr,longint invoicenr)
+begin
+  record CredHistVc CredHistr;
+  boolean res;
+  
+  res = false;
+  if (invoicenr>-1) then begin
+    CredHistr.RecordType = kCredHistRecTypeInvoice;
+    CredHistr.RecordNr = invoicenr;
+    if (ReadFirstKey("RecordNr",CredHistr,2,true)) then begin
+      if (CredHistr.CredManNr==credmannr) then begin
+        res = true;
+      end;
+    end;
+  end;
+  IsCredManNrInvoice = res;
+  return;
+end;
