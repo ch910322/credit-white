@@ -1270,7 +1270,6 @@ begin
     matrowget(CSr,stringtoint(SMrw.CurncyCode),CSrw);
     UnpackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
     mtrw = MatRowCnt(FMr);
-    logtext(0,SMrw.CurncyCode & " dbfjahskdbflasjdbfjhasbdfkjhasdbfkahsvdfkjahdbfkjashb " & mtrw);
     if(mtrw>0)then begin
       for (j=0;j<mtrw;j=j+1) begin
         MatRowGet(FMr,j,FMrw);
@@ -1294,12 +1293,10 @@ begin
             end;
           end;
         end;
-        
         if(nonblank(vVals["ROW_" & strnumup & "_F_FEESROW2"]))then begin
           vVals["ROW_" & strnumup & "_F_FEESROW2"]  = vVals["ROW_" & strnumup & "_F_FEESROW2"] & "\n";
         end;
         vVals["ROW_" & strnumup & "_F_FEESROW2"] = vfeename[FMrw.ArtCode] & " - " & ValToString(SMrw.BaseRate1,M4Val,"",DecimalSeparator,0);
-
       end;
     end else begin
       vfees[" "] = vfees[" "] + SMrw.BaseRate1;
