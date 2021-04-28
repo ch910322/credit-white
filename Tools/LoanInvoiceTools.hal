@@ -1232,10 +1232,11 @@ function Boolean CanInvoiceDate(record CredManVc CredManr,Date td,Boolean allf,B
 begin
   Boolean res;
   
-  if (allf or startfullf) then begin
+  if (allf) then begin
     res = true;
   end;
-  if (!res and !allf) then begin
+
+  if (!allf and !startfullf) then begin
     if (td<CredManr.FirstInvDate) then begin
       res = true;
     end;
