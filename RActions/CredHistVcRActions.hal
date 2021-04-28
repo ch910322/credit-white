@@ -220,7 +220,7 @@ begin
   if (CredHistr.PaidFlag==1) then begin
     CredManr.SerNr = CredHistr.CredManNr;
     if (ReadFirstMain(CredManr,1,true)) then begin
-      if (CredManr.startDate==CredHistr.TransDate and CredManr.Status==2) then begin
+      if (CredHistr.TransDate<CredManr.FirstInvDate and CredManr.Status==2) then begin
         RecordCopy(oldCredManr,CredManr);
         CredManr.Status = 3;
         RecordUpdate(oldCredManr,CredManr,true);
