@@ -1717,6 +1717,7 @@ begin
   CheckBox(h4,v,0,"Surety",ScheduleSurety);
   CheckBox(h5,v,0,"Us",ScheduleUs);
   EditField(h6,v,40,"Language",Normal,ScheduleLangCode,false,LangSClass);
+  EditField(h6+60,v,40,"",Normal,ScheduleNoFeesLangCode,false,LangSClass);
 
   tstr = "";
   if (HasBillOfExchangeShort) then begin

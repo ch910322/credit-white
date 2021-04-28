@@ -524,6 +524,7 @@ begin
               if(lastrow==matrowcnt(SMr)-1)then begin
                 matrowget(SMr,lastrow,SMrw);
                   SMrw.BaseRate1 = CSrw.Fees;
+                  SMrw.CurncyCode = i;
                 matrowput(SMr,lastrow,SMrw);
               end;
             end;
@@ -533,6 +534,7 @@ begin
             if(lastrow==matrowcnt(SMr)-1)then begin
               matrowget(SMr,lastrow,SMrw);
                 SMrw.BaseRate1 = CSrw.Fees;
+                SMrw.CurncyCode = i;
               matrowput(SMr,lastrow,SMrw);
             end;
           case 5:
@@ -541,6 +543,7 @@ begin
             if(lastrow==matrowcnt(SMr)-1)then begin
               matrowget(SMr,lastrow,SMrw);
                 SMrw.BaseRate1 = CSrw.Fees;
+                SMrw.CurncyCode = i;
               matrowput(SMr,lastrow,SMrw);
             end;
         end;

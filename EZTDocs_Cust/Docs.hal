@@ -1245,6 +1245,72 @@ begin
   return;
 end;
 
+procedure PrintCredManScheldue3ROW(record CredManSchedVc CSr, record CMPrintConstantsBlock PCb,var vector string vVals,record CredManVc CredManr,row SMVc SMrw,string strnumup,var vector val vfees,var vector string vfeename)
+begin
+  record CredManPayPlanVc CredManPayPlanr;
+  row CredManPayPlanVc CredManPayPlanrw;
+  LongInt i,rwcnt,rwcnt2,j,mtrw;
+  val totpayment,totinterest,totfullpayment,totfullvat,totinstalment,reimbsum,reimbsumrow;
+  record CredManSetBlock CredManSetb;
+  record CUVc CUr;
+  Integer num;
+  string 255 strnum,tstr;
+  val topay2,openamount,paidout,totfees;
+  record IVVc IVr;
+  Integer int_type;
+  string 255 months;
+  record CredFeesMatrixVc FMr;
+  row CredFeesMatrixVc FMrw;
+  row CredManSchedVc CSrw;
+  array string 100 afeeslist;
+  record INVc INr;
+  row INVc INrw;
+  
+  if(SMrw.BaseRate1!=0)then begin
+    matrowget(CSr,stringtoint(SMrw.CurncyCode),CSrw);
+    UnpackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
+    mtrw = MatRowCnt(FMr);
+    logtext(0,SMrw.CurncyCode & " dbfjahskdbflasjdbfjhasbdfkjhasdbfkahsvdfkjahdbfkjashb " & mtrw);
+    if(mtrw>0)then begin
+      for (j=0;j<mtrw;j=j+1) begin
+        MatRowGet(FMr,j,FMrw);
+        vfees[FMrw.ArtCode] = vfees[FMrw.ArtCode] + FMrw.Sum;
+        if(blank(vfeename[FMrw.ArtCode]))then begin
+          if(blank(PCb.ItemShortLang))then begin
+            INr.Code = FMrw.ArtCode;
+            readfirstmain(INr,1,true);
+            vfeename[FMrw.ArtCode] = INr.Name;
+          end else begin
+            INr.Code = FMrw.ArtCode;
+            readfirstmain(INr,1,true);
+            for(j=0;j<matrowcnt(INr);j=j+1)begin
+              matrowget(INr,j,INrw);
+              if(INrw.LangCode==PCb.ItemShortLang)then begin
+                vfeename[FMrw.ArtCode] = INrw.Text;
+              end;
+            end;
+            if(blank(vfeename[FMrw.ArtCode]))then begin
+              vfeename[FMrw.ArtCode] = INr.Name;
+            end;
+          end;
+        end;
+        
+        if(nonblank(vVals["ROW_" & strnumup & "_F_FEESROW2"]))then begin
+          vVals["ROW_" & strnumup & "_F_FEESROW2"]  = vVals["ROW_" & strnumup & "_F_FEESROW2"] & "\n";
+        end;
+        vVals["ROW_" & strnumup & "_F_FEESROW2"] = vfeename[FMrw.ArtCode] & " - " & ValToString(SMrw.BaseRate1,M4Val,"",DecimalSeparator,0);
+
+      end;
+    end else begin
+      vfees[" "] = vfees[" "] + SMrw.BaseRate1;
+      vfeename[" "] = " ";
+    end;
+  end else begin
+    vVals["ROW_" & strnumup & "_F_FEESROW2"] = ValToString(0,M4Val,"",DecimalSeparator,0);
+  end;
+ 	
+  return;
+end;
 
 global
 procedure ExternalPrintCredManScheduleForm(record CredManVc CredManr,var vector string vVals)
@@ -1267,6 +1333,12 @@ begin
   record CredFeesMatrixVc FMr;
   row CredFeesMatrixVc FMrw;
   transaction integer gIsDigitalDocument;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  array string 100 afeeslist;
+  vector val vfees;
+  vector string 255 vfeename;
+
   
   BlockLoad(PCb);
  	GetCredManChangePurpose(CredManr,vVals);
@@ -1295,7 +1367,11 @@ begin
   
   CredManHeader(vVals,CredManr);
   Ext_CommonDocumentFields(vVals);
-
+  
+  
+  CSr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CSr,1,true)) then begin end;
+  
   ReadFirstMain(CredManr,1,true);
   rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -1323,6 +1399,7 @@ begin
     	SMrw.BaseRate1 = 0;
     end;
     vVals["ROW_" & strnum & "_F_FEESROW"] = ValToString(SMrw.BaseRate1,M4Val,"",DecimalSeparator,0);//valtostring(SMrw.BaseRate1,M42Val,"",DecimalSeparator,0);//fees;
+    PrintCredManScheldue3ROW(CSr,PCb,vVals,CredManr,SMrw,strnum,vfees,vfeename);
     totfees = totfees + SMrw.BaseRate1;
     totinterest = totinterest + (SMrw.CredVal/*+SMrw.DebVal2*/);//19/04/2021 SMrw.DebVal2 removed from this
     totpayment = totpayment + (SMrw.CredVal+SMrw.DebVal2) + SMrw.DebVal;
@@ -1346,6 +1423,16 @@ begin
     end;
 LNextRow:;
   end;
+  strnum = 0;
+  
+  getvectortags(vfees,afeeslist);
+  for(i=0;i<afeeslist.length;i=i+1)begin
+    M4PadString(i,3,"0",true,strnum);
+    vVals["ROW3_" & strnum & "_F_FEESSHORTNAME"] = vfeename[afeeslist[i]];
+    vVals["ROW3_" & strnum & "_F_FEESROWVAL"] = vfees[afeeslist[i]];
+  end;
+  
+  
 	vVals["F_TOTFEES"] = totfees;
   vVals["F_CREDTOTINT"] = totinterest;
   vVals["F_CREDTOTINSTAL"] = totinstalment;

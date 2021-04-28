@@ -80,6 +80,8 @@ external inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var L
 external function string 255 GetReceiptsPayMode(record IVVc);
 remote procedure CredManCreditBeforePauseCallBack(Integer,Integer,record RcVc);
 external function Boolean FindCredManAcc(record CredManVc,var record CredManAccVc);
+external procedure ExternalPrintCredManScheduleForm(record CredManVc,var vector string);
+
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -205,12 +207,20 @@ begin
   string 255 res;
   record CredManTypeVc CMTr;
   record CUVc CUr;
+  vector string 255 vVals;
+  
   
   CMTr.Code = CredManr.Type;
   if (ReadFirstMain(CMTr,1,true)) then begin
     switch (type) begin
       case 1: res = CMTr.CredManLangCode;
       case 2: res = CMTr.ScheduleLangCode;
+              if(nonblank(CMTr.ScheduleNoFeesLangCode))then begin
+                ExternalPrintCredManScheduleForm(CredManr,vVals);
+                if(stringtoval(vVals["F_TOTFEES"],m4val)==0)then begin
+                  res = CMTr.ScheduleNoFeesLangCode;
+                end;
+              end;
       case 3: 
         if (blank(GetFieldValueByName(CredManr,"Surety" & param & "Signer",-1))) then begin
           res = CMTr.SuretyLangCode;

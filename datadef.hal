@@ -961,6 +961,7 @@ begin
   RecordField(SuretyPersonLangCode2,M4Code,10,0);
   RecordField(BuyOutLangCode,M4Code,10,0);
   RecordField(InvOverdLangCode,M4Code,10,0);
+  RecordField(ScheduleNoFeesLangCode,M4Code,10,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -2092,6 +2093,7 @@ begin
   RecordField(AgrNotDigital,M4Str,255,0);
   RecordField(ScheduleFromLastAgrCh,M4Int,0,0);
   RecordField(AgrDigital2,M4Str,255,0);
+  RecordField(ItemShortLang,M4Code,10,0);
   
   EndBlock;
 

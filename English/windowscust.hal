@@ -3036,6 +3036,7 @@ begin
   EditField(h,v+=vs,140,"If Yes, then",Normal,ScheduleYes2,false,0);
   EditField(h,v+=vs,140,"Reimburs. Items",Normal,ReimbItems,false,INSClass);
   EditField(h+280,v,140,"Reimburs. Lang.",Normal,ReimbLanguages,false,LangSClass);
+  EditField(h,v+vs,50,"Item Short Desc. Language",Normal,ItemShortLang,false,LangSClass);
   Tile(5,50,false,"5",InvoiceText);
   EditField(h,v=6,140,"Netting Text",Normal,InvoiceText,false,0);
   EditField(h,v+=vs,140,"Company Reg. No. Comment",Normal,RegNrComment,false,0);
