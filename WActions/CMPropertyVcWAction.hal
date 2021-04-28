@@ -131,8 +131,8 @@ begin
       if(nonblank(Propr.Addr3))then begin
       	address = address & Propr.Addr3 & ", ";
       end;
-      if(nonblank(Propr.Addr4))then begin
-      	address = address & Propr.Addr4 & ", ";
+      if(nonblank(Propr.District))then begin
+      	address = address & Propr.District & ", ";
       end;
       
       address = trim(address);

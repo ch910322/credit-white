@@ -1712,6 +1712,7 @@ begin
   RecordField(StateChangeDate,M4Date,0,0);
   RecordField(StateChangeTime,M4Time,0,0);
   RecordField(StateNotified,M4Int,0,0);
+  RecordField(District,M4Str,255,0);
   
   ArrayBegin(Math,-,1);
   ArrayField(OwnerCode,M4Code,20,CUVc);

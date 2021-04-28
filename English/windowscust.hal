@@ -2606,6 +2606,7 @@ begin
     EditField(h,v+=vs,150,"Country",Normal,Addr1,false,CountrySClass);
     EditField(h,v+=vs,150,"City",Normal,Addr2,false,0);
     EditField(h,v+=vs,150,"Address",Normal,Addr3,false,0);
+    EditField(h,v+=vs,150,"District",Normal,District,false,0);
     EditField(h,v+=vs,150,"ZIP",Normal,Addr4,false,0);
     EditField(h,v+=vs,100,"Reported Value",Normal,RepVal,false,0);
   end else begin
@@ -3746,7 +3747,7 @@ window PlegListDataDClass:1
 begin
   real h,v,vs,v2,vs2,hm;
 
-  WindowBegin("Money Receivers",PlegListDataDClass,CGview,-);
+  WindowBegin("Pledges List",PlegListDataDClass,CGview,-);
   SetWRect(20,80,760,339);
   DynamicWindow;
   UseView(PlegListDataVc);
@@ -3756,7 +3757,7 @@ begin
   MatCol(1,120,"Name",0,CompName,false,0);
   MatCol(1,-240,"Value",0,Value,true,0);
   MatCol(1,-160,"Balance",0,Bal,true,0);
-  MatCol(1,-80,"Balance Date",0,BalDate,true,0);
+  MatCol(1,-80,"Balance Date",0,BalDate,true,PasteCurDate);
   EndMatrix;
   EndWindow;
 end;
