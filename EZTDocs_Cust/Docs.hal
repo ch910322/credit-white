@@ -1294,7 +1294,7 @@ begin
           end;
         end;
         if(nonblank(vVals["ROW_" & strnumup & "_F_FEESROW2"]))then begin
-          vVals["ROW_" & strnumup & "_F_FEESROW2"]  = vVals["ROW_" & strnumup & "_F_FEESROW2"] & "\n";
+          vVals["ROW_" & strnumup & "_F_FEESROW2"]  = vVals["ROW_" & strnumup & "_F_FEESROW2"] & "\\n";
         end;
         vVals["ROW_" & strnumup & "_F_FEESROW2"] = vfeename[FMrw.ArtCode] & " - " & ValToString(SMrw.BaseRate1,M4Val,"",DecimalSeparator,0);
       end;
