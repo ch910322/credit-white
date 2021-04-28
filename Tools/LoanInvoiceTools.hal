@@ -1228,12 +1228,18 @@ begin
   return;
 end;
 
-function Boolean CanInvoiceDate(record CredManVc CredManr,Boolean allf,Boolean startfullf)
+function Boolean CanInvoiceDate(record CredManVc CredManr,Date td,Boolean allf,Boolean startfullf)
 begin
   Boolean res;
   
-  if (allf or startfullf) then begin
+  if (allf) then begin
     res = true;
+  end;
+
+  if (!allf and !startfullf) then begin
+    if (td<CredManr.FirstInvDate) then begin
+      res = true;
+    end;
   end;
 
   CanInvoiceDate = res;
@@ -1261,7 +1267,7 @@ begin
     if (nonblank(CredManPayPlanrw.FromDate)) then begin
       startfullf = true;
     end;
-    if (CredManPayPlanrw.PlanType<=4 and CredManPayPlanrw.TransDate<=ed and CanInvoiceDate(CredManr,allf,startfullf)) then begin
+    if (CredManPayPlanrw.PlanType<=4 and CredManPayPlanrw.TransDate<=ed and CanInvoiceDate(CredManr,CredManPayPlanrw.TransDate,allf,startfullf)) then begin
       if (lastd!=CredManPayPlanrw.TransDate) then begin
         //Setup new invoice
         if (nonblank(lastd)) then begin
@@ -1540,7 +1546,7 @@ begin
       if (nonblank(CSrw.FromDate)) then begin
         startfullf = true;
       end;
-      if (CSrw.InvDate<=ed and CSrw.Invoiced==0 and CanInvoiceDate(CredManr,allf,startfullf)) then begin
+      if (CSrw.InvDate<=ed and CSrw.Invoiced==0 and CanInvoiceDate(CredManr,CSrw.InvDate,allf,startfullf)) then begin
         testf = true;
       end;
       if (nonblank(CredManr.CancelDate) and CSrw.Invoiced==0) then begin
