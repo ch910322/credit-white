@@ -382,6 +382,9 @@ begin
   RecordField(AccessToDataUntil,M4Date,0,0); 
   RecordField(OldPassword,M4Long,0,0); 
   RecordField(DebtorsAcc,M4Code,20,AccVc);
+  KeyBegin(UserStr5);
+  KeySegment(UserStr5);
+  KeySegment(Code);
   EndRecordAdd;
   
   RecordBegin(ScoringSupVc,-,"");
