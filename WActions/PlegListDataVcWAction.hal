@@ -5,27 +5,18 @@ begin
   Boolean res;
   record PlegListDataVc PLDr;
   row PlegListDataVc PLDrw;
-  record CompaniesBlock Compb;
-  row CompaniesBlock Comprw;
+  record CUVc CUr;
   Integer i,rwcnt;
-  
-  
   
   if (changed!=0) then begin
     GetWindowRecord(wn,PLDr);
     MatRowGet(PLDr,rownr,PLDrw); 
     
-    BlockLoad(Compb);
-    
-    rwcnt = MatRowCnt(Compb);    
-    for (i=0;i<rwcnt;i=i+1) begin
-      MatRowGet(Compb,i,Comprw);
-      if(Comprw.CompCode==PLDrw.CompCode)then begin
-        PLDrw.CompName = Comprw.CompName;
-        MatRowPut(PLDr,rownr,PLDrw); 
-        putwindowrecord(wn,PLDr);
-      end;
-    end;
+    CUr.Code = PLDrw.CompCode;
+    readfirstmain(CUr,1,true);
+    PLDrw.CompName = CUr.Name;
+    matrowput(PLDr,rownr,PLDrw);
+    PutWindowRecord(wn,PLDr);
   end;
 
   PlegListDataDClassCompCodeEFAfter = res;

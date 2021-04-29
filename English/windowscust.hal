@@ -3753,7 +3753,7 @@ begin
   UseView(PlegListDataVc);
   vs=20; h=120; vs2=16; hm=-100;
   MatrixBegin(0,16,-16,-50,-,10);
-  MatCol(1,24,"Company",0,CompCode,false,Companies2SClass);
+  MatCol(1,24,"Company",0,CompCode,false,CUSClass);
   MatCol(1,120,"Name",0,CompName,false,0);
   MatCol(1,-240,"Value",0,Value,true,0);
   MatCol(1,-160,"Balance",0,Bal,true,0);
