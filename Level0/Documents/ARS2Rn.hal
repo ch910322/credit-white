@@ -35,6 +35,10 @@ external procedure HTCusts(string, string, var string);
 external procedure SplitEclass(string,var Array string);
 external function Boolean CreditedIVisDownpayment(record IVVc);
 
+//CUST-BEGIN
+external outer function Boolean CustomerHasAgreement(string,string);
+//CUST-END
+
 procedure AddARSRowInstallments(Array Integer aRwtype,Array string aInvoiceNr,Array string aRecNr,Array LongInt alatedays,Array LongInt aRemndr,
                     Array Date aInvDate,Array Date aDueDate,Array val aIntVal,Array val aRVal,Array val aRValCur,Array val aSum4,
                     Array string aVEInvNo,Array string aCurncyCode,var Integer acnt,
@@ -612,7 +616,8 @@ begin
   Boolean remlevf,notfullmonthf;
   record CSVc CSr;
   record AccBlock Accb;
-
+  Boolean hasagreementf;
+  
   ARSsactod = 0.00;
 /*
 done queued
@@ -813,20 +818,25 @@ L20OneARSFormOpen:;
 
   if (RepSpec.flags[14]!=0) then begin 
   end;
-  CustAged(CUp,CurrentDate,bd,bd,ARSARSum,ARSsact,ARSs0,ARSs1,ARSs16,ARSs31,ARSs61,ARSs91,ARSs121,ARSs151,RepSpec.flags[17]);
-  CustAged(CUp,RepSpec.d1,bd,RepSpec.d1,ARSSumod,ARSsactod,ARSs0od,ARSs1od,ARSs16od,ARSs31od,ARSs61od,ARSs91od,ARSs121od,ARSs151od,RepSpec.flags[17]);
-  if (nonblank(CUp.CurncyCode)) then begin
-    ARSARSum = ARSARSum + ARSOnAccBal;
-  end else begin
-    ARSARSum = ARSARSum + ARSOnAccBalB1;
-  end;
-  testf = true;
-  if (RepSpec.flags[1]==1) then begin
-//    if (ARSARSum==0) then begin
-    if (blank(ARSARSum)) then begin//invoices + credit Invoices might give 0
-      testf = false;
+  //CUST-BEGIN
+  hasagreementf = CustomerHasAgreement(CUp.Code,RepSpec.f15);
+  //CUST-END
+    CustAged(CUp,CurrentDate,bd,bd,ARSARSum,ARSsact,ARSs0,ARSs1,ARSs16,ARSs31,ARSs61,ARSs91,ARSs121,ARSs151,RepSpec.flags[17]);
+    CustAged(CUp,RepSpec.d1,bd,RepSpec.d1,ARSSumod,ARSsactod,ARSs0od,ARSs1od,ARSs16od,ARSs31od,ARSs61od,ARSs91od,ARSs121od,ARSs151od,RepSpec.flags[17]);
+    if (nonblank(CUp.CurncyCode)) then begin
+      ARSARSum = ARSARSum + ARSOnAccBal;
+    end else begin
+      ARSARSum = ARSARSum + ARSOnAccBalB1;
     end;
-  end;
+  
+    testf = true;
+    if (RepSpec.flags[1]==1) then begin
+  //    if (ARSARSum==0) then begin
+      if (blank(ARSARSum)) then begin//invoices + credit Invoices might give 0
+        testf = false;
+      end;
+    end;
+  
   if (onaccf==true) then begin testf = true; end;
   if (nonblank(RepSpec.vals2)) then begin
     if (ARSARSum<=RepSpec.vals2) then begin testf = false; end;
@@ -834,7 +844,7 @@ L20OneARSFormOpen:;
   if (RepSpec.flags[16]!=0) then begin
     if (acnt==0) then begin testf = false; end;
   end;
-          
+  
   if (testf) then begin
     switch (reportmode) begin
       case 0: 
@@ -932,6 +942,11 @@ checked per Invoice , not per customer
         if (nonblank(RepSpec.LastAcc)) then begin
           if (RepSpec.LastAcc<>CUr.MainPartner) then begin
             skip = true;
+          end;
+        end;
+        if (skip==false) then begin
+          if (nonblank(RepSpec.f15)) then begin
+            skip = !CustomerHasAgreement(CUr.Code,RepSpec.f15);
           end;
         end;
         if (skip==false) then begin

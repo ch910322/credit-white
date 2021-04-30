@@ -967,21 +967,18 @@ begin
         ratetype = GetRateType(CredManr);
         while (LoopKey("DICode:" & CIb.OverdueItemClass,INr,1,true)) begin
           CheckOverdueInvoicesForItem(CredManr,CMb,CIb.OverdueMonths,invdate,prevtd,latedays,lateamount,INr.Code,overduetd,lateformula,ratetype);
-          LogText(0,"INr.Code=" & INr.Code & " invdate=" & invdate & " latedays=" & latedays & " lateamount=" & lateamount);
         end;
       end;
       if (nonblank(CMb.RateItem)) then begin
         INr.Code = CMb.RateItem;
         if (ReadFirstMain(INr,1,true)) then begin
           CheckOverdueInvoicesForItem(CredManr,CMb,CIb.OverdueMonths,invdate,prevtd,latedays,lateinterest,INr.Code,overduetd,lateformula,ratetype);
-          LogText(0,"INr.Code=" & INr.Code & " invdate=" & invdate & " latedays=" & latedays & " lateinterest=" & lateinterest);
         end;
       end;
       if (nonblank(CMb.InstalmentItem)) then begin
         INr.Code = CMb.InstalmentItem;
         if (ReadFirstMain(INr,1,true)) then begin
           CheckOverdueInvoicesForItem(CredManr,CMb,CIb.OverdueMonths,invdate,prevtd,latedays,lateprincipal,INr.Code,overduetd,lateformula,ratetype);
-          LogText(0,"INr.Code=" & INr.Code & " invdate=" & invdate & " latedays=" & latedays & " lateprincipal=" & lateprincipal);
         end;
       end;
     end;
@@ -2239,7 +2236,7 @@ begin
 end;
 
 global
-procedure GetCredManLateAmounts2(record CredManVc CredManr,Date sd,Date ed,Integer chargetype,var Longint maxlatedays,var val dueamount,var Date limitdate)
+procedure GetCredManLateAmounts2(record CredManVc CredManr,Date sd,Date ed,Integer chargetype,var Longint maxlatedays,var val dueamount,var val notdueamount,var Date limitdate)
 begin
   string 255 res;
   record CredHistVc CredHistr;
@@ -2256,17 +2253,23 @@ begin
     if (CredHistr.CredManNr!=CredManr.SerNr or CredHistr.ChargeType!=chargetype) then begin
       TrHs = false;
     end else begin
-      if (CredHistr.RecordType==0 and CredHistr.PayDate<=ed) then begin
-        latedays = GetLateDaysInPeriod2(CredHistr,sd,ed,dueamount);
-        /*
-        if (dueamount>0 and latedays>=90) then begin
-          tmpdate = AddDay(CredHistr.PayDate,90);
-          if ((tmpdate<limitdate or blank(limitdate)) and tmpdate<ed) then begin
-            limitdate = tmpdate;
+      if (CredHistr.RecordType==0) then begin
+        if (CredHistr.PayDate<=ed) then begin
+          latedays = GetLateDaysInPeriod2(CredHistr,sd,ed,dueamount);
+          /*
+          if (dueamount>0 and latedays>=90) then begin
+            tmpdate = AddDay(CredHistr.PayDate,90);
+            if ((tmpdate<limitdate or blank(limitdate)) and tmpdate<ed) then begin
+              limitdate = tmpdate;
+            end;
+          end;
+          */
+          maxlatedays = MAXLongint(maxlatedays,latedays);
+        end else begin
+          if (CredHistr.TransDate<=ed) then begin
+            latedays = GetLateDaysInPeriod2(CredHistr,sd,ed,notdueamount);
           end;
         end;
-        */
-        maxlatedays = MAXLongint(maxlatedays,latedays);
       end;
     end;
   end;
@@ -2292,20 +2295,22 @@ begin
   Longint principlelatedays,interestlatedays,overdueslatedays;
   val principlelateamount,interestlateamount;
   val t;
+  val notlateprinciple,notlateinterest;
   
 logtext(0,"CheckBuyOutAgreement start");
+//LogText(0,"aa RepSpec.d1=" & RepSpec.d1); //d1 is CurrentDate here. Why?
 
   gSilenceIVOpenPrepExists = true;
   BlockLoad(CMb);
     BuildCredManPayPlanCust2(CredManr,CredManPayPlanr,CMb,true,false,false);
+  //  LogText(0,"2 RepSpec.d1=" & RepSpec.d1);
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,RepSpec.d1,IVr,true,sd2,balancef);
 //  end;
   CheckUnpaidInvoices(CredManr,dueamount,openamount);
   sd = GetLastInvoiceDate(CredManr,RepSpec.d1);
   GetCredManOverdueInvoices2(CredManr,CMb,RepSpec.d1,sd,latedays,lateamount,principlelateamount,interestlateamount,lateformula,false,false,calcsd);
-  GetCredManLateAmounts2(CredManr,CredManr.startDate,RepSpec.d1,5,principlelatedays,principlelateamount,limitdate);
-  GetCredManLateAmounts2(CredManr,CredManr.startDate,RepSpec.d1,6,interestlatedays,interestlateamount,limitdate);
-  
+  GetCredManLateAmounts2(CredManr,CredManr.startDate,RepSpec.d1,5,principlelatedays,principlelateamount,notlateprinciple,limitdate);
+  GetCredManLateAmounts2(CredManr,CredManr.startDate,RepSpec.d1,6,interestlatedays,interestlateamount,notlateinterest,limitdate);
   //GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,9,overdueslatedays,overdueslateamount,limitdate);
   RepSpec.vals3 = GetActualBalance(CredManr,CredManPayPlanr,false);
 
@@ -2326,12 +2331,13 @@ logtext(0,"CheckBuyOutAgreement start");
   if (RepSpec.flags[1]==1) then begin
     RepSpec.f20 = GetCreditedInterest(CredManr,RepSpec.d1);  
   end;
-  
-  RepSpec.f13 = GetActualBalance(CredManr,CredManPayPlanr,true);
-  RepSpec.f17 = openamount;
+  t = GetActualBalance(CredManr,CredManPayPlanr,true);
+  RepSpec.f13 = t;
+  RepSpec.f17 = principlelateamount+interestlateamount;//was openamount;
   RepSpec.f16 = GetInterestAmount(CredManr,RepSpec.d1);
   RepSpec.f10 = principlelateamount;//f20 - the last fxx
   RepSpec.f11 = interestlateamount;
+  RepSpec.f15 = t + notlateprinciple; //GetActualBalance(CredManr,CredManPayPlanr,true);PLUS total of all OPEN, but NOT overdue principle
   gSilenceIVOpenPrepExists = false;
 
 logtext(0,"CheckBuyOutAgreement end");
@@ -3180,7 +3186,6 @@ begin
   pos2 = -1;
   while (GetNextSubstring(agreementlist,pos2,",",tmp)) begin
     CredManr.SerNr = StringToLongint(tmp);
-    LogText(0,"CustomerHasAgreement: " & cucode & " " & agreementlist & " tmp=" & tmp);
     if (ReadFirstMain(CredManr,1,true)) then begin
       if (CredManr.CustCode==cucode) then begin
         testf = true;
@@ -3224,6 +3229,15 @@ begin
     if (ReadFirstKey("RecordNr",CredHistr,2,true)) then begin
       if (CredHistr.CredManNr==credmannr) then begin
         res = true;
+      end;
+    end;
+    if (res==false) then begin
+      CredHistr.RecordType = kCredHistRecTypeCreditNote;
+      CredHistr.RecordNr = invoicenr;
+      if (ReadFirstKey("RecordNr",CredHistr,2,true)) then begin
+        if (CredHistr.CredManNr==credmannr) then begin
+          res = true;
+        end;
       end;
     end;
   end;

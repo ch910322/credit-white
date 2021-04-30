@@ -502,6 +502,7 @@ begin
   EditFieldTL(h,v+=vs,120,"Overdue Invoices",M4Str,ViewOnly,255,f17,true,0);
   EditFieldTL(h,v+=vs,120," of which Interest",M4Str,ViewOnly,255,f11,true,0);
   EditFieldTL(h,v+=vs,120," of which Principle",M4Str,ViewOnly,255,f10,true,0);
+  EditFieldTL(h,v+=vs,120,"Balance",M4Str,ViewOnly,255,f15,true,0);
   EditFieldTL(h,v+=vs,120,"Credited Interest",M4Str,ViewOnly,255,f20,true,0);
   CheckBox(h+140,v,0,"Credit Interest",flags[1]);
 
