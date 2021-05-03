@@ -82,14 +82,14 @@ end;
 
 
 global
-updating function LongInt IVVcVcRecordRemoveAfter(var record IVVc IVr,record IVVc IV2r,LongInt stat,LongInt long4)
+updating function LongInt IVVcRecordRemoveAfter(var record IVVc IVr,record IVVc IV2r,LongInt stat,LongInt long4)
 begin
   LongInt res;
   record ProlongSessionVc PSr;
   row IVVc IVrw;
   Integer i,rwcnt;
 
-  res = inner.IVVcVcRecordRemoveAfter(IVr,IV2r,stat,long4);
+  res = inner.IVVcRecordRemoveAfter(IVr,IV2r,stat,long4);
   
   rwcnt = MatRowCnt(IVr);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -99,13 +99,13 @@ begin
       PSr.PaidFlag = 0;
       if (ReadFirstKey("CredManPaid",PSr,2,true)) then begin
         RecordRemove(PSr);
-        goto LIVVcVcRecordRemoveAfter; 
+        goto LIVVcRecordRemoveAfter; 
       end;
     end;
   end;
 
-LIVVcVcRecordRemoveAfter:;
-  IVVcVcRecordRemoveAfter = res;
+LIVVcRecordRemoveAfter:;
+  IVVcRecordRemoveAfter = res;
   return;
 end;
 
