@@ -1,6 +1,9 @@
 //<halrule>server-only</halrule>
 external updating procedure UpdateCredHistInvoice(var record IVVc,record IVVc);
 external updating procedure SplitLoanPaymentsInReceipt(record IPVc,Boolean);
+external updating procedure UpdateCredHistBalance(Longint,Longint,Integer);
+external function Integer GetInterestPaymentType(record CredManVc);
+external updating procedure CreateCredHist(Longint,Integer,string,val,Integer,string,Date,Longint,Date,var Longint,Date,Date,Integer,Longint,val,Longint,val);
 
 function Longint GetCredHistNrWithItem(Longint ivnr,string item)
 begin
@@ -26,6 +29,39 @@ begin
   return;
 end;
 
+updating procedure TreatSinglePaymentOrder(record VIVc VIr,record CredManVc CredManr)
+begin
+  Longint histnr;
+  record OPrsVc OPrsr;
+  record OPVc OPr;
+  row OPVc OPrw;
+  Integer i,rwcnt;
+  Boolean TrHs;
+
+  TrHs = true;
+  OPrsr.VINr = VIr.SerNr;
+  OPrsr.TransType = kOPrsTransTypePayment;
+  while (LoopKey("VIKey",OPrsr,2,TrHs)) begin
+    if (OPrsr.VINr!=VIr.SerNr or OPrsr.TransType!=kOPrsTransTypePayment) then begin
+      TrHs = false;
+    end else begin
+      OPr.SerNr = OPrsr.TransNr;
+      if (ReadFirstMain(OPr,1,true)) then begin
+        rwcnt = MatRowCnt(OPr);
+        for (i=0;i<rwcnt;i=i+1) begin
+          MatRowGet(OPr,i,OPrw);
+          if (OPrw.VISerNr==VIr.SerNr) then begin
+            CreateCredHist(OPr.SerNr,18,VIr.VECode,OPrw.RecVal,5,"",OPr.TransDate,VIr.CustCredManNr,OPr.TransDate,histnr,"","",1,-1,OPrw.RecVal,-1,blankval);
+            UpdateCredHistBalance(VIr.CustCredManNr,OPr.SerNr,5);
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
 updating procedure TreatSingleAgreement(record CredManVc CredManr)
 begin
   record IVVc IV3r,IVr,oldIVr;
@@ -34,7 +70,10 @@ begin
   record IPrsVc IPrsr;
   record IPVc IPr,oldIPr;
   row IPVc IPrw;
-  Integer i,rwcnt;
+  Integer i,rwcnt,int_type;
+  record VIVc VIr;
+  vector Boolean vVISerNr;
+  array string 255 aVISerNr;
 
   CredHistr.CredManNr = CredManr.SerNr;
   TrHs = true;
@@ -100,7 +139,36 @@ begin
       end;
     end;
   end;
-  
+
+  int_type = GetInterestPaymentType(CredManr);
+  TrHs = true;
+  VIr.CustCredManNr = CredManr.SerNr;
+  while (LoopKey("CustCredManNr",VIr,1,TrHs)) begin
+    if (VIr.CustCredManNr != CredManr.SerNr) then begin
+      TrHs = false;
+    end else begin
+      if (VIr.OKFlag==1) then begin
+        if (int_type==2 or VIr.CredManExtraPayment==1) then begin
+          vVISerNr[VIr.SerNr] = true;
+          TreatSinglePaymentOrder(VIr,CredManr);
+        end;
+      end;
+    end;
+  end;
+
+  if (CredManr.VINr>0) then begin
+    if (vVISerNr[CredManr.VINr]==false) then begin
+      VIr.SerNr = CredManr.VINr;
+      if (ReadFirstMain(VIr,1,true)) then begin
+        if (VIr.OKFlag==1) then begin
+          if (int_type==2 or VIr.CredManExtraPayment==1) then begin
+            TreatSinglePaymentOrder(VIr,CredManr);
+          end;
+        end;
+      end;
+    end;
+  end;
+
   return;
 end;
 
