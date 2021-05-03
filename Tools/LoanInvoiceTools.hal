@@ -43,6 +43,7 @@ external function Boolean CredManCanInvoiceOverdues(record CredManVc);
 external function val GetCredHistOpenAmount(record CredHistVc,Integer);
 external inner function string 60 AddObjectToObjectList(string,string);
 external inner function string 255 StrReplace(string,string,string);
+external function val GetCredHistOpenValueOnDate(Longint,Date);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -3242,5 +3243,55 @@ begin
     end;
   end;
   IsCredManNrInvoice = res;
+  return;
+end;
+
+global
+function val GetCredManBalanceOnDate(longint credmannr,date d)
+begin
+  val res,t;
+  record CredManSetBlock CredManSetb;
+  record CredManPayPlanVc CredManPayPlanr;
+  row CredManPayPlanVc CredManPayPlanrw;
+  record CredManVc CredManr;
+  record CredHistVc CredHistr;
+  boolean TrHs;
+  
+ /* does not work for periodic statement?
+  BlockLoad(CredManSetb);
+  CredManr.SerNr = credmannr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    BuildCredManPayPlanCust2(CredManr,CredManPayPlanr,CredManSetb,true,true,false);  
+    res = GetBalanceOnDate(CredManPayPlanr,d);
+  end;
+  */
+  CredHistr.CredManNr = credmannr;
+  TrHs = true;
+  while (LoopKey("CredManTypeDate",CredHistr,1,TrHs)) begin
+    if(CredHistr.CredManNr!=credmannr) then begin
+      TrHs = false;
+    end;
+    if (CredHistr.TransDate>d) then begin
+      TrHs = false;
+    end;
+    if (TrHs) then begin
+      if (CredHistr.RecordType==kCredHistRecTypeInvoice) then begin
+        t = GetCredHistOpenValueOnDate(CredHistr.SerNr,d);
+        res = res + t;
+      end;
+    end;
+  end;
+  LogText(0,"GetCredManBalanceOnDate= " & res & " credmannr=" & credmannr & " d=" & d);
+  GetCredManBalanceOnDate = res;
+  return;
+end;
+
+global
+function val GetCredManStartBalance(longint credmannr,date d)
+begin
+  date d1;
+  
+  d1 = AddDay(d,-1);
+  GetCredManStartBalance = GetCredManBalanceOnDate(credmannr,d1);
   return;
 end;
