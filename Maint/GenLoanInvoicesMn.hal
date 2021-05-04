@@ -28,7 +28,7 @@ begin
         testf = false;
       end;
       if (testf) then begin
-        CreateSingleAgreementInvoice2(CredManr,RepSpec.d1,IVr,"",false,false);
+        CreateSingleAgreementInvoice2(CredManr,RepSpec.d1,IVr,"",false,true);
         RecordCopy(nIVr,IVr);
         TrHs = false;
       end;

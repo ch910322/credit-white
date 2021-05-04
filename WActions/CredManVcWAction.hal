@@ -609,7 +609,7 @@ updating procedure CreateCredManInvoiceDo(record CredManVc CredManr,string invno
 begin
   record IVVc IVr;
  
-  CreateSingleAgreementInvoice2(CredManr,CurrentDate,IVr,invno,true,false);
+  CreateSingleAgreementInvoice2(CredManr,CurrentDate,IVr,invno,true,true);
 
   if (IVr.SerNr>0) then begin
     CheckAndCreateAutoMailFromInvoice(IVr);

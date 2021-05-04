@@ -2218,7 +2218,7 @@ begin
     StoreLoanInvoice(IVr,CredManr);
   end;
   RecordClear(IVr);
-  CreateSingleAgreementInvoice2(CredManr,selldate,IVr,"",false,false);
+  CreateSingleAgreementInvoice2(CredManr,selldate,IVr,"",false,true);
 
   //recalculate schedule if there is one
   //unok the invoice
