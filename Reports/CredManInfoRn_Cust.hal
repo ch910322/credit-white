@@ -313,6 +313,8 @@ begin
     if (IVr.SerNr>-1) then begin
       SMrw.ExtraComment = IVr.SerNr;
     end;
+    SMrw.CurncyCode = -1;
+    SMrw.BaseRate1 = fees;
     MatRowPut(SMr,MatRowCnt(SMr),SMrw);
   end;
 

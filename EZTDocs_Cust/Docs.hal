@@ -1268,40 +1268,77 @@ begin
   row INVc INrw;
   
   if(SMrw.BaseRate1!=0)then begin
-    matrowget(CSr,stringtoint(SMrw.CurncyCode),CSrw);
-    UnpackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
-    mtrw = MatRowCnt(FMr);
-    if(mtrw>0)then begin
-      for (j=0;j<mtrw;j=j+1) begin
-        MatRowGet(FMr,j,FMrw);
-        vfees[FMrw.ArtCode] = vfees[FMrw.ArtCode] + FMrw.Sum;
-        if(blank(vfeename[FMrw.ArtCode]))then begin
-          if(blank(PCb.ItemShortLang))then begin
-            INr.Code = FMrw.ArtCode;
-            readfirstmain(INr,1,true);
-            vfeename[FMrw.ArtCode] = INr.Name;
-          end else begin
-            INr.Code = FMrw.ArtCode;
-            readfirstmain(INr,1,true);
-            for(j=0;j<matrowcnt(INr);j=j+1)begin
-              matrowget(INr,j,INrw);
-              if(INrw.LangCode==PCb.ItemShortLang)then begin
-                vfeename[FMrw.ArtCode] = INrw.Text;
+    if(stringtoint(SMrw.CurncyCode)>=0)then begin
+      matrowget(CSr,stringtoint(SMrw.CurncyCode),CSrw);
+      UnpackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
+      mtrw = MatRowCnt(FMr);
+      if(mtrw>0)then begin
+        for (j=0;j<mtrw;j=j+1) begin
+          MatRowGet(FMr,j,FMrw);
+          vfees[FMrw.ArtCode] = vfees[FMrw.ArtCode] + FMrw.Sum;
+          if(blank(vfeename[FMrw.ArtCode]))then begin
+            if(blank(PCb.ItemShortLang))then begin
+              INr.Code = FMrw.ArtCode;
+              readfirstmain(INr,1,true);
+              vfeename[FMrw.ArtCode] = INr.Name;
+            end else begin
+              INr.Code = FMrw.ArtCode;
+              readfirstmain(INr,1,true);
+              for(j=0;j<matrowcnt(INr);j=j+1)begin
+                matrowget(INr,j,INrw);
+                if(INrw.LangCode==PCb.ItemShortLang)then begin
+                  vfeename[FMrw.ArtCode] = INrw.Text;
+                end;
+              end;
+              if(blank(vfeename[FMrw.ArtCode]))then begin
+                vfeename[FMrw.ArtCode] = INr.Name;
               end;
             end;
-            if(blank(vfeename[FMrw.ArtCode]))then begin
-              vfeename[FMrw.ArtCode] = INr.Name;
-            end;
           end;
+          if(nonblank(vVals["ROW_" & strnumup & "_F_FEESROW2"]))then begin
+            vVals["ROW_" & strnumup & "_F_FEESROW2"]  = vVals["ROW_" & strnumup & "_F_FEESROW2"] & "\\n";
+          end;
+          vVals["ROW_" & strnumup & "_F_FEESROW2"] = vfeename[FMrw.ArtCode] & " - " & ValToString(SMrw.BaseRate1,M4Val,"",DecimalSeparator,0);
         end;
-        if(nonblank(vVals["ROW_" & strnumup & "_F_FEESROW2"]))then begin
-          vVals["ROW_" & strnumup & "_F_FEESROW2"]  = vVals["ROW_" & strnumup & "_F_FEESROW2"] & "\\n";
-        end;
-        vVals["ROW_" & strnumup & "_F_FEESROW2"] = vfeename[FMrw.ArtCode] & " - " & ValToString(SMrw.BaseRate1,M4Val,"",DecimalSeparator,0);
+      end else begin
+        vfees[" "] = vfees[" "] + SMrw.BaseRate1;
+        vfeename[" "] = " ";
       end;
     end else begin
-      vfees[" "] = vfees[" "] + SMrw.BaseRate1;
-      vfeename[" "] = " ";
+      UnpackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
+      mtrw = MatRowCnt(FMr);
+      if(mtrw>0)then begin
+        for (j=0;j<mtrw;j=j+1) begin
+          MatRowGet(FMr,j,FMrw);
+          vfees[FMrw.ArtCode] = vfees[FMrw.ArtCode] + FMrw.Sum;
+          if(blank(vfeename[FMrw.ArtCode]))then begin
+            if(blank(PCb.ItemShortLang))then begin
+              INr.Code = FMrw.ArtCode;
+              readfirstmain(INr,1,true);
+              vfeename[FMrw.ArtCode] = INr.Name;
+            end else begin
+              INr.Code = FMrw.ArtCode;
+              readfirstmain(INr,1,true);
+              for(j=0;j<matrowcnt(INr);j=j+1)begin
+                matrowget(INr,j,INrw);
+                if(INrw.LangCode==PCb.ItemShortLang)then begin
+                  vfeename[FMrw.ArtCode] = INrw.Text;
+                end;
+              end;
+              if(blank(vfeename[FMrw.ArtCode]))then begin
+                vfeename[FMrw.ArtCode] = INr.Name;
+              end;
+            end;
+          end;
+          if(nonblank(vVals["ROW_" & strnumup & "_F_FEESROW2"]))then begin
+            vVals["ROW_" & strnumup & "_F_FEESROW2"]  = vVals["ROW_" & strnumup & "_F_FEESROW2"] & "\\n";
+          end;
+          vVals["ROW_" & strnumup & "_F_FEESROW2"] = vfeename[FMrw.ArtCode] & " - " & ValToString(SMrw.BaseRate1,M4Val,"",DecimalSeparator,0);
+        end;
+      end else begin
+        vfees[" "] = vfees[" "] + SMrw.BaseRate1;
+        vfeename[" "] = " ";
+      end;
     end;
   end else begin
     vVals["ROW_" & strnumup & "_F_FEESROW2"] = ValToString(0,M4Val,"",DecimalSeparator,0);
