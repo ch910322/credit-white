@@ -809,6 +809,10 @@ begin
             sum = calcbal - CredManr.LastMonthPrinc;
           end;
         end;
+        if (sum<0) then begin
+          sum = 0;
+        end;
+        
         FixupInstalmentAmount(sum,calcbal);
         AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,sum,0,acumint,calcbal,frdate,todate,-1,-1,0);
       end;
