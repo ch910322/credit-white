@@ -511,6 +511,7 @@ begin
 		tstr = StrReplace(tstr,"  "," ");
 		tstr = StrReplace(tstr,"  "," ");
 		vVals[fs & "F_CONTACTVALUEINWORDS"] = trim(tstr);
+		vVals[fs & "F_CONTACTVALUEINWORDSLC"] = LowerCase(trim(tstr));
     
     
     vVals[fs & "F_CONTACTDATE"] = td;
@@ -1701,6 +1702,7 @@ begin
     tstr = StrReplace(tstr,"  "," ");
     tstr = StrReplace(tstr,"  "," ");
     vVals["F_CONTACTVALUEINWORDS"] = trim(tstr);
+    vVals["F_CONTACTVALUEINWORDSLC"] = LowerCase(trim(tstr));
     vVals["F_CONTACTSIGNER"] = signer;
     vVals["F_CONTACTDATE"] = td;
     tstr = DateInWords(td,CredManr.LangCode,2);
