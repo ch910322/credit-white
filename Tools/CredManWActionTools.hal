@@ -294,7 +294,7 @@ begin
   return;
 end;
 
-function Boolean CanPauseAgreement(record CredManVc CredManr,Date td,val months)
+function Boolean CanPauseAgreement(record CredManVc CredManr,Date td,val months,var Integer err)
 begin
   record CredManPayPlanVc CredManPayPlanr;
   row CredManPayPlanVc CredManPayPlanrw;
@@ -304,18 +304,22 @@ begin
   Boolean res;
 
   res = true;
+  err = 0;
   BlockLoad(CMb);
   BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
   rwcnt = MatRowCnt(CredManPayPlanr);
   for (i=rwcnt-1;i>=0;i=i-1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
     if (CredManPayPlanrw.PlanType==5 or CredManPayPlanrw.PlanType==6 or CredManPayPlanrw.PlanType==7) then begin
-      if (td<=CredManPayPlanrw.TransDate) then begin
+      if ((nonblank(CredManPayPlanrw.ToDate) and td<=CredManPayPlanrw.ToDate) or td<=CredManPayPlanrw.TransDate) then begin
         res = false;
+        err = 1;
       end else begin
-        if (lastinv<CredManPayPlanrw.TransDate) then begin
-          lastinv = CredManPayPlanrw.TransDate;
+        /*
+        if (lastinv<CredManPayPlanrw.ToDate) then begin
+          lastinv = CredManPayPlanrw.ToDate;
         end;
+        */
       end;
       i = 0;
     end;
@@ -323,15 +327,18 @@ begin
 
   if (CredManIsPausedOnDate(CredManr,td)) then begin
     res = false;
+    err = 2;
   end;
 
   if (DateInRange(td,CredManr.startDate,CredManr.endDate)==false) then begin
     res = false;
+    err = 3;
   end;
 
   if (CredManr.PrincipleDelayMonths>0 and months>0) then begin
     if (AddDay(AddMonth(CredManr.FirstInvDate,CredManr.PrincipleDelayMonths-1),-1)>td) then begin
       res = false;
+      err = 4;
     end;
   end;
 
@@ -450,7 +457,7 @@ begin
 end;
 
 global
-updating procedure DoPauseCredMan(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res,var Boolean setf,record RcVc RepSpec,var record IVVc IVr,string purpose)
+updating procedure DoPauseCredMan(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res,var Boolean setf,record RcVc RepSpec,var record IVVc IVr,string purpose,var Integer err)
 begin
   record AgreementDocVc ADr;
   record VIVc VIr;
@@ -473,7 +480,7 @@ begin
     if (tmonths==0) then begin
       tmonths = blankval;
     end;
-    if (CanPauseAgreement(CredManr,td,months)) then begin
+    if (CanPauseAgreement(CredManr,td,months,err)) then begin
       if (RepSpec.flags[2]==1) then begin
         CreateProlongSession(CredManr,td,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1],RepSpec.vals3,RepSpec.vals4);
         CreateProlongInvoice(CredManr,IVr);
@@ -1712,14 +1719,16 @@ begin
   record CredHistVc CredHistr;
   Integer i;
   
-  CredHistr.TransDate = td;  
+  CredHistr.TransDate = AddMonth(td,-1);  
   while (LoopKey("CredManTransDate:" & CredManr.SerNr,CredHistr,1,true)) begin
-    if (CredHistr.RecordType==0 and CredHistr.MainRecord==1) then begin
-      if (vInv[CredHistr.RecordNr]==false) then begin
-        IVr.SerNr = CredHistr.RecordNr;
-        if (ReadFirstMain(IVr,1,true)) then begin
-          aIVr[aIVr.length] = IVr;
-          vInv[CredHistr.RecordNr] = true; 
+    if ((nonblank(CredHistr.CredToDate) and CredHistr.CredToDate>=td) or CredHistr.TransDate>=td) then begin
+      if (CredHistr.RecordType==0 and CredHistr.MainRecord==1) then begin
+        if (vInv[CredHistr.RecordNr]==false) then begin
+          IVr.SerNr = CredHistr.RecordNr;
+          if (ReadFirstMain(IVr,1,true)) then begin
+            aIVr[aIVr.length] = IVr;
+            vInv[CredHistr.RecordNr] = true; 
+          end;
         end;
       end;
     end;
