@@ -1612,6 +1612,7 @@ begin
   RecordField(NewCalcForGrace,M4Int,0,0);
   RecordField(BuyOutPayDeal,M4Code,5,PDVc);
   RecordField(PremTermPrincpl,M4Code,20,0);
+  RecordField(StartDateForOverdue,M4Int,0,0);
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
