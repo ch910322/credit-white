@@ -979,7 +979,7 @@ begin
         GetLastOverdueInvoiceDate(CredManr.SerNr,CMb.LateFeeItem,overduetd,intlastdate);
       end;
       
-      if(CIb.StartDateForOverdue)then begin
+      if(CIb.StartDateForOverdue==0)then begin
         intlastdate = overduetd;
       end;
       
