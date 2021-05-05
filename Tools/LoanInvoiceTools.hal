@@ -577,6 +577,7 @@ begin
   record CMInvoicingBlock CMIb;
   date ed,df;
   string 100 newperiod;
+  record IVVc IVr;
   
   blockload(CMIb);
   
@@ -647,7 +648,12 @@ begin
   end;
   
   if(CMIb.StartDateForOverdue==1)then begin
-    tempsd = sd;
+    IVr.SerNr = CredHistr.RecordNr;
+    if(readfirstmain(IVr,1,true))then begin
+      if(IVr.PayDate<sd)then begin
+        tempsd = sd;
+      end;
+    end;
   end;
   
   if (paysum>0 and tempsd<=ed) then begin
