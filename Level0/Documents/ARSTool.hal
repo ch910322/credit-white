@@ -860,8 +860,10 @@ BEGIN
             end;
           end;
           //CUST-BEGIN
-          if (SetInSet(IVr.CustCredManNr,RepSpec.f15)==false) then begin
-            goto L20OneARSFormOpenOnDate;
+          if(nonblank(RepSpec.f15))then begin
+            if (SetInSet(IVr.CustCredManNr,RepSpec.f15)==false) then begin
+              goto L20OneARSFormOpenOnDate;
+            end;
           end;
           //CUST-END
           if ((IVr.DisputedFlag!=0) and (RepSpec.flags[11]!=0)) then begin
