@@ -606,6 +606,7 @@ begin
   latefeedays = GetCredManLateFees(CredManr,tempsd,tempsd);
 
   ClearArray(amounts);
+  ClearArray(period);
   TrHs = true;
   CredPayr.PreviousNr = CredHistr.SerNr;
   while (LoopKey("PreviousNr",CredPayr,1,TrHs)) begin
@@ -671,9 +672,10 @@ begin
     
     if (CredManr.LateFeeDays<daydiff2) then begin
       for (i=0;i<daydiff3;i=i+1) begin
+        logtext(0,CredHistr.RecordNr & " daydiff3 " & daydiff3 & "   " & addday(df,-daydiff3+1) & " -- " & df);
         amounts[amounts.length] = paysum;
         daycnt[daycnt.length] = GetMonthDays(AddDay(tempsd,i));
-        period[period.length] = addday(df,-daydiff3+1) & " - " & df;
+        period[period.length] = addday(df,-daydiff3+1) & " -- " & df;
       end;
     end;
   end;
@@ -871,29 +873,29 @@ begin
   return;
 end;
 
-function Date GetInvoiceEndPeriod(Longint ivnr)
+procedure GetInvoiceEndPeriod(Longint ivnr, var date res, var date intres)
 begin
   record IVVc IVr;
-  Date res;
 
   IVr.SerNr = ivnr;
   if (ReadFirstMain(IVr,1,true)) then begin
     res = IVr.CredToDate;
+    intres = IVr.InvDate;
   end;
 
   if (blank(res)) then begin
     res = IVr.InvDate;
   end;
   
-  GetInvoiceEndPeriod = res;
+  //GetInvoiceEndPeriod = res;
   return;
 end;
 
-function Date GetLastOverdueInvoiceDate(Longint sernr,string item)
+procedure GetLastOverdueInvoiceDate(Longint sernr,string item,var date res,var date intres)
 begin
   record CredHistVc CredHistr;
   Boolean TrHs;
-  Date res,td;
+  Date td,td1;
 
   TrHs = true;
   CredHistr.CredManNr = sernr;
@@ -902,9 +904,12 @@ begin
     if (CredHistr.ChargeType!=9 or CredHistr.CredManNr!=sernr) then begin
       TrHs = false;
     end else begin
-      td = GetInvoiceEndPeriod(CredHistr.RecordNr);
+      GetInvoiceEndPeriod(CredHistr.RecordNr,td,td1);
       if (td>res) then begin
         res = td;
+      end;
+      if (td1>intres) then begin
+        intres = td1;
       end;
     end;
   end;
@@ -912,8 +917,11 @@ begin
   if (nonblank(res)) then begin
     res = AddDay(res,1);
   end;
+  if (nonblank(intres)) then begin
+    intres = AddDay(intres,1);
+  end;
 
-  GetLastOverdueInvoiceDate = res;
+  //GetLastOverdueInvoiceDate = res;
   return;
 end;
 
@@ -950,7 +958,7 @@ procedure GetCredManOverdueInvoices2(record CredManVc CredManr,record CredManSet
 begin
   record CMInvoicingBlock CIb;
   record INVc INr;
-  Date overduetd,temp_td;
+  Date overduetd,temp_td,intlastdate;
   record CUVc CUr;
   Integer ratetype;
   vector boolean useditems;
@@ -968,8 +976,13 @@ begin
       end;
 
       if (ignorelastoverduef==false) then begin
-        overduetd = GetLastOverdueInvoiceDate(CredManr.SerNr,CMb.LateFeeItem);
+        GetLastOverdueInvoiceDate(CredManr.SerNr,CMb.LateFeeItem,overduetd,intlastdate);
       end;
+      
+      if(CIb.StartDateForOverdue)then begin
+        intlastdate = overduetd;
+      end;
+      
       if (nonblank(overduetd)) then begin
         calcsd = overduetd;
       end else begin
@@ -981,7 +994,7 @@ begin
         while (LoopKey("DICode:" & CIb.OverdueItemClass,INr,1,true)) begin
           if(useditems[INr.Code]==false)then begin
             useditems[INr.Code] = true;
-            CheckOverdueInvoicesForItem(CredManr,CMb,CIb.OverdueMonths,invdate,prevtd,latedays,lateamount,INr.Code,overduetd,lateformula,ratetype);
+            CheckOverdueInvoicesForItem(CredManr,CMb,CIb.OverdueMonths,invdate,prevtd,latedays,lateamount,INr.Code,intlastdate,lateformula,ratetype);
           end;
         end;
       end;
@@ -990,7 +1003,7 @@ begin
         if (ReadFirstMain(INr,1,true)) then begin
           if(useditems[INr.Code]==false)then begin
             useditems[INr.Code] = true;
-            CheckOverdueInvoicesForItem(CredManr,CMb,CIb.OverdueMonths,invdate,prevtd,latedays,lateinterest,INr.Code,overduetd,lateformula,ratetype);
+            CheckOverdueInvoicesForItem(CredManr,CMb,CIb.OverdueMonths,invdate,prevtd,latedays,lateinterest,INr.Code,intlastdate,lateformula,ratetype);
           end;
         end;
       end;
