@@ -108,7 +108,7 @@ function Boolean OuterGetExternalDocMatrix(string docname,var string type)
 begin
   Boolean res;
   
-  if (docname=="CredManForm") then begin
+  if (docname=="CredManForm" or docname=="CredManScheduleForm") then begin
     MatCol(1,24,"Language",0,LangCode,false,LangSClass);
     MatCol(1,140,"Template",0,TemplateName,false,ExternalFormDefImgSClass);
     MatCol(1,-300,"Table's Field",0,FirstField,false,0); 

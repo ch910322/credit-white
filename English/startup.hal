@@ -210,8 +210,8 @@ begin
   SString(200114,"Bill of Exchange");
   SString(200115,"Invoice already created with Number ");
   SString(200116,"Importing of Bank Account Statement from an unrecognized Account is not allowed");
-  
-  
+  SString(200117,"Date of Changes is after Agreement End Date.");
+
 /*Web Codes 200200-200230*/
   SString(200200,"Banner with this type already registered in these days");
   SString(200201,"Content with this URL already exists");
@@ -497,6 +497,7 @@ begin
   SetBegin(2020);
   SetText(0,"Credit Agreement");
   SetText(1,"Loan Application");
+  SetText(2,"Property Insurance");
   EndSet;
 
   SetBegin(2021);

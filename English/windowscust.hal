@@ -502,6 +502,7 @@ begin
   EditFieldTL(h,v+=vs,120,"Overdue Invoices",M4Str,ViewOnly,255,f17,true,0);
   EditFieldTL(h,v+=vs,120," of which Interest",M4Str,ViewOnly,255,f11,true,0);
   EditFieldTL(h,v+=vs,120," of which Principle",M4Str,ViewOnly,255,f10,true,0);
+  EditFieldTL(h,v+=vs,120,"Balance",M4Str,ViewOnly,255,f15,true,0);
   EditFieldTL(h,v+=vs,120,"Credited Interest",M4Str,ViewOnly,255,f20,true,0);
   CheckBox(h+140,v,0,"Credit Interest",flags[1]);
 
@@ -2239,8 +2240,11 @@ begin
   EditField(h,v+=vs,100,"Default Item Priority",Normal,ItemPriorityCode,false,CMItemPrioritySCLass);  
   EditField(h,v+=vs,100,"First Invoice Paym. Term",Normal,FirstInvPayDeal,false,PDSClass);  
 
+  EditField(h2=400,v,100,"Buyout Paym. Term",Normal,BuyOutPayDeal,false,PDSClass);  
+
   EditField(h,v+=vs,100,"Period Delimiter",Normal,PeriodDelimiter,false,0);  
   EditField(h,v+=vs,100,"Max overpaid Amount %",Normal,MaxOverpaidPrc,false,0);
+  EditField(h,v+=vs,100,"Premature Term. Principle",Normal,PremTermPrincpl,false,INSClass);
   
   ButtonFrame(h,v+=40,400,4,"Interest Invoicing");
   RadioButton(h,v,0,0,"With Principle, same Invoice",InterestIVType);
@@ -2268,7 +2272,8 @@ begin
   EditField(h,v+=vs,100,"Overdue Months",Normal,OverdueMonths,false,0);
   EditField(h,v+=vs,100,"Overdue Payment Terms",Normal,OverduePayTerm,false,PDSClass);
   EditField(h,v+=vs,100,"Overdue From",Normal,OverdueFrom,false,PasteCurDate);
-  CheckBox(h+200,v,0,"New calculation for Grace periods",NewCalcForGrace);
+  CheckBox(h+200,v-vs,0,"New calculation for Grace periods",NewCalcForGrace);
+  CheckBox(h+200,v,0,"Next overdue date from previous",StartDateForOverdue);
 
   ButtonFrame(h,v+=40,400,3,"Overdue Invoicing");
   RadioButton(h,v,0,0,"With Principle, same Invoice",OverdueIVType);
@@ -2422,20 +2427,20 @@ begin
   Sizeable(-1,-1,0,0);
   UseView(ProlongSessionVc);
   vs=20; h=120; vs2=16; hm=-100;
-  EditField(h,v=6,50,"SerNr",Normal,SerNr,false,);
-  EditField(h,v+=vs,50,"TransDate",Normal,TransDate,false,0);
-  EditField(h,v+=vs,50,"TransTime",Normal,TransTime,false,0);
-  EditField(h,v+=vs,50,"SalesMan",Normal,SalesMan,false,UserSClass);
-  EditField(h,v+=vs,50,"PauseDate",Normal,PauseDate,false,0);
-  EditField(h,v+=vs,50,"ProlongDate",Normal,ProlongDate,false,0);
-  EditField(h,v+=vs,50,"PauseMonths",Normal,PauseMonths,false,0);
-  EditField(h,v+=vs,50,"IntRate",Normal,IntRate,false,0);
-  EditField(h,v+=vs,50,"ProlongMonths",Normal,ProlongMonths,false,0);
-  EditField(h,v+=vs,50,"ProlongWhenPaid",Normal,ProlongWhenPaid,false,0);
-  EditField(h,v+=vs,50,"PaidFlag",Normal,PaidFlag,false,0);
-  EditField(h,v+=vs,50,"CredManNr",Normal,CredManNr,false,0);
-  EditField(h,v+=vs,50,"RecalcSchedule",Normal,RecalcSchedule,false,0);
-  EditField(h,v+=vs,50,"Extra Value",Normal,AddValue,false,0);
+  EditField(h,v=6,150,"SerNr",Normal,SerNr,false,);
+  EditField(h,v+=vs,150,"TransDate",Normal,TransDate,false,0);
+  EditField(h,v+=vs,150,"TransTime",Normal,TransTime,false,0);
+  EditField(h,v+=vs,150,"SalesMan",Normal,SalesMan,false,UserSClass);
+  EditField(h,v+=vs,150,"PauseDate",Normal,PauseDate,false,0);
+  EditField(h,v+=vs,150,"ProlongDate",Normal,ProlongDate,false,0);
+  EditField(h,v+=vs,150,"PauseMonths",Normal,PauseMonths,false,0);
+  EditField(h,v+=vs,150,"IntRate",Normal,IntRate,false,0);
+  EditField(h,v+=vs,150,"ProlongMonths",Normal,ProlongMonths,false,0);
+  EditField(h,v+=vs,150,"ProlongWhenPaid",Normal,ProlongWhenPaid,false,0);
+  EditField(h,v+=vs,150,"PaidFlag",Normal,PaidFlag,false,0);
+  EditField(h,v+=vs,150,"CredManNr",Normal,CredManNr,false,0);
+  EditField(h,v+=vs,150,"RecalcSchedule",Normal,RecalcSchedule,false,0);
+  EditField(h,v+=vs,150,"Extra Value",Normal,AddVal,false,0);
   EndWindow;
 end;
 
@@ -2603,6 +2608,7 @@ begin
     EditField(h,v+=vs,150,"Country",Normal,Addr1,false,CountrySClass);
     EditField(h,v+=vs,150,"City",Normal,Addr2,false,0);
     EditField(h,v+=vs,150,"Address",Normal,Addr3,false,0);
+    EditField(h,v+=vs,150,"District",Normal,District,false,0);
     EditField(h,v+=vs,150,"ZIP",Normal,Addr4,false,0);
     EditField(h,v+=vs,100,"Reported Value",Normal,RepVal,false,0);
   end else begin
@@ -2771,7 +2777,7 @@ begin
   MatCol(1,24,"Property",0,Property,false,CMPropertySClass);
   MatCol(1,104,"Address",0,Address,false,0);
   if (type==3) then begin
-    MatCol(1,-530,"Serial No.",0,SerialNo,false,0);
+    MatCol(1,-530,"Cadastral Code",0,SerialNo,false,0);
     MatCol(1,-440,"Living Area",0,LivingArea,true,0);
     MatCol(1,-350,"Evaluated Value",0,EvalVal,true,0);
     MatCol(1,-260,"Pledge Type",0,PledgeType,false,SetSClass);
@@ -2787,6 +2793,9 @@ begin
     MatCol(1,-170,"Reported Value",0,RepVal,true,0);
     MatCol(1,-80,"Evaluated Value",0,EvalVal,true,0);
   end;
+  RowMenuBegin("");
+  RowMenuItem(0,"Open Pledges List",'I','I',0,"CredManPropertiesOpenPLListDsm");
+  EndRowMenu;
   EndMatrix;
   EndWindow;
 end;
@@ -3030,6 +3039,7 @@ begin
   EditField(h,v+=vs,140,"If Yes, then",Normal,ScheduleYes2,false,0);
   EditField(h,v+=vs,140,"Reimburs. Items",Normal,ReimbItems,false,INSClass);
   EditField(h+280,v,140,"Reimburs. Lang.",Normal,ReimbLanguages,false,LangSClass);
+  EditField(h,v+vs,50,"Item Short Desc. Language",Normal,ItemShortLang,false,LangSClass);
   Tile(5,50,false,"5",InvoiceText);
   EditField(h,v=6,140,"Netting Text",Normal,InvoiceText,false,0);
   EditField(h,v+=vs,140,"Company Reg. No. Comment",Normal,RegNrComment,false,0);
@@ -3047,6 +3057,7 @@ begin
   EditField(h,v+=vs,140,"Company Prefix",Normal,CompPrefix,false,0);
   EditField(h,v+=vs,140,"Person Prefix",Normal,PersPrefix,false,0);
 	EditField(h,v+=vs,140,"Digital",Normal,AgrDigital,false,0);
+	EditField(h+200,v,140,"Digital2",Normal,AgrDigital2,false,0);
 	EditField(h,v+=vs,140,"Not Digital",Normal,AgrNotDigital,false,0);
 
   EndWindow;
@@ -3352,11 +3363,11 @@ begin
   end;
   CheckBox(h,v+=16,0,"Display Credit Line",ShowLoanType7);
   CheckBox(h,v+=16,0,"Display Credit Limit",ShowLoanType8);
-
+  vs = 16;
   CheckBox(h,v+=30,0,"Show VAT Data",ShowVAT);
   CheckBox(h,v+=vs,0,"Show 'Int. based on Money Transfer'",ShowRealInterestFlag);
   CheckBox(h,v+=vs,0,"Use Days In Month in Agreement",UseCredManDaysInMonth);
-  
+  CheckBox(h,v+=vs,0,"Manual Agreement Date",ManualAgreeDate);
   
   EndWindow;
 end;
@@ -3729,5 +3740,26 @@ begin
   RlColKey(4,4,"Code",Code,false,Code);
   RlColKey(70,70,"Name",Name,false,Name);
   SearchField("Search");
+  EndWindow;
+end;
+
+
+window PlegListDataDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+
+  WindowBegin("Pledges List",PlegListDataDClass,CGview,-);
+  SetWRect(20,80,760,339);
+  DynamicWindow;
+  UseView(PlegListDataVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  MatrixBegin(0,16,-16,-50,-,10);
+  MatCol(1,24,"Company",0,CompCode,false,CUSClass);
+  MatCol(1,120,"Name",0,CompName,false,0);
+  MatCol(1,-240,"Value",0,Value,true,0);
+  MatCol(1,-160,"Balance",0,Bal,true,0);
+  MatCol(1,-80,"Balance Date",0,BalDate,true,PasteCurDate);
+  EndMatrix;
   EndWindow;
 end;

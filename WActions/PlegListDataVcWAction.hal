@@ -1,0 +1,50 @@
+
+
+function Boolean PlegListDataDClassCompCodeEFAfter(Integer wn,Integer rownr,Integer changed)
+begin
+  Boolean res;
+  record PlegListDataVc PLDr;
+  row PlegListDataVc PLDrw;
+  record CUVc CUr;
+  Integer i,rwcnt;
+  
+  if (changed!=0) then begin
+    GetWindowRecord(wn,PLDr);
+    MatRowGet(PLDr,rownr,PLDrw); 
+    
+    CUr.Code = PLDrw.CompCode;
+    readfirstmain(CUr,1,true);
+    PLDrw.CompName = CUr.Name;
+    matrowput(PLDr,rownr,PLDrw);
+    PutWindowRecord(wn,PLDr);
+  end;
+
+  PlegListDataDClassCompCodeEFAfter = res;
+  return;
+end;
+
+global
+function Boolean PlegListDataDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+
+  if (changed) then begin
+    switch (fieldname) begin
+      case "CompCode": 
+        res = PlegListDataDClassCompCodeEFAfter(wn,rownr,changed);
+    end;
+  end;
+
+  PlegListDataDClassAfterEditField = res;
+  return;
+end;
+
+global
+procedure PlegListDataDClassButtonFlags(Integer wn,var Boolean duplOK,var Boolean newOK,var Boolean saveOK,var Boolean restOK)
+begin
+
+    duplOK = false;    
+    newOK = false;
+    
+  return;
+end;

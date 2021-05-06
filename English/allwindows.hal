@@ -27,6 +27,7 @@ external function Boolean HasModPOS();
 external function Boolean HasModTS();
 external function Boolean HasModRent();
 external function Boolean HasModSVO();
+external function Boolean HasMainPartner();
 external function Boolean HasMultiCurrency();
 external function Boolean HasObjects();
 external function Boolean HasHotelInterface();
@@ -42,9 +43,12 @@ external function Boolean HasCategories();
 external function Boolean HasContactClassification();
 external function Boolean HasAged();
 external function Boolean HasOfficialSerNr();
+external function Boolean HasPreferedOfficialSerNr();
 external function Boolean HasInvoiceOfficialSerNr();
 external function Boolean HasLanguages();
 external function Boolean HasPrepayments();
+external function Boolean HasMultiLocations();
+external function Boolean HasModNL();
 external function Boolean CUVATNrColumn;
 
 external function Boolean TouchScreenLookVertical();
@@ -52,6 +56,7 @@ external function Boolean ReadPOSButtons(string,string,longint,var string,var st
 external function Boolean IsSessionOpen(string,string,Date,Time);
 external procedure DisplayRecordDetails_ENG(LongInt,LongInt,string,date,time,string,string,string,string,string,string,string,string,string,string,string,Integer,string,string,string,val,string,Boolean,string,string);
 external procedure DrawPOSInterface2_ENG(string,string,record POSButtonsVc,string,Integer,Integer);
+external procedure ARS2RClass_ENG();
 
 //CUST-BEGIN TAG TOOLS
 external outer function Boolean HasMoneyTransferDate();
@@ -76,6 +81,7 @@ external outer function Boolean UseCompensationInvoices();
 external outer function Boolean ShowToDisburse();
 external outer function Boolean UseBuyoutSummary();
 external outer function Boolean ShowBuyOutFeePrcAllTypes();
+external outer function Boolean ShowCredManNrInvoiceJournal();
 //CUST-END
 
 window CUDClass:14
@@ -999,6 +1005,7 @@ begin
   EditField(h,vm=(v+=vs),100,"Quotation",ViewOnly,QTNr,false,0);
 //CUST-BEGIN
   EditField(h,v+=vs,30,"Pay. Terms",Normal,PayDeal,false,PDSClass);
+  EditField(h,v+=vs,30,"Force Pay. Term",Normal,ForcePayDeal,false,PDSClass);
   EditField(h,v+=vs,82,"Invoice",ViewOnly,VINr,false,0);
   EditField(h,v+=vs,82,"Interest From Date",Normal,FirstIntDate,false,PasteCurDate);
 //CUST-END
@@ -1711,6 +1718,7 @@ begin
   CheckBox(h4,v,0,"Surety",ScheduleSurety);
   CheckBox(h5,v,0,"Us",ScheduleUs);
   EditField(h6,v,40,"Language",Normal,ScheduleLangCode,false,LangSClass);
+  EditField(h6+60,v,40,"",Normal,ScheduleNoFeesLangCode,false,LangSClass);
 
   tstr = "";
   if (HasBillOfExchangeShort) then begin
@@ -3371,3 +3379,371 @@ begin
   end;
   EndWindow;
 end;
+
+window ARS2RClass:2
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Specify Open Invoice Customer Statement",ARS2RClass,CGRcW,RcType);
+  ARS2RClass_ENG;
+  EndWindow;
+end;
+
+window IVJRClass:3
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h2,hs,v,v3,vm,vs,l;
+
+  WindowBegin("Specify Invoice Journal",IVJRClass,CGRcW,RcType);
+  if (IsEnterprise) then begin
+    SetWRect(20,80,520,390);
+  end else begin
+    SetWRect(20,80,460,390);
+  end;
+  vs = 20;
+  hs = 148;
+  if (IsEnterprise) then begin
+    if (HasLocalization("ARG,HRV,LTU,LVA,POL,PRT,RUS") or (HasOfficialSerNr and HasPreferedOfficialSerNr==false))  then begin
+      Tile(0,40,false,"",f1);
+    end else begin
+      Tile(0,20,false,"",f1);
+    end;
+  end;
+
+  v = 6; h = 150;
+  if (HasPreferedOfficialSerNr) then begin
+    EditFieldTL(h,v,150,"Official No.",M4UStr,Normal,41,f6,false,0);
+    v = v + 20;
+    if (HasLocalization("POL,PRT")==false)  then begin
+      EditFieldTL(h,v,150,"Invoice No.",M4Str,Normal,30,f1,false,0);
+      v = v + 20;
+    end;
+  end else begin
+    EditFieldTL(h,v,150,"Invoice No.",M4Str,Normal,30,f1,false,0);
+    v = v + 20;
+    if (HasOfficialSerNr or HasInvoiceOfficialSerNr) then begin
+      EditFieldTL(h,v,150,"Official No.",M4UStr,Normal,41,f6,false,0);
+      v = v + 20;
+    end;
+  end;
+
+  if (IsEnterprise) then begin
+    TileButtons(v,2);
+    Tile(1,380,false,"1",f2);
+    v = 6;
+    vm = v;
+  end;
+  PeriodField(h,v,"Period");
+  EditFieldTL(h,v+=vs, 150,"Credited Invoice Period",M4UStr,Normal,21,Period2Str2,false,PerSClass);
+  EditFieldTL(h,v+=vs ,150,"Customer",M4UStr,Normal,50,f2,false,CUSClass);
+  //CUST-BEGIN
+  EditFieldTL(h,v+=vs,150,"Agreement Nr.",M4UStr,Normal,200,f15,false,CredManSClass);
+  //CUST-END
+  if (HasCategories) then begin
+    EditFieldTL(h,v+=vs ,70,"Customer Category",M4UStr,Normal,5,f3,false,CCatSClass);
+  end;
+  if (HasContactClassification) then begin
+    EditFieldTL(h,v+=vs ,70,"Classification Types",M4UStr,Normal,60,f5,false,CTypeSClass);
+    EditFieldTL(h,v+=vs ,70,"Customer Classification",M4UStr,Normal,30,f4,false,CClassSClass);
+  end;
+  if (HasSalesman or HasSalesmanBonus) then begin
+    EditFieldTL(h,v+=vs ,70,"#Salesman#",M4UStr,Normal,10,AccStr,false,UserSClass);
+  end;
+  if (HasSalesGroup) then begin
+    EditFieldTL(h,v+=vs ,50,"Sales Group",M4UStr,Normal,10,f14,false,SalesGroupSClass);
+  end;
+  if (HasObjects) then begin
+    EditFieldTL(h,v+=vs,250,"Tag/Object",M4UStr,Normal,60,ObjStr,false,ObjSClass);
+    EditFieldTL(h,v+=vs,50,"Tag/Object Type",M4UStr,Normal,5,ObjType,false,OTSClass);
+    EditFieldTL(h,v+=vs,250,"Tags/Objects (from Row)",M4UStr,Normal,60,f11,false,ObjSClass);
+  end;
+  if (HasModTS or IsEnterprise) then begin
+    EditFieldTL(h,v+=vs,50,"Project",M4UStr,Normal,20,FirstAcc,false,PRSClass);
+  end;
+  if (HasMultiLocations) then begin
+    EditFieldTL(h,v+=vs,70,"Location",M4UStr,Normal,60,LastAcc,false,LocationSClass);
+  end;
+  if (IsEnterprise) then begin
+    EditFieldTL(h,v+=vs,50,"Payment Term",M4UStr,Normal,5,TransStr,false,PDSClass);
+    EditFieldTL(h,v+=vs,50,"Orig. Customer",M4Code,Normal,20,f12,false,CUSClass);
+  end;
+  if (IsEnterprise) then begin
+    EditFieldTL(h,v3=(v+=vs),50,"Min Amount",M4Val,Normal,0,vals0,false,0);
+  end else begin
+    EditFieldTL(h,v+=vs,100,"#VAT# Code",M4UStr,Normal,100,f13,false,VATCodeSClass);
+  end;
+  if (IsEnterprise) then begin
+    h = 320;
+    v = vm + 10;
+  end else begin
+    v = v + 40;
+    v3 = v + 20;
+    vm = v;
+    h = 30;
+  end;
+  ButtonFrame(h,v,123,5,"Status");
+  CheckBox(h,v,0,"Not OKed",flags[1]);
+  CheckBox(h,v+=16,0,"O_Ked",flags[2]);
+  if (IsEnterprise) then begin
+    RadioButton(h,v+=16,0,0,"Include Disputed",flags[7]);
+    RadioButton(h,v+=16,1,0,"Exclude Disputed",flags[7]);
+    RadioButton(h,v+=16,2,0,"Disputed Only",flags[7]);
+  end;
+  EndFrame;
+
+  v3 = v3 + 41;
+  v = v3;
+  if (IsEnterprise) then begin
+    vm = v;
+    h = 148;
+  end else begin
+    h = 30;
+  end;
+  ButtonFrame(h,v,123,3,"Function");
+  RadioButton(h,v,0,0,"Overview",ArtMode);
+  RadioButton(h,v+=16,1,0,"Detailed",ArtMode);
+  if (HasMultiCurrency) then begin
+    RadioButton(h,v+=16,4,0,"Overview with Cur.",ArtMode);
+  end;
+  EndFrame;
+  if (IsEnterprise==false and HasBase2) then begin
+    CheckBox(h,v+=42,0,"Show Base Currency 1 & 2 Totals",flags[12]);
+  end;
+
+  if (IsEnterprise) then begin
+    h2 = 320;
+    l = 160;
+  end else begin
+    h2 = h + 148;
+    l = 123;
+  end;
+  ButtonFrame(h2,v=vm,l,5,"Sorting");
+  if (HasModNL) then begin
+    RadioButton(h2,v,0,0,"Transaction Date",flags[10]);
+  end else begin
+    RadioButton(h2,v,0,0,"Invoice Date",flags[10]);
+  end;
+  if (HasLocalization("BRA,POL,PRT")) then begin
+    RadioButton(h2,v+=16,5,0,"Official No.",flags[10]);
+  end else begin
+    RadioButton(h2,v+=16,1,0,"Invoice No.",flags[10]);
+  end;
+  if (HasMultiLocations) then begin
+    RadioButton(h2,v+=16,2,0,"Location (from Header)",flags[10]);
+  end;
+  if (HasOfficialSerNr or HasInvoiceOfficialSerNr) then begin
+    RadioButton(h2,v+=16,3,0,"Overview with Official No.",flags[10]);
+  end;
+  if (IsEnterprise) then begin
+    RadioButton(h2,v+=16,4,0,"Invoice Date",flags[10]);
+  end;
+  EndFrame;
+  if (IsEnterprise) then begin
+    Tile(2,330,false,"2",Stext);
+    v = 6;
+    EditFieldTL(h=150,v,100,"Item Group",M4UStr,Normal,21,Stext,false,ITSClass);
+    EditFieldTL(h,v+=vs,150,"Item Classification", M4UStr,Normal,60,Comment,false,DISClass);
+    EditFieldTL(h,v+=vs,100,"Item",M4UStr,Normal,41,f10,false,INSClass);
+    EditFieldTL(h,v+=vs,100,"Sales Account",M4UStr,Normal,21,f7,false,AccSClass);
+    EditFieldTL(h,v+=vs,100,"Debtors Account",M4UStr,Normal,21,f8,false,AccSClass);
+    if (StandardHansa==false) then begin
+      EditFieldTL(h,v+=vs,100,"Main Partner",M4UStr,Normal,20,f9,false,CUSClass);
+    end;
+    EditFieldTL(h,v+=vs,100,"#VAT# Code",M4UStr,Normal,100,f13,false,VATCodeSClass);
+    //    EditFieldTL(h,v+=vs,50,"Order Class",M4UStr,Normal,5,Stext,false,OrderClassSClass); // no more strings to use....
+    ButtonFrame(h=50,vm = (v+=40),123,4,"Invoice Type");
+    CheckBox(h,v,0,"Invoices",flags[3]);
+    CheckBox(h,v+=16,0,"Cash Notes",flags[4]);
+    CheckBox(h,v+=16,0,"#Credit Notes#",flags[5]);
+    CheckBox(h,v+=16,0,"I_nterest Inv.",flags[6]);
+    CheckBox(h,v+=26,0,"Invoices affecting #S/L# only",flags[19]);
+    StaticText(h+17,v+=30,"(ignore Invoice Types)",false);
+    CheckBox(h=220,v=vm,0,"Show Comment",flags[11]);
+    CheckBox(h,v+=16,0,"Show Base Currency 1 & 2 Totals",flags[12]);
+    if (StandardHansa==false) then begin
+      CheckBox(h,v+=16,0,"Fiscal Invoices only",flags[13]);
+    end;
+    CheckBox(h,v+=16,0,"Show Invalidated Invoices",flags[14]);
+    CheckBox(h,v+=16,0,"Show #VAT# Amount",flags[15]);
+    CheckBox(h,v+=16,0,"Not Printed Invoices only",flags[17]);
+    CheckBox(h,v+=16,0,"Include Orig. Customer",flags[18]);
+    CheckBox(h,v+=16,0,"Invoices with Total amount equal zero",flags[20]);
+    CheckBox(h,v+=16,0,"Exported to Factoring only",flags[22]);
+    //CUST-BEGIN
+    if (ShowCredManNrInvoiceJournal()) then begin
+      CheckBox(h,v+=16,0,"Show Agreement number",flags[24]);
+    end;
+    //CUST-END
+    CheckBox(h+=hs,v=vm,0,"Show Official No.",flags[16]);
+    
+  end else begin
+    ButtonFrame(h+=148,v+=41,123,3,"Invoice Type");
+    CheckBox(h,v,0,"Invoices",flags[3]);
+    CheckBox(h,v+=16,0,"Cash Notes",flags[4]);
+    CheckBox(h,v+=16,0,"#Credit Notes#",flags[5]);
+    if (HasLocalization("PRT")) then begin
+      CheckBox(h,v+=16,0,"I_nterest Inv.",flags[6]);
+    end;
+    EndFrame;
+    v = v + 24;
+    if (HasOfficialSerNr or HasInvoiceOfficialSerNr) then begin
+      CheckBox(h,v,0,"Show Official No.",flags[16]); v = v + 16;      
+    end;
+    if (HasLocalization("PRT")) then begin
+      CheckBox(h,v,0,"Invoices with Total equal zero",flags[20]);
+    end;
+  end;
+  EndWindow;
+end;
+
+window IPRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h2,v,vm,vs;
+  WindowBegin("Specify Receipt Journal",IPRClass,CGRcW,RcType);
+  SetWRect(20,80,450,310);
+  vs = 20;
+  PeriodField(h=125,v=6,"Period");
+  EditFieldTL(h,v+=vs,150,"Receipt No.",   M4Str,Normal,30,f1,false,0);
+  EditFieldTL(h,v+=vs ,20,"Payment Mode",M4UStr,Normal,2,f3,false,PMSClass);
+  if (IsEnterprise) then begin
+    EditFieldTL(h,v+=vs ,100,"Customer",M4UStr,Normal,20,AccStr,false,CUSClass);
+    EditFieldTL(h,v+=vs ,100,"Reference",M4Str,Normal,20,TransStr,false,0);
+    EditFieldTL(h,v+=vs ,50,"Sign",M4UStr,Normal,10,f4,false,UserSClass);
+  end;
+  //CUST-BEGIN
+  EditFieldTL(h,v+=vs,150,"Agreement Nr.",M4UStr,Normal,200,f15,false,CredManSClass);
+  //CheckBox(h,v+=16,0,"Show Agreement number",flags[25]); TODO?
+  //CUST-END
+  if (IsEnterprise) then begin
+    h = 70;
+  end;
+  v=v+vs+20;   h2=220;
+  ButtonFrame(h,vm=v,123,2,"Status");
+  CheckBox(h,v,0,"Not OKed",flags[1]);
+  CheckBox(h,v+=16,0,"O_Ked",flags[2]);
+  //CheckBox(h,v+=16,0,"Received",flags[3]);
+  //CheckBox(h,v+=16,0,"Rejected",flags[4]);
+  //CheckBox(h,v+=16,0,"Reconciled",flags[5]);
+  if (IsEnterprise) then begin
+    ButtonFrame(h2,v=vm,123,2,"Show");
+    RadioButton(h2,v,0,0,"Rec. Value",flags[6]);
+    RadioButton(h2,v+=16,1,0,"Bank Value",flags[6]);
+    CheckBox(h2,v+=24,0,"Show Official No.",flags[16]);
+  end else begin
+    if (HasInvoiceOfficialSerNr) then begin
+      CheckBox(h2,v+=24,0,"Show Official No.",flags[16]);
+    end;
+  end;
+  EndWindow;
+end;
+
+window CuPer2RClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h2,v,v1,vm;
+  WindowBegin("Specify Periodic Customer Statement",CuPer2RClass,CGRcW,RcType);
+  SetWRect(20,80,450,430);
+  h = 120;
+  PeriodField(h,v=6,"Period");
+  EditFieldTL(h,v+=20, 150,"Customer",   M4UStr,Normal,30,f1,false,CUSClass);
+  EditFieldTL(h,v+=20, 150,"Agreement No.",   M4UStr,Normal,100,f15,false,CredManSClass);
+  if (HasCategories) then begin
+    EditFieldTL(h,v+=20,50, "Category",   M4UStr,Normal,5,f3,false,CCatSClass);
+  end;
+  if (HasContactClassification) then begin
+    EditFieldTL(h,v+=20,150, "Classification",   M4UStr,Normal,30,f4,false,CClassSClass);
+  end;
+  if (HasMultiCurrency) then begin
+    EditFieldTL(h,v+=20,50, "Currency",M4Code,Normal,5,CurncyCode,false,CurncyCodeSClass);
+  end;
+  if (HasMainPartner) then begin
+    EditFieldTL(h,v+=20,80, "Main Partner",   M4UStr,Normal,20,LastAcc,false,CUSClass);
+  end;
+  if (IsEnterprise or HasLocalization("PRT")) then begin
+    EditFieldTL(h,v+=20 ,80,"Debtors Account",M4UStr,Normal,10,FirstAcc,false,AccSClass);
+  end;
+  if (IsEnterprise) then begin
+    StaticText(h+85,v+14,"Ignored in Fwd. Balance and in Overview",false);
+  end;
+  h = 30;
+  if (HasMultiCurrency) then begin
+    CheckBox(h,vm=(v+=25),0,"Amounts in Currency",flags[2]);
+  end;
+  if (HasOfficialSerNr or HasInvoiceOfficialSerNr) then begin
+    CheckBox(h,v+=16,0,"Show Official No.",flags[15]);
+  end;
+  if (IsEnterprise) then begin
+    CheckBox(h,v+=16,0,"Show Fwd. Balance Invoices",flags[10]);
+    CheckBox(h,v+=16,0,"New page for each Customer",flags[6]);
+    v1 = v;
+
+    CheckBox(h2=220,v=vm,0,"Show Invoice Records",flags[9]);
+    CheckBox(h2,v+=16,0,"Sum Receipt",flags[8]);
+    CheckBox(h2,v+=16,0,"Negative Amounts for #Credit Notes#",flags[7]);
+    ButtonFrame(h,vm=(v=(v1+40)),123,2,"Function");
+  end else begin
+    ButtonFrame(h,vm=(v+=40),123,2,"Function");
+  end;
+  RadioButton(h,v,0,0,"Overview",ArtMode);
+  RadioButton(h,v+=16,1,0,"Detailed",ArtMode);
+
+  if (IsEnterprise) then begin
+    ButtonFrame(h,v+=40,200,3,"Customers");
+    RadioButton(h,v,0,0,"All",flags[1]);
+    RadioButton(h,v+=16,1,0,"With Transactions or Fwd Balance",flags[1]);
+    RadioButton(h,v+=16,2,0,"With Balance (Overview only)",flags[1]);
+
+    ButtonFrame(h2=220,v=vm,123,2,"Sorting (Detailed)");
+    RadioButton(h2,v,0,0,"Trans. Date",flags[5]);
+    RadioButton(h2,v+=16,1,0,"Pay. Date",flags[5]);
+  end else begin
+    CheckBox(h,v+=24,0,"Customers with Balance only",flags[1]);
+  end;
+
+  //CheckBox(h,v=v-130,0,"Include received Receipts",flags[4]);
+  EndWindow;
+end;
+
+/* document ->
+window CuPerRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm;
+  WindowBegin("Specify Periodic Customer Statement",CuPerRClass,CGRcW,RcType);
+  SetWRect(20,80,410,320);
+  PeriodField(h=120,v=6,"Period");
+  EditFieldTL(h,v+=20, 150,"Customer",   M4UStr,Normal,30,f1,false,CUSClass);
+  if (HasCategories) then begin
+    EditFieldTL(h,v+=20,50, "Category",   M4UStr,Normal,5,f3,false,CCatSClass);
+  end;
+  if (HasContactClassification) then begin
+    EditFieldTL(h,v+=20,50, "Classification",   M4UStr,Normal,30,f4,false,CClassSClass);
+  end;
+  if (HasMultiCurrency) then begin
+    EditFieldTL(h,v+=20,50, "Currency",M4Code,Normal,5,CurncyCode,false,CurncyCodeSClass);
+  end;
+  if (HasMainPartner) then begin
+    EditFieldTL(h,v+=20,80, "Main Partner",   M4UStr,Normal,20,LastAcc,false,CUSClass);
+  end;
+  if (HasObjects) then begin
+    EditFieldTL(h,v+=20,250,"Tag/Object",M4UStr,Normal,60,ObjStr,false,ObjSClass);
+  end;
+  if (IsEnterprise) then begin
+    EditFieldTL(h,v+=20,82,"Statement Date",M4Date,Normal,0,d1,false,PasteCurDate);
+    ButtonFrame(h,vm=(v+=40),200,3,"Customers");
+    RadioButton(h,v,0,0,"All",flags[1]);
+    RadioButton(h,v+=16,1,0,"With Transactions or Fwd Balance",flags[1]);
+    RadioButton(h,v+=16,2,0,"With Balance",flags[1]);
+    CheckBox(h,v+=24,0,"Sum Receipt",flags[8]);
+    CheckBox(h,v+=16,0,"Show Invoice Records",flags[9]);
+    CheckBox(h,v+=16,0,"Show Fwd. Balance Invoices",flags[10]);
+    CheckBox(h,v+=16,0,"Show Official Ser. No.",flags[15]);
+    if (HasAged) then begin
+      CheckBox(h,v+=16,0,"Aged based on Invoice Date",flags[17]);
+    end;
+  end else begin
+    CheckBox(h,v+=20,0,"Customers with Balance only",flags[1]);
+  end;
+  EndWindow;
+end;
+*/

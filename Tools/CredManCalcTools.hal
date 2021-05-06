@@ -809,6 +809,10 @@ begin
             sum = calcbal - CredManr.LastMonthPrinc;
           end;
         end;
+        if (sum<0) then begin
+          sum = 0;
+        end;
+        
         FixupInstalmentAmount(sum,calcbal);
         AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,sum,0,acumint,calcbal,frdate,todate,-1,-1,0);
       end;
@@ -1188,16 +1192,25 @@ begin
   Integer i,rwcnt;
   row CredManPayPlanVc CredManPayPlanrw;
   val res;
+  Boolean testf;
 
+  SortRows(CredManPayPlanr,"SortString",true);
   rwcnt = MatRowCnt(CredManPayPlanr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
-    if (CredManPayPlanrw.TransDate<invdat) then begin
-      if (res<CredManPayPlanrw.Bal) then begin
-        res = CredManPayPlanrw.Bal;
+    if (CredManPayPlanrw.TransDate<=invdat) then begin
+      testf = true;
+      if (CredManPayPlanrw.Bal<res and CredManPayPlanrw.PlanType==kEventTypePayout) then begin
+        testf = false;
+      end;
+      if (TypeAffectsBalance(CredManPayPlanrw.PlanType)==false and CredManPayPlanrw.PlanType!=kEventTypePayout) then begin
+        testf = false;
+      end;
+      if (testf) then begin
+        res = CredManPayPlanrw.Bal;//This is fallback balance 
       end;
     end;
-    if (CredManPayPlanrw.TransDate>=invdat) then begin
+    if (CredManPayPlanrw.TransDate>invdat) then begin
       i = rwcnt;
     end;
   end;
@@ -1214,7 +1227,7 @@ begin
 
   sd = CredManr.startDate;
   ed = AddMonth(CredManr.FirstInvDate,calculatedmonths-1);
-  
+
   Changer.CredManNr = CredManr.SerNr;
   Changer.TransDate = sd;
   TrHs = true;
@@ -1236,6 +1249,9 @@ begin
         end;
         if (Changer.ProlongMonths>0) then begin
           prolongstartmonths = MonthDiff(CredManr.FirstInvDate,Changer.TransDate);
+          if (GetDay(Changer.TransDate)!=GetDay(CredManr.FirstInvDate)) then begin
+            prolongstartmonths = prolongstartmonths + 1;
+          end;
           months = months + Changer.ProlongMonths;
           usemonths = months - prolongstartmonths;
           usesum = GetBalanceOnDate(CredManPayPlanr,Changer.TransDate);
@@ -1243,6 +1259,9 @@ begin
         end;
         if (Changer.PauseMonths>0) then begin
           pausestartmonths = MonthDiff(CredManr.FirstInvDate,Changer.TransDate);
+          if (GetDay(Changer.TransDate)!=GetDay(CredManr.FirstInvDate)) then begin
+            pausestartmonths = prolongstartmonths + 1;
+          end;
           pausemonths = Changer.PauseMonths;
           pausefrom = Changer.TransDate;
           waspausedf = true;
@@ -1345,22 +1364,18 @@ begin
   return;
 end;
 
-function Boolean StartProlong(record CredManVc CredManr,Date invdat,var Integer months,var Integer usemonths)
+function Boolean StartProlong(record CredManVc CredManr,Date frdate,Date todate,var Integer months,var Integer usemonths)
 begin
-  Date sd,ed;
   record CredManChangeVc Changer;
   Boolean TrHs;
   Boolean res;
   Integer prolongstartmonths;
 
-  sd = AddDay(AddMonth(invdat,-1),1);
-  ed = invdat;
-  
   Changer.CredManNr = CredManr.SerNr;
-  Changer.TransDate = sd;
+  Changer.TransDate = frdate;
   TrHs = true;
   while (LoopKey("CredManDate",Changer,2,TrHs)) begin
-    if (CredManr.SerNr!=Changer.CredManNr or Changer.TransDate>ed) then begin
+    if (CredManr.SerNr!=Changer.CredManNr or Changer.TransDate>todate) then begin
       TrHs = false;
     end else begin
       if (Changer.OKFlag==1) then begin
@@ -1568,7 +1583,9 @@ LCalcSchedule:;
   basemonths = usemonths;
   substractmonths = delaymonths;
 //logtext(0,"start dev");
+
   LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths);
+
   for(i=calculatedmonths;i<months;i=i+1) begin
     if (calcbal>0 or int_type==2) then begin
       CalcCredManCurrentPeriod(inCredManr,CIb,i-1,payoutdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
@@ -1588,8 +1605,8 @@ LCalcSchedule:;
       if (i==0 and firstinvf==false and inCredManr.InstalmentType!=4) then begin//Not for factoring
         AddInitialInvoice(inCredManr,CredManPayPlanr,CredManSetb,acumint,calcbal,"","");
       end;
-      //logtext(0,"l1 " & invdat & ":" & i & ":" & curmonth & ":" & usemonths & ":" & months & ":" & usesum & ":" & prolongstartmonths);
-      if (StartProlong(InCredManr,invdat,months,usemonths)) then begin
+//      logtext(0,"l1 " & invdat & ":" & i & ":" & curmonth & ":" & usemonths & ":" & months & ":" & usesum & ":" & prolongstartmonths);
+      if (StartProlong(InCredManr,frdat,todat,months,usemonths)) then begin
         prolongstartmonths = i;
         usesum = calcbal;
         prolongf = true;

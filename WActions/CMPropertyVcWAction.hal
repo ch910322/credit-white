@@ -131,8 +131,8 @@ begin
       if(nonblank(Propr.Addr3))then begin
       	address = address & Propr.Addr3 & ", ";
       end;
-      if(nonblank(Propr.Addr4))then begin
-      	address = address & Propr.Addr4 & ", ";
+      if(nonblank(Propr.District))then begin
+      	address = address & Propr.District & ", ";
       end;
       
       address = trim(address);
@@ -164,4 +164,40 @@ begin
 
   CredManPropertiesDClassAfterEditField = res;
   return;
+end;
+
+global procedure CredManPropertiesOpenPLListDsm()
+begin
+  record CredManPropertiesVc CMPr;
+  row CredManPropertiesVc CMPrw;
+  Integer wn,rw;
+  record PlegListDataVc PlegListDatar;
+  
+  wn = CurWindow;
+  GetWindowRecord(wn,CMPr);
+  rw = WindowActiveRow(wn);
+  
+  if(windowstate(wn)==0)then begin
+    if (rw>-1) then begin
+      MatRowGet(CMPr,rw,CMPrw); 
+      if(nonblank(CMPrw.Property))then begin
+        PlegListDatar.CredManNr = CMPr.CredManNr;
+        PlegListDatar.RecordType = CMPr.RecordType;
+        PlegListDatar.RowNr = rw;
+        if(readfirstmain(PlegListDatar,3,true))then begin
+      
+        end else begin
+          recordnew(PlegListDatar);
+          PlegListDatar.CredManNr = CMPr.CredManNr;
+          PlegListDatar.RecordType = CMPr.RecordType;
+          PlegListDatar.RowNr = rw;
+        end;
+        OpenWindow("PlegListDataDClass",0,0,"","",PlegListDatar);
+      end;
+    end;
+  end else begin
+    beep;
+  end;
+      
+return;
 end;

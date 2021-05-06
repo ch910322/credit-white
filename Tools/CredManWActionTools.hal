@@ -48,6 +48,7 @@ external function Integer GetProlongMonths(record CredManVc);
 external function Date GetLastInvoiceDate(record CredManVc,Date);
 external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string,Boolean,Boolean,var Date);
 external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var record IVVc,Date,Date,Date,Boolean,Boolean,string,Integer,Boolean);
+external procedure SetupLoanInvoice2(record CredManVc,record CredManSetBlock,var record IVVc,Date,Date,Date,Boolean,Boolean,string,Integer,Boolean,string);
 external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val,array string);
 external procedure SetupOverdueLangCode(var record IVVc,record CredManVc);
 external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
@@ -79,6 +80,8 @@ external inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var L
 external function string 255 GetReceiptsPayMode(record IVVc);
 remote procedure CredManCreditBeforePauseCallBack(Integer,Integer,record RcVc);
 external function Boolean FindCredManAcc(record CredManVc,var record CredManAccVc);
+external procedure ExternalPrintCredManScheduleForm(record CredManVc,var vector string);
+
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -204,12 +207,20 @@ begin
   string 255 res;
   record CredManTypeVc CMTr;
   record CUVc CUr;
+  vector string 255 vVals;
+  
   
   CMTr.Code = CredManr.Type;
   if (ReadFirstMain(CMTr,1,true)) then begin
     switch (type) begin
       case 1: res = CMTr.CredManLangCode;
       case 2: res = CMTr.ScheduleLangCode;
+              if(nonblank(CMTr.ScheduleNoFeesLangCode))then begin
+                ExternalPrintCredManScheduleForm(CredManr,vVals);
+                if(stringtoval(vVals["F_TOTFEES"],m4val)==0)then begin
+                  res = CMTr.ScheduleNoFeesLangCode;
+                end;
+              end;
       case 3: 
         if (blank(GetFieldValueByName(CredManr,"Surety" & param & "Signer",-1))) then begin
           res = CMTr.SuretyLangCode;
@@ -283,7 +294,7 @@ begin
   return;
 end;
 
-function Boolean CanPauseAgreement(record CredManVc CredManr,Date td,val months)
+function Boolean CanPauseAgreement(record CredManVc CredManr,Date td,val months,var Integer err)
 begin
   record CredManPayPlanVc CredManPayPlanr;
   row CredManPayPlanVc CredManPayPlanrw;
@@ -293,18 +304,22 @@ begin
   Boolean res;
 
   res = true;
+  err = 0;
   BlockLoad(CMb);
   BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
   rwcnt = MatRowCnt(CredManPayPlanr);
   for (i=rwcnt-1;i>=0;i=i-1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
     if (CredManPayPlanrw.PlanType==5 or CredManPayPlanrw.PlanType==6 or CredManPayPlanrw.PlanType==7) then begin
-      if (td<=CredManPayPlanrw.TransDate) then begin
+      if ((nonblank(CredManPayPlanrw.ToDate) and td<=CredManPayPlanrw.ToDate) or td<=CredManPayPlanrw.TransDate) then begin
         res = false;
+        err = 1;
       end else begin
-        if (lastinv<CredManPayPlanrw.TransDate) then begin
-          lastinv = CredManPayPlanrw.TransDate;
+        /*
+        if (lastinv<CredManPayPlanrw.ToDate) then begin
+          lastinv = CredManPayPlanrw.ToDate;
         end;
+        */
       end;
       i = 0;
     end;
@@ -312,15 +327,18 @@ begin
 
   if (CredManIsPausedOnDate(CredManr,td)) then begin
     res = false;
+    err = 2;
   end;
 
   if (DateInRange(td,CredManr.startDate,CredManr.endDate)==false) then begin
     res = false;
+    err = 3;
   end;
 
   if (CredManr.PrincipleDelayMonths>0 and months>0) then begin
     if (AddDay(AddMonth(CredManr.FirstInvDate,CredManr.PrincipleDelayMonths-1),-1)>td) then begin
       res = false;
+      err = 4;
     end;
   end;
 
@@ -439,7 +457,7 @@ begin
 end;
 
 global
-updating procedure DoPauseCredMan(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res,var Boolean setf,record RcVc RepSpec,var record IVVc IVr,string purpose)
+updating procedure DoPauseCredMan(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res,var Boolean setf,record RcVc RepSpec,var record IVVc IVr,string purpose,var Integer err)
 begin
   record AgreementDocVc ADr;
   record VIVc VIr;
@@ -462,7 +480,7 @@ begin
     if (tmonths==0) then begin
       tmonths = blankval;
     end;
-    if (CanPauseAgreement(CredManr,td,months)) then begin
+    if (CanPauseAgreement(CredManr,td,months,err)) then begin
       if (RepSpec.flags[2]==1) then begin
         CreateProlongSession(CredManr,td,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1],RepSpec.vals3,RepSpec.vals4);
         CreateProlongInvoice(CredManr,IVr);
@@ -1019,7 +1037,9 @@ begin
   val paidout;
   
   ArchiveExistingDocument(ADr,oldname);
-
+  if(ADr.DigitalFlag==1)then begin
+    gIsDigitalDocument = 1;
+  end;
   scnt = GetSuretyCnt(CredManr);
   switch (ADr.Type) begin
     case 1://agreement
@@ -1030,14 +1050,8 @@ begin
         if (CredManr.MaxMonthlyPayment>0) then begin
           RepSpec.flags[10] = 1;
         end;
-        if(ADr.DigitalFlag==1)then begin
-        	gIsDigitalDocument = 1;
-        end;
         PrintEBSDocument("CredManForm",fn,RepSpec,CredManr.SerNr,langcode,filearea);
       end else begin
-      	if(ADr.DigitalFlag==1)then begin
-        	gIsDigitalDocument = 1;
-        end;
         PrintCredManDocument("CredManForm",fn,CredManr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
         //PrintMultiDocDocument("CredManLongForm",fn,CredManr.SerNr,CredManr.InstalmentType,(CredManr.MaxMonthlyPayment>0),langcode);
       end;
@@ -1535,7 +1549,7 @@ begin
 
 
   if (CredManr.InstalmentType!=4 and CredManr.InstalmentType!=5) then begin
-    CreateSingleAgreementInvoice2(CredManr,AddDay(CredManr.FirstInvDate,-1),IVr,invno,receiptf,true);//marking it as manual only if we make a receipt
+    CreateSingleAgreementInvoice2(CredManr,AddDay(CredManr.FirstInvDate,-1),IVr,invno,receiptf,false);//marking it as manual only if we make a receipt
     CheckAndCreateAutoMailFromInvoice(IVr);
     RecordCopy(tIVr,IVr);
     
@@ -1705,14 +1719,16 @@ begin
   record CredHistVc CredHistr;
   Integer i;
   
-  CredHistr.TransDate = td;  
+  CredHistr.TransDate = AddMonth(td,-1);  
   while (LoopKey("CredManTransDate:" & CredManr.SerNr,CredHistr,1,true)) begin
-    if (CredHistr.RecordType==0 and CredHistr.MainRecord==1) then begin
-      if (vInv[CredHistr.RecordNr]==false) then begin
-        IVr.SerNr = CredHistr.RecordNr;
-        if (ReadFirstMain(IVr,1,true)) then begin
-          aIVr[aIVr.length] = IVr;
-          vInv[CredHistr.RecordNr] = true; 
+    if ((nonblank(CredHistr.CredToDate) and CredHistr.CredToDate>=td) or CredHistr.TransDate>=td) then begin
+      if (CredHistr.RecordType==0 and CredHistr.MainRecord==1) then begin
+        if (vInv[CredHistr.RecordNr]==false) then begin
+          IVr.SerNr = CredHistr.RecordNr;
+          if (ReadFirstMain(IVr,1,true)) then begin
+            aIVr[aIVr.length] = IVr;
+            vInv[CredHistr.RecordNr] = true; 
+          end;
         end;
       end;
     end;
@@ -1783,6 +1799,7 @@ begin
     lateamount = 0;
     invdate = td;
     BlockLoad(CMb);
+    BlockLoad(CIb);
     fullf = UseFullBuyoutProcedure;
     if (RepSpec.flags[1]==1) then begin
       sd = GetLastInvoiceDate(CredManr,invdate);
@@ -1838,8 +1855,7 @@ begin
 
     //create a new invoice and creata receipt
     BlockLoad(CMb);
-    BlockLoad(CIb);
-    SetupLoanInvoice(CredManr,CMb,IVr,td,"","",true,false,"",1,true);
+    SetupLoanInvoice2(CredManr,CMb,IVr,td,"","",true,false,"",1,true,CIb.BuyOutPayDeal);
     if (fullf==false) then begin
       IVr.OfficialSerNr = "";
       IVr.NoEmailFlag = 1;
@@ -1857,7 +1873,7 @@ begin
     end;
 
 //    if (fullf==false) then begin
-      SetupLoanInvoice(CredManr,CMb,IVr,td,"","",true,false,"",1,true);
+      SetupLoanInvoice2(CredManr,CMb,IVr,td,"","",true,false,"",1,true,CIb.BuyOutPayDeal);
       GetItemName(CMb.InstalmentItem,spec);
       AddBuyoutFee(CredManr,IVr,buyoutval-tval);
       StoreLoanInvoice(IVr,CredManr);
@@ -2202,7 +2218,7 @@ begin
     StoreLoanInvoice(IVr,CredManr);
   end;
   RecordClear(IVr);
-  CreateSingleAgreementInvoice2(CredManr,selldate,IVr,"",false,false);
+  CreateSingleAgreementInvoice2(CredManr,selldate,IVr,"",false,true);
 
   //recalculate schedule if there is one
   //unok the invoice

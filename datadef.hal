@@ -382,6 +382,9 @@ begin
   RecordField(AccessToDataUntil,M4Date,0,0); 
   RecordField(OldPassword,M4Long,0,0); 
   RecordField(DebtorsAcc,M4Code,20,AccVc);
+  KeyBegin(UserStr5);
+  KeySegment(UserStr5);
+  KeySegment(Code);
   EndRecordAdd;
   
   RecordBegin(ScoringSupVc,-,"");
@@ -772,7 +775,8 @@ begin
   RecordField(Surety4SignManager,M4Str,100,0);
   RecordField(Surety5SignManager,M4Str,100,0);
   RecordField(Surety6SignManager,M4Str,100,0);
-
+  RecordField(ForcePayDeal,M4Code,5,PDVc);
+  
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
   ArrayField(InvDate,M4Date,0,0);
@@ -960,6 +964,7 @@ begin
   RecordField(SuretyPersonLangCode2,M4Code,10,0);
   RecordField(BuyOutLangCode,M4Code,10,0);
   RecordField(InvOverdLangCode,M4Code,10,0);
+  RecordField(ScheduleNoFeesLangCode,M4Code,10,0);
 
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -1605,6 +1610,9 @@ begin
   RecordField(InsuranceCost,M4Code,20,0);
   RecordField(OverdueFrom,M4Date,0,0);
   RecordField(NewCalcForGrace,M4Int,0,0);
+  RecordField(BuyOutPayDeal,M4Code,5,PDVc);
+  RecordField(PremTermPrincpl,M4Code,20,0);
+  RecordField(StartDateForOverdue,M4Int,0,0);
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
@@ -1702,6 +1710,11 @@ begin
   RecordField(LivingAreaSize,M4Qty,0,0);
   RecordField(LivingUnit,M4Code,10,UnitVc);
   RecordField(UsagePermit,M4Int,0,0);
+  RecordField(StateChangeDate,M4Date,0,0);
+  RecordField(StateChangeTime,M4Time,0,0);
+  RecordField(StateNotified,M4Int,0,0);
+  RecordField(District,M4Str,255,0);
+  
   ArrayBegin(Math,-,1);
   ArrayField(OwnerCode,M4Code,20,CUVc);
   ArrayField(OwnerName,M4Str,255,0);
@@ -1716,6 +1729,11 @@ begin
   KeyBegin(SerialNo);
   KeySegment(SerialNo);
   KeySegment(SerNr);
+  KeyBegin(StateNotified);
+  KeySegment(StateNotified);
+  KeySegment(StateChangeDate);
+  KeySegment(StateChangeTime);
+  KeySegment(SerNr);  
   EndRecord;
 
   RecordBegin(CMPropertyTypeVc,-,"");
@@ -1963,6 +1981,7 @@ begin
   RecordField(UseCredManDaysInMonth,M4Int,0,0);
   RecordField(ShowLoanType7,M4Int,0,0);
   RecordField(ShowLoanType8,M4Int,0,0);
+  RecordField(ManualAgreeDate,M4Int,0,0);
   EndBlock;
 
   RecordBegin(CredManChangeVc,-,"");
@@ -2078,6 +2097,8 @@ begin
   RecordField(AgrDigital,M4Str,255,0);
   RecordField(AgrNotDigital,M4Str,255,0);
   RecordField(ScheduleFromLastAgrCh,M4Int,0,0);
+  RecordField(AgrDigital2,M4Str,255,0);
+  RecordField(ItemShortLang,M4Code,10,0);
   
   EndBlock;
 
@@ -2179,6 +2200,24 @@ begin
  	KeySegment(Name);
   KeySegment(Code);
   EndRecord;
+  
+  RecordBegin(PlegListDataVc,-,"");
+  RecordField(CredManNr,M4Long,0,0);
+  RecordField(RecordType,M4Int,0,0);
+  RecordField(RowNr,M4Int,0,0);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(CompCode,M4Code,50,0);
+  ArrayField(CompName,M4Str,255,0);
+  ArrayField(Value,M4Val,0,0);
+  ArrayField(Bal,M4Val,0,0);
+  ArrayField(BalDate,M4Date,0,0);
+  EndArray;
+  MainKeyBegin(CredManNr,0);
+  KeySegment(CredManNr);
+  KeySegment(RecordType);
+  KeySegment(RowNr);
+  EndRecord;  
   
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
