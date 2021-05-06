@@ -1001,19 +1001,13 @@ begin
       if (nonblank(CMb.RateItem)) then begin
         INr.Code = CMb.RateItem;
         if (ReadFirstMain(INr,1,true)) then begin
-          if(useditems[INr.Code]==false)then begin
-            useditems[INr.Code] = true;
             CheckOverdueInvoicesForItem(CredManr,CMb,CIb.OverdueMonths,invdate,prevtd,latedays,lateinterest,INr.Code,intlastdate,lateformula,ratetype);
           end;
         end;
-      end;
       if (nonblank(CMb.InstalmentItem)) then begin
         INr.Code = CMb.InstalmentItem;
         if (ReadFirstMain(INr,1,true)) then begin
-          if(useditems[INr.Code]==false)then begin
-            useditems[INr.Code] = true;
             CheckOverdueInvoicesForItem(CredManr,CMb,CIb.OverdueMonths,invdate,prevtd,latedays,lateprincipal,INr.Code,overduetd,lateformula,ratetype);
-          end;
         end;
       end;
     end;
