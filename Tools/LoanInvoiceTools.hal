@@ -962,6 +962,8 @@ begin
   record CUVc CUr;
   Integer ratetype;
   vector boolean useditems;
+  integer notusedlatedays;
+  array string 255 notusedlateformula;
   
   ClearStringArray(lateformula);
   latedays = 0;
@@ -989,8 +991,8 @@ begin
         calcsd = prevtd;
       end;
       //we should go through the history and check for late payments
+      ratetype = GetRateType(CredManr);
       if (nonblank(CIb.OverdueItemClass)) then begin
-        ratetype = GetRateType(CredManr);
         while (LoopKey("DICode:" & CIb.OverdueItemClass,INr,1,true)) begin
           if(useditems[INr.Code]==false)then begin
             useditems[INr.Code] = true;
@@ -1001,13 +1003,13 @@ begin
       if (nonblank(CMb.RateItem)) then begin
         INr.Code = CMb.RateItem;
         if (ReadFirstMain(INr,1,true)) then begin
-            CheckOverdueInvoicesForItem(CredManr,CMb,CIb.OverdueMonths,invdate,prevtd,latedays,lateinterest,INr.Code,intlastdate,lateformula,ratetype);
+            CheckOverdueInvoicesForItem(CredManr,CMb,CIb.OverdueMonths,invdate,prevtd,notusedlatedays,lateinterest,INr.Code,intlastdate,notusedlateformula,ratetype);
           end;
         end;
       if (nonblank(CMb.InstalmentItem)) then begin
         INr.Code = CMb.InstalmentItem;
         if (ReadFirstMain(INr,1,true)) then begin
-            CheckOverdueInvoicesForItem(CredManr,CMb,CIb.OverdueMonths,invdate,prevtd,latedays,lateprincipal,INr.Code,overduetd,lateformula,ratetype);
+            CheckOverdueInvoicesForItem(CredManr,CMb,CIb.OverdueMonths,invdate,prevtd,notusedlatedays,lateprincipal,INr.Code,intlastdate,notusedlateformula,ratetype);//was overduetd
         end;
       end;
     end;
