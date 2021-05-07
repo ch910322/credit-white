@@ -3254,7 +3254,7 @@ begin
   boolean res;
   
   res = false;
-  if (invoicenr>-1) then begin
+  if ((invoicenr>-1) and (credmannr>-1)) then begin
     CredHistr.RecordType = kCredHistRecTypeInvoice;
     CredHistr.RecordNr = invoicenr;
     if (ReadFirstKey("RecordNr",CredHistr,2,true)) then begin
