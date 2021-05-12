@@ -16,6 +16,35 @@ external outer function Boolean UseCompensationInvoices();
 external outer function Boolean UseBuyoutSummary();
 external outer function Boolean ShowPartialBuyoutOptions();
 
+
+function string 255 getStatusText(integer status)
+begin
+  string 255 res;
+  switch(status)begin
+    case 0: res = "New";
+    case 1: res = "Approved";
+    case 2: res = "Signed";
+    case 3: res = "Active";
+    case 4: res = "Disbursed";
+    case 5: res = "Cancelled";
+    case 6: res = "Paused";
+    case 7: res = "Finished";
+  end;
+  
+  getStatusText = res;
+return;
+end;
+
+
+global
+function string 255 CredMangetStatusText(var record CredManVc CredManr)
+begin
+
+  CredMangetStatusText = getStatusText(CredManr.Status);
+  return;
+end;
+
+
 procedure ShowCredManLClassWindow(Integer type)
 begin
   real v,h;
@@ -75,16 +104,30 @@ begin
     HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass8Btn","Credit Limit");
   end;
   HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClassBtn","All");
-  RecordList(4,v+=20,-21,-39);
-  RlColKey(4,2,"N_o.",SerNr,false,TypeSerNr);
-  RlColKey(90,90,"Legal No.",OfficialSerNr,false,OfficialSerNr);
-  RlColKeyTL(200,200,"OK",M4Mark,OKFlag,false,TypeOKFlag);
-  RlColKeyTL(250,250,"Approved",M4Mark,Approved,false,TypeApproved);
-  RlColKey(310,310,"Cust.",CustCode,false,TypeCustCode);
-  RlColKey(380,380,"Name",Addr0,false,TypeName);
-  RlColKey(-270,-270,"Start",startDate,false,TypestartDate);
-  RlColKey(-180,-180,"End",endDate,false,TypeendDate);
-  RlColKey(-90,-90,"Sum",InvSum4,false,TypeInvSum4);
+  if(ISb.AgreeListClassType==0)then begin//Default
+    RecordList(4,v+=20,-21,-39);
+    RlColKey(4,2,"N_o.",SerNr,false,TypeSerNr);
+    RlColKey(90,90,"Legal No.",OfficialSerNr,false,OfficialSerNr);
+    RlColKeyTL(200,200,"OK",M4Mark,OKFlag,false,TypeOKFlag);
+    RlColKeyTL(250,250,"Approved",M4Mark,Approved,false,TypeApproved);
+    RlColKey(310,310,"Cust.",CustCode,false,TypeCustCode);
+    RlColKey(380,380,"Name",Addr0,false,TypeName);
+    RlColKey(-270,-270,"Start",startDate,false,TypestartDate);
+    RlColKey(-180,-180,"End",endDate,false,TypeendDate);
+    RlColKey(-90,-90,"Sum",InvSum4,false,TypeInvSum4);
+  end;
+  if(ISb.AgreeListClassType==1)then begin//
+    RecordList(4,v+=20,-21,-39);
+    RlColKey(4,2,"N_o.",SerNr,false,TypeSerNr);
+    RlColKey(90,90,"Legal No.",OfficialSerNr,false,OfficialSerNr);
+    RlColKey(210,210,"Cust.",CustCode,false,TypeCustCode);
+    RlColKey(280,280,"Name",Addr0,false,TypeName);
+    RlColKey(-340,-340,"Start",startDate,false,TypestartDate);
+    RlColKey(-270,-270,"End",endDate,false,TypeendDate);
+    RlColKey(-180,-180,"Sum",InvSum4,false,TypeInvSum4);
+    CalculatedColumn(-90,-90,"Status","CredMangetStatusText",false);
+  end;
+  
   SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0);
   SpecialMenu("Receipt",'r',1,"ReceiptCredManLsm");
   SearchField("Search");
@@ -3328,7 +3371,7 @@ end;
 window CMInterfaceSetTClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  real h,v,vs,v2,vs2,hm;
+  real h,v,vs,v2,vs2,hm,h2;
 
   WindowBegin("Credit Management Settings",CMInterfaceSetTClass,CGSbl,-);
   SetBlid(CMInterfaceSetBlock);
@@ -3352,7 +3395,12 @@ begin
   end;
   RadioButton(h,v+=16,7,0,"Credit Line",DefCredManLoanType); 
   RadioButton(h,v+=16,8,0,"Credit Limit",DefCredManLoanType); 
-
+  
+  h2 = h+200;
+  ButtonFrame(h2,v2=40,150,2,"Agreement list column set");
+  RadioButton(h2,v2,0,0,"Default",AgreeListClassType);
+  RadioButton(h2,v2+=16,1,0,"# 1",AgreeListClassType);
+  
   CheckBox(h,v+=30,0,"Display Loan",ShowLoanType1);
   CheckBox(h,v+=16,0,"Display Leasing",ShowLoanType2);
   CheckBox(h,v+=16,0,"Display Mortgage",ShowLoanType3);
