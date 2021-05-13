@@ -2670,11 +2670,11 @@ begin
     EditField(h2,v,100,"VAT",Normal,RepValVAT,false,0);
     EditField(h3=h2+150,v,-40,"Total",Normal,RepValTot,false,0);
   end;
-  EditField(h,v+=vs,100,"Evaluator",Normal,Evaluator,false,CUSClass);
+  EditField(h,v+=vs,100,"Evaluator",Normal,Evaluator,false,AllCUSClass);
   EditField(h2,v,-40,"Evaluator Name",Normal,EvaluatorName,false,0);
   EditField(h,v+=vs,100,"Evaluated Value",Normal,EvalVal,false,0);
   EditField(h2,v,100,"Evaluation Date",Normal,EvalDate,false,PasteCurDate);
-  EditField(h,v+=vs,100,"Insurance Company",Normal,InsuranceCompany,false,CUSClass);
+  EditField(h,v+=vs,100,"Insurance Company",Normal,InsuranceCompany,false,AllCUSClass);
   EditField(h2,v,-40,"Name",Normal,InsuranceName,false,0);
   EditField(h,v+=vs,100,"Insurance Type",Normal,InsuranceType,false,CMInsuranceTypeSClass);
   vm = v;
