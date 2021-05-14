@@ -466,7 +466,6 @@ BEGIN
   
    StartFormat(15);
     OutEmpty(RepSpec,1);
-    OutLongInt(50,"DblCredManVc",IVr.CustCredManNr,false);
     if (RepSpec.flags[23]!=0) then begin
       tstr = IVr.OfficialSerNr;
       if (HasLocalization("HRV")) then begin 
@@ -1156,9 +1155,6 @@ BEGIN
   if (RepSpec.ArtMode==1) then begin
     StartFormat(15);
      OutString(0,0,USetStr(2426),false);
-     //CUST-BEGIN     
-     OutString(50,0,UsetStr(9000010),false);
-     //CUST-END
      if (RepSpec.flags[23]!=0) then begin
 //       OutString(100,0,USetStr(2423),false);
      end else begin

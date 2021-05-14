@@ -2307,46 +2307,6 @@ begin
   return;
 end;
 
-/**
-returns interest from the last DUE period till date specified
-*/
-function val GetLastDuePeriodInterest(record CredManVc CredManr, record CredManPayPlanVc CredManPayPlanr, date untildate)
-begin
-  row CredManPayPlanVc CredManPayPlanrw;
-  record IVVc IVr;
-  integer i,rwcnt,lasti;
-  date lastduedate;
-  val res;
-  boolean foundf;
-  
-  foundf = false;
-  rwcnt = MatRowCnt(CredManPayPlanr);
-  for (i=0;i<rwcnt;i=i+1) begin
-    MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
-    switch (CredManPayPlanrw.PlanType) begin
-      case kEventTypeIssueInterest:
-        if (CredManPayPlanrw.IssuedNr!=-1) then begin
-          IVr.SerNr = CredManPayPlanrw.IssuedNr;
-          if (ReadFirstMain(IVr,1,true)) then begin
-            if ((lastduedate<IVr.PayDate) and (IVr.PayDate<=untildate)) then begin
-              lastduedate = IVr.PayDate;
-              lasti = i;
-              foundf = true;
-            end;
-          end;
-        end;
-    end;
-  end;
-  if (foundf) then begin
-    MatRowGet(CredManPayPlanr,lasti,CredManPayPlanrw);
-    //TODO: calc interest rate from CredManPayPlanrw.FromDate to  untildate
-
-    //res = GetRateAmount(CredManr,CredManr.IntRate,)
-  end;
-  GetLastDuePeriodInterest = res;
-  return;
-end;
-
 global
 procedure CheckBuyOutAgreement2(record CredManVc CredManr,var record RcVc RepSpec,Boolean balancef)
 begin
@@ -2367,7 +2327,6 @@ begin
   val principlelateamount,interestlateamount;
   val t;
   val notlateprinciple,notlateinterest;
-  val currperiodinterest;
   
 logtext(0,"CheckBuyOutAgreement start");
 //LogText(0,"aa RepSpec.d1=" & RepSpec.d1); //d1 is CurrentDate here. Why?
@@ -2410,8 +2369,6 @@ logtext(0,"CheckBuyOutAgreement start");
   RepSpec.f10 = principlelateamount;//f20 - the last fxx
   RepSpec.f11 = interestlateamount;
   RepSpec.f15 = t + notlateprinciple; //GetActualBalance(CredManr,CredManPayPlanr,true);PLUS total of all OPEN, but NOT overdue principle
-  currperiodinterest = GetLastDuePeriodInterest(CredManr,CredManPayPlanr,RepSpec.d1);//should display interest from the last DUE period till today.
-  
   gSilenceIVOpenPrepExists = false;
 
 logtext(0,"CheckBuyOutAgreement end");

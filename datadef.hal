@@ -2114,7 +2114,6 @@ begin
   RecordField(CredManClass,M4Code,20,CredManClassVc);
   RecordField(SalesGroup,M4Code,5,SalesGroupVc);
   RecordField(EvaluationType,M4Int,0,0);
-  RecordField(OrderClass,M4UStr,60,0);
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(ActType);

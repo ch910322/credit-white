@@ -100,35 +100,8 @@ begin
   return;
 end;
 
-function boolean GetManagerApplicationCount(string user,string apporderclass,var longint ev)
-begin
-  boolean res;
-  longint pos;
-  record B2BLoanApplicationVc LAr;
-  string 255 tstr;
-  boolean found;
-  
-  ev = 0;
-  res = false;
-  while (GetNextSubString(apporderclass,pos,",",tstr)) begin
-    ResetLoop(LAr);
-    LAr.OrderClass = tstr;
-    found = true;
-    while (LoopKey("OrderClass",LAr,1,found)) begin
-      if (LAr.OrderClass!=tstr) then begin
-        found = false;
-      end;
-      if ((found) and (LAr.Manager==user)) then begin
-        res = true;
-        ev = ev + 1;
-      end;
-    end;
-  end;
-  GetManagerApplicationCount = res;
-  return;
-end;
 
-function boolean GetManagerWorkLoadEvaluation(string user,Integer EvaluationType,string apporderclass,date d,var longint ev)
+function boolean GetManagerWorkLoadEvaluation(string user,Integer EvaluationType,date d,var longint ev)
 begin
   record ActVc Actr;
   boolean testf,foundf,res;
@@ -136,39 +109,35 @@ begin
 
   ev = 0;
   res = false;
-  if (EvaluationType==3) then begin
-    res = GetManagerApplicationCount(user,apporderclass,ev);
-  end else begin
-    keystr = "OKFlagUserMain:" & user;
-    Actr.OKFlag = 0;
-    Actr.MainPersons = user;
-    foundf = true;
-    while (LoopKey(keystr,Actr,1,foundf)) begin
-      if (!SetInSet(user,Actr.MainPersons)) then begin
-        foundf = false;
-      end; 
-      if (Actr.OKFlag != 0) then begin
-        foundf = false;
-      end;
-      if (foundf) then begin
-        switch (EvaluationType) begin
-          case 0: 
-            if (Actr.TransDate == d) then begin
-              ev = ev + TimeToMinutes(Actr.CostTime);
-              res = true;
-            end;
-          case 1:
-            if (Actr.TransDate == d) then begin
-              ev = ev +1;
-              res = true;
-            end;    
-          case 2:
-            ev = ev +1;  
-            res = true;          
-        end;  
+  keystr = "OKFlagUserMain:" & user;
+  Actr.OKFlag = 0;
+  Actr.MainPersons = user;
+  foundf = true;
+  while (LoopKey(keystr,Actr,1,foundf)) begin
+    if (!SetInSet(user,Actr.MainPersons)) then begin
+      foundf = false;
+    end; 
+    if (Actr.OKFlag != 0) then begin
+      foundf = false;
+    end;
+    if (foundf) then begin
+      switch (EvaluationType) begin
+        case 0: 
+          if (Actr.TransDate == d) then begin
+            ev = ev + TimeToMinutes(Actr.CostTime);
+            res = true;
+          end;
+        case 1:
+          if (Actr.TransDate == d) then begin
+            ev = ev +1;
+            res = true;
+          end;    
+        case 2:
+          ev = ev +1;  
+          res = true;          
       end;  
     end;  
-  end;
+  end;  
   GetManagerWorkLoadEvaluation = res;
   return;
 end;
@@ -235,7 +204,7 @@ begin
          TrHs = false;
       end;
       if (TrHs) then begin
-        if (GetManagerWorkLoadEvaluation(Userr.Code,MWr.EvaluationType,MWr.OrderClass,d,ev)) then begin
+        if (GetManagerWorkLoadEvaluation(Userr.Code,MWr.EvaluationType,d,ev)) then begin
           if ((prevev==-1) or (ev <= prevev)) then begin
             res = Userr.Code;
             prevev = ev;  
