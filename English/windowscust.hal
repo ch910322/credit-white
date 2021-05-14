@@ -3592,10 +3592,12 @@ begin
   EditField(h3,v,80,"Agreement Type",Normal,CredManType,false,CredManTypeSClass);
   EditField(h,v+=vs,80,"Agreement Type Class",Normal,CredManClass,false,CredManClassSClass);
   EditField(h2,v,80,"Sales Group",Normal,SalesGroup,false,SalesGroupSClass);
-  ButtonFrame(h,v+=40,150,3,"Evaluation");
+  ButtonFrame(h,v+=40,200,6,"Evaluation");
   RadioButton(h,v,0,0,"Total Booked Time",EvaluationType);
   RadioButton(h,v+=16,1,0,"Today Task Quantity",EvaluationType); 
   RadioButton(h,v+=16,2,0,"Total Task Quantity",EvaluationType); 
+  RadioButton(h,v+=16,3,0,"Total Applications with status",EvaluationType); 
+  EditField(h+70,v+=vs,120,"Status",Normal,OrderClass,false,OrderClassSClass);
   EndWindow;
 end;
 
