@@ -1423,6 +1423,7 @@ begin
   ArrayField(ActType,M4Code,20,0);
   ArrayField(ActText,M4Str,255,0);
   ArrayField(AtTime,M4Time,0,0);
+  ArrayField(EmailStdText,M4Code,10,0);
   EndArray;
   EndBlock;
 
