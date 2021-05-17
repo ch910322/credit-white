@@ -1,0 +1,131 @@
+external inner function Date DateFromString(string,string);
+external inner function val ValFromString(string,string,string);
+
+function string 2 ReplaceStrings(string tstr,string realstr,var integer movep)
+begin
+  string 2 res;
+
+  res = realstr;
+  movep = 1;
+
+  if left(tstr,4)=="&lt;" then begin
+    res = "<";
+    movep = 4;
+  end;
+  if left(tstr,4)=="&gt;" then begin
+    res = ">";
+    movep = 4;
+  end;
+  if left(tstr,6)=="&apos;" then begin
+    res = "'";
+    movep = 6;
+  end;
+  if left(tstr,6)=="&quot;" then begin
+    res = """";
+    movep = 6;
+  end;
+
+  ReplaceStrings = res;
+  return;
+end;
+
+function string 255 ReplaceWebStrings(string rstr)
+begin
+  longint ln,i;
+  string 10 tstr,tmp;
+  integer movep;
+  string 255 res;
+
+  i = 0;
+  while (i < len(rstr)) begin
+    tmp = mid(rstr,i,1);
+    tstr = mid(rstr,i,6);
+    tmp = ReplaceStrings(tstr,tmp,movep);
+    res = res & tmp;
+    i = i + movep;
+  end;
+
+  ReplaceWebStrings = res;
+  return;
+end;
+
+function string 255 XmlGetFrom(xml axml,string node,string attributestr)
+begin
+  string 255 res;
+  
+  if(blank(attributestr))then begin
+    res = XmlGet(axml,node);
+  end else begin
+    res = XmlGetAttribute(axml,node,attributestr);
+  end;
+  
+  XmlGetFrom = res;
+return;
+end;
+
+global procedure CreditInfoFileAsignB2BLoanApplicationVc(var record B2BLoanApplicationVc LAr,xml axml)
+begin
+record CreditinfoFieldAssignBlock CABb;
+row CreditinfoFieldAssignBlock CABrw;
+integer i,rwcnt;
+string 255 lang,params,url,path,root,tstr,fn,name,surname,datestr,datestr1,datestr2;
+integer ckbox;
+
+  //root = "root/BasicInfo";
+  
+  blockload(CABb);
+  rwcnt = matrowcnt(CABb);
+  for(i=0;i<rwcnt;i=i+1)begin
+    matrowget(CABb,i,CABrw);
+    if(nonblank(CABrw.FieldName))then begin
+      if(CABrw.Register=="B2BLoanApplicationVc")then begin
+        if(nonblank(CABrw.ImportNode))then begin
+          if(nonblank(XmlGet(axml,root & CABrw.ImportNode)))then begin
+            switch(CABrw.DataType)begin
+              case M4Str: SetFieldValueByName(LAr,CABrw.FieldName,XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute),-1);
+              case M4Date: SetFieldValueByName(LAr,CABrw.FieldName,DateFromString(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute),"YYYY.MM.DD"),-1);
+              case M4Chk: ckbox = 0;
+                          if (XmlNodeExists(axml,root & CABrw.ImportNode)) then begin
+                            ckbox = 1;
+                          end;
+                          if(CABrw.Invert==1)then begin
+                            if(ckbox==0)then begin
+                              ckbox = 1;
+                            end else begin
+                              ckbox = 0;
+                            end;
+                          end;
+                          SetFieldValueByName(LAr,CABrw.FieldName,ckbox,-1);
+               case M4Val:SetFieldValueByName(LAr,CABrw.FieldName,ValFromString(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute),","," "),-1);
+              
+              
+            end;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+return;
+end;
+
+global procedure CreditInfoFileAsignCUVc(var record CUVc CUr,xml axml)
+begin
+record CreditinfoFieldAssignBlock CABb;
+row CreditinfoFieldAssignBlock CABrw;
+integer i,rwcnt;
+string 255 lang,params,url,path,root,tstr,fn,name,surname,datestr,datestr1,datestr2;
+
+  root = "root/BasicInfo";
+  
+  blockload(CABb);
+  rwcnt = matrowcnt(CABb);
+  for(i=0;i<rwcnt;i=i+1)begin
+    matrowget(CABb,i,CABrw);
+    if(CABrw.Register=="CUVc")then begin
+      
+    end;
+  end;
+
+return
+end;
