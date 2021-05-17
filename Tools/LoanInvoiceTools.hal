@@ -3233,14 +3233,21 @@ global
 function boolean CheckIPCredManNr(longint credmannr,record IPVc IPr)
 begin
   record CredHistVc CredHistr;
-  boolean res;
+  boolean res,TrHs;
   
   res = false;
   CredHistr.RecordNr = IPr.SerNr;
   CredHistr.RecordType = kCredHistRecTypeReceipt;
-  if (ReadFirstKey("RecordNr",CredHistr,2,true)) then begin
-    if (CredHistr.CredManNr==credmannr) then begin
-      res = true;
+  TrHs = true;
+  while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+    if (CredHistr.RecordNr!=IPr.SerNr) or (CredHistr.RecordType!=kCredHistRecTypeReceipt) then begin
+      TrHs = false;
+    end;
+    if (TrHs) then begin
+      if (CredHistr.CredManNr==credmannr) then begin
+        res = true;
+        TrHs = false;
+      end;
     end;
   end;
   CheckIPCredManNr = res;

@@ -32,7 +32,8 @@ BEGIN
   record CredManClassVc CMClassr;
   record SalesGroupVc SalesGroupr;
   record ManagerWorkloadVc MWrtest;
-
+  boolean foundf;
+  
   res = 0;
   oldnr = MWr.SerNr;
   if (MWr.SerNr<=0) then begin
@@ -80,14 +81,27 @@ BEGIN
       goto LManagerWorkloadVcRecordCheck; 
     end;  
   end;
+  if (MWr.EvaluationType==3) then begin
+    if(blank(MWr.OrderClass)) then begin
+      RecordCheckError(2210,"",-1,"OrderClass");
+      res = -1;
+      goto LManagerWorkloadVcRecordCheck; 
+    end;
+  end;
   MWrtest.ActType = MWr.ActType;
   MWrtest.CredManType = MWr.CredManType;
   MWrtest.CredManClass = MWr.CredManClass;
   MWrtest.SalesGroup = MWr.SalesGroup;
-  if (ReadFirstKey("Unique",MWrtest,4,true)) then begin
+  foundf = true;
+  While (LoopKey("Unique",MWrtest,4,foundf)) begin
+    if ((MWrtest.ActType!=MWr.ActType) or (MWrtest.CredManType!=MWr.CredManType) or (MWrtest.CredManClass != MWr.CredManClass) or (MWrtest.SalesGroup != MWr.SalesGroup)) then begin
+      foundf = false;
+    end;
+    if ((foundf) and (MWrtest.SerNr!=MWr.SerNr)) then begin
     RecordCheckError(1032,"",-1,"ActType");
     res = -1;
     goto LManagerWorkloadVcRecordCheck;
+    end;
   end;  
   LManagerWorkloadVcRecordCheck:;
   if (res!=0) then begin MWr.SerNr = oldnr; end;

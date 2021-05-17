@@ -329,6 +329,7 @@ begin
   StrSetText(CredManChangeTransferDate,"Allow changing Money Transfer Date");
   StrSetText(CredManChangeInvoicedMonths,"Allow changing Credit Agreement Months when invoiced");
   StrSetText(AllowDifferentCredManSched,"Allow OKing Credit Agreement with different Agreement Schedule");
+  StrSetText(AllowMarkNoOverduesFees,"Allow marking No overdue fees");
   EndStrSet;
 
   SetBegin(2000);

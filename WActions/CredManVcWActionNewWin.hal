@@ -771,5 +771,66 @@ begin
   return;
 end;
 
+global
+function Boolean CredManDClassSkipOverDueButtonAction(Integer wn,Integer value)
+begin
+  CredManDClassSkipOverDueButtonAction = usercanaction("AllowMarkNoOverduesFees",false);
+  return;
+end;
 
+global
+function Boolean CredMan1DClassSkipOverDueButtonAction(Integer wn,Integer value)
+begin
+  CredMan1DClassSkipOverDueButtonAction = usercanaction("AllowMarkNoOverduesFees",false);
+  return;
+end;
+
+global
+function Boolean CredMan2DClassSkipOverDueButtonAction(Integer wn,Integer value)
+begin
+  CredMan2DClassSkipOverDueButtonAction = usercanaction("AllowMarkNoOverduesFees",false);
+  return;
+end;
+
+global
+function Boolean CredMan3DClassSkipOverDueButtonAction(Integer wn,Integer value)
+begin
+  CredMan3DClassSkipOverDueButtonAction = usercanaction("AllowMarkNoOverduesFees",false);
+  return;
+end;
+
+global
+function Boolean CredMan4DClassSkipOverDueButtonAction(Integer wn,Integer value)
+begin
+  CredMan4DClassSkipOverDueButtonAction = usercanaction("AllowMarkNoOverduesFees",false);
+  return;
+end;
+
+global
+function Boolean CredMan5DClassSkipOverDueButtonAction(Integer wn,Integer value)
+begin
+  CredMan5DClassSkipOverDueButtonAction = usercanaction("AllowMarkNoOverduesFees",false);
+  return;
+end;
+
+global
+function Boolean CredMan6DClassSkipOverDueButtonAction(Integer wn,Integer value)
+begin
+  CredMan6DClassSkipOverDueButtonAction = usercanaction("AllowMarkNoOverduesFees",false);
+  return;
+end;
+
+global
+function Boolean CredMan7DClassSkipOverDueButtonAction(Integer wn,Integer value)
+begin
+  CredMan7DClassSkipOverDueButtonAction = usercanaction("AllowMarkNoOverduesFees",false);
+  return;
+end;
+
+global
+function Boolean CredMan8DClassSkipOverDueButtonAction(Integer wn,Integer value)
+begin
+  CredMan8DClassSkipOverDueButtonAction = usercanaction("AllowMarkNoOverduesFees",false);
+  return;
+end;
 

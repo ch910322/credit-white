@@ -32,7 +32,7 @@ begin
       periodf = true;
     end;
     if (periodf) then begin
-      if (nonblank(lasted) and CSrw.Type==0 and (CSrw.Interest>0 or CSrw.Principle>0)) then begin
+      if (nonblank(lasted) and CSrw.Type==0 and nonblank(CSrw.FromDate) and (CSrw.Interest>0 or CSrw.Principle>0)) then begin
         if (lasted!=AddDay(CSrw.FromDate,-1)) then begin
           res = -1;
           RecordCheckError(200263,"",i,"FromDate");
@@ -40,7 +40,7 @@ begin
         end;
       end;
     end;
-    if (CSrw.Type==0) then begin
+    if (CSrw.Type==0 and nonblank(CSrw.ToDate)) then begin
       lasted = CSrw.ToDate;
     end;
   end;
