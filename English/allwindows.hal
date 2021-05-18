@@ -3767,3 +3767,15 @@ begin
   EndWindow;
 end;
 */
+
+window IVInfoRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs;
+  WindowBegin("Specify Invoice Status",IVInfoRClass,CGRcW,RcType);
+  SetWRect(20,80,520,220);
+  vs = 20;
+  EditFieldTL(h=150,v=6, 150,"Invoice No.",M4Long,Normal,0,long1,false,0);
+  CheckBox(h,v+=vs,0,"Payment status per item",flags[10]);
+  EndWindow;
+end;
