@@ -213,7 +213,7 @@ begin
   record CMInvoicingBlock CIb;
   record CredManAccVc CMAr;
   string 255 del;
-  boolean doforcepaydeal;
+  boolean doforcepaydeal,periodflag;
   
   doforcepaydeal = true;
   BlockLoad(LMb);
@@ -279,19 +279,27 @@ begin
       IVrw.Spec = CIb.InvoiceCommentStr & USetStr(200080) & CredManr.SerNr;
     end;
     MatRowPut(IVr,0,IVrw);
-    if (nonblank(fromdate)) then begin
-      ClearRow(IVr,IVrw,1);
-      del = ":";
-      if (nonblank(CIb.PeriodDelimiter)) then begin
-        del = CIb.PeriodDelimiter;
+    periodflag = true;
+    if(CIb.OverdueIVType!=0)then begin
+      if(invtype==2)then begin
+        periodflag = false;
       end;
+    end;
+    if(periodflag)then begin
+      if (nonblank(fromdate)) then begin
+        ClearRow(IVr,IVrw,1);
+        del = ":";
+        if (nonblank(CIb.PeriodDelimiter)) then begin
+          del = CIb.PeriodDelimiter;
+        end;
 
-      IVrw.Spec = CIb.InvoiceCommentStr & USetStr(200081) & fromdate & del & todate;
-      MatRowPut(IVr,1,IVrw);
-    end else begin
-      ClearRow(IVr,IVrw,1);
-      IVrw.Spec = " ";
-      MatRowPut(IVr,1,IVrw);      
+        IVrw.Spec = CIb.InvoiceCommentStr & USetStr(200081) & fromdate & del & todate;
+        MatRowPut(IVr,1,IVrw);
+      end else begin
+        ClearRow(IVr,IVrw,1);
+        IVrw.Spec = " ";
+        MatRowPut(IVr,1,IVrw);      
+      end;
     end;
     ClearRow(IVr,IVrw,1);
     IVrw.Spec = " ";
