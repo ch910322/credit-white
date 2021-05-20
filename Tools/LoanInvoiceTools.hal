@@ -1316,13 +1316,13 @@ begin
               case 0: AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
               case 1: 
                 SetupLoanInvoice(CredManr,CMb,oIVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno,2,true);
-                SetupOverdueLangCode(IVr,CredManr);
+                SetupOverdueLangCode(oIVr,CredManr);
                 AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
                 StoreLoanInvoice(oIVr,CredManr);
               case 2:
                 if (nonblank(CredManr.CancelDate)) then begin
                   SetupLoanInvoice(CredManr,CMb,oIVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno,2,true);
-                  SetupOverdueLangCode(IVr,CredManr);
+                  SetupOverdueLangCode(oIVr,CredManr);
                   AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
                   StoreLoanInvoice(oIVr,CredManr);
                 end;
@@ -1372,7 +1372,7 @@ begin
         case 1: 
           SetupLoanInvoice(CredManr,CMb,oIVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,true,false,ivno,2,true);
           AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
-          SetupOverdueLangCode(IVr,CredManr);
+          SetupOverdueLangCode(oIVr,CredManr);
           StoreLoanInvoice(oIVr,CredManr);
       end;
     end;
@@ -1504,7 +1504,7 @@ begin
       case 0: AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
       case 1: 
         SetupLoanInvoice(CredManr,CMb,oIVr,CSrw.InvDate,CSrw.FromDate,CSrw.ToDate,true,false,"",2,true);
-        SetupOverdueLangCode(IVr,CredManr);
+        SetupOverdueLangCode(oIVr,CredManr);
         AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
         if (updf) then begin
           qupdating.StoreLoanInvoice(oIVr,CredManr);
@@ -1512,7 +1512,7 @@ begin
       case 2:
         if (nonblank(CredManr.CancelDate)) then begin
           SetupLoanInvoice(CredManr,CMb,oIVr,CSrw.InvDate,CSrw.FromDate,CSrw.ToDate,true,false,"",2,true);
-          SetupOverdueLangCode(IVr,CredManr);
+          SetupOverdueLangCode(oIVr,CredManr);
           AddLateFees(CredManr,CMb,oIVr,latedays,lateamount,lateformula);
           if (updf) then begin
             qupdating.StoreLoanInvoice(oIVr,CredManr);
