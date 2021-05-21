@@ -612,6 +612,7 @@ begin
   */
 
   latefeedays = GetCredManLateFees(CredManr,tempsd,tempsd);
+  logtext(0,"latefeedays                         " & latefeedays);
 
   ClearArray(amounts);
   ClearArray(period);
@@ -678,9 +679,8 @@ begin
       end;   
     end; 
     
-    if (CredManr.LateFeeDays<daydiff2) then begin
+    if (latefeedays<daydiff2) then begin
       for (i=0;i<daydiff3;i=i+1) begin
-        logtext(0,CredHistr.RecordNr & " daydiff3 " & daydiff3 & "   " & addday(df,-daydiff3+1) & " -- " & df);
         amounts[amounts.length] = paysum;
         daycnt[daycnt.length] = GetMonthDays(AddDay(tempsd,i));
         period[period.length] = addday(df,-daydiff3+1) & " -- " & df;
