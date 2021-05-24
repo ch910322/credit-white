@@ -309,6 +309,9 @@ begin
   SString(200303,"Grace Period already registered");
   SString(200309,"Only one of ""Premature Term. Fee %"" or ""Premature Term. Months"" should be filled in");
 
+  /*IVInfoRn*/
+  SString(200310,"Item Total Incl VAT");
+  
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");
   StrSetText(B2BLoanApplicationVc,"Loan Applications");
@@ -329,6 +332,7 @@ begin
   StrSetText(CredManChangeTransferDate,"Allow changing Money Transfer Date");
   StrSetText(CredManChangeInvoicedMonths,"Allow changing Credit Agreement Months when invoiced");
   StrSetText(AllowDifferentCredManSched,"Allow OKing Credit Agreement with different Agreement Schedule");
+  StrSetText(AllowMarkNoOverduesFees,"Allow marking No overdue fees");
   EndStrSet;
 
   SetBegin(2000);

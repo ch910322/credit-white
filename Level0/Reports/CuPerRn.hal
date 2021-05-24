@@ -272,15 +272,7 @@ LCustListTransAnotherCurrency:;
               goto L55;
             end;  
           end;
-          //CUST-BEGIn
-        testcmf = true;
-        if (nonblank(RepSpec.f15)) then begin
-          testcmf = CheckIPCredManNr(RepSpec.f15,IPr);
-        end;
-        if (testcmf) then begin
-      //CUST-END  
           CUPer_PrintReceipt(RepSpec,IPr,CUp,bascur,IPrsr,aipnr,acnt,balp,SumDebet,SumCredit,totloss,totgain,pos1,pos2,fwdbalinvoices,statmentcurrency,remainingcurrencies,vreportedcurncy);
-        end;
 //  PrintCurncyTotals(ipacur,ipav1,ipav2,ipav3,ipcurcnt,4,480,-1,300,false,RepSpec.PocketPC);
         end;
       end;
@@ -619,7 +611,7 @@ begin
      end;  
    end;
    //CUST-BEGIN
-   if (nonblank(RepSpec.f15)) then begin
+  if (nonblank(RepSpec.f15)) then begin
     tstr = USetStr(200080) & RepSpec.f15;
     Header(rw,tstr,1);
     rw = rw + 1;

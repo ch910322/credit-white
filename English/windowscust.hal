@@ -16,6 +16,35 @@ external outer function Boolean UseCompensationInvoices();
 external outer function Boolean UseBuyoutSummary();
 external outer function Boolean ShowPartialBuyoutOptions();
 
+
+function string 255 getStatusText(integer status)
+begin
+  string 255 res;
+  switch(status)begin
+    case 0: res = "New";
+    case 1: res = "Approved";
+    case 2: res = "Signed";
+    case 3: res = "Active";
+    case 4: res = "Disbursed";
+    case 5: res = "Cancelled";
+    case 6: res = "Paused";
+    case 7: res = "Finished";
+  end;
+  
+  getStatusText = res;
+return;
+end;
+
+
+global
+function string 255 CredMangetStatusText(var record CredManVc CredManr)
+begin
+
+  CredMangetStatusText = getStatusText(CredManr.Status);
+  return;
+end;
+
+
 procedure ShowCredManLClassWindow(Integer type)
 begin
   real v,h;
@@ -75,16 +104,30 @@ begin
     HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClass8Btn","Credit Limit");
   end;
   HalPushButton(h+=10,v=5,h+=100,v+=20,"CredManLClassBtn","All");
-  RecordList(4,v+=20,-21,-39);
-  RlColKey(4,2,"N_o.",SerNr,false,TypeSerNr);
-  RlColKey(90,90,"Legal No.",OfficialSerNr,false,OfficialSerNr);
-  RlColKeyTL(200,200,"OK",M4Mark,OKFlag,false,TypeOKFlag);
-  RlColKeyTL(250,250,"Approved",M4Mark,Approved,false,TypeApproved);
-  RlColKey(310,310,"Cust.",CustCode,false,TypeCustCode);
-  RlColKey(380,380,"Name",Addr0,false,TypeName);
-  RlColKey(-270,-270,"Start",startDate,false,TypestartDate);
-  RlColKey(-180,-180,"End",endDate,false,TypeendDate);
-  RlColKey(-90,-90,"Sum",InvSum4,false,TypeInvSum4);
+  if(ISb.AgreeListClassType==0)then begin//Default
+    RecordList(4,v+=20,-21,-39);
+    RlColKey(4,2,"N_o.",SerNr,false,TypeSerNr);
+    RlColKey(90,90,"Legal No.",OfficialSerNr,false,OfficialSerNr);
+    RlColKeyTL(200,200,"OK",M4Mark,OKFlag,false,TypeOKFlag);
+    RlColKeyTL(250,250,"Approved",M4Mark,Approved,false,TypeApproved);
+    RlColKey(310,310,"Cust.",CustCode,false,TypeCustCode);
+    RlColKey(380,380,"Name",Addr0,false,TypeName);
+    RlColKey(-270,-270,"Start",startDate,false,TypestartDate);
+    RlColKey(-180,-180,"End",endDate,false,TypeendDate);
+    RlColKey(-90,-90,"Sum",InvSum4,false,TypeInvSum4);
+  end;
+  if(ISb.AgreeListClassType==1)then begin//
+    RecordList(4,v+=20,-21,-39);
+    RlColKey(4,2,"N_o.",SerNr,false,TypeSerNr);
+    RlColKey(90,90,"Legal No.",OfficialSerNr,false,OfficialSerNr);
+    RlColKey(210,210,"Cust.",CustCode,false,TypeCustCode);
+    RlColKey(280,280,"Name",Addr0,false,TypeName);
+    RlColKey(-340,-340,"Start",startDate,false,TypestartDate);
+    RlColKey(-270,-270,"End",endDate,false,TypeendDate);
+    RlColKey(-180,-180,"Sum",InvSum4,false,TypeInvSum4);
+    CalculatedColumn(-90,-90,"Status","CredMangetStatusText",false);
+  end;
+  
   SpecMenuGroup("",kSpecMenuGroupTypeExtendedPlusMenu,0);
   SpecialMenu("Receipt",'r',1,"ReceiptCredManLsm");
   SearchField("Search");
@@ -860,13 +903,18 @@ begin
   EditField(h3+30,v,-40,"Monthly Payment Day",Normal,MonthlyPaymentDay,true,0);
   vm = v;
   EditField(h,v+=vs,100,"Total Sum",Normal,Sum,true,0);
-  EditField(h2,v+vs,100,"Monthly Repayment",Normal,MonthlyRepayment,true,0);
+  EditField(h2,v+=vs,100,"Monthly Repayment",Normal,MonthlyRepayment,true,0);
+  EditField(h2,v+=vs,50,"Principle Delay Months",Normal,PrincipleDelayMonths,false,0);
   EditField(h3,v,130,"Manager",Normal,Manager,false,UserSClass);
+  v = v-2*vs;
   EditField(h,v+=vs,100,"Months",Normal,Months,true,0);
   EditField(h,v+=vs,100,"Monthly Rate %",Normal,InterestRate,true,0);
   //EditField(h,v+=vs,100,"Start Date",Normal,StartDate,false,PasteCurDate);
   //EditField(h,v+=vs,100,"End Date",ViewOnly,EndDate,false,0);
+  //CUST-BEGIN
   
+  CheckBox(h+105,v+vs,0,"Annual",AnnualRate);
+  //CUST-END
   v=v-(vs);
   HalPushButton(h3-70,v,h3+30,v+25,"B2BLoanAppCalculate","Calculate");
   HalPushButton(h3+60,v,h3+160,v+25,"B2BLoanAppEvaluate","Evaluate");
@@ -1771,7 +1819,7 @@ begin
   real h,v,vs,v2,vs2,hm;
   WindowBegin("Automatic Tasks",CredManAutoTaskTClass,CGHbl,HBlRecType);
   SetBlid(CredManAutoTaskBlock);
-  SetWRect(20,80,900,351);
+  SetWRect(20,80,960,351);
   Sizeable(-1,-1,0,0);
   if (GuiType==kGuiCocoa) then begin
     MatrixBegin(h,v,-31,-20,-,199);
@@ -1787,6 +1835,7 @@ begin
   MatCol(1,540,"Manager",0,Manager,false,UserSClass);
   MatCol(1,620,"Act. Type",0,ActType,false,ActTypeSClass);
   MatCol(1,680,"Act. Text",0,ActText,false,0);
+  MatCol(1,-60,"Email Text",0,EmailStdText,false,LTxtSClass);
   EndMatrix;
   EndWindow;
 end;
@@ -2609,7 +2658,7 @@ begin
     EditField(h,v+=vs,150,"City",Normal,Addr2,false,0);
     EditField(h,v+=vs,150,"Address",Normal,Addr3,false,0);
     EditField(h,v+=vs,150,"District",Normal,District,false,0);
-    EditField(h,v+=vs,150,"ZIP",Normal,Addr4,false,0);
+    //EditField(h,v+=vs,150,"ZIP",Normal,Addr4,false,0);comented
     EditField(h,v+=vs,100,"Reported Value",Normal,RepVal,false,0);
   end else begin
     if (type==0) then begin
@@ -2622,11 +2671,11 @@ begin
     EditField(h2,v,100,"VAT",Normal,RepValVAT,false,0);
     EditField(h3=h2+150,v,-40,"Total",Normal,RepValTot,false,0);
   end;
-  EditField(h,v+=vs,100,"Evaluator",Normal,Evaluator,false,CUSClass);
+  EditField(h,v+=vs,100,"Evaluator",Normal,Evaluator,false,AllCUSClass);
   EditField(h2,v,-40,"Evaluator Name",Normal,EvaluatorName,false,0);
   EditField(h,v+=vs,100,"Evaluated Value",Normal,EvalVal,false,0);
   EditField(h2,v,100,"Evaluation Date",Normal,EvalDate,false,PasteCurDate);
-  EditField(h,v+=vs,100,"Insurance Company",Normal,InsuranceCompany,false,CUSClass);
+  EditField(h,v+=vs,100,"Insurance Company",Normal,InsuranceCompany,false,AllCUSClass);
   EditField(h2,v,-40,"Name",Normal,InsuranceName,false,0);
   EditField(h,v+=vs,100,"Insurance Type",Normal,InsuranceType,false,CMInsuranceTypeSClass);
   vm = v;
@@ -3328,7 +3377,7 @@ end;
 window CMInterfaceSetTClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  real h,v,vs,v2,vs2,hm;
+  real h,v,vs,v2,vs2,hm,h2;
 
   WindowBegin("Credit Management Settings",CMInterfaceSetTClass,CGSbl,-);
   SetBlid(CMInterfaceSetBlock);
@@ -3352,7 +3401,12 @@ begin
   end;
   RadioButton(h,v+=16,7,0,"Credit Line",DefCredManLoanType); 
   RadioButton(h,v+=16,8,0,"Credit Limit",DefCredManLoanType); 
-
+  
+  h2 = h+200;
+  ButtonFrame(h2,v2=40,150,2,"Agreement list column set");
+  RadioButton(h2,v2,0,0,"Default",AgreeListClassType);
+  RadioButton(h2,v2+=16,1,0,"# 1",AgreeListClassType);
+  
   CheckBox(h,v+=30,0,"Display Loan",ShowLoanType1);
   CheckBox(h,v+=16,0,"Display Leasing",ShowLoanType2);
   CheckBox(h,v+=16,0,"Display Mortgage",ShowLoanType3);
@@ -3539,10 +3593,12 @@ begin
   EditField(h3,v,80,"Agreement Type",Normal,CredManType,false,CredManTypeSClass);
   EditField(h,v+=vs,80,"Agreement Type Class",Normal,CredManClass,false,CredManClassSClass);
   EditField(h2,v,80,"Sales Group",Normal,SalesGroup,false,SalesGroupSClass);
-  ButtonFrame(h,v+=40,150,3,"Evaluation");
+  ButtonFrame(h,v+=40,200,6,"Evaluation");
   RadioButton(h,v,0,0,"Total Booked Time",EvaluationType);
   RadioButton(h,v+=16,1,0,"Today Task Quantity",EvaluationType); 
   RadioButton(h,v+=16,2,0,"Total Task Quantity",EvaluationType); 
+  RadioButton(h,v+=16,3,0,"Total Applications with status",EvaluationType); 
+  EditField(h+70,v+=vs,120,"Status",Normal,OrderClass,false,OrderClassSClass);
   EndWindow;
 end;
 

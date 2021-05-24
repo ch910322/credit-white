@@ -264,6 +264,7 @@ begin
   StrSetText(ReceiptBankTRDiffAmounts,"Allow saving Receipt with different Total than Bank Transaction");
   StrSetText(CredManChangeTransferDate,"Allow changing Money Transfer Date");
   StrSetText(CredManChangeInvoicedMonths,"Allow changing Credit Agreement Months when invoiced");
+  StrSetText(AllowMarkNoOverduesFees,"Allow marking No overdue fees");
   EndStrSet;
 
   SetBegin(2000);

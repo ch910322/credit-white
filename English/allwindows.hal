@@ -1513,6 +1513,26 @@ begin
 
 end;
 
+window CredManSClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Paste Credit Agreement",CredManSClass,CGslist,-);
+  SetWRect(100,80,680,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(CredManDClass);
+  UseView(CredManVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,2,"N_o.",SerNr,false,SerNr);
+  RlColKey(90,90,"Legal No.",OfficialSerNr,false,OfficialSerNr);//CUST
+  RlColKeyTL(200,200,"OK",M4Mark,OKFlag,false,OKFlag);
+  RlColKeyTL(230,230,"Approved",M4Mark,Approved,false,Approved);
+  RlColKey(320,320,"Cust.",CustCode,false,CustCode);
+  RlColKey(360,360,"Name",Addr0,false,Name);
+  RlColKey(-90,-90,"Sum",InvSum4,false,InvSum4);
+  SearchField("Search");
+  EndWindow;
+end;
+
 window CredManTypeDClass:1
   wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
@@ -3747,3 +3767,15 @@ begin
   EndWindow;
 end;
 */
+
+window IVInfoRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs;
+  WindowBegin("Specify Invoice Status",IVInfoRClass,CGRcW,RcType);
+  SetWRect(20,80,520,220);
+  vs = 20;
+  EditFieldTL(h=150,v=6, 150,"Invoice No.",M4Long,Normal,0,long1,false,0);
+  CheckBox(h,v+=vs,0,"Payment status per item",flags[10]);
+  EndWindow;
+end;

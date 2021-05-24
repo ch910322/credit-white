@@ -6,6 +6,9 @@ external updating function Boolean LoopAndGenLoanAgreementInvoice(var record RcV
 external function string 255 CM_SetCompanyLanguage();
 external procedure CM_ResetCompanyLanguage(string);
 external inner function LongInt TimeToMinutes(Time);
+external inner procedure FindUserMailboxName(string,var string,var string);
+external inner function Boolean FindCustomerRelation(string,string,var record CUVc);
+external inner function boolean AddEMailRecipients(var record MailVc,string,string,integer);
 
 global
 updating procedure CreateTaskActivityCredMan(record CredManVc CredManr,string person,string acttype,string acttext,date TransDate,time StartTime)
@@ -100,8 +103,35 @@ begin
   return;
 end;
 
+function boolean GetManagerApplicationCount(string user,string apporderclass,var longint ev)
+begin
+  boolean res;
+  longint pos;
+  record B2BLoanApplicationVc LAr;
+  string 255 tstr;
+  boolean found;
+  
+  ev = 0;
+  res = false;
+  while (GetNextSubString(apporderclass,pos,",",tstr)) begin
+    ResetLoop(LAr);
+    LAr.OrderClass = tstr;
+    found = true;
+    while (LoopKey("OrderClass",LAr,1,found)) begin
+      if (LAr.OrderClass!=tstr) then begin
+        found = false;
+      end;
+      if ((found) and (LAr.Manager==user)) then begin
+        res = true;
+        ev = ev + 1;
+      end;
+    end;
+  end;
+  GetManagerApplicationCount = res;
+  return;
+end;
 
-function boolean GetManagerWorkLoadEvaluation(string user,Integer EvaluationType,date d,var longint ev)
+function boolean GetManagerWorkLoadEvaluation(string user,Integer EvaluationType,string apporderclass,date d,var longint ev)
 begin
   record ActVc Actr;
   boolean testf,foundf,res;
@@ -109,6 +139,9 @@ begin
 
   ev = 0;
   res = false;
+  if (EvaluationType==3) then begin
+    res = GetManagerApplicationCount(user,apporderclass,ev);
+  end else begin
   keystr = "OKFlagUserMain:" & user;
   Actr.OKFlag = 0;
   Actr.MainPersons = user;
@@ -138,6 +171,7 @@ begin
       end;  
     end;  
   end;  
+  end;
   GetManagerWorkLoadEvaluation = res;
   return;
 end;
@@ -204,7 +238,7 @@ begin
          TrHs = false;
       end;
       if (TrHs) then begin
-        if (GetManagerWorkLoadEvaluation(Userr.Code,MWr.EvaluationType,d,ev)) then begin
+        if (GetManagerWorkLoadEvaluation(Userr.Code,MWr.EvaluationType,MWr.OrderClass,d,ev)) then begin
           if ((prevev==-1) or (ev <= prevev)) then begin
             res = Userr.Code;
             prevev = ev;  
@@ -214,6 +248,201 @@ begin
     end;
   end;
   GetLeastWorkLoadManager = res;
+  return;
+end;
+
+//based on SendEmailWithStdTextFromUser
+updating procedure CreateEmailWithStdText(string stdtxt,string fromuser,string emailto,var record MailVc Mailr)
+begin
+  row MailVc Mailrw;
+  string 255 tstr;
+  LongInt pos,l;
+  Integer i;
+  area a;
+  record LTxtVc LTxtr;
+  string 255 mailboxnr,mailboxname;
+  LongInt rwcnt;
+  
+  LTxtr.Code = stdtxt;
+  if (ReadFirstMain(LTxtr,1,true)) then begin
+    RecordNew(Mailr);
+    Mailr.Header = LTxtr.Comment;    
+    FindUserMailboxName(fromuser,mailboxnr,mailboxname);
+    if (nonblank(mailboxname)) then begin
+      ClearRow(Mailr,Mailrw,1);
+      Mailrw.RowTyp = kMailRowTypeFrom;
+      Mailrw.AddrCode = mailboxname;
+      mailrw.Mailbox = StringToLongInt(mailboxnr);
+      MatRowPut(Mailr,0,Mailrw);
+    end;
+    if (nonblank(emailto)) then begin
+      ClearRow(Mailr,Mailrw,1);
+      Mailrw.RowTyp = kMailRowTypeTo;
+      Mailrw.AddrCode = emailto;
+      MatRowPut(Mailr,1,Mailrw);
+    end;  
+
+    /* TODO: specs to be defined
+    if (LTxtr.HtmlFlag==0) then begin
+      ParseTextField(a,LTxtr,RepSpec,"LtxtVcReplaceToken");
+      l = GetAreaLength(a);
+      pos = 0;
+      while (pos<l) begin
+        tstr = GetStringFromArea(a,pos,255);
+        AddToText(tstr,Mailr); 
+        pos = pos+255;
+      end;
+    end else begin
+      Mailr.HtmlFlag = 1;
+    end;
+    */
+    if (Mailr.HtmlFlag==0) then begin
+      rwcnt = LineTextCnt(LTxtr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        tstr = LineTextGet(LTxtr,i);
+        LineTextPut(Mailr,LineTextCnt(Mailr),tstr);
+      end;    
+      AddCRToText(Mailr);
+    end else begin
+      if (LTxtr.HtmlFlag==0) then begin
+        AddToHtmlRecord(Ltxtr,false,Mailr,true,true);
+      end else begin
+        AddHtmlRecordToHtmlRecord(Ltxtr,Mailr,true);
+      end;
+      LineTextPutToHtmlRecord(Mailr,chr(13),false,true);
+    end;
+    
+    Mailr.SerNr = NextSerNr("MailVc",CurrentDate,-1,false,"");
+    if (RecordInsert(Mailr,true)) then begin
+    end;
+  end;
+  
+  return;
+end;
+
+//copy-paste
+procedure RemoveDuplicateRecipients(var record MailVc Mailr)
+begin
+  row MailVc Mailrw,Mail2rw;
+  Integer i,j,rwcnt;
+
+  rwcnt = MatRowCnt(Mailr);
+  for (i=1;i<rwcnt;i=i+1) begin
+    MatRowGet(Mailr,i,Mailrw);
+    for (j=i+1;j<rwcnt;j=j+1) begin
+      MatRowGet(Mailr,j,Mail2rw);
+      if (Mail2rw.AddrCode==Mailrw.AddrCode) then begin
+        MatRowDelete(Mailr,j);
+        j = j - 1;
+        rwcnt = rwcnt -1;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+procedure AddSingleRecipient(var record MailVc Mailr,string email)
+begin
+  row MailVc Mailrw;
+  Integer i,rwcnt;
+  Boolean foundf;
+  
+  if (nonblank(email)) then begin 
+    rwcnt = MatRowCnt(Mailr);
+    for (i=1;i<rwcnt;i=i+1) begin
+      MatRowGet(Mailr,i,Mailrw);
+      if (Mailrw.AddrCode==email) then begin
+        foundf = true;
+        i = rwcnt;
+      end;
+    end;
+    if (!foundf) then begin
+      ClearRow(Mailr,Mailrw,1);
+      Mailrw.RowTyp = 0;
+      Mailrw.AddrCode = email;
+      MatRowPut(Mailr,MatRowCnt(Mailr),Mailrw);
+    end;
+  end; 
+
+  return;
+end;
+
+procedure AddContactsByJobDescription(record MailVc Mailr,record CUVc CUr,string jobdescr)
+begin
+  record CUVc ContactCUr;
+  record ContactRelVc CRr;
+  while (LoopKey("CustContactCode:" & CUr.Code,CRr,1,true)) begin
+    if (CRr.Invalid==0) then begin
+      ContactCUr.Code = CRr.ContactCode;
+      if (ReadFirstMain(ContactCUr,1,true)) then begin
+        if(nonblank(ContactCUr.JobDesc))then begin
+          if (SetInSet(ContactCUr.JobDesc,jobdescr)) then begin
+            AddSingleRecipient(Mailr,ContactCUr.eMail);
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+//could be used in Ext_AddCustomMailRecipients()
+function Boolean AddCredManInvoiceMailRecipients(string custcode,var record MailVc Mailr)
+begin
+  record CMInvoicingBlock CIb;
+  record CUVc CUr;
+  record CUVc ContactCUr;
+  Boolean res;
+
+  res = false;
+  BlockLoad(CIb);
+  CUr.Code = custcode;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    if (CIb.SendToMainContact==1) then begin
+      if (nonblank(CUr.Person)) then begin
+        if (FindCustomerRelation(CUr.Code,CUr.Person,ContactCUr)) then begin
+          if (nonblank(ContactCUr.eMail)) then begin
+            AddSingleRecipient(Mailr,ContactCUr.eMail);
+            res = true;
+          end;
+        end;
+      end;
+    end;
+    if (CIb.SendToCompany==1) then begin
+      if ((CIb.SendToCompNoContact==0) or (blank(CUr.Person))) then begin
+        AddSingleRecipient(Mailr,Cur.eMail);
+        res = true;
+      end;
+    end;
+    if (CIb.SendToAddRecip==1) then begin
+      AddEMailRecipients(Mailr,CUr.Code,"",kMailInvoice); 
+      res = true;
+    end;
+    if (nonblank(CIb.SendToJobDescr)) then begin
+      AddContactsByJobDescription(Mailr,CUr,CIb.SendToJobDescr);
+      res = true;
+    end;
+    RemoveDuplicateRecipients(Mailr);
+  end;
+  
+  AddCredManInvoiceMailRecipients = res;
+  return;
+end;
+
+global 
+updating procedure SendEmailWithStdText(string stdtext,string fromuser,string custcode)
+begin
+  record MailVc Mailr,oldMailr;
+  
+  CreateEmailWithStdText(stdtext,fromuser,"",Mailr);
+  if (AddCredManInvoiceMailRecipients(custcode,Mailr)) then begin
+    RecordCopy(OldMailr,Mailr);
+    Mailr.SendFlag = 1;
+    RecordUpdate(OldMailr,Mailr,true);
+  end;
+  
   return;
 end;
 
@@ -314,6 +543,7 @@ begin
                 end; 
               end;
               qupdating.CreateTaskActivityLoanApp(LAr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime);
+              qupdating.SendEmailWithStdText(ATbrw.EmailStdText,person,LAr.CustCode);
             end;
           end;
         case 2: //property insurance
