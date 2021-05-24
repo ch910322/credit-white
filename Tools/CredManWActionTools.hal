@@ -57,8 +57,8 @@ external procedure SetupInvoiceRowAndAdd(record CredManVc,var record IVVc,string
 remote procedure RecreateAgreementSchedule3CallBack(record CredManVc,Integer);
 external function Boolean HasSuretyPerson();
 external procedure DistributeCredHistValues(var record IPVc,Integer);
-external procedure AddInstalmentFixed(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,val,Date,var val,var val,Date,Date);
-external procedure GetBuyOutData(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var Date,var val);
+external procedure AddInstalmentFixed(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,val,Date,var val,var val,Date,Date,val);
+external procedure GetBuyOutData(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var Date,var val,var val);
 external inner procedure IVVc_PastePrice(var record IVVc,record IVVc,Integer,var string);
 external procedure MergeItemsInInvoice(var record IVVc,record CredManVc);
 external function Boolean AgreementPaidOut2(record CredManVc,var val);
@@ -2195,7 +2195,7 @@ begin
   array string 255 aCredVal;
   Date sd;
   Integer latedays;
-  val lateamount;
+  val lateamount,void;
   array string 255 lateformula;
   Boolean updf;
   Date calcsd;
@@ -2225,7 +2225,7 @@ begin
   RecordCopy(tCredManr,CredManr);
   tCredManr.CancelDate = "";
   BuildCredManPayPlanCust(tCredManr,CredManPayPlanr,CMb,true,false);
-  GetBuyOutData(tCredManr,CredManPayPlanr,CMb,tmpdate,balance);
+  GetBuyOutData(tCredManr,CredManPayPlanr,CMb,tmpdate,balance,void);
 
   if (balance>0) then begin
     if (IVr.SerNr>-1) then begin
@@ -2237,7 +2237,7 @@ begin
     end else begin
       SetupLoanInvoice(CredManr,CMb,IVr,selldate,"","",true,false,"",1,true);
     end;
-    AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,selldate,cumint,calcbal,selldate,selldate);
+    AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,selldate,cumint,calcbal,selldate,selldate,void);
     rwcnt = MatRowCnt(CredManPayPlan2r);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CredManPayPlan2r,i,CredManPayPlanrw);

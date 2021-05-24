@@ -9,7 +9,7 @@ external inner procedure IVVc_PastePrice(var record IVVc,record IVVc,Integer,var
 external inner function LongInt DateDiff(Date,Date);
 external procedure AddPlannedFees(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,Integer,Integer,Date,var val,var val,Date,Date,Longint,Boolean);
 external procedure AddInterest(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,Integer,Date,var val,var val,Date,Date,Longint,Boolean);
-external procedure AddInstalmentFixed(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,val,Date,var val,var val,Date,Date);
+external procedure AddInstalmentFixed(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,val,Date,var val,var val,Date,Date,val);
 forward procedure GetCredManEventList2(Longint,var record ORVc);
 external inner procedure PasteARPayInIV(record IVVc,row IVVc,Integer);
 external updating procedure FindUnpaidCredHist(record IPVc,row IPVc,var array val,Integer);
@@ -612,7 +612,6 @@ begin
   */
 
   latefeedays = GetCredManLateFees(CredManr,tempsd,tempsd);
-  logtext(0,"latefeedays                         " & latefeedays);
 
   ClearArray(amounts);
   ClearArray(period);
@@ -1825,7 +1824,7 @@ begin
 end;
 
 global
-procedure GetBuyOutData(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,var Date lastinv,var val balance)
+procedure GetBuyOutData(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,var Date lastinv,var val balance,var val issueinstbal)
 begin
   record CredHistVc CredHistr;
   Boolean foundf;
@@ -1853,6 +1852,9 @@ begin
           if (CredManPayPlanrw.ArtCode!=CMb.LateFeeItem and CredManPayPlanrw.ArtCode!=CMb.LateRateItem and (CredHistr.RecordType==0 or CredHistr.RecordType==4 or CredHistr.RecordType==5)) then begin
             if (TypeAffectsBalance(CredHistr.ChargeType)) then begin
               curbal = curbal - CredHistr.Sum;
+              if(CredHistr.ChargeType==kEventTypeIssueInstalment)then begin
+                issueinstbal = issueinstbal + CredHistr.Sum;
+              end;
             end;
             if (CredHistr.ChargeType==kEventTypePayout) then begin
               curbal = curbal + CredHistr.Sum;
@@ -1882,7 +1884,7 @@ begin
   Date lastinv;
   Integer i,rwcnt;
   Integer latedays;
-  val lateamount;
+  val lateamount,issuedinsbal;
   val cumint,calcbal;
   array string 255 lateformula;
   record CredManVc tCredManr;
@@ -1894,11 +1896,11 @@ begin
 2. Set up and create an invoice
 */ 
   BlockLoad(CIb);
-  GetBuyOutData(CredManr,CredManPayPlanr,CMb,lastinv,balance);
-
+  GetBuyOutData(CredManr,CredManPayPlanr,CMb,lastinv,balance,issuedinsbal);
+  
   if (balance>0) then begin
     SetupLoanInvoice2(CredManr,CMb,IVr,td,lastinv,td,true,false,"",1,true,CIb.BuyOutPayDeal);
-    AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td);
+    AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td,issuedinsbal);
     RecordCopy(tCredManr,CredManr);
     tCredManr.InvSum4 = balance;
     tCredManr.DepositSum = 0;
@@ -1992,16 +1994,17 @@ begin
   record CMInvoicingBlock CIb;
   Date sd;
   val openamount,lateamount;
-  Integer latedays;
+  Integer latedays,i,rwcnt;
   array string 255 lateformula;
   Date calcsd;
+  row IVVc IVrw;
 
   if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
     BlockLoad(CMb);
     BlockLoad(CIb);
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,td,IVr,false,sd,false);
-
+    rwcnt = matrowcnt(IVr);
     CM_AddPrepayments(IVr,CredManr,CIb);
     if (IVr.SerNr>-1) then begin
       CheckAndAddHiddenPrinciple(IVr,CIb);
