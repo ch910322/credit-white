@@ -432,7 +432,7 @@ begin
 end;
 
 global 
-updating procedure SendEmailWithStdText(string stdtext,string fromuser,string custcode)
+updating procedure SendAutoEmailWithStdText(string stdtext,string fromuser,string custcode)
 begin
   record MailVc Mailr,oldMailr;
   
@@ -543,7 +543,7 @@ begin
                 end; 
               end;
               qupdating.CreateTaskActivityLoanApp(LAr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime);
-              qupdating.SendEmailWithStdText(ATbrw.EmailStdText,person,LAr.CustCode);
+              qupdating.SendAutoEmailWithStdText(ATbrw.EmailStdText,person,LAr.CustCode);
             end;
           end;
         case 2: //property insurance
