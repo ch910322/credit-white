@@ -636,6 +636,20 @@ begin
   CheckBox(h,v+=vs,0,"Prolong only when Invoice is paid",flags[3]);
   HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassPause","Register Changes");
   EndWindow;
+  
+  WindowBegin("Email Offer",EmailOfferWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,400,250);
+  AutoSizeWindow(false);  
+  h = 150; h2 = 250; v=450;
+  EditFieldTL(h,v=6,120,"Changes Start Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,120,"Pause Months",M4Qty,Normal,0,vals0,false,0);
+  EditFieldTL(h,v+=vs,120,"Prolong Months",M4Qty,Normal,0,vals1,false,0);
+  EditFieldTL(h,v+=vs,120,"New Rate",M4Rate,Normal,0,vals3,false,0);
+  EditFieldTL(h,v+=vs,120,"Extra Value",M4Rate,Normal,0,vals4,false,0);
+  EditField(h,v+=vs,100,"Change Purpose",Normal,f1,false,AgrChangesPurpSClass);
+  HalPushButton(h,v+=vs,h+120,v+20,"EmailOfferWClassCreateEmail","Create Email");
+  EndWindow;
 
   WindowBegin("Create Extra Fee Invoice",ManualExtraFeeWClass,CGother,RcType);
   UseView(RcVc);

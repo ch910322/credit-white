@@ -873,6 +873,52 @@ begin
 end;
 
 global
+procedure EmailOfferDsm()
+begin
+  Integer wn;
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  Date td;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  if (WindowState(wn)==Rs_Normal) then begin
+    RepSpec.d1 = currentdate;
+    OpenWindow("EmailOfferWClass",0,wn,"","",RepSpec);
+  end;
+
+  return;
+end;
+
+global
+updating procedure EmailOfferWClassCreateEmail()
+begin
+  Integer wn,mwn,iwn;
+  record CredManVc CredManr;
+  record RcVc RepSpec;
+  Boolean res,setf,closedf;
+  record IVVc IVr;
+  Integer err;
+  
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  
+  mwn = MotherWindow(wn);
+  if (WindowState(mwn)==Rs_Normal) then begin
+    GetWindowRecord(mwn,CredManr);
+    
+  end;
+  
+  if (!closedf) then begin
+    CloseWindow(wn);
+  end;
+  
+  return;
+end;
+
+
+global
 updating procedure PauseCredManWClassPause()
 begin
   Integer wn,mwn,iwn;
