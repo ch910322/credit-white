@@ -68,6 +68,7 @@ remote updating procedure CredManCreditBeforePartialBuyout(Integer,record RcVc);
 remote function Date GetLastInvDate(record CredManVc);
 remote procedure CredManDoPauseFinish(record CredManVc,Boolean,Boolean);
 remote updating procedure CredManCreditBeforePause(Integer,Integer,record RcVc);
+remote updating function boolean RA_CreateCredManOfferEmail(record RcVc, record CredManVc,var record MailVc);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -871,6 +872,59 @@ begin
 
   return;
 end;
+
+global
+procedure EmailOfferDsm()
+begin
+  Integer wn;
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  Date td;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  if (WindowState(wn)==Rs_Normal) then begin
+    threadremote.GetPauseCredManNextDate(CredManr,td);
+    RepSpec.d1 = td;
+    OpenWindow("EmailOfferWClass",0,wn,"","",RepSpec);
+  end;
+
+  return;
+end;
+
+global
+updating procedure EmailOfferWClassCreateEmail()
+begin
+  Integer wn,mwn,iwn;
+  record CredManVc CredManr;
+  record RcVc RepSpec;
+  Boolean res,setf,closedf;
+  record IVVc IVr;
+  Integer err;
+  record MailVc Mailr;
+  
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  
+  mwn = MotherWindow(wn);
+  if (WindowState(mwn)==Rs_Normal) then begin
+    getwindowrecord(wn,RepSpec);
+    GetWindowRecord(mwn,CredManr);
+    if(RA_CreateCredManOfferEmail(RepSpec,CredManr,Mailr))then begin
+      if (Mailr.SerNr>0) then begin
+        OpenWindow("MailDClass",1,0,"","",Mailr);  
+      end;
+    end;
+  end;
+  
+  if (!closedf) then begin
+    CloseWindow(wn);
+  end;
+  
+  return;
+end;
+
 
 global
 updating procedure PauseCredManWClassPause()

@@ -1416,6 +1416,7 @@ begin
   SpecialMenu("Terminate",' ',9,"CredManTerminateDsm");
   SpecialMenu("Sell Agreement",' ',9,"CredManSellDsm");
   SpecialMenu("Register Extended Grace Period",' ',10,"CredManGracePeriodDsm");
+  SpecialMenu("Email offer",' ',8,"EmailOfferDsm");
   
   
   

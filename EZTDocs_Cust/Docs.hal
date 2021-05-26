@@ -1373,6 +1373,7 @@ begin
   array string 100 afeeslist;
   vector val vfees;
   vector string 255 vfeename;
+  boolean prflag;
 
   
   BlockLoad(PCb);
@@ -1411,9 +1412,18 @@ begin
   rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(SMr,i,SMrw);
-    if (SMrw.TransDate<CredManr.FirstInvDate and SMrw.DebVal==0 and SMrw.CredVal==0 and SMrw.BaseRate1==0) then begin//i==0 and 
-      goto LNextRow;
+    prflag = false;
+    if(PCb.PrintRowWithBlankFees==1)then begin
+      if (SMrw.TransDate<CredManr.FirstInvDate and SMrw.DebVal==0 and SMrw.CredVal==0 and SMrw.BaseRate1==0) then begin//i==0 and 
+        goto LNextRow;
+      end;
+    end else begin
+      if (SMrw.TransDate<CredManr.FirstInvDate and SMrw.DebVal==0 and SMrw.CredVal==0) then begin//i==0 and 
+        goto LNextRow;
+      end;
     end;
+    
+   
     if (SMrw.RowSimStat==5) then begin
       goto LNextRow;
     end;
