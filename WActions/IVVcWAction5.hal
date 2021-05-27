@@ -2,6 +2,7 @@ remote inner function Integer IVTestApprovalStatus(record IVVc);
 remote inner updating function Integer CreateMailFromIVD(record IVVc,var record MailVc,var string,Boolean,string);
 external inner updating function Integer CreateExternalMailFromIVD(record IVVc,var string,Boolean,string);
 external inner procedure FindUserMailboxName(string,var string,var string);
+external inner procedure ResolveMailboxNumber(var row MailVc);
 
 global 
 updating procedure CreateMailFromIVDsm()
@@ -46,6 +47,7 @@ begin
               matrowget(Mailr,i,MArw);
               if(MArw.RowTyp==1 and MArw.AddrCode==IVMailr.EmailSender)then begin
                 MArw.AddrCode = tstr1;
+                ResolveMailboxNumber(MArw);
                 matrowput(Mailr,i,MArw);
                 i = matrowcnt(Mailr);
                 recordstore(Mailr,true);

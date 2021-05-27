@@ -21,6 +21,7 @@ external procedure GetItemName(string,var string);
 external procedure SetupInvoiceRowAndAdd(record CredManVc,var record IVVc,string,string,val,val,val,Integer,Longint);
 external procedure GenerateAgreementSchedule(record CredManVc,Boolean,Boolean);
 external updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
+external inner procedure IVToMailMn(record RcVc);
 
 /*Invoicing tools*/
 function Boolean GetItemPriorityRecord(Longint credmannr,var record CMItemPriorityVc IPr)
@@ -711,6 +712,7 @@ begin
   array string 255 lateformula;
   record CMInvoicingBlock CIb;
   Date calcsd;
+  record RcVc RepSpec;
 
   PrepareIPRecord(SMr,IPr);
   BlockLoad(CMb);
@@ -738,6 +740,14 @@ begin
             AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
             SetupOverdueLangCode(IVr,CredManr);
             StoreLoanInvoice(IVr,CredManr);
+            if(CIb.AutoSendOverdueInvoice==1)then begin
+              RepSpec.sStartDate = IVr.TransDate;
+              RepSpec.sEndDate = IVr.TransDate;
+              RepSpec.f2 = IVr.SerNr;
+              RepSpec.flags[3] = 1;
+              RepSpec.flags[1] = 1;
+              IVToMailMn(RepSpec);
+            end;
           end;
         end;
       end;
