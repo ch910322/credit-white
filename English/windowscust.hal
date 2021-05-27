@@ -2282,6 +2282,7 @@ begin
   CheckBox(h,v+=20,0,"Automatically send issued Invoices",AutoInvoiceSend);
   CheckBox(h,v+=16,0,"Automatically send Invoices created from Contracts",AutoMailsFromInvoices);
   CheckBox(h,v+=16,0,"When creating Email, use precreated PDFs",UsePreCreatedInvoicePdf);
+  CheckBox(h,v+=16,0,"Sender in manual created mail is current user",emailSenderCurrent);
 
 //  CheckBox(h,v+=16,0,"Remaining principle including Last Months Principle",LastPrincipleWithExtraMonth);
   

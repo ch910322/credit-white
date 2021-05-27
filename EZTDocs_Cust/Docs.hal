@@ -68,10 +68,8 @@ begin
   
   LTxtr.Code = textCode;
   if(readfirstmain(LTxtr,1,true))then begin
-    logtext(0,"SizeTextCnt(LTxtr) " & SizeTextCnt(LTxtr));
     while (pos<SizeTextCnt(LTxtr)) begin
       vVals[vectorkey] = vVals[vectorkey] & StringFromText(LTxtr,pos,255);
-      logtext(0,StringFromText(LTxtr,pos,255));
       pos = pos + 255;
     end;
   end else begin
