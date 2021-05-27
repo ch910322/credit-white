@@ -2223,6 +2223,15 @@ begin
   KeySegment(RowNr);
   EndRecord;  
   
+  
+  BlockBegin(OwnAddressBlock,-,"");
+  RecordField(Addr0,M4Str,60,0);
+  RecordField(Addr1,M4Str,60,0);
+  RecordField(Addr2,M4Str,60,0);  
+  RecordField(Addr3,M4Str,60,0);
+  RecordField(Addr4,M4Str,60,0);  
+  EndBlock;
+  
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Estonian", 0);
