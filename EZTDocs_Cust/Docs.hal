@@ -61,6 +61,26 @@ external function string 255 AgreementValToText(val);
 external inner procedure GetMonthText(string,Date,var string);
 external procedure BuildCredManPayPlanCust2(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean,Boolean);
 
+procedure StandardTextToVector(string textCode,var vector string vVals,string vectorkey)
+begin
+  record LTxtVc LTxtr;
+  longint pos;
+  
+  LTxtr.Code = textCode;
+  if(readfirstmain(LTxtr,1,true))then begin
+    logtext(0,"SizeTextCnt(LTxtr) " & SizeTextCnt(LTxtr));
+    while (pos<SizeTextCnt(LTxtr)) begin
+      vVals[vectorkey] = vVals[vectorkey] & StringFromText(LTxtr,pos,255);
+      logtext(0,StringFromText(LTxtr,pos,255));
+      pos = pos + 255;
+    end;
+  end else begin
+    vVals[vectorkey] = textCode;
+  end;
+
+return;
+end;
+
 global procedure Ext_OutAddressOneLine(var vector string vVals,string keyame,string name,string addr0,string addr1,string addr2,string addr3,string addr4)
 begin
 
@@ -716,7 +736,7 @@ begin
 
 	if(gIsDigitalDocument==1)then begin
 		vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrDigital;
-		vVals["F_ISDIGITALDOCUMENT2"] = PCb.AgrDigital2;
+		StandardTextToVector(PCb.AgrDigital2,vVals,"F_ISDIGITALDOCUMENT2");
 	end else begin
 		vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrNotDigital;
 	end;
@@ -1505,7 +1525,7 @@ LNextRow:;
   
   if(gIsDigitalDocument==1)then begin
     vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrDigital;
-    vVals["F_ISDIGITALDOCUMENT2"] = PCb.AgrDigital2;
+    StandardTextToVector(PCb.AgrDigital2,vVals,"F_ISDIGITALDOCUMENT2");
   end else begin
     vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrNotDigital;
   end;

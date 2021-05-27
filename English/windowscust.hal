@@ -3121,7 +3121,7 @@ begin
   EditField(h,v+=vs,140,"Company Prefix",Normal,CompPrefix,false,0);
   EditField(h,v+=vs,140,"Person Prefix",Normal,PersPrefix,false,0);
 	EditField(h,v+=vs,140,"Digital",Normal,AgrDigital,false,0);
-	EditField(h+200,v,140,"Digital2",Normal,AgrDigital2,false,0);
+	EditField(h+300,v,140,"Digital 2 Agreement",Normal,AgrDigital2,false,LTxtSClass);
 	EditField(h,v+=vs,140,"Not Digital",Normal,AgrNotDigital,false,0);
 
   EndWindow;
