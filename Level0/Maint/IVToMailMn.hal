@@ -203,7 +203,7 @@ begin
     if(nonblank(USr.emailAddr))then begin
       if(readfirstmain(Mailr,1,true))then begin
         matrowget(Mailr,0,MArw);
-        MArw.AddrCode = MArw.AddrCode & " <" & USr.emailAddr & ">";
+        MArw.AddrCode = USr.emailAddr;
         matrowput(Mailr,0,MArw);
         recordstore(Mailr,true);
       end;
