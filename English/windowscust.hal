@@ -2348,6 +2348,7 @@ begin
   ButtonFrame(h,v+=40,150,2,"Overdue Rate");
   RadioButton(h,v,0,0,"Daily",OverdueRateType);
   RadioButton(h,v+=16,1,0,"Monthly",OverdueRateType);  
+  CheckBox(h,v+=20,0,"Invoice PDF after Receipt",PDFAfterReceipt);
   CheckBox(h,v+=20,0,"Automatically send invoice generated from Receipt Entry",AutoSendOverdueInvoice);
   
   Tile(3,95,false,"3",FBuyerPayDeal);

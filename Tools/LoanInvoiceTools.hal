@@ -1157,6 +1157,7 @@ global
 updating procedure StoreLoanInvoice(var record IVVc IVr,record CredManVc CredManr)
 begin
   record IVVc oldIVr;
+  transaction Boolean gPDRAfterReciept;
   
   SetOverdueLangCode(IVr,CredManr);
   
@@ -1167,7 +1168,9 @@ begin
       IVr.OKFlag = 1;
       LinkCredManAndInvoice(IVr,CredManr);
       if (RecordUpdate(oldIVr,IVr,true)==0) then begin
-        CreateInvoicePdfFile(IVr);
+        if(gPDRAfterReciept==false)then begin
+          CreateInvoicePdfFile(IVr);
+        end;
       end;
     end;
   end;
