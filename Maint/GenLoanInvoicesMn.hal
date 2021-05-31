@@ -32,10 +32,12 @@ begin
         
         RecordCopy(nIVr,IVr);
         TrHs = false;
+        logtext(0,"CredManr sernr " & CredManr);
       end;
     end;
   end;
   
+  millisleep(500);
   logtext(0,RepSpec.long1 & " LoopAndGenLoanAgreementInvoice RES " & res);
   LoopAndGenLoanAgreementInvoice = res;
   return;
