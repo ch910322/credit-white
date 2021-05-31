@@ -32,7 +32,7 @@ begin
         
         RecordCopy(nIVr,IVr);
         TrHs = false;
-        logtext(0,"CredManr sernr " & CredManr);
+        logtext(0,"CredManr sernr " & CredManr.SerNr);
       end;
     end;
   end;
