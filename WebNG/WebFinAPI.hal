@@ -1167,7 +1167,7 @@ begin
                   ExtraValue = CredHistr.Sum-t;
                 case "OpenAmount":
                   ValueType = M4Val;
-                  ExtraValue = CredHistr.Sum-t;
+                  ExtraValue = t;
                 otherwise
                   ValueType = M4Str;
                   ExtraValue = "";
