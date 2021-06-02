@@ -188,6 +188,51 @@ begin
   return;
 end;
 
+global
+updating procedure ChangeSenderOfAllMailqueue(record MailVc Mailr,string user)
+begin
+  row MailVc MArw;
+  Integer i;
+  Longint prev;
+  Boolean testf;
+  record UserVc USr;
+  string 100 tstr1,tstr;
+    
+  USr.Code = user;
+  if(readfirstmain(USr,1,true))then begin
+    if(nonblank(USr.emailAddr))then begin
+      if(readfirstmain(Mailr,1,true))then begin
+        matrowget(Mailr,0,MArw);
+        MArw.AddrCode = USr.emailAddr;
+        matrowput(Mailr,0,MArw);
+        recordstore(Mailr,true);
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+
+global
+procedure ChangeSenderOfAllMail(array record MailVc aMailr,string user)
+begin
+  record MailVc Mailr,oldMailr;
+  row MailVc MArw;
+  Integer i;
+  Longint prev;
+  Boolean testf;
+  record UserVc USr;
+  string 100 tstr1,tstr;
+
+  for (i=0;i<aMailr.length;i=i+1) begin
+    Mailr = aMailr[i];
+    qupdating.ChangeSenderOfAllMailqueue(Mailr,user);
+  end;
+
+  return;
+end;
+
 //CUST-END
 
 global
@@ -208,7 +253,7 @@ begin
   vector LongInt custinvcnt;
   area invoices;
   array record MailVc aMailr;//CUST
-  
+    
   friv = FirstInRange(RepSpec.f2,10);
   toiv = LastInRange(RepSpec.f2,10);
   frcu = FirstInRange(RepSpec.f1,10);
@@ -306,6 +351,10 @@ begin
   if (RepSpec.flags[7]!=0) then begin
     CreateMailsFromInvoiceArea(custcodes,custindexes,custinvcnt,invoices,RepSpec.flags[1]!=0,aMailr);
   end;
+  
+  if(nonblank(RepSpec.f10))then begin
+    ChangeSenderOfAllMail(aMailr,RepSpec.f10);
+  end;
 
   if (RepSpec.flags[1]==1) then begin
     MarkAllMailsAsSent(aMailr);
@@ -318,7 +367,7 @@ global
 procedure IVToMailMnTask(string args)
 begin
   Longint pos;
-  string 255 arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12,arg13,arg14,compno;
+  string 255 arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12,arg13,arg14,arg15,compno;
   record RcVc RepSpec;
   Integer oldcomp;
 
@@ -341,6 +390,7 @@ begin
   GetNextSubString(args,pos,"|",arg11);
   GetNextSubString(args,pos,"|",arg12);
   GetNextSubString(args,pos,"|",arg14);
+  GetNextSubString(args,pos,"|",arg15);
 
 
   RepSpec.sStartDate = DateFromString(arg1,"YYYY-MM-DD");
@@ -356,7 +406,10 @@ begin
   RepSpec.flags[6] = StringToInt(arg10);
   RepSpec.flags[7] = StringToInt(arg11);
   RepSpec.flags[8] = StringToInt(arg12);
+  RepSpec.f10 = arg15;
   RepSpec.FirstAcc = arg14;
+  
+  
   IVToMailMnRun(RepSpec);
 
   if (oldcomp!=CurrentCompany) then begin
@@ -369,7 +422,11 @@ global
 procedure IVToMailMn(record RcVc RepSpec)
 begin
   
-  NewTimedTask2("IVToMailMnTask","IVToMailMnTask","IVToMailMnTask",CurrentCompany & "|" & DateToString(RepSpec.sStartDate,"YYYY-MM-DD") & "|" & DateToString(RepSpec.sEndDate,"YYYY-MM-DD") & "|" & RepSpec.f1 & "|" & RepSpec.f2 & "|" & RepSpec.flags[0] & "|" & RepSpec.flags[1] & "|" & RepSpec.flags[2] & "|" & RepSpec.flags[3] & "|" & RepSpec.flags[4] & "|" & RepSpec.flags[5] & "|" & RepSpec.flags[6] & "|" & RepSpec.flags[7] & "|" & RepSpec.flags[8] & "|" & RepSpec.FirstAcc,CurrentDate,AddSeconds(CurrentTime,1),"","");
+  if(RepSpec.flags[9]==1)then begin
+    RepSpec.f10 = currentuser;
+  end;
+  
+  NewTimedTask2("IVToMailMnTask","IVToMailMnTask","IVToMailMnTask",CurrentCompany & "|" & DateToString(RepSpec.sStartDate,"YYYY-MM-DD") & "|" & DateToString(RepSpec.sEndDate,"YYYY-MM-DD") & "|" & RepSpec.f1 & "|" & RepSpec.f2 & "|" & RepSpec.flags[0] & "|" & RepSpec.flags[1] & "|" & RepSpec.flags[2] & "|" & RepSpec.flags[3] & "|" & RepSpec.flags[4] & "|" & RepSpec.flags[5] & "|" & RepSpec.flags[6] & "|" & RepSpec.flags[7] & "|" & RepSpec.flags[8] & "|" & RepSpec.FirstAcc & "|" & RepSpec.f10,CurrentDate,AddSeconds(CurrentTime,1),"","");
 
   return;
 end;

@@ -57,8 +57,8 @@ external procedure SetupInvoiceRowAndAdd(record CredManVc,var record IVVc,string
 remote procedure RecreateAgreementSchedule3CallBack(record CredManVc,Integer);
 external function Boolean HasSuretyPerson();
 external procedure DistributeCredHistValues(var record IPVc,Integer);
-external procedure AddInstalmentFixed(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,val,Date,var val,var val,Date,Date);
-external procedure GetBuyOutData(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var Date,var val);
+external procedure AddInstalmentFixed(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,val,Date,var val,var val,Date,Date,val);
+external procedure GetBuyOutData(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var Date,var val,var val);
 external inner procedure IVVc_PastePrice(var record IVVc,record IVVc,Integer,var string);
 external procedure MergeItemsInInvoice(var record IVVc,record CredManVc);
 external function Boolean AgreementPaidOut2(record CredManVc,var val);
@@ -81,6 +81,8 @@ external function string 255 GetReceiptsPayMode(record IVVc);
 remote procedure CredManCreditBeforePauseCallBack(Integer,Integer,record RcVc);
 external function Boolean FindCredManAcc(record CredManVc,var record CredManAccVc);
 external procedure ExternalPrintCredManScheduleForm(record CredManVc,var vector string);
+external updating function Boolean StoreEmailRecord(record LTxtVc,var record MailVc,record RcVc);
+external inner function string 255 CredManCustEmail(record CUVc);
 
 
 global
@@ -2195,7 +2197,7 @@ begin
   array string 255 aCredVal;
   Date sd;
   Integer latedays;
-  val lateamount;
+  val lateamount,void;
   array string 255 lateformula;
   Boolean updf;
   Date calcsd;
@@ -2225,7 +2227,7 @@ begin
   RecordCopy(tCredManr,CredManr);
   tCredManr.CancelDate = "";
   BuildCredManPayPlanCust(tCredManr,CredManPayPlanr,CMb,true,false);
-  GetBuyOutData(tCredManr,CredManPayPlanr,CMb,tmpdate,balance);
+  GetBuyOutData(tCredManr,CredManPayPlanr,CMb,tmpdate,balance,void);
 
   if (balance>0) then begin
     if (IVr.SerNr>-1) then begin
@@ -2237,7 +2239,7 @@ begin
     end else begin
       SetupLoanInvoice(CredManr,CMb,IVr,selldate,"","",true,false,"",1,true);
     end;
-    AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,selldate,cumint,calcbal,selldate,selldate);
+    AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,selldate,cumint,calcbal,selldate,selldate,void);
     rwcnt = MatRowCnt(CredManPayPlan2r);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CredManPayPlan2r,i,CredManPayPlanrw);
@@ -2539,4 +2541,117 @@ begin
     CMr.Objects = AddObjectToObjectList(CMr.Objects,Objr.Code);
   end;
   return;
+end;
+
+
+global updating function boolean RA_CreateCredManOfferEmail(record RcVc RepSpec, record CredManVc CMr, var record MailVc Mailr)
+begin
+  record CMApplicationSetBlock CMb;
+  boolean res;
+  record CUVc CUr;
+  string 255 email;
+  row MailVc Mailrw;
+  string 255 tstr;
+  LongInt pos,l;
+  Integer i,emcnt,cscnt;
+  area a;
+  record LTxtVc LTxtr;
+  string 255 mailboxnr,mailboxname;
+  record IVMailBlock IVMailr;
+  record CredManVc CredManr;
+  record CredManSetBlock CredManSetb;
+  record CredManPayPlanVc CredManPayPlanr;
+  LongInt rwcnt;
+  record SMVc SMr;
+  row SMVc SMrw;
+  val tot,interest,fees;
+  
+  BlockLoad(CMb);
+  if (nonblank(CMb.EmailOfferText)) then begin 
+    CUr.Code = CMr.CustCode;
+    if (ReadFirstMain(CUr,1,true)) then begin
+      email = CredManCustEmail(CUr);
+    end;
+    
+    
+    
+    LTxtr.Code = CMb.EmailOfferText;
+    if (ReadFirstMain(LTxtr,1,true)) then begin
+      RecordNew(Mailr);
+      Mailr.Header = LTxtr.Comment;    
+      if (nonblank(mailboxname)) then begin
+        ClearRow(Mailr,Mailrw,1);
+        Mailrw.RowTyp = kMailRowTypeFrom;
+        Mailrw.AddrCode = mailboxname;
+        mailrw.Mailbox = StringToLongInt(mailboxnr);
+        MatRowPut(Mailr,0,Mailrw);
+      end else begin
+        ClearRow(Mailr,Mailrw,0);
+        Mailrw.RowTyp = 1;
+        BlockLoad(IVMailr);
+        Mailrw.AddrCode = IVMailr.EmailSender;
+        MatRowPut(Mailr,0,Mailrw);
+      end;
+      ClearRow(Mailr,Mailrw,1);
+      Mailrw.RowTyp = kMailRowTypeTo;
+      Mailrw.AddrCode = email;
+      MatRowPut(Mailr,1,Mailrw);
+      
+      //CredManr.SerNr = -1;
+      if(nonblank(RepSpec.d1))then begin
+        CredManr.TransDate = RepSpec.d1;
+        CredManr.startDate = RepSpec.d1;
+      end;
+      
+      /*
+      d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,120,"Pause Months",M4Qty,Normal,0,vals0,false,0);
+  EditFieldTL(h,v+=vs,120,"Prolong Months",M4Qty,Normal,0,vals1,false,0);
+  EditFieldTL(h,v+=vs,120,"New Rate",M4Rate,Normal,0,vals3,false,0);
+  EditFieldTL(h,v+=vs,120,"Extra Value",M4Rate,Normal,0,vals4,false,0);
+  EditField(h,v+=vs,100,"Change Purpose",Normal,f1,false,AgrChangesPurpSClass);
+      
+      */
+      
+      
+        BlockLoad(CredManSetb);
+        BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+        BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+        rwcnt = MatRowCnt(SMr);
+        for (i=0;i<rwcnt;i=i+1) begin
+          MatRowGet(SMr,i,SMrw);
+          fees = fees + SMrw.DebVal2;
+          interest = interest + SMrw.CredVal;
+          tot = tot + SMrw.CurDebVal;
+        end;
+        RepSpec.f3 = CredManr.CurncyCode;
+        RepSpec.vals0 = fees;
+        RepSpec.vals1 = interest;
+        RepSpec.vals2 = tot;
+      if (LTxtr.HtmlFlag==0) then begin
+        ParseTextField(a,LTxtr,RepSpec,"LtxtVcReplaceToken");
+        l = GetAreaLength(a);
+        pos = 0;
+        while (pos<l) begin
+          tstr = GetStringFromArea(a,pos,255);
+          AddToText(tstr,Mailr); 
+          pos = pos+255;
+        end;
+      end else begin
+        Mailr.HtmlFlag = 1;
+      end;
+
+      if (CheckAttachedFilesSizeToLetter(LTxtr)) then begin
+        if (qupdating.StoreEmailRecord(LTxtr,Mailr,RepSpec)) then begin
+          res = true;
+          createrecordlink(Mailr,currentcompany,CredManr,currentcompany);
+          createrecordlink(CredManr,currentcompany,Mailr,currentcompany);
+        end;
+      end;
+    end;
+  
+  end;
+  
+  RA_CreateCredManOfferEmail = res;
+return;
 end;

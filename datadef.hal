@@ -1614,6 +1614,9 @@ begin
   RecordField(BuyOutPayDeal,M4Code,5,PDVc);
   RecordField(PremTermPrincpl,M4Code,20,0);
   RecordField(StartDateForOverdue,M4Int,0,0);
+  RecordField(emailSenderCurrent,M4Int,0,0);
+  RecordField(AutoSendOverdueInvoice,M4Int,0,0);
+  RecordField(PDFAfterReceipt,M4Int,0,0);
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
@@ -2101,6 +2104,7 @@ begin
   RecordField(ScheduleFromLastAgrCh,M4Int,0,0);
   RecordField(AgrDigital2,M4Str,255,0);
   RecordField(ItemShortLang,M4Code,10,0);
+  RecordField(PrintRowWithBlankFees,M4Int,0,0);
   
   EndBlock;
 
@@ -2221,6 +2225,15 @@ begin
   KeySegment(RecordType);
   KeySegment(RowNr);
   EndRecord;  
+  
+  
+  BlockBegin(OwnAddressBlock,-,"");
+  RecordField(Addr0,M4Str,60,0);
+  RecordField(Addr1,M4Str,60,0);
+  RecordField(Addr2,M4Str,60,0);  
+  RecordField(Addr3,M4Str,60,0);
+  RecordField(Addr4,M4Str,60,0);  
+  EndBlock;
   
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);

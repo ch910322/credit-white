@@ -821,11 +821,28 @@ begin
 end;
 
 global
-procedure AddInstalmentFixed(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,val amount,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate)
+procedure AddInstalmentFixed(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,val amount,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,val issuedinsbal)
 begin
+  val newcalcbal;
+  record CMInvoicingBlock CMIb;
   
-  AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,amount,0,acumint,calcbal,frdate,todate,-1,-1,0);
-
+  if(issuedinsbal>0)then begin
+    blockload(CMIb);
+    if(nonblank(CMIb.PremTermPrincpl))then begin
+      newcalcbal = amount - issuedinsbal;
+      if(issuedinsbal>0)then begin
+        AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,issuedinsbal,0,acumint,calcbal,frdate,todate,-1,-1,0);
+      end;  
+      if(newcalcbal>0)then begin
+        AddCredPayPlanLine(CredManPayPlanr,invdate,CMIb.PremTermPrincpl,"",kEventTypeCalcInstalment,newcalcbal,0,acumint,calcbal,frdate,todate,-1,-1,0);
+      end;
+    end else begin
+      AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,amount,0,acumint,calcbal,frdate,todate,-1,-1,0);
+    end;
+  end else begin
+    AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,amount,0,acumint,calcbal,frdate,todate,-1,-1,0);
+  end;
+  
   return;
 end;
 
