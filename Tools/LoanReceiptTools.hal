@@ -21,6 +21,8 @@ external procedure GetItemName(string,var string);
 external procedure SetupInvoiceRowAndAdd(record CredManVc,var record IVVc,string,string,val,val,val,Integer,Longint);
 external procedure GenerateAgreementSchedule(record CredManVc,Boolean,Boolean);
 external updating procedure RecreateAgreementDocument(var record AgreementDocVc,Boolean);
+external inner procedure IVToMailMn(record RcVc);
+external inner updating procedure CreateInvoicePdfFile(record IVVc);
 
 /*Invoicing tools*/
 function Boolean GetItemPriorityRecord(Longint credmannr,var record CMItemPriorityVc IPr)
@@ -711,10 +713,19 @@ begin
   array string 255 lateformula;
   record CMInvoicingBlock CIb;
   Date calcsd;
-
+  record RcVc RepSpec;
+  transaction Boolean gPDRAfterReciept;
+  array longint ivtomail;
+  
+  
   PrepareIPRecord(SMr,IPr);
   BlockLoad(CMb);
   BlockLoad(CIb);
+  
+  if(CIb.PDFAfterReceipt==1)then begin
+    gPDRAfterReciept = true;
+  end;
+  
   rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(SMr,i,SMrw);
@@ -738,6 +749,7 @@ begin
             AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
             SetupOverdueLangCode(IVr,CredManr);
             StoreLoanInvoice(IVr,CredManr);
+            ivtomail[ivtomail.length] = IVr.SerNr;
           end;
         end;
       end;
@@ -760,6 +772,24 @@ begin
     StoreIPRecord(IPr);
   end;
 
+  for(i=0;i<ivtomail.length;i=i+1)begin
+    IVr.SerNr = ivtomail[i];
+    if(readfirstmain(IVr,1,true))then begin
+      if(CIb.PDFAfterReceipt==1)then begin
+        CreateInvoicePdfFile(IVr);
+      end;
+      if(CIb.AutoSendOverdueInvoice==1)then begin
+        RepSpec.sStartDate = IVr.TransDate;
+        RepSpec.sEndDate = IVr.TransDate;
+        RepSpec.f2 = IVr.SerNr;
+        RepSpec.flags[3] = 1;
+        RepSpec.flags[1] = 1;
+        IVToMailMn(RepSpec);
+      end;
+    end;
+  end;
+  
+  
 //this is needed for partial buy-out. In that case we will always have only one row/one customer
   totremsum = remsum;
 

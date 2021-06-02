@@ -2282,6 +2282,7 @@ begin
   CheckBox(h,v+=20,0,"Automatically send issued Invoices",AutoInvoiceSend);
   CheckBox(h,v+=16,0,"Automatically send Invoices created from Contracts",AutoMailsFromInvoices);
   CheckBox(h,v+=16,0,"When creating Email, use precreated PDFs",UsePreCreatedInvoicePdf);
+  CheckBox(h,v+=16,0,"Sender in manual created mail is current user",emailSenderCurrent);
 
 //  CheckBox(h,v+=16,0,"Remaining principle including Last Months Principle",LastPrincipleWithExtraMonth);
   
@@ -2347,7 +2348,8 @@ begin
   ButtonFrame(h,v+=40,150,2,"Overdue Rate");
   RadioButton(h,v,0,0,"Daily",OverdueRateType);
   RadioButton(h,v+=16,1,0,"Monthly",OverdueRateType);  
-
+  CheckBox(h,v+=20,0,"Invoice PDF after Receipt",PDFAfterReceipt);
+  CheckBox(h,v+=20,0,"Automatically send invoice generated from Receipt Entry",AutoSendOverdueInvoice);
   
   Tile(3,95,false,"3",FBuyerPayDeal);
   vs=20; h=160; vs2=16; hm=-100;
@@ -3121,7 +3123,7 @@ begin
   EditField(h,v+=vs,140,"Company Prefix",Normal,CompPrefix,false,0);
   EditField(h,v+=vs,140,"Person Prefix",Normal,PersPrefix,false,0);
 	EditField(h,v+=vs,140,"Digital",Normal,AgrDigital,false,0);
-	EditField(h+200,v,140,"Digital2",Normal,AgrDigital2,false,0);
+	EditField(h+300,v,140,"Digital 2 Agreement",Normal,AgrDigital2,false,LTxtSClass);
 	EditField(h,v+=vs,140,"Not Digital",Normal,AgrNotDigital,false,0);
 
   EndWindow;
@@ -3833,4 +3835,32 @@ begin
   MatCol(1,-80,"Balance Date",0,BalDate,true,PasteCurDate);
   EndMatrix;
   EndWindow;
+end;
+
+
+window OwnAddressWClass:3
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real f,h,h2,v,vm,vs,v1;
+  string 255 label;
+  
+  WindowBegin("Own Actual Address",OwnAddressWClass,CGSbl,CYType);
+  SetWRect(20,80,580,200);
+  SetBlid(OwnAddressBlock);
+  vs = 20;
+  h = 100;
+  label = UserDefined("CUVc","InvAddr0");
+  if (blank(label)) then begin label = "Address"; end;
+  EditField(h,v=6,-20,label,Normal,Addr0,false,0);
+  label = UserDefined("CUVc","InvAddr1");
+  EditField(h,v+=vs,-20,label,Normal,Addr1,false,0);
+  label = UserDefined("CUVc","InvAddr2");
+  EditField(h,v+=vs,-20,label,Normal,Addr2,false,0);
+  label = UserDefined("CUVc","InvAddr3");
+  EditField(h,v+=vs,-20,label,Normal,Addr3,false,0);
+  label = UserDefined("CUVc","InvAddr4");
+  EditField(h,v+=vs,-20,label,Normal,Addr4,false,0);
+  
+  EndWindow;
+
 end;

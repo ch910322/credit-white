@@ -1,0 +1,70 @@
+remote inner function Integer IVTestApprovalStatus(record IVVc);
+remote inner updating function Integer CreateMailFromIVD(record IVVc,var record MailVc,var string,Boolean,string);
+external inner updating function Integer CreateExternalMailFromIVD(record IVVc,var string,Boolean,string);
+external inner procedure FindUserMailboxName(string,var string,var string);
+external inner procedure ResolveMailboxNumber(var row MailVc);
+
+global 
+updating procedure CreateMailFromIVDsm()
+begin
+  Integer wn,nwn;
+  record MailVc Mailr;
+  row MailVc MArw;
+  record IVVc IVr;
+  Integer err,i;
+  string 255 tstr,docname,mailboxnr,tstr1;
+  record MailSettingsBlock MSb;
+  Boolean testf;
+  record ConfSignVc csp;
+  longint l;
+  record IVMailBlock IVMailr;
+  record CMInvoicingBlock CMIb;
+  
+  
+  
+  wn = CurWindow;
+  if (WindowState(wn)==0) then begin//normalstate
+    testf = true;
+    GetWindowRecord(wn,IVr); 
+    err = IVTestApprovalStatus(IVr);
+    if (err!=0) then begin
+      MessageBox(err,"");
+      testf = false;
+    end;
+    if (testf) then begin
+      BlockLoad(MSb);
+      if (MSb.UseExternalMail) then begin
+        err = CreateExternalMailFromIVD(IVr,tstr,true,WindowFormName(wn));      
+      end else begin
+        err = CreateMailFromIVD(IVr,Mailr,tstr,false,WindowFormName(wn));
+        //Custom
+        blockload(CMIb);
+        if(CMIb.emailSenderCurrent==1)then begin
+          blockload(IVMailr);
+          FindUserMailboxName(CurrentUser,mailboxnr,tstr1);
+          if(nonblank(tstr1))then begin
+            for(i=0;i<matrowcnt(Mailr);i=i+1)begin
+              matrowget(Mailr,i,MArw);
+              if(MArw.RowTyp==1 and MArw.AddrCode==IVMailr.EmailSender)then begin
+                MArw.AddrCode = tstr1;
+                ResolveMailboxNumber(MArw);
+                matrowput(Mailr,i,MArw);
+                i = matrowcnt(Mailr);
+                recordstore(Mailr,true);
+              end;
+            end;
+          end;
+        end;
+        //Custom end;
+        if (err!=0) then begin
+          if (err>0) then begin
+            MessageBox(err,": " & tstr);
+          end;
+        end else begin
+          nwn = OpenWindow("MailDClass",1,0,"","",Mailr);
+        end;
+      end;
+    end;
+  end;
+  return;
+end;

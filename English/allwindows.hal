@@ -3780,3 +3780,29 @@ begin
   CheckBox(h,v+=vs,0,"Payment status per item",flags[10]);
   EndWindow;
 end;
+
+
+window IVToMailVClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm;
+  WindowBegin("Specify Create Mails from Invoices",IVToMailVClass,CGMnt,RcType);
+  SetWRect(64,80,509,340);
+  PeriodField(h=120,v=6,"Period");
+  EditFieldTL(h,v+=20, 150,"Customer",   M4UStr,Normal,40,f1,false,CUSClass);
+  EditFieldTL(h,vm=(v+=20), 70, "Category",   M4UStr,Normal,5,FirstAcc,false,CCatSClass);
+  EditFieldTL(h,v+=20 ,70,"Classification",M4UStr,Normal,30,f4,false,CClassSClass);
+  EditFieldTL(h,v+=20, 150,"Invoice",   M4UStr,Normal,20,f2,false,0);
+  EditFieldTL(h,v+=20, -50,"Customer Job Title",M4Str,Normal,200,f3,false,0);
+  CheckBox(h,v+=20,0,"Open Invoices Only",flags[0]);
+  CheckBox(h,v+=16,0,"Include not OKed Invoices",flags[8]);
+  CheckBox(h,v+=16,0,"Send emails automatically",flags[1]);
+  CheckBox(h,v+=16,0,"Consolidate all invoices for a customer in one email",flags[7]);
+  ButtonFrame(h,vm = (v+=40),123,4,"Invoice Type");
+  CheckBox(h,v,0,"Invoices",flags[3]);
+  CheckBox(h,v+=16,0,"Cash Notes",flags[4]);
+  CheckBox(h,v+=16,0,"#Credit Notes#",flags[5]);
+  CheckBox(h,v+=16,0,"I_nterest Invoices",flags[6]);
+  CheckBox(h,v+=20,0,"Use Persons e-mail address as From",flags[9]);
+  EndWindow;
+end;
