@@ -70,6 +70,7 @@ begin
   vector string 255 vExtra;
   
   vExtra["sort"] = WebGetArg("sort");
+  vExtra["sorttype"] = WebGetArg("sorttype");
   vExtra["range"] = WebGetArg("range");
   vExtra["key"] = WebGetArg("key");
   vExtra["keyname"] = WebGetArg("keyname");
@@ -885,7 +886,7 @@ begin
   return;
 end;
 
-procedure InsertInvoiceInArray(record IVVc IVr,longint CredHistNr,string ExtraValue,integer ValueType, var array record IVVc arrIVr)
+procedure InsertInvoiceInArray(record IVVc IVr,longint CredHistNr,string ExtraValue,integer ValueType,var array record IVVc arrIVr)
 begin
   record IVVc nIVr;
   
@@ -1118,63 +1119,49 @@ begin
           end;
         end;
         if (testf) then begin
-          skipf = false;
-          if ((rowoffset>0) and (curr<rowoffset)) then begin
-            skipf = true;
-          end;
-          if ((rowlimit>0) and (countout>=rowlimit)) then begin
-            skipf = true;
-          end;
-          curr = curr + 1;
-          if (!skipf) then begin
-            countout = countout + 1;
-            if (CredHistr.RecordType==0) then begin
-              IVr.SerNr = CredHistr.RecordNr;
-              tstr = "";
-              if (ReadFirstMain(IVr,1,true)) then begin
-                tstr = ConvertXMLString(IVr.OfficialSerNr,true);
-                curncy = IVr.CurncyCode;
-              end;
-              t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
-              paidflag = 0;
-              if (t==0.0) then begin
-                paidflag = 1;
-              end;
-              switch (sort) begin
-                case "OfficialSerNr":
-                  ValueType = M4Str;
-                  ExtraValue = IVr.OfficialSerNr;
-                case "ArtCode":
-                  ValueType = M4Str;
-                  ExtraValue = CredHistr.ArtCode;
-                case "InvDate":
-                  ValueType = M4Str;
-                  ExtraValue = CredHistr.TransDate;
-                case "DueDate":
-                  ValueType = M4Str;
-                  ExtraValue = CredHistr.PayDate;
-                case "PaidFlag":
-                  ValueType = M4Str;
-                  ExtraValue = paidflag;
-                case "Sum":
-                  ValueType = M4Val;
-                  ExtraValue = CredHistr.Sum;
-                case "InvSum":
-                  ValueType = M4Val;
-                  ExtraValue = CredHistr.InvSum;
-                case "PaidSum":
-                  ValueType = M4Val;
-                  ExtraValue = CredHistr.Sum-t;
-                case "OpenAmount":
-                  ValueType = M4Val;
-                  ExtraValue = t;
-                otherwise
-                  ValueType = M4Str;
-                  ExtraValue = "";
-              end;
-              InsertInvoiceInArray(IVr,CredHistr.SerNr,ExtraValue,ValueType,arrIVr);
-            end;//RecordType==0
-          end;//!skip
+          if (CredHistr.RecordType==0) then begin
+            IVr.SerNr = CredHistr.RecordNr;
+            if (ReadFirstMain(IVr,1,true)) then begin
+            end;
+            t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
+            paidflag = 0;
+            if (t==0.0) then begin
+              paidflag = 1;
+            end;
+            switch (sort) begin
+              case "OfficialSerNr":
+                ValueType = M4Str;
+                ExtraValue = IVr.OfficialSerNr;
+              case "ArtCode":
+                ValueType = M4Str;
+                ExtraValue = CredHistr.ArtCode;
+              case "InvDate":
+                ValueType = M4Str;
+                ExtraValue = CredHistr.TransDate;
+              case "DueDate":
+                ValueType = M4Str;
+                ExtraValue = CredHistr.PayDate;
+              case "PaidFlag":
+                ValueType = M4Str;
+                ExtraValue = paidflag;
+              case "Sum":
+                ValueType = M4Val;
+                ExtraValue = CredHistr.Sum;
+              case "InvSum":
+                ValueType = M4Val;
+                ExtraValue = CredHistr.InvSum;
+              case "PaidSum":
+                ValueType = M4Val;
+                ExtraValue = CredHistr.Sum-t;
+              case "OpenAmount":
+                ValueType = M4Val;
+                ExtraValue = t;
+              otherwise
+                ValueType = M4Str;
+                ExtraValue = "";
+            end;
+            InsertInvoiceInArray(IVr,CredHistr.SerNr,ExtraValue,ValueType,arrIVr);
+          end;//RecordType==0
         end;
       end;
     end;
@@ -1192,12 +1179,38 @@ begin
   if (sorttype=="desc") then begin
     for (i=acnt-1;i>=0;i=i-1) begin
       IVr = arrIVr[i];
-      AddCredManInvoiceToArea(IVr,a);
+      skipf = false;
+      if ((rowoffset>0) and (curr<rowoffset)) then begin
+        skipf = true;
+      end;
+      if ((rowlimit>0) and (countout>=rowlimit)) then begin
+        skipf = true;
+      end;
+      curr = curr + 1;
+      if (!skipf) then begin
+        countout = countout + 1;
+      end;
+      if (!skipf) then begin
+        AddCredManInvoiceToArea(IVr,a);
+      end;
     end;
   end else begin
     for (i=0;i<acnt;i=i+1) begin
       IVr = arrIVr[i];
-      AddCredManInvoiceToArea(IVr,a);
+      skipf = false;
+      if ((rowoffset>0) and (curr<rowoffset)) then begin
+        skipf = true;
+      end;
+      if ((rowlimit>0) and (countout>=rowlimit)) then begin
+        skipf = true;
+      end;
+      curr = curr + 1;
+      if (!skipf) then begin
+        countout = countout + 1;
+      end;
+      if (!skipf) then begin
+        AddCredManInvoiceToArea(IVr,a);
+      end;
     end;  
   end;
   AddXMLTagToArea(a,"RowCount","",curr,3);
