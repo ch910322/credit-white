@@ -550,7 +550,8 @@ begin
 		
 		if(gIsDigitalDocument==1)then begin
       vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrDigital;
-      vVals["F_ISDIGITALDOCUMENT2"] = PCb.AgrDigital2;
+      StandardTextToVector(PCb.AgrDigital2,vVals,"F_ISDIGITALDOCUMENT2");
+      StandardTextToVector(PCb.SurDigital2,vVals,"F_SURDIGITALDOCUMENT2");
     end else begin
       vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrNotDigital;
     end;
@@ -735,6 +736,7 @@ begin
 	if(gIsDigitalDocument==1)then begin
 		vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrDigital;
 		StandardTextToVector(PCb.AgrDigital2,vVals,"F_ISDIGITALDOCUMENT2");
+		StandardTextToVector(PCb.SurDigital2,vVals,"F_SURDIGITALDOCUMENT2");
 	end else begin
 		vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrNotDigital;
 	end;
@@ -1524,6 +1526,7 @@ LNextRow:;
   if(gIsDigitalDocument==1)then begin
     vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrDigital;
     StandardTextToVector(PCb.AgrDigital2,vVals,"F_ISDIGITALDOCUMENT2");
+    StandardTextToVector(PCb.SurDigital2,vVals,"F_SURDIGITALDOCUMENT2");
   end else begin
     vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrNotDigital;
   end;
