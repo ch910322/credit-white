@@ -2105,6 +2105,7 @@ begin
   RecordField(AgrDigital2,M4Str,255,0);
   RecordField(ItemShortLang,M4Code,10,0);
   RecordField(PrintRowWithBlankFees,M4Int,0,0);
+  RecordField(SurDigital2,M4Str,255,0);
   
   EndBlock;
 
