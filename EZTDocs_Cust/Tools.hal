@@ -392,7 +392,7 @@ begin
   //CustAged(CUr,td,bd,td,ARSSumod,ARSsactod,ARSs0od,ARSs1od,ARSs16od,ARSs31od,ARSs61od,ARSs91od,ARSs121od,ARSs151od,0);
   //GetOnAccBalance(RepSpec,CUr.Code,CUr.CurncyCode,false,0,ARSOnAccBalB1,rval2,ARSOnAccBal,sumbooked,sumnow,sumcurncy,sumdiff,CurTotalsr,debaccs,debbal,debcnt);//ObjStr
   RepSpec.d1 = td;
-  OneARSFormOpenOnDate(RepSpec,CUr,1,ARSSumod,custcnt,invcnt);//Used this function to calc user balance
+  OneARSFormOpenOnDate(RepSpec,CUr,2,ARSSumod,custcnt,invcnt);//Used this function to calc user balance
 
   //openamount2 = ARSSumod + ARSOnAccBal; //ARSSumod already included ARSOnAccBal
   openamount2 = ARSSumod;
