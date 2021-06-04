@@ -832,87 +832,70 @@ BEGIN
 //  IPrsr.TransDate = RepSpec.d1; either this or...
 //  while (LoopBackKey("CustTransKey",IPrsr,2,TrHs)) begin
 //this
-  resetloop(IPrsr);
   IPrsr.TransDate = AddYear(IPrsr.TransDate,1980);
   IPrsr.TransDate = AddMonth(IPrsr.TransDate,1);
   IPrsr.TransDate = AddDay(IPrsr.TransDate,1);
-  logtext(0,"IPrsr.TransDate " & IPrsr.TransDate);
-  logtext(0,"IPrsr.CustCode " & IPrsr.CustCode);
   while (LoopKey("CustTransKey",IPrsr,2,TrHs)) begin
-    logtext(0,"IPrsr.TransNr " & IPrsr.TransNr);
     if (TrHs) then begin
       if (IPrsr.CustCode!=CUp.Code) then begin
         TrHs = false;
-        logtext(0,"TRHS 01");
       end;
     end;
     if (TrHs) then begin
-      if (IPrsr.TransDate>RepSpec.d1) then begin logtext(0,"TRHS 02"); TrHs = false; end;
+      if (IPrsr.TransDate>RepSpec.d1) then begin TrHs = false; end;
     end;
     if (TrHs) then begin
       switch (IPrsr.TransType) begin
         case kIPrsTransTypeInvoice:
           IVr.SerNr = IPrsr.TransNr;
-          logtext(0,"IVr.SerNr " & IVr.SerNr);
           testf = true;
-          if (ReadFirstMain(IVr,1,true)==false) then begin logtext(0,"goto 1"); goto L20OneARSFormOpenOnDate; end;        
-          if (IVr.Invalid!=0) then begin logtext(0,"goto 2"); goto L20OneARSFormOpenOnDate; end;                              
+          if (ReadFirstMain(IVr,1,true)==false) then begin goto L20OneARSFormOpenOnDate; end;        
+          if (IVr.Invalid!=0) then begin goto L20OneARSFormOpenOnDate; end;                              
           if (RepSpec.flags[12]!=0) then begin
             if (IVr.NoRemndrFlag!=0) then begin
-              logtext(0,"goto 3");
               goto L20OneARSFormOpenOnDate;
             end;
             if (CUp.RemndrFlag==0) then begin
-              logtext(0,"goto 4");
               goto L20OneARSFormOpenOnDate;
             end;
           end;
           //CUST-BEGIN
           if(nonblank(RepSpec.f15))then begin
             if (SetInSet(IVr.CustCredManNr,RepSpec.f15)==false) then begin
-              logtext(0,"goto 5");
               goto L20OneARSFormOpenOnDate;
             end;
           end;
           //CUST-END
           if ((IVr.DisputedFlag!=0) and (RepSpec.flags[11]!=0)) then begin
-            logtext(0,"goto 6");
             goto L20OneARSFormOpenOnDate;
           end;
           if ((IVr.NoColectionFlag!=0) and (RepSpec.flags[13]!=0)) then begin
-          logtext(0,"goto 7");
             goto L20OneARSFormOpenOnDate;
           end;
           if (IVr.InvType==kInvoiceTypeCash or IVr.InvType==kInvoiceTypeCashInvoiceReceiptPRT) then begin
-            logtext(0,"goto 8");
             goto L20OneARSFormOpenOnDate;
           end;
           if (reportmode==0) then begin
             if ((IVr.InvType==kInvoiceTypeCredit or IVr.InvType==kInvoiceTypeCreditSpecialSales) and (RepSpec.flags[9]==0)) then begin
-              logtext(0,"goto 9");
               goto L20OneARSFormOpenOnDate;
             end;
             if ((IVr.InvType!=kInvoiceTypeDownpayment) and (RepSpec.flags[10]!=0)) then begin
-              logtext(0,"goto 10");
               goto L20OneARSFormOpenOnDate;
             end;
           end;
           if (reportmode==1) then begin
             if (nonblank(RepSpec.ObjStr)) then begin
               if (SetInSet(RepSpec.ObjStr,IVr.Objects)==false) then begin
-                logtext(0,"goto 11");
                 goto L20OneARSFormOpenOnDate;
               end;
             end;
             if ((IVr.InvType!=kInvoiceTypeDownpayment) and (RepSpec.flags[10]!=0)) then begin
-              logtext(0,"goto 12");
               goto L20OneARSFormOpenOnDate;
             end;
           end;
           if (HasLocalization("SVN") or HasLocalization("HRV")) then begin
             if (Accb.BookVATOnlyFromDownpayment!=0) then begin
               if (IVr.InvType==kInvoiceTypeDownpayment or (IVr.InvType==kInvoiceTypeCredit and CreditedIVisDownpayment(IVr))) then begin
-                logtext(0,"goto 13");
                 goto L20OneARSFormOpenOnDate;
               end;
             end;
@@ -924,28 +907,24 @@ BEGIN
           end;
           if (reportmode==0) then begin
             if (RepSpec.Comparison!=0) then begin
-              if ((-latedays)<RepSpec.Comparison) then begin logtext(0,"goto 14"); goto L20OneARSFormOpenOnDate; end;
+              if ((-latedays)<RepSpec.Comparison) then begin goto L20OneARSFormOpenOnDate; end;
             end;
           end;
           if (IVr.InvType==kInvoiceTypeCredit or IVr.InvType==kInvoiceTypeCreditSpecialSales) then begin
-            logtext(0,"goto 15");
             if (IVr.CredInv!=-1) then begin goto L20OneARSFormOpenOnDate; end;
           end;          
           if ((IVr.InstallmentInv==1) and (RepSpec.flags[19]!=0)) then begin
             FindInstalmentInvoiceBalance(RepSpec,IVr,agedate,opensum,opensumb1);
-            if (opensum==0) then begin logtext(0,"goto 16"); goto L20OneARSFormOpenOnDate; end;
+            if (opensum==0) then begin goto L20OneARSFormOpenOnDate; end;
           end else begin
-            if (CheckIfIVOpen(RepSpec.d1,IVr,"",opensum,true,false)==false) then begin logtext(0,"goto 17"); goto L20OneARSFormOpenOnDate; end;
+            if (CheckIfIVOpen(RepSpec.d1,IVr,"",opensum,true,false)==false) then begin goto L20OneARSFormOpenOnDate; end;
             opensumb1 = opensum;
             if (RepSpec.flags[4]==0) then begin
               opensumb1 = MulRateToBase1(IVr.CurncyCode,opensum,IVr.FrRate,IVr.ToRateB1,IVr.ToRateB2,IVr.BaseRate1,IVr.BaseRate2,DefaultCurRoundOff);
             end;          
           end;
-          logtext(0,"testf " & testf);
           if (testf) then begin
           remlevf = false;
-          logtext(0,"RepSpec.flags[0] " & RepSpec.flags[0]);
-          logtext(0,"latedays " & latedays);
           if ((RepSpec.flags[0]==0) or (latedays<0)) then begin
             if ((IVr.InstallmentInv==1) and (RepSpec.flags[19]!=0)) then begin
               OneARSFormOpenOnDateInstallment(RepSpec,CUp,reportmode,IVr,maxintdays,
@@ -955,7 +934,6 @@ BEGIN
                                    aIntVal,aRVal,aRValCur,aSum4,aVEInvNo,
                                    aCurncyCode,aOfficialSerNo,aCustOrdNo,
                                    acnt);
-              logtext(0,"01 ARSSum " & ARSSum);
 /*
 #else                                   
               if ((IVr.RetnValue>0 and IVr.Sum4>0) or (IVr.RetnValue<0 and IVr.Sum4<0)) then begin
@@ -999,7 +977,6 @@ BEGIN
                                    aIntVal,aRVal,aRValCur,aSum4,aVEInvNo,
                                    aCurncyCode,aOfficialSerNo,aCustOrdNo,
                                    acnt);
-              logtext(0,"01 ARSSum " & ARSSum);
               
 
 /*              
@@ -1106,9 +1083,7 @@ L20OneARSFormOpenOnDate:;
           end;
         case 1: 
           balp = balp + ARSOnAccBal;
-          logtext(0,"1ARSSum " & ARSSum);
           ARSrList(RepSpec,CUp,ARSSum,ARSOnAccBal,ARSIntSum,ARSs0,ARSs1,ARSs16,ARSs31,ARSs61,ARSs91,ARSs121,ARSs151,aRwtype,aInvoiceNr,aRecNr,alatedays,aRemndr,aInvDate,aDueDate,aIntVal,aRVal,aRValCur,aSum4,aVEInvNo,aCurncyCode,aOfficialSerNo,acnt,custcnt,invcnt); 
-          logtext(0,"2ARSSum " & ARSSum);
       end;
   end;
   balp = balp + ARSSum;
