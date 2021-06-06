@@ -1,4 +1,4 @@
-external updating procedure DoBuyOutAgreement(record CredManVc,Date,var record IVVc);
+external updating procedure DoBuyOutAgreement(record CredManVc,Date,Boolean,var record IVVc);
 external inner procedure CredManUpdate(var record CredManVc,Integer,string);
 external inner procedure CredManSumup(var record CredManVc);
 external inner procedure CredManVc_PasteCurncyCode(var record CredManVc);
@@ -648,7 +648,8 @@ begin
   return;
 end;
 
-updating procedure CreditAndOKInvoice(Longint ivnr,val prc,var val credval,var vector val vCredVal,val rval,Boolean sellf,Date td)
+global
+updating procedure CreditAndOKInvoice(Longint ivnr,val prc,var val credval,var vector val vCredVal,val rval,Boolean sellf,Date td,string artcode)
 begin
   record IVVc IVr,IVCreditr,oldIVr,IV2r;
   string 255 warning;
@@ -677,7 +678,7 @@ begin
       rwcnt = MatRowCnt(IVCreditr);
       for (i=0;i<rwcnt;i=i+1) begin
         MatRowGet(IVCreditr,i,IVrw);
-        if (nonblank(IVrw.ArtCode)) then begin
+        if ((blank(artcode) or artcode==IVrw.ArtCode) and nonblank(IVrw.ArtCode)) then begin
           if (IVrw.Price>0) then begin
             credval = credval + IVrw.Sum;
             if (ratio!=1) then begin
@@ -752,7 +753,7 @@ begin
     ARr.InvoiceNr = StringToLongint(invarr[i]);
     if (ReadFirstMain(ARr,1,true)) then begin
       if (ARr.RVal>0) then begin
-        CreditAndOKInvoice(ARr.InvoiceNr,prc,credval,vCredVal,ARr.RVal,sellf,td);
+        CreditAndOKInvoice(ARr.InvoiceNr,prc,credval,vCredVal,ARr.RVal,sellf,td,"");
       end;
     end;
   end;
@@ -777,7 +778,7 @@ begin
     CredManr.OrderClass = OCb.RefinClass;
     if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
       CreateRefinCredMan(RepSpec,nCredManr,CredManr);
-      DoBuyOutAgreement(CredManr,CurrentDate,IVr);
+      DoBuyOutAgreement(CredManr,CurrentDate,false,IVr);
       CreditCredManInvoices(CredManr,100,credval,vCredVal,false,"");
       res = true;
     end;
@@ -1740,7 +1741,7 @@ begin
     RecordClear(IPr);
     ReturnInvoiceAndMakePrepaymentSeparate(IVr);
     UnlinkCredManInvoice(IVr);
-    CreditAndOKInvoice(IVr.SerNr,100,credval,vCredVal,IVr.Sum4,false,CurrentDate);
+    CreditAndOKInvoice(IVr.SerNr,100,credval,vCredVal,IVr.Sum4,false,CurrentDate,"");
     res = true;
   end;
 

@@ -3,7 +3,7 @@ remote procedure PasteCustInAgreementRemote(var record CredManVc,var string);
 remote updating procedure TerminateCredMan(var record CredManVc,val,string,Date,Boolean);
 remote procedure TerminateCredManFinish(var record CredManVc);
 //remote updating procedure TerminateCredMan(var record CredManVc,var record IVVc);//old implementation
-remote updating procedure DoBuyOutAgreement(record CredManVc,Date,var record IVVc);
+remote updating procedure DoBuyOutAgreement(record CredManVc,Date,Boolean,var record IVVc);
 remote procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 remote inner procedure SetupCustPS2Rn(string,var record RcVc);
 remote procedure CredManSetDatesCust(var record CredManVc,Boolean);
@@ -658,6 +658,7 @@ begin
     GetWindowRecord(wn,CredManr);
     RepSpec.long1 = CredManr.SerNr;
     RepSpec.d1 = CurrentDate;
+    RepSpec.flags[1] = 1;
     OpenWindow("CredManBuyoutWClass",0,wn,"","",RepSpec);
   end;
 
@@ -698,7 +699,7 @@ begin
   if (mwn>0) then begin
     GetWindowRecord(mwn,CredManr);
     if (CanTerminateWithDate(CredManr,RepSpec.d1)) then begin
-      DoBuyOutAgreement(CredManr,RepSpec.d1,IVr);
+      DoBuyOutAgreement(CredManr,RepSpec.d1,RepSpec.flags[1]==1,IVr);
       if (IVr.SerNr>0) then begin
         OpenWindow("IVDClass",1,0,"","",IVr);
       end;

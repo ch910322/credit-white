@@ -44,6 +44,8 @@ external function val GetCredHistOpenAmount(record CredHistVc,Integer);
 external inner function string 60 AddObjectToObjectList(string,string);
 external inner function string 255 StrReplace(string,string,string);
 external function val GetCredHistOpenValueOnDate(Longint,Date);
+external updating procedure CreditAndOKInvoice(Longint,val,var val,var vector val,val,Boolean,Date,string);
+
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -1988,8 +1990,43 @@ begin
   return;
 end;
 
+function val GetCreditedInterest(record CredManVc CredManr,Date td,var Longint ivnr)
+begin
+  val res;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  Integer i,rwcnt;
+  Integer diff,diff2;
+
+  CSr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CSr,1,true)) then begin
+    rwcnt = MatRowCnt(CSr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(CSr,i,CSrw);
+      if (CSrw.FromDate<=td) then begin
+        if (CSrw.ToDate>td) then begin
+          if (CSrw.Interest>0) then begin
+            if (CSrw.Invoiced==1) then begin
+              diff = DateDiff(CSrw.ToDate,CSrw.FromDate)+1;
+              diff2 = DateDiff(CSrw.ToDate,td)+1;
+              res = res + CSrw.Interest*diff2/diff;
+              ivnr = CSrw.InvoiceNr;
+            end;
+          end;
+        end;
+      end else begin
+        i = rwcnt;
+      end; 
+    end;
+  end;
+
+
+  GetCreditedInterest = res;
+  return;
+end;
+
 global
-updating procedure DoBuyOutAgreement(record CredManVc CredManr,Date td,var record IVVc firstIVr)
+updating procedure DoBuyOutAgreement(record CredManVc CredManr,Date td,Boolean creditf,var record IVVc firstIVr)
 begin
   record CredManSetBlock CMb;
   record CredManPayPlanVc CredManPayPlanr;
@@ -2001,6 +2038,9 @@ begin
   array string 255 lateformula;
   Date calcsd;
   row IVVc IVrw;
+  val credval,ncredval;
+  Longint ivnr;
+  vector val vCredVal;
 
   if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
     BlockLoad(CMb);
@@ -2021,6 +2061,12 @@ begin
         end;
         SetupBuyoutLangCode(IVr,CredManr);
         StoreLoanInvoice(IVr,CredManr);
+        if (creditf) then begin
+          credval = GetCreditedInterest(CredManr,td,ivnr);
+          if (credval>0) then begin
+            CreditAndOKInvoice(ivnr,1,ncredval,vCredVal,credval,true,td,CMb.RateItem);
+          end;
+        end;
         GenerateAgreementSchedule(CredManr,true,true);
         RecordCopy(firstIVr,IVr);
       end else begin
@@ -2192,40 +2238,6 @@ begin
   return;
 end;
 
-function val GetCreditedInterest(record CredManVc CredManr,Date td)
-begin
-  val res;
-  record CredManSchedVc CSr;
-  row CredManSchedVc CSrw;
-  Integer i,rwcnt;
-  Integer diff,diff2;
-
-  CSr.CredManNr = CredManr.SerNr;
-  if (ReadFirstMain(CSr,1,true)) then begin
-    rwcnt = MatRowCnt(CSr);
-    for (i=0;i<rwcnt;i=i+1) begin
-      MatRowGet(CSr,i,CSrw);
-      if (CSrw.FromDate<=td) then begin
-        if (CSrw.ToDate>td) then begin
-          if (CSrw.Interest>0) then begin
-            if (CSrw.Invoiced==1) then begin
-              diff = DateDiff(CSrw.ToDate,CSrw.FromDate)+1;
-              diff2 = DateDiff(CSrw.ToDate,td)+1;
-              res = res + CSrw.Interest*diff2/diff;
-            end;
-          end;
-        end;
-      end else begin
-        i = rwcnt;
-      end; 
-    end;
-  end;
-
-
-  GetCreditedInterest = res;
-  return;
-end;
-
 //same as GetLateDaysInPeriod except returns amounts incl. of VAT
 function Integer GetLateDaysInPeriod2(record CredHistVc CredHistr,Date sd,Date ed,var val dueamount)
 begin
@@ -2341,6 +2353,7 @@ begin
   val principlelateamount,interestlateamount;
   val t;
   val notlateprinciple,notlateinterest;
+  Longint dummy_ivnr;
   
 logtext(0,"CheckBuyOutAgreement start");
 //LogText(0,"aa RepSpec.d1=" & RepSpec.d1); //d1 is CurrentDate here. Why?
@@ -2374,7 +2387,7 @@ logtext(0,"CheckBuyOutAgreement start");
   RepSpec.f12 = lateamount;//(RepSpec.vals2-RepSpec.vals3-RepSpec.vals4);
   //BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
   if (RepSpec.flags[1]==1) then begin
-    RepSpec.f20 = GetCreditedInterest(CredManr,RepSpec.d1);  
+    RepSpec.f20 = GetCreditedInterest(CredManr,RepSpec.d1,dummy_ivnr);  
   end;
   t = GetActualBalance(CredManr,CredManPayPlanr,true);
   RepSpec.f13 = t;
