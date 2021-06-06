@@ -62,6 +62,7 @@ begin
             if (int_type==1) then begin
               if (blank(CredManr.MoneyTransferDate)) then begin
                 CredManr.MoneyTransferDate = OPr.PayDate;
+                checkf = true;
               end;
             end;
             if (int_type==2) then begin
@@ -75,9 +76,11 @@ begin
             CredManr.Status = 4;
           end;
           RecordUpdate(oldCredManr,CredManr,true);
-          CSr.CredManNr = CredManr.SerNr;
-          if (ReadFirstMain(CSr,1,true)) then begin
-            threadasync.GenerateAgreementSchedule(CredManr,true,int_type==2);
+          if (checkf) then begin
+            CSr.CredManNr = CredManr.SerNr;
+            if (ReadFirstMain(CSr,1,true)) then begin
+              threadasync.GenerateAgreementSchedule(CredManr,true,int_type==2);
+            end;
           end;
         end;
       end;
