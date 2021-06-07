@@ -2317,6 +2317,7 @@ begin
   RadioButton(h,v+=16,3,0,"Separately for previous Calendar Month, on Day",InterestIVType);  
   EditField(h+360,v,30,"Day of Month",Normal,InterestIVDay,false,0);
 
+  CheckBox(h,v+=20,0,"F_EMAIL depends on following settings",eMailBasedOnCMSettings);
   v = v + 40;
   ButtonFrame(h,vm=v,200,5,"Invoice Recipients");
   Checkbox(h,v,0,"Primary Contact Email",SendToMainContact);

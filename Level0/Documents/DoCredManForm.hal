@@ -29,6 +29,7 @@ external outer function Integer GetProlongMonths(record CredManVc);
 external outer procedure PrintOwnBankDetails(Longint);
 external function Boolean GetPMRow(string,var row PMBlock);
 external outer function val AdjustFees(val,val,val);
+external outer function Boolean Ext_AddCustomMailRecipients(record IVVc,var record MailVc);
 
 global
 function string 255 CredManOwnBankAccount(Longint credmannr,var string bankname,var string bankbic,var string bankcode)
@@ -117,6 +118,12 @@ function string 255 CredManCustEmail(record CUVc CUr)
 begin
   string 255 res;
   record CUVc ContactCUr;
+  record CMInvoicingBlock CIb;
+  record MailVc voidMailr;
+  row MailVc MArw;
+  record IVVc voidIVr;
+  integer rwcnt,i;
+  string 255 newres;
 
   res = CUr.eMail;
   if (blank(res)) then begin
@@ -126,6 +133,27 @@ begin
       res = FindFirstContactPersonWithEmail(CUr);
     end;
   end;
+  
+  blockload(CIb);//Cust START
+  if(CIb.eMailBasedOnCMSettings==1)then begin
+      voidIVr.CustCode = CUr.Code;
+      Ext_AddCustomMailRecipients(voidIVr,voidMailr);
+      rwcnt = matrowcnt(voidMailr);
+      for(i=0;i<rwcnt;i=i+1)begin
+        matrowget(voidMailr,i,MArw);
+        if(MArw.RowTyp==0)then begin
+          newres = newres & MArw.AddrCode;
+          if(i<rwcnt-1)then begin
+            newres = newres & "\\n";
+          end;
+        end;
+      end;
+      if(nonblank(newres))then begin
+        res = newres;
+        logtext(0,newres & "  " & rwcnt);
+      end;
+  end;
+  //Cust END
 
   CredManCustEmail = res;
   return;
