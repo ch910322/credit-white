@@ -44,7 +44,7 @@ external function val GetCredHistOpenAmount(record CredHistVc,Integer);
 external inner function string 60 AddObjectToObjectList(string,string);
 external inner function string 255 StrReplace(string,string,string);
 external function val GetCredHistOpenValueOnDate(Longint,Date);
-external updating procedure CreditAndOKInvoice(Longint,val,var val,var vector val,val,Boolean,Date,string);
+external updating procedure CreditAndOKInvoice(Longint,val,var val,var vector val,val,Boolean,Date,string,string,string);
 
 
 enum begin
@@ -205,6 +205,21 @@ begin
   return;
 end;
 
+function string 255 GetInvoicePeriodString(record CMInvoicingBlock CIb,date fromdate,Date todate)
+begin
+  string 255 del,res;
+
+  del = ":";
+  if (nonblank(CIb.PeriodDelimiter)) then begin
+    del = CIb.PeriodDelimiter;
+  end;
+
+  res = CIb.InvoiceCommentStr & USetStr(200081) & fromdate & del & todate;
+
+  GetInvoicePeriodString = res;
+  return;
+end;
+
 global
 procedure SetupLoanInvoice2(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Date invdate,Date fromdate,Date todate,Boolean sernrf,Boolean forcecustf,string ivno,Integer invtype,Boolean fullf,string paydeal)
 begin
@@ -290,12 +305,7 @@ begin
     if(periodflag)then begin
       if (nonblank(fromdate)) then begin
         ClearRow(IVr,IVrw,1);
-        del = ":";
-        if (nonblank(CIb.PeriodDelimiter)) then begin
-          del = CIb.PeriodDelimiter;
-        end;
-
-        IVrw.Spec = CIb.InvoiceCommentStr & USetStr(200081) & fromdate & del & todate;
+        IVrw.Spec = GetInvoicePeriodString(CIb,fromdate,todate);
         MatRowPut(IVr,1,IVrw);
       end else begin
         ClearRow(IVr,IVrw,1);
@@ -2030,7 +2040,7 @@ updating procedure DoBuyOutAgreement(record CredManVc CredManr,Date td,Boolean c
 begin
   record CredManSetBlock CMb;
   record CredManPayPlanVc CredManPayPlanr;
-  record IVVc IVr,oldIVr,oIVr;
+  record IVVc IVr,oldIVr,oIVr,tmpIVr;
   record CMInvoicingBlock CIb;
   Date sd;
   val openamount,lateamount;
@@ -2064,7 +2074,10 @@ begin
         if (creditf) then begin
           credval = GetCreditedInterest(CredManr,td,ivnr);
           if (credval>0) then begin
-            CreditAndOKInvoice(ivnr,1,ncredval,vCredVal,credval,true,td,CMb.RateItem);
+            tmpIVr.SerNr = ivnr;
+            if (ReadFirstMain(tmpIVr,1,true)) then begin
+              CreditAndOKInvoice(ivnr,1,ncredval,vCredVal,credval,true,td,CMb.RateItem,GetInvoicePeriodString(CIb,tmpIVr.CredFromDate,tmpIVr.CredToDate),GetInvoicePeriodString(CIb,td,tmpIVr.CredToDate));
+            end;
           end;
         end;
         GenerateAgreementSchedule(CredManr,true,true);
