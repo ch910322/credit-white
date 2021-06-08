@@ -85,6 +85,77 @@ enum begin
   kMonthTypeLast = 2
 end;
 
+global function boolean getAdditionalLangCode(record CredManVc CredManr, string type, var string reslang)
+begin
+  boolean res;
+  record CUVc CUr;
+  record CredManAddLangVc CredManAddLangr; 
+  row CredManAddLangVc CredManAddLangrw; 
+  boolean foundf;
+  integer i,rwcnt;
+  
+  CUr.Code = CredManr.CustCode;
+  CredManAddLangr.CredManNr = CredManr.SerNr;
+  if(readfirstmain(CredManAddLangr,1,true))then begin
+    if(readfirstmain(CUr,1,true))then begin
+      if(nonblank(CUr.LangCode))then begin
+        rwcnt = matrowcnt(CredManAddLangr);
+        for(i=0;i<rwcnt;i=i+1)begin
+          matrowget(CredManAddLangr,i,CredManAddLangrw);
+          if(nonblank(CredManAddLangrw.LangCode) and CredManAddLangrw.LangCode==CUr.LangCode)then begin
+            foundf = true;
+            i=rwcnt;
+          end;
+        end;
+        
+        reslang = "";
+        if(foundf)then begin
+          if(type=="IntLang")then begin
+            if(nonblanK(CredManAddLangrw.IntLang))then begin
+              res = true;
+              reslang = CredManAddLangrw.IntLang;
+            end;
+          end;
+          if(type=="LangCode2")then begin
+            if(nonblanK(CredManAddLangrw.LangCode2))then begin
+              res = true;
+              reslang = CredManAddLangrw.LangCode2;
+            end;
+          end;
+          if(type=="OverdueLangCode")then begin
+            if(nonblanK(CredManAddLangrw.OverdueLangCode))then begin
+              res = true;
+              reslang = CredManAddLangrw.OverdueLangCode;
+            end;
+          end;
+          if(type=="BuyOutLangCode")then begin
+            if(nonblanK(CredManAddLangrw.BuyOutLangCode))then begin
+              res = true;
+              reslang = CredManAddLangrw.BuyOutLangCode;
+            end;
+          end;
+          if(type=="InvOverdLangCode")then begin
+            if(nonblanK(CredManAddLangrw.InvOverdLangCode))then begin
+              res = true;
+              reslang = CredManAddLangrw.InvOverdLangCode;
+            end;
+          end;
+          if(type=="CompensLangCode")then begin
+            if(nonblanK(CredManAddLangrw.CompensLangCode))then begin
+              res = true;
+              reslang = CredManAddLangrw.CompensLangCode;
+            end;
+          end;
+        end;
+      end;
+    end;
+  end;
+  
+  getAdditionalLangCode = res;
+return;
+end;
+
+
 function longint MAXLongint(longint a,longint b)
 begin
   if (a>b) then begin
@@ -229,7 +300,7 @@ begin
   string 255 oldlang;
   record CMInvoicingBlock CIb;
   record CredManAccVc CMAr;
-  string 255 del;
+  string 255 del,reslang;
   boolean doforcepaydeal,periodflag;
   
   doforcepaydeal = true;
@@ -270,6 +341,9 @@ begin
   IVr.CredToDate = todate;
   if (invdate<CredManr.FirstInvDate and blank(fromdate)) then begin//First invoice language
     IVr.LangCode = CredManr.LangCode2;
+    if(getAdditionalLangCode(CredManr,"LangCode2",reslang))then begin
+      IVr.LangCode = reslang;
+    end;
     if (nonblank(paydeal)) then begin
       IVr.PayDeal = CredManr.PayDeal;
       doforcepaydeal = false;
@@ -441,6 +515,7 @@ begin
   integer i,rwcnt;
   boolean overflag;
   record CredManSetBlock CMb;
+  string 20 reslang;
   
   blockload(CMb);
   
@@ -458,6 +533,9 @@ begin
       if(nonblank(CMTr.InvOverdLangCode))then begin
         IVr.LangCode = CMTr.InvOverdLangCode;
       end;
+      if(getAdditionalLangCode(CredManr,"InvOverdLangCode",reslang))then begin
+        IVr.LangCode = reslang;
+      end;
     end;
   end;
 return;
@@ -469,6 +547,7 @@ begin
   record CredManTypeVc CMTr;
   Boolean serf;
   record CMInvoicingBlock CIb;
+  string 20 reslang;
 
   CMTr.Code = CredManr.Type;
   if (ReadFirstMain(CMTr,1,true)) then begin
@@ -476,9 +555,15 @@ begin
       if (nonblank(CMTr.CompensLangCode)) then begin
         IVr.LangCode = CMTr.CompensLangCode;
       end;
+      if(getAdditionalLangCode(CredManr,"CompensLangCode",reslang))then begin
+        IVr.LangCode = reslang;
+      end;
     end else begin
       if (nonblank(CMTr.OverdueLangCode)) then begin
         IVr.LangCode = CMTr.OverdueLangCode;
+      end;
+      if(getAdditionalLangCode(CredManr,"OverdueLangCode",reslang))then begin
+        IVr.LangCode = reslang;
       end;
     end;
   end;
@@ -494,11 +579,15 @@ global
 procedure SetupBuyoutLangCode(var record IVVc IVr,record CredManVc CredManr)
 begin
   record CredManTypeVc CMTr;
+  string 20 reslang;
 
   CMTr.Code = CredManr.Type;
   if (ReadFirstMain(CMTr,1,true)) then begin
     if (nonblank(CMTr.BuyOutLangCode)) then begin
       IVr.LangCode = CMTr.BuyOutLangCode;
+    end;
+    if(getAdditionalLangCode(CredManr,"BuyOutLangCode",reslang))then begin
+      IVr.LangCode = reslang;
     end;
   end;
 
