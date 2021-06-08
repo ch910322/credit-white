@@ -3866,4 +3866,29 @@ begin
   
   EndWindow;
 
+end;  
+
+window CredManAddLangsDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  Boolean pledge;
+  Integer type;
+  string 255 title;
+
+  WindowBegin("Additional Languages",CredManAddLangsDClass,CGview,-);
+  SetWRect(20,80,900,339);
+  DynamicWindow;
+  UseView(CredManAddLangVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  MatrixBegin(10,20,-40,-20,-,99);
+  MatCol(1,24,"CustLang",0,CustLang,false,LangSClass);
+  MatCol(1,124,"IntLang",0,IntLang,false,LangSClass);
+  MatCol(1,224,"FInvLang",0,FInvLang,false,LangSClass);
+  MatCol(1,324,"OvdLang",0,OvdLang,false,LangSClass);
+  MatCol(1,424,"BuyoutLang",0,BuyoutLang,false,LangSClass);
+  MatCol(1,524,"OvdInvLang",0,OvdInvLang,false,LangSClass);
+  MatCol(1,624,"CompLang",0,CompLang,false,LangSClass);
+  EndMatrix;
+  EndWindow;
 end;

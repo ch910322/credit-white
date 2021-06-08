@@ -2237,6 +2237,23 @@ begin
   RecordField(Addr4,M4Str,60,0);  
   EndBlock;
   
+  RecordBegin(CredManAddLangVc,-,"");
+  RecordField(CredManNr,M4Long,0,0);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(CustLang,M4Code,20,0);
+  ArrayField(IntLang,M4Code,20,0);
+  ArrayField(FInvLang,M4Code,20,0);
+  ArrayField(OvdLang,M4Code,20,0);
+  ArrayField(BuyoutLang,M4Code,20,0);
+  ArrayField(OvdInvLang,M4Code,20,0);
+  ArrayField(CompLang,M4Code,20,0);
+  EndArray;
+  MainKeyBegin(CredManNr,0);
+  KeySegment(CredManNr);
+  EndRecord;
+  
+  
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Estonian", 0);

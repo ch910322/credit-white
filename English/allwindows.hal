@@ -699,6 +699,7 @@ begin
   //end else begin
     CheckBox(h3-30,v+3,0,"",HasChanges);
     HalPushButton(h3,v+3,h3+100,v+23,"CredManDClassOpenChanges","Agr. Changes");    
+    HalPushButton(h3+110,v+30,h3+200,v+53,"CredManDClassAddLanguages","Add. Languages");    
   //end;
   if (HasPaymentConditionTexts) then begin
     HalPushButton(h3+110,v+3,h3+210,v+23,"CredManDClassOpenPaymentConditions","Paym. Condition");    
@@ -711,7 +712,7 @@ begin
   EditField(h2,v,150,"Interest",Normal,InstalmentType,false,SetSClass);
   EditField(h,v+=vs,82, "Customer",Normal,CustCode,false,CUSClass);
   EnterSkip(InvSum4);
-  EditField(h2,v,n,"Name",Normal,Addr0,false,0);
+  EditField(h2,v,300,"Name",Normal,Addr0,false,0);
   EditField(h,v+=vs,82,"#Salesman#",Normal,SalesMan,false,UserSClass);
   EditField(h2,v,n,"Attn.",Normal,ClientContact,false,ContactSClass);
 //CUST-BEGIN

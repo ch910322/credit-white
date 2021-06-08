@@ -2499,6 +2499,25 @@ begin
 end;
 
 global
+updating procedure CredManDClassAddLanguages()
+begin
+  record CredManAddLangVc CredManAddLangr; 
+  Integer wn;
+  record CredManVc CredManr; 
+
+  wn = CurWindow;
+  GetWindowRecord(wn,CredManr);
+  CredManAddLangr.CredManNr = CredManr.SerNr;
+  if(readfirstmain(CredManAddLangr,1,true)==false)then begin
+    recordnew(CredManAddLangr);
+    CredManAddLangr.CredManNr = CredManr.SerNr;
+    recordstore(CredManAddLangr,true);
+  end;
+  OpenWindow("CredManAddLangsDClass",1,0,"","",CredManAddLangr);
+  return;
+end;
+
+global
 updating procedure CredManDClassBOESurety()
 begin
   record CredManVc CredManr;
