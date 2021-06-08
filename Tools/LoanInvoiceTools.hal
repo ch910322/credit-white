@@ -44,6 +44,8 @@ external function val GetCredHistOpenAmount(record CredHistVc,Integer);
 external inner function string 60 AddObjectToObjectList(string,string);
 external inner function string 255 StrReplace(string,string,string);
 external function val GetCredHistOpenValueOnDate(Longint,Date);
+external updating procedure CreditAndOKInvoice(Longint,val,var val,var vector val,val,Boolean,Date,string,string,string);
+
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -203,6 +205,21 @@ begin
   return;
 end;
 
+function string 255 GetInvoicePeriodString(record CMInvoicingBlock CIb,date fromdate,Date todate)
+begin
+  string 255 del,res;
+
+  del = ":";
+  if (nonblank(CIb.PeriodDelimiter)) then begin
+    del = CIb.PeriodDelimiter;
+  end;
+
+  res = CIb.InvoiceCommentStr & USetStr(200081) & fromdate & del & todate;
+
+  GetInvoicePeriodString = res;
+  return;
+end;
+
 global
 procedure SetupLoanInvoice2(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Date invdate,Date fromdate,Date todate,Boolean sernrf,Boolean forcecustf,string ivno,Integer invtype,Boolean fullf,string paydeal)
 begin
@@ -288,12 +305,7 @@ begin
     if(periodflag)then begin
       if (nonblank(fromdate)) then begin
         ClearRow(IVr,IVrw,1);
-        del = ":";
-        if (nonblank(CIb.PeriodDelimiter)) then begin
-          del = CIb.PeriodDelimiter;
-        end;
-
-        IVrw.Spec = CIb.InvoiceCommentStr & USetStr(200081) & fromdate & del & todate;
+        IVrw.Spec = GetInvoicePeriodString(CIb,fromdate,todate);
         MatRowPut(IVr,1,IVrw);
       end else begin
         ClearRow(IVr,IVrw,1);
@@ -1988,12 +2000,47 @@ begin
   return;
 end;
 
+function val GetCreditedInterest(record CredManVc CredManr,Date td,var Longint ivnr)
+begin
+  val res;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  Integer i,rwcnt;
+  Integer diff,diff2;
+
+  CSr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CSr,1,true)) then begin
+    rwcnt = MatRowCnt(CSr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(CSr,i,CSrw);
+      if (CSrw.FromDate<=td) then begin
+        if (CSrw.ToDate>td) then begin
+          if (CSrw.Interest>0) then begin
+            if (CSrw.Invoiced==1) then begin
+              diff = DateDiff(CSrw.ToDate,CSrw.FromDate)+1;
+              diff2 = DateDiff(CSrw.ToDate,td)+1;
+              res = res + CSrw.Interest*diff2/diff;
+              ivnr = CSrw.InvoiceNr;
+            end;
+          end;
+        end;
+      end else begin
+        i = rwcnt;
+      end; 
+    end;
+  end;
+
+
+  GetCreditedInterest = res;
+  return;
+end;
+
 global
-updating procedure DoBuyOutAgreement(record CredManVc CredManr,Date td,var record IVVc firstIVr)
+updating procedure DoBuyOutAgreement(record CredManVc CredManr,Date td,Boolean creditf,var record IVVc firstIVr)
 begin
   record CredManSetBlock CMb;
   record CredManPayPlanVc CredManPayPlanr;
-  record IVVc IVr,oldIVr,oIVr;
+  record IVVc IVr,oldIVr,oIVr,tmpIVr;
   record CMInvoicingBlock CIb;
   Date sd;
   val openamount,lateamount;
@@ -2001,6 +2048,9 @@ begin
   array string 255 lateformula;
   Date calcsd;
   row IVVc IVrw;
+  val credval,ncredval;
+  Longint ivnr;
+  vector val vCredVal;
 
   if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
     BlockLoad(CMb);
@@ -2021,6 +2071,15 @@ begin
         end;
         SetupBuyoutLangCode(IVr,CredManr);
         StoreLoanInvoice(IVr,CredManr);
+        if (creditf) then begin
+          credval = GetCreditedInterest(CredManr,td,ivnr);
+          if (credval>0) then begin
+            tmpIVr.SerNr = ivnr;
+            if (ReadFirstMain(tmpIVr,1,true)) then begin
+              CreditAndOKInvoice(ivnr,1,ncredval,vCredVal,credval,true,td,CMb.RateItem,GetInvoicePeriodString(CIb,tmpIVr.CredFromDate,tmpIVr.CredToDate),GetInvoicePeriodString(CIb,td,tmpIVr.CredToDate));
+            end;
+          end;
+        end;
         GenerateAgreementSchedule(CredManr,true,true);
         RecordCopy(firstIVr,IVr);
       end else begin
@@ -2192,40 +2251,6 @@ begin
   return;
 end;
 
-function val GetCreditedInterest(record CredManVc CredManr,Date td)
-begin
-  val res;
-  record CredManSchedVc CSr;
-  row CredManSchedVc CSrw;
-  Integer i,rwcnt;
-  Integer diff,diff2;
-
-  CSr.CredManNr = CredManr.SerNr;
-  if (ReadFirstMain(CSr,1,true)) then begin
-    rwcnt = MatRowCnt(CSr);
-    for (i=0;i<rwcnt;i=i+1) begin
-      MatRowGet(CSr,i,CSrw);
-      if (CSrw.FromDate<=td) then begin
-        if (CSrw.ToDate>td) then begin
-          if (CSrw.Interest>0) then begin
-            if (CSrw.Invoiced==1) then begin
-              diff = DateDiff(CSrw.ToDate,CSrw.FromDate)+1;
-              diff2 = DateDiff(CSrw.ToDate,td)+1;
-              res = res + CSrw.Interest*diff2/diff;
-            end;
-          end;
-        end;
-      end else begin
-        i = rwcnt;
-      end; 
-    end;
-  end;
-
-
-  GetCreditedInterest = res;
-  return;
-end;
-
 //same as GetLateDaysInPeriod except returns amounts incl. of VAT
 function Integer GetLateDaysInPeriod2(record CredHistVc CredHistr,Date sd,Date ed,var val dueamount)
 begin
@@ -2341,6 +2366,7 @@ begin
   val principlelateamount,interestlateamount;
   val t;
   val notlateprinciple,notlateinterest;
+  Longint dummy_ivnr;
   
 logtext(0,"CheckBuyOutAgreement start");
 //LogText(0,"aa RepSpec.d1=" & RepSpec.d1); //d1 is CurrentDate here. Why?
@@ -2374,7 +2400,7 @@ logtext(0,"CheckBuyOutAgreement start");
   RepSpec.f12 = lateamount;//(RepSpec.vals2-RepSpec.vals3-RepSpec.vals4);
   //BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
   if (RepSpec.flags[1]==1) then begin
-    RepSpec.f20 = GetCreditedInterest(CredManr,RepSpec.d1);  
+    RepSpec.f20 = GetCreditedInterest(CredManr,RepSpec.d1,dummy_ivnr);  
   end;
   t = GetActualBalance(CredManr,CredManPayPlanr,true);
   RepSpec.f13 = t;
