@@ -45,6 +45,8 @@ external inner function string 60 AddObjectToObjectList(string,string);
 external inner function string 255 StrReplace(string,string,string);
 external function val GetCredHistOpenValueOnDate(Longint,Date);
 external updating procedure CreditAndOKInvoice(Longint,val,var val,var vector val,val,Boolean,Date,string,string,string);
+external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean,Boolean);
+external inner function Boolean ItemInItemGroupOrClass(string,string,string);
 
 
 enum begin
@@ -2435,6 +2437,227 @@ begin
   return;
 end;
 
+/**
+returns interest from the last DUE period till date specified
+*/
+function val GetLastDuePeriodInterest(record CredManVc CredManr, record CredManPayPlanVc CredManPayPlanr, date untildate)
+begin
+  row CredManPayPlanVc CredManPayPlanrw;
+  record IVVc IVr;
+  record CredHistVc CredHistr;
+  integer i,rwcnt,lasti;
+  date lastduedate;
+  val res,calcbal;
+  boolean foundf;
+  Integer int_type;
+
+  int_type = GetInterestPaymentType(CredManr);
+  if (int_type==2) then begin
+    calcbal = 0;
+  end else begin
+    calcbal = CredManr.InvSum4;
+  end;
+  foundf = false;
+  rwcnt = MatRowCnt(CredManPayPlanr);
+  //OpenExportFile("CredManPayPlan_" & CredManr.SerNr & ".txt",false);
+  CreateFile("CredManPayPlan_" & CredManr.SerNr & ".txt");
+  //ExportRecord(CredManPayPlanr);
+  
+  ExportString("rwcnt");
+  ExportString(rwcnt);
+  NewLine;
+  
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
+    switch (CredManPayPlanrw.PlanType) begin
+      case kEventTypeIssueInterest:
+        if (CredManPayPlanrw.IssuedNr!=-1) then begin
+          ExportString(CredManPayPlanrw.Sum);
+          ExportString(CredManPayPlanrw.AcumulatedInt);
+          ExportString(CredManPayPlanrw.Bal);
+          ExportDate(CredManPayPlanrw.FromDate)
+          ExportDate(CredManPayPlanrw.ToDate);
+          ExportLongint(CredManPayPlanrw.IssuedNr);
+          ExportString(CredManPayPlanrw.Comment);
+          ExportString(CredManPayPlanrw.OpenAmount);
+          CredHistr.SerNr = CredManPayPlanrw.IssuedNr;
+          if (ReadFirstMain(CredHistr,1,true)) then begin
+            switch (CredHistr.RecordType) begin//invoice
+              case 0:
+                if (CredHistr.PaidSum<CredHistr.Sum) then begin
+                  IVr.SerNr = CredHistr.RecordNr;
+                  if (ReadFirstMain(IVr,1,true)) then begin
+                    ExportString(IVr.PayDate);
+                    if ((lastduedate<IVr.PayDate) and (IVr.PayDate<=untildate)) then begin
+                      lastduedate = IVr.PayDate;
+                      lasti = i;
+                      foundf = true;
+                    end;
+                  end;
+                end;
+            end;
+          end;
+          NewLine;
+        end;
+    end;
+  end;
+  NewLine;
+  
+  if (foundf) then begin
+    MatRowGet(CredManPayPlanr,lasti,CredManPayPlanrw);
+    //calc interest rate from CredManPayPlanrw.FromDate to  untildate
+    res = GetRateAmount(CredManr,CredManr.IntRate,kMonthTypeLast,CredManPayPlanrw.FromDate,untildate,calcbal,false,false);//last param fixeddays false?
+  end;
+  ExportString("LAsti=" & lasti & " lastduedate=" & lastduedate & "FromDate=" & CredManPayPlanrw.FromDate & " untildate=" & untildate & " calcbal=" & calcbal & " interest=" & res);
+  CloseFile;
+  GetLastDuePeriodInterest = res;
+  return;
+end;
+
+function val GetBuyOutFutureFees(longint credmannr,record CredManPayPlanVc CredManPayPlanr,date td)
+begin
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  row CredManPayPlanVc CredManPayPlanrw;
+  Integer i,rwcnt;
+  val res;
+  /*
+  CSr.CredManNr = credmannr;
+  if (ReadFirstMain(CSr,1,true)) then begin
+    rwcnt = MatRowCnt(CSr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(CSr,i,CSrw);
+      if (CSrw.FromDate>td) then begin
+        if (CSrw.Fees>0) then begin
+          if (CSrw.Invoiced==1) then begin
+            res = res + FindUpdaidCredHistType(CSrw.InvoiceNr);
+          end else begin
+            res = res + CSrw.Fees;
+          end;
+        end;
+      end;
+    end;
+  end;
+  res = blankval;
+  LogText(0,"GetBuyOutFutureFees: CredManSchedVc " & res);
+  */
+  rwcnt = MatRowCnt(CredManPayPlanr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
+    if (CredManPayPlanrw.FromDate>td) then begin
+      if(CredManPayPlanrw.PlanType==kEventTypeCalcFees) then begin
+        res = res + CredManPayPlanrw.Sum;
+      end;
+    end;
+  end;
+  LogText(0,"GetBuyOutFutureFees: CredManPayPlanVc " & res);
+  GetBuyOutFutureFees = res;
+  return;
+end;
+
+function val GetOtherOpenFees(longint credmannr, date d, var vector val vItemVals)
+begin
+  val res,t;
+  record CredHistVc CredHistr;
+  boolean TrHs;
+    
+  /*
+  Other open fees - total of all OPEN invoices except Principle, Interest, Overdues, Letter of Demand and Insurance
+  */
+  TrHs = true;
+  CredHistr.CredManNr = credmannr;
+  CredHistr.RecordType = 0;
+  while (LoopKey("CredManTypeDate",CredHistr,1,TrHs)) begin
+    if ((CredHistr.CredManNr!=credmannr) or (CredHistr.RecordType!=0)) then begin
+      TrHs = false;
+    end else begin
+      if ((CredHistr.ChargeType==kEventTypeIssueDeposit) or (CredHistr.ChargeType==kEventTypeIssueFees)) then begin
+        t = GetCredHistOpenValueOnDate(CredHistr.SerNr,d);
+        vItemVals[CredHistr.ArtCode] = vItemVals[CredHistr.ArtCode] + t;
+        res = res + t;
+      end;
+    end;
+  end;
+  GetOtherOpenFees = res;
+  return;
+end;
+
+function val GetCredManItemOpenValueOnDate(longint credmannr,string item,date d)
+begin
+  val res;
+  record CredHistVc CredHistr;
+  boolean TrHs;
+  
+  CredHistr.CredManNr = credmannr;
+  CredHistr.RecordType = 0;
+  TrHs = true;
+  while (LoopKey("CredManTypeDate",CredHistr,1,TrHs)) begin
+    if ((CredHistr.CredManNr!=credmannr) or (CredHistr.RecordType!=0)) then begin
+      TrHs = false;
+    end else begin
+      if ((CredHistr.ArtCode==item)) then begin
+        res = res + GetCredHistOpenValueOnDate(CredHistr.SerNr,d);
+      end;
+    end;
+  end;
+  GetCredManItemOpenValueOnDate = res;
+  return;
+end;
+
+function val GetOpenInsuranceValue(longint credmannr,date d)
+begin
+  val res;
+  record CMInvoicingBlock CIb;
+    
+  BlockLoad(CIb);
+  if (nonblank(CIb.InsuranceCost)) then begin
+    GetCredManItemOpenValueOnDate(credmannr,CIb.InsuranceCost,d);
+  end;
+  GetOpenInsuranceValue = res;
+  return;  
+end;
+
+function val GetOpenOverdueFeesValue(longint credmannr,date d)
+begin
+  val res;
+  record CMInvoicingBlock CIb;
+  record CredHistVc CredHistr;
+  Boolean TrHs;
+  
+  BlockLoad(CIb);
+  if (nonblank(CIb.OverdueItemClass)) then begin
+    CredHistr.CredManNr = credmannr;
+    CredHistr.RecordType = 0;
+    TrHs = true;
+    while (LoopKey("CredManTypeDate",CredHistr,1,TrHs)) begin
+      if ((CredHistr.CredManNr!=credmannr) or (CredHistr.RecordType!=0)) then begin
+        TrHs = false;
+      end else begin
+        if (ItemInItemGroupOrClass(CredHistr.ArtCode,"",CIb.OverdueItemClass)) then begin
+          res = res + GetCredHistOpenValueOnDate(CredHistr.SerNr,d);
+        end;
+      end;
+    end;
+  end else begin
+    LogText(0,"OverdueItemClass not set");
+  end;
+  GetOpenOverdueFeesValue = res;
+  return;  
+end;
+
+function val GetOpenLetterOfDemandValue(longint credmannr,date d)
+begin
+  val res;
+  record CMInvoicingBlock CIb;
+    
+  BlockLoad(CIb);
+  if (nonblank(CIb.LetterOfDemand)) then begin
+    res = GetCredManItemOpenValueOnDate(credmannr,CIb.LetterOfDemand,d);
+  end;
+  GetOpenLetterOfDemandValue = res;
+  return;  
+end;
+
 global
 procedure CheckBuyOutAgreement2(record CredManVc CredManr,var record RcVc RepSpec,Boolean balancef)
 begin
@@ -2444,7 +2667,7 @@ begin
   record IVVc IVr;
   val dueamount,openamount,lateamount,prepayval,buyoutfee;
   Integer latedays;
-  Date sd,sd2;
+  Date sd,sd2,blankd;
   transaction Boolean gSilenceIVOpenPrepExists;
   array string 255 lateformula;
   Boolean schedf;
@@ -2455,6 +2678,8 @@ begin
   val principlelateamount,interestlateamount;
   val t;
   val notlateprinciple,notlateinterest;
+  val currperiodinterest,futurefees,totopeninvoices,otheropenfees;
+  vector val vItemVals;
   Longint dummy_ivnr;
   
 logtext(0,"CheckBuyOutAgreement start");
@@ -2498,9 +2723,136 @@ logtext(0,"CheckBuyOutAgreement start");
   RepSpec.f10 = principlelateamount;//f20 - the last fxx
   RepSpec.f11 = interestlateamount;
   RepSpec.f15 = t + notlateprinciple; //GetActualBalance(CredManr,CredManPayPlanr,true);PLUS total of all OPEN, but NOT overdue principle
+  currperiodinterest = GetLastDuePeriodInterest(CredManr,CredManPayPlanr,RepSpec.d1);//should display interest from the last DUE period till today.
+  futurefees = GetBuyOutFutureFees(CredManr.SerNr,CredManPayPlanr,RepSpec.d1);
+  otheropenfees = GetOtherOpenFees(CredManr.SerNr,blankd,vItemVals);
+  
   gSilenceIVOpenPrepExists = false;
 
 logtext(0,"CheckBuyOutAgreement end");
+
+  return;
+end;
+
+global
+procedure CheckBuyOutAgreementOmega(record CredManVc CredManr,var record ORVc ORr,Boolean balancef)
+begin
+  row ORVc ORrw;
+  record CredManSetBlock CMb;
+  record CredManPayPlanVc CredManPayPlanr;
+  record CredManSchedVc CSr;
+  record IVVc IVr;
+  record INVc INr;
+  val dueamount,openamount,lateamount,prepayval,buyoutfee;
+  Integer latedays;
+  Date sd,sd2,blankd;
+  transaction Boolean gSilenceIVOpenPrepExists;
+  array string 255 lateformula;
+  Boolean schedf;
+  Date calcsd;
+  val creditedint;
+  Date limitdate;
+  Longint principlelatedays,interestlatedays,overdueslatedays;
+  val principlelateamount,interestlateamount;
+  val t;
+  val notlateprinciple,notlateinterest;
+  val currperiodinterest,futurefees,totopeninvoices,otheropenfees;
+  val actualbalance;
+  vector val vItemVals;
+  array string 255 aitems;
+  integer i;
+  longint dummy_ivnr;
+  
+logtext(0,"CheckBuyOutAgreementOmega start");
+//LogText(0,"aa RepSpec.d1=" & RepSpec.d1); //d1 is CurrentDate here. Why?
+
+  gSilenceIVOpenPrepExists = true;
+  BlockLoad(CMb);
+    BuildCredManPayPlanCust2(CredManr,CredManPayPlanr,CMb,true,false,false);
+  //  LogText(0,"2 RepSpec.d1=" & RepSpec.d1);
+    CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,ORr.OrdDate,IVr,true,sd2,balancef);
+//  end;
+  CheckUnpaidInvoices(CredManr,dueamount,openamount);
+  sd = GetLastInvoiceDate(CredManr,ORr.OrdDate);
+  GetCredManOverdueInvoices2(CredManr,CMb,ORr.OrdDate,sd,latedays,lateamount,principlelateamount,interestlateamount,lateformula,false,false,calcsd);
+  GetCredManLateAmounts2(CredManr,CredManr.startDate,ORr.OrdDate,5,principlelatedays,principlelateamount,notlateprinciple,limitdate);
+  GetCredManLateAmounts2(CredManr,CredManr.startDate,ORr.OrdDate,6,interestlatedays,interestlateamount,notlateinterest,limitdate);
+  //GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,9,overdueslatedays,overdueslateamount,limitdate);
+  //TODO RepSpec.vals3 = GetActualBalance(CredManr,CredManPayPlanr,false);
+  actualbalance = GetActualBalance(CredManr,CredManPayPlanr,false);
+  
+  prepayval = GetPrepaymentValue(CredManr);
+  ORr.PrepaidAmount = prepayval;
+  if (balancef==false) then begin
+    buyoutfee = GetBuyOutFee(CredManr,ORr.OrdDate,actualbalance);
+  end;
+  //TODO RepSpec.vals1 = IVr.Sum4;//"Last Invoice Value"
+  //TODO RepSpec.vals0 = dueamount;//should this be openamount? "Expected Payment"?
+  //RepSpec.vals2 = openamount + IVr.Sum4 - prepayval;
+  ORr.TAX2Sum = buyoutfee;
+  /* old
+  ORr.FrBase = openamount + IVr.Sum4 - prepayval;
+  if (prepayval>0 and  ORr.FrBase<0) then begin
+    ORr.FrBase = 0;
+  end;
+  */
+  
+  //TODO RepSpec.vals4 = dueamount;
+  //RepSpec.f12 = lateamount;//(RepSpec.vals2-RepSpec.vals3-RepSpec.vals4);
+  ORr.FrPrice = lateamount;//not invoiced overdues. What is lateamount?
+  //BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
+  /*if (RepSpec.flags[1]==1) then begin
+    RepSpec.f20 = GetCreditedInterest(CredManr,RepSpec.d1);  
+  end;
+  */
+  if (ORr.InvMark==1) then begin
+    ORr.Commision = GetCreditedInterest(CredManr,ORr.OrdDate,dummy_ivnr);  
+  end;
+  t = GetActualBalance(CredManr,CredManPayPlanr,true);
+  //RepSpec.f13 = t;
+  ORr.Sum0 = t;
+  //RepSpec.f17 = principlelateamount+interestlateamount;//was openamount;
+  ORr.Sum2 = principlelateamount+interestlateamount;//was openamount;
+  //RepSpec.f16 = GetInterestAmount(CredManr,RepSpec.d1);
+  ORr.Sum1 = GetInterestAmount(CredManr,ORr.OrdDate);
+  //RepSpec.f10 = principlelateamount;//f20 - the last fxx
+  ORr.Sum4 = principlelateamount;
+  //RepSpec.f11 = interestlateamount;
+  ORr.Sum3 = interestlateamount;
+  //RepSpec.f15 = t + notlateprinciple; //GetActualBalance(CredManr,CredManPayPlanr,true);PLUS total of all OPEN, but NOT overdue principle
+  ORr.BaseSum4 = t + notlateprinciple;
+  currperiodinterest = GetLastDuePeriodInterest(CredManr,CredManPayPlanr,ORr.OrdDate);//should display interest from the last DUE period till today.
+  ORr.TotGP = currperiodinterest;
+  /*
+  CreateFile("credmanpayplan_e.txt");
+    CredManPayPlanr.SerNr = CredManr.SerNr;
+    ExportRecord(CredManPayPlanr);
+    CloseFile;
+  */
+  futurefees = GetBuyOutFutureFees(CredManr.SerNr,CredManPayPlanr,ORr.OrdDate);
+  ORr.DiscSum = futurefees;
+  otheropenfees = GetOtherOpenFees(CredManr.SerNr,blankd,vItemVals);
+  ORr.TAX1Sum = otheropenfees;
+  ORr.RvrsVAT = GetOpenInsuranceValue(CredManr.SerNr,blankd);
+  t = GetOpenOverdueFeesValue(CredManr.SerNr,blankd);
+  ORr.FrBase = ORr.Sum2+ORr.BaseSum4+ORr.TotGP+ORr.DiscSum+otheropenfees+lateamount+t;//total debt
+  t = GetOpenLetterOfDemandValue(CredManr.SerNr,blankd);
+  ORr.FrBase = ORr.FrBase+t+ORr.RvrsVAT+ORr.TAX2Sum-prepayval;
+  GetVectorTags(vItemVals,aitems);
+  for (i=0;i<aitems.length;i=i+1) begin
+    INr.Code = aitems[i];
+    ReadFirstMain(INr,1,true);
+    ClearRow(ORr,ORrw,1);
+    ORrw.ArtCode = aitems[i];
+    ORrw.Spec = INr.Name;
+    ORrw.Sum = vItemVals[aitems[i]];
+    MatRowPut(ORr,i,ORrw);
+  end;  
+  LogText(0,"futurefees=" & futurefees & " otheropenfees=" & otheropenfees);
+  
+  gSilenceIVOpenPrepExists = false;
+
+logtext(0,"CheckBuyOutAgreementOmega end");
 
   return;
 end;
