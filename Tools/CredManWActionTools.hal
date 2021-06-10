@@ -84,7 +84,8 @@ external procedure ExternalPrintCredManScheduleForm(record CredManVc,var vector 
 external updating function Boolean StoreEmailRecord(record LTxtVc,var record MailVc,record RcVc);
 external inner function string 255 CredManCustEmail(record CUVc);
 external inner function string 255 StrReplace(string,string,string);
-
+external function boolean getAdditionalLangCode(record CredManVc,string,var string);
+external function string 20 getAdditionalCredManLangCode(record CredManVc);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -211,6 +212,7 @@ begin
   record CredManTypeVc CMTr;
   record CUVc CUr;
   vector string 255 vVals;
+  string 20 reslang;
   
   
   CMTr.Code = CredManr.Type;
@@ -260,7 +262,7 @@ begin
   end;
 
   if (blank(res)) then begin
-    res = CredManr.LangCode;
+    res = getAdditionalCredManLangCode(CredManr);
   end;
 
   GetDocumentLangCode = res;

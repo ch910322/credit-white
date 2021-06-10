@@ -12,8 +12,9 @@ external procedure RoundRowSum(string,string,string,var val);
 external procedure CalcSum(val,val,val,val,var val,Integer);
 external procedure SendArtStat(string,string,string,val,val,val,Date,Integer);
 external procedure GetFullCurncyRate(var string,Date,var val,var val,var val,var val,var val);
-
 external function val GetCredManRate(Integer,string,val,Date);
+external outer function boolean getAdditionalLangCode(record CredManVc,string,var string);
+external outer function string 20 getAdditionalCredManLangCode(record CredManVc);
 
 global
 procedure CredManVc_PasteCurncyCode(var record CredManVc CredManr)
@@ -94,7 +95,7 @@ BEGIN
   GetFullCurncyRate(curcode,CredManr.TransDate,fr,to1,to2,br1,br2);
   if (GetItemPriceDiscount3(CredManrw.ArtCode,CredManrw.Quant,INr,CredManr.CurncyCode,
                             fr,to1,to2,br1,br2,
-                            CredManr.LangCode,CredManr.CustCat,CredManr.PriceList,CredManr.RebCode,
+                            getAdditionalCredManLangCode(CredManr),CredManr.CustCat,CredManr.PriceList,CredManr.RebCode,
                             price,curitemname,vreb,vatcode,baseprice,salesacc,
                             CredManr.ExportFlag,calcprice,resp,blankt,CredManr.CustCode,true,dummyf,CredManr.PayDeal,tax2code,tax2prc,"","",taxtemplatecode)) then begin
     if (vreb==0) then begin
@@ -136,7 +137,7 @@ BEGIN
   GetFullCurncyRate(curcode,CredManr.TransDate,fr,to1,to2,br1,br2);
   if (GetItemPriceDiscount3(CredManrw.ArtCode,CredManrw.Quant,INr,CredManr.CurncyCode,
                             fr,to1,to2,br1,br2,
-                            CredManr.LangCode,CredManr.CustCat,CredManr.PriceList,CredManr.RebCode,
+                            getAdditionalCredManLangCode(CredManr),CredManr.CustCat,CredManr.PriceList,CredManr.RebCode,
                             price,curitemname,vreb,vatcode,baseprice,salesacc,
                             CredManr.ExportFlag,calcprice,resp,blankt,CredManr.CustCode,true,dummyf,CredManr.PayDeal,tax2code,tax2prc,"","",taxtemplatecode)) then begin
     if (vreb==0) then begin

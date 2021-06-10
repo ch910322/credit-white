@@ -715,34 +715,6 @@ begin
 end;
 
 global
-updating procedure CredManBuyoutWClassProceed()
-begin
-  record RcVc RepSpec;
-  record CredManVc CredManr;
-  Integer wn,mwn;
-  record IVVc IVr;
-
-  wn = CurWindow;
-  DeselectWindow(wn,true);
-  GetWindowRecord(wn,RepSpec);
-  mwn = MotherWindow(wn);
-  if (mwn>0) then begin
-    GetWindowRecord(mwn,CredManr);
-    if (CanTerminateWithDate(CredManr,RepSpec.d1)) then begin
-      DoBuyOutAgreement(CredManr,RepSpec.d1,RepSpec.flags[1]==1,IVr);
-      if (IVr.SerNr>0) then begin
-        OpenWindow("IVDClass",1,0,"","",IVr);
-      end;
-      CloseWindow(wn);
-    end else begin
-      MessageBox(200274,"");
-    end;
-  end;
-
-  return;
-end;
-
-global
 updating procedure CalculateBuyOutValueStd()
 begin
   Integer wn,mwn;

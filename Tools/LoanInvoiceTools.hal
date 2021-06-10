@@ -161,6 +161,48 @@ begin
 return;
 end;
 
+global function string 20 getAdditionalCredManLangCode(record CredManVc CredManr)
+begin
+  string 20 res;
+  record CUVc CUr;
+  record CredManAddLangVc CredManAddLangr; 
+  row CredManAddLangVc CredManAddLangrw; 
+  boolean foundf;
+  integer i,rwcnt;
+  record CredManTypeVc CredManTyper;
+  
+  res = CredManr.LangCode;
+  
+  CredManTyper.Code = CredManr.Type;
+  if(readfirstmain(CredManTyper,1,true))then begin
+    CUr.Code = CredManr.CustCode;
+    CredManAddLangr.CredManTypeCode = CredManTyper.Code;
+    if(readfirstmain(CredManAddLangr,1,true))then begin
+      if(readfirstmain(CUr,1,true))then begin
+        if(nonblank(CUr.LangCode))then begin
+          rwcnt = matrowcnt(CredManAddLangr);
+          for(i=0;i<rwcnt;i=i+1)begin
+            matrowget(CredManAddLangr,i,CredManAddLangrw);
+            if(nonblank(CredManAddLangrw.LangCode) and CredManAddLangrw.LangCode==CUr.LangCode)then begin
+              foundf = true;
+              i=rwcnt;
+            end;
+          end;
+        
+          if(foundf)then begin
+            if(nonblanK(CredManAddLangrw.IntLang))then begin
+              res = CredManAddLangrw.IntLang;
+            end;
+          end;
+        end;
+      end;
+    end;
+  end;
+  
+  getAdditionalCredManLangCode = res;
+return;
+end;
+
 
 function longint MAXLongint(longint a,longint b)
 begin
@@ -362,6 +404,9 @@ begin
     end;
   end else begin
     IVr.LangCode = CredManr.LangCode;
+    if(getAdditionalLangCode(CredManr,"IntLang",reslang))then begin
+      IVr.LangCode = reslang;
+    end;
   end;
    if (FindCredManAcc(CredManr,CMAr)) then begin
      IVr.Objects = AddObjectToObjectList(IVr.Objects,CMAr.Objects);
