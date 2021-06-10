@@ -2628,14 +2628,14 @@ updating procedure CredManDClassAddLanguages()
 begin
   record CredManAddLangVc CredManAddLangr; 
   Integer wn;
-  record CredManVc CredManr; 
+  record CredManTypeVc CredManTyper; 
 
   wn = CurWindow;
-  GetWindowRecord(wn,CredManr);
-  CredManAddLangr.CredManNr = CredManr.SerNr;
+  GetWindowRecord(wn,CredManTyper);
+  CredManAddLangr.CredManTypeCode = CredManTyper.Code;
   if(readfirstmain(CredManAddLangr,1,true)==false)then begin
     recordnew(CredManAddLangr);
-    CredManAddLangr.CredManNr = CredManr.SerNr;
+    CredManAddLangr.CredManTypeCode = CredManTyper.Code;
     recordstore(CredManAddLangr,true);
   end;
   OpenWindow("CredManAddLangsDClass",1,0,"","",CredManAddLangr);

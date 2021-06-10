@@ -95,57 +95,61 @@ begin
   row CredManAddLangVc CredManAddLangrw; 
   boolean foundf;
   integer i,rwcnt;
+  record CredManTypeVc CredManTyper;
   
-  CUr.Code = CredManr.CustCode;
-  CredManAddLangr.CredManNr = CredManr.SerNr;
-  if(readfirstmain(CredManAddLangr,1,true))then begin
-    if(readfirstmain(CUr,1,true))then begin
-      if(nonblank(CUr.LangCode))then begin
-        rwcnt = matrowcnt(CredManAddLangr);
-        for(i=0;i<rwcnt;i=i+1)begin
-          matrowget(CredManAddLangr,i,CredManAddLangrw);
-          if(nonblank(CredManAddLangrw.LangCode) and CredManAddLangrw.LangCode==CUr.LangCode)then begin
-            foundf = true;
-            i=rwcnt;
+  CredManTyper.Code = CredManr.Type;
+  if(readfirstmain(CredManTyper,1,true))then begin
+    CUr.Code = CredManr.CustCode;
+    CredManAddLangr.CredManTypeCode = CredManTyper.Code;
+    if(readfirstmain(CredManAddLangr,1,true))then begin
+      if(readfirstmain(CUr,1,true))then begin
+        if(nonblank(CUr.LangCode))then begin
+          rwcnt = matrowcnt(CredManAddLangr);
+          for(i=0;i<rwcnt;i=i+1)begin
+            matrowget(CredManAddLangr,i,CredManAddLangrw);
+            if(nonblank(CredManAddLangrw.LangCode) and CredManAddLangrw.LangCode==CUr.LangCode)then begin
+              foundf = true;
+              i=rwcnt;
+            end;
           end;
-        end;
         
-        reslang = "";
-        if(foundf)then begin
-          if(type=="IntLang")then begin
-            if(nonblanK(CredManAddLangrw.IntLang))then begin
-              res = true;
-              reslang = CredManAddLangrw.IntLang;
+          reslang = "";
+          if(foundf)then begin
+            if(type=="IntLang")then begin
+              if(nonblanK(CredManAddLangrw.IntLang))then begin
+                res = true;
+                reslang = CredManAddLangrw.IntLang;
+              end;
             end;
-          end;
-          if(type=="LangCode2")then begin
-            if(nonblanK(CredManAddLangrw.LangCode2))then begin
-              res = true;
-              reslang = CredManAddLangrw.LangCode2;
+            if(type=="LangCode2")then begin
+              if(nonblanK(CredManAddLangrw.LangCode2))then begin
+                res = true;
+                reslang = CredManAddLangrw.LangCode2;
+              end;
             end;
-          end;
-          if(type=="OverdueLangCode")then begin
-            if(nonblanK(CredManAddLangrw.OverdueLangCode))then begin
-              res = true;
-              reslang = CredManAddLangrw.OverdueLangCode;
+            if(type=="OverdueLangCode")then begin
+              if(nonblanK(CredManAddLangrw.OverdueLangCode))then begin
+                res = true;
+                reslang = CredManAddLangrw.OverdueLangCode;
+              end;
             end;
-          end;
-          if(type=="BuyOutLangCode")then begin
-            if(nonblanK(CredManAddLangrw.BuyOutLangCode))then begin
-              res = true;
-              reslang = CredManAddLangrw.BuyOutLangCode;
+            if(type=="BuyOutLangCode")then begin
+              if(nonblanK(CredManAddLangrw.BuyOutLangCode))then begin
+                res = true;
+                reslang = CredManAddLangrw.BuyOutLangCode;
+              end;
             end;
-          end;
-          if(type=="InvOverdLangCode")then begin
-            if(nonblanK(CredManAddLangrw.InvOverdLangCode))then begin
-              res = true;
-              reslang = CredManAddLangrw.InvOverdLangCode;
+            if(type=="InvOverdLangCode")then begin
+              if(nonblanK(CredManAddLangrw.InvOverdLangCode))then begin
+                res = true;
+                reslang = CredManAddLangrw.InvOverdLangCode;
+              end;
             end;
-          end;
-          if(type=="CompensLangCode")then begin
-            if(nonblanK(CredManAddLangrw.CompensLangCode))then begin
-              res = true;
-              reslang = CredManAddLangrw.CompensLangCode;
+            if(type=="CompensLangCode")then begin
+              if(nonblanK(CredManAddLangrw.CompensLangCode))then begin
+                res = true;
+                reslang = CredManAddLangrw.CompensLangCode;
+              end;
             end;
           end;
         end;

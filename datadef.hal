@@ -2238,7 +2238,7 @@ begin
   EndBlock;
   
   RecordBegin(CredManAddLangVc,-,"");
-  RecordField(CredManNr,M4Long,0,0);
+  RecordField(CredManTypeCode,M4Code,20,0);
   RecordField(Math,M4Matrix,0,0);
   ArrayBegin(Math,-,1);
   ArrayField(LangCode,M4Code,20,0);
@@ -2249,8 +2249,8 @@ begin
   ArrayField(InvOverdLangCode,M4Code,20,0);
   ArrayField(CompensLangCode,M4Code,20,0);
   EndArray;
-  MainKeyBegin(CredManNr,0);
-  KeySegment(CredManNr);
+  MainKeyBegin(CredManTypeCode,0);
+  KeySegment(CredManTypeCode);
   EndRecord;
   
   
