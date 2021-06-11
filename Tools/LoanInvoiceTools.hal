@@ -2509,7 +2509,7 @@ begin
   foundf = false;
   rwcnt = MatRowCnt(CredManPayPlanr);
   //OpenExportFile("CredManPayPlan_" & CredManr.SerNr & ".txt",false);
-  CreateFile("CredManPayPlan_" & CredManr.SerNr & ".txt");
+  //CreateFile("CredManPayPlan_" & CredManr.SerNr & ".txt");
   //ExportRecord(CredManPayPlanr);
   
   ExportString("rwcnt");
@@ -2897,7 +2897,7 @@ logtext(0,"CheckBuyOutAgreementOmega start");
     ORrw.Sum = vItemVals[aitems[i]];
     MatRowPut(ORr,i,ORrw);
   end;  
-  LogText(0,"futurefees=" & futurefees & " otheropenfees=" & otheropenfees);
+  //LogText(0,"futurefees=" & futurefees & " otheropenfees=" & otheropenfees);
   
   gSilenceIVOpenPrepExists = false;
 
