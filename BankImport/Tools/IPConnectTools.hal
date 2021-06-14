@@ -9,6 +9,7 @@ external function val GetLoanItemPaidAmount(Longint,Longint);
 external inner function Boolean PasteInvIn2IPr(var record IPVc,Integer,Date,var val,Boolean,var Boolean);
 external inner procedure IPPastePayMode(var record IPVc);
 external inner function Boolean IPVc_PasteCustCode(var record IPVc,Integer,var LongInt);
+external inner updating procedure CreateInvoicePdfFile(record IVVc);
 
 function Boolean FilterReceiptInBankTrans(record BankTRVc BTr,Longint ivnr)
 begin
@@ -409,7 +410,17 @@ begin
   string 255 instr;
   record BankImportSetBlock BISb;
   record IPVc oldIPr;
-
+  transaction Boolean gPDRAfterReciept;
+  record CMInvoicingBlock CIb;
+  row IPVc IPrw;
+  integer rwcnt,i,notenr;
+  record IVVc IVr;
+  vector boolean vInvoicesToPrint;
+  array string 20 aInvoicesToPrint;
+  record RLinkVc RLinkr;
+  record Attach2Vc Attachr;
+  boolean attachfound;
+  
   BlockLoad(BISb);
   if (BISb.ImpPaym==1) then begin  
     RecordClear(IPr);
@@ -432,6 +443,33 @@ begin
           RecordCopy(oldIPr,IPr);
           IPr.OKFlag = 1;
           RecordUpdate(oldIPr,IPr,true);
+          blockload(CIb);
+          if(CIb.PDFAfterReceipt==1)then begin
+            if(gPDRAfterReciept)then begin
+              rwcnt = matrowcnt(IPr);
+              for(i=0;i<rwcnt;i=i+1)begin
+                matrowget(IPr,i,IPrw);
+                if(IPrw.InvoiceNr>-1)then begin
+                  vInvoicesToPrint[IPrw.InvoiceNr] = true;
+                end;
+              end;
+              getVectorTags(vInvoicesToPrint,aInvoicesToPrint);
+              for(i=0;i<aInvoicesToPrint.length;i=i+1)begin
+                IVr.SerNr = stringtolongint(aInvoicesToPrint[i]);
+                attachfound = false;
+                if(readfirstmain(IVr,1,true))then begin
+                  notenr = 1;
+                  while (ReadRecordLink(IVr,notenr,Attachr,RLinkr)) begin
+                    attachfound = true;
+                    notenr = notenr + 1;
+                  end;
+                  if(attachfound==false)then begin
+                    CreateInvoicePdfFile(IVr);
+                  end;
+                end;
+              end;
+            end;
+          end;
         end;
       end;
     end else begin

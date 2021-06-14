@@ -15,6 +15,7 @@ external outer function Boolean IsNovitiCustomer;
 external outer function Boolean UseCompensationInvoices();
 external outer function Boolean UseBuyoutSummary();
 external outer function Boolean ShowPartialBuyoutOptions();
+external outer function Boolean IsOmegaCustomer();
 
 
 function string 255 getStatusText(integer status)
@@ -220,10 +221,12 @@ begin
   EditField(h,v+=vs,100,"Mailing List",Normal,MailingList,false,PersColSClass);
   EditField(h,v+=vs,100,"Mailing List 2",Normal,MailingList2,false,PersColSClass);
   EditField(h,v+=vs,100,"City Classification Type",Normal,CityAgreementClassType,false,CredManClassTypeSClass);
-  EditField(h,v+=30,100,"Document Signer",Normal,DocumentSigner,false,UserSClass);
+  EditField(h,v+=vs,100,"Document Signer",Normal,DocumentSigner,false,UserSClass);
   EditField(h,v+=vs,100,"Signer's Job Description",Normal,DocumentSignerPosition,false,0);
-  EditField(h,v+=30,100,"Invoice Signer",Normal,InvoiceSigner,false,UserSClass);
-  EditField(h,v+=30,100,"Language for Numbers",Normal,NumberLangCode,false,LangSClass);
+  EditField(h,v+=vs,100,"Invoice Signer",Normal,InvoiceSigner,false,UserSClass);
+  EditField(h,v+=vs,100,"Language for Numbers",Normal,NumberLangCode,false,LangSClass);
+  EditField(h,v+=vs,100,"Marketing email classification",Normal,MarkMailClass,false,CClassSClass);
+  EditField(h,v+=vs,100,"Marketing sms classification",Normal,MarkSMSClass,false,CClassSClass);
 
   if (UseCredManStatus) then begin
     CheckBox(h,v+=30,0,"Automatically pause Agreements",AutoPauseCredMan);
@@ -358,8 +361,10 @@ begin
   UseView(CUVc);
   SpawnClass(CUDClass);
   
+  ToolBar;
   HalPushButton(-300,v=7,-200,v+=20,"CustSwitchToContacts","Contact Persons");
- 
+  EndToolBar;
+  
   RecordList(4,20,-21,-39);
   RlColKey(4,4,"No.",Code,false,Code);
   pos = 96;
@@ -561,12 +566,87 @@ begin
 
 //  EditFieldTL(h,v+=vs,120,"Last Invoice Value",M4Val,ViewOnly,0,vals1,true,0);
 //  EditFieldTL(h,v+=vs,120,"Expected Payment",M4Val,ViewOnly,0,vals2,true,0);
-
   HalPushButton(h,v+=vs,h+120,v+20,"CalculateBuyOutValue","Calculate");
   if (UseBuyoutSummary) then begin
     HalPushButton(h,v+=30,h+120,v+20,"BuyOutSummaryEmail","Buyout Summary");
   end;
   EndWindow;
+
+  WindowBegin("Check Buy-out Value",CheckBuyoutValueOmegaWClass,CGother,-);
+  UseView(ORVc);
+  h = 660;//380;
+  if (ShowBuyOutFee) then begin
+    h = h + 20;
+  end;
+  if (UseBuyoutSummary) then begin
+    h = h + 40;
+  end;
+  SetWRect(20,80,450,h);
+  AutoSizeWindow(false);  
+  h = 150; h2 = 250; v=450;
+  EditField(h,v=6,120,"Buy-out Date",Normal,OrdDate,false,PasteCurDate);
+
+  EditField(h,v+=vs,120,"Principle Amount",ViewOnly,Sum0,true,0);
+  EditField(h,v+=vs,120,"Interest Amount",ViewOnly,Sum1,true,0);
+  EditField(h,v+=vs,120,"Overdue Invoices",ViewOnly,Sum2,true,0);
+  EditField(h,v+=vs,120,"of which Interest",ViewOnly,Sum3,true,0);
+  EditFieldTL(h,v+=vs,120,"of which Principle",M4Val,ViewOnly,255,Sum4,true,0);
+  EditFieldTL(h,v+=vs,120,"Balance",M4Val,ViewOnly,255,BaseSum4,true,0);
+  EditFieldTL(h,v+=vs,120,"Current Period Interest",M4Val,ViewOnly,255,TotGP,true,0);
+  EditFieldTL(h,v+=vs,120,"Future Fees",M4Val,ViewOnly,255,DiscSum,true,0);
+  EditFieldTL(h,v+=vs,120,"Other Open Fees",M4Val,ViewOnly,255,TAX1Sum,true,0);
+  EditFieldTL(h,v+=vs,120,"Open Overdue Fee Invoices",M4Val,ViewOnly,255,,true,0);
+  EditFieldTL(h,v+=vs,120,"Credited Interest",M4Val,ViewOnly,255,Commission,true,0);
+  CheckBox(h+140,v,0,"Credit Interest",InvMark);
+
+
+  EditFieldTL(h,v+=vs,120,"Letter of Demand",M4Val,Normal,20,SumIncCom,true,0);
+  EditFieldTL(h,v+=vs,120,"Insurance Cost",M4Val,Normal,20,RvrsVAT,true,0);
+
+  if (ShowBuyOutFee) then begin
+    EditFieldTL(h,v+=vs,120,"Premature Term. Fee",M4Val,Normal,255,TAX2Sum,true,0);
+  end;
+  EditFieldTL(h,v+=vs,120,"Not invoiced Overdues",M4Val,ViewOnly,255,FrPrice,true,0);
+  EditFieldTL(h,v+=vs,120,"Prepayments",M4Val,ViewOnly,255,PrepaidAmount,true,0);
+  EditFieldTL(h,v+=vs,120,"Total Debt",M4Val,ViewOnly,0,FrBase,true,0);
+
+//  EditFieldTL(h,v+=vs,120,"Last Invoice Value",M4Val,ViewOnly,0,vals1,true,0);
+//  EditFieldTL(h,v+=vs,120,"Expected Payment",M4Val,ViewOnly,0,vals2,true,0);
+  StaticText(20,v+=40,"Other Open Fees Details",false);
+  MatrixBegin(20,vm=(v+=vs),-50,-70,-,10);
+  MatColTL(t=1,32,"Item",0,-1,ViewOnly,0,ArtCode,false,0);
+  MatColTL(t,100,"Description",0,-1,ViewOnly,0,Spec,false,0);
+  MatColTL(t,280,"Total",0,-1,ViewOnly,0,Sum,true,0);
+  EndMatrix;
+  v=-60;
+  HalPushButton(h=20,v,h+120,v+20,"CalculateBuyOutValue","Calculate");
+  HalPushButton(h2=h+140,v,h2+120,v+20,"BuyOutAgreementYesNo","Buy-out");
+  if (UseBuyoutSummary) then begin
+    if (!IsOmegaCustomer) then begin //TODO? breaks compatibility with other branches
+      HalPushButton(h3=h2+140,v,h3+120,v+20,"BuyOutSummaryEmail","Buyout Summary");
+    end;
+  end;
+  EndWindow;
+
+window BuyOutAgreementYesNoWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real v,vs; 
+
+  vs = 20; v = 20; 
+  WindowBegin("Buy-out Agreement",BuyOutAgreementYesNoWClass,CGother,-);
+  Modality(kModalityAboveParent);
+  UseView(ORVc);
+  SetWRect(20,80,320,160);
+  //AutoSizeWindow(false);  
+  //EditFieldTL(100,v=6,90,"Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  StaticText(20,v,"Buy-out agreement?",false);
+  HalPushButton(20,v+=vs,140,v+vs,"BuyOutAgreementYesNoWClassYes","Yes");
+  HalPushButton(160,v,280,v+vs,"BuyOutAgreementYesNoWClassClose","No");
+  EndWindow;
+
+  return;
+end;
 
   WindowBegin("Create Invoice",CredManInvNoWClass,CGother,RcType);
   UseView(RcVc);
@@ -635,6 +715,20 @@ begin
   CheckBox(h,v+=vs,0,"Issue Prolong Invoice",flags[2]);
   CheckBox(h,v+=vs,0,"Prolong only when Invoice is paid",flags[3]);
   HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassPause","Register Changes");
+  EndWindow;
+  
+  WindowBegin("Email Offer",EmailOfferWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,400,250);
+  AutoSizeWindow(false);  
+  h = 150; h2 = 250; v=450;
+  EditFieldTL(h,v=6,120,"Changes Start Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,120,"Pause Months",M4Qty,Normal,0,vals0,false,0);
+  EditFieldTL(h,v+=vs,120,"Prolong Months",M4Qty,Normal,0,vals1,false,0);
+  EditFieldTL(h,v+=vs,120,"New Rate",M4Rate,Normal,0,vals3,false,0);
+  EditFieldTL(h,v+=vs,120,"Extra Value",M4Rate,Normal,0,vals4,false,0);
+  EditField(h,v+=vs,100,"Change Purpose",Normal,f1,false,AgrChangesPurpSClass);
+  HalPushButton(h,v+=vs,h+120,v+20,"EmailOfferWClassCreateEmail","Create Email");
   EndWindow;
 
   WindowBegin("Create Extra Fee Invoice",ManualExtraFeeWClass,CGother,RcType);
@@ -1819,7 +1913,7 @@ begin
   real h,v,vs,v2,vs2,hm;
   WindowBegin("Automatic Tasks",CredManAutoTaskTClass,CGHbl,HBlRecType);
   SetBlid(CredManAutoTaskBlock);
-  SetWRect(20,80,900,351);
+  SetWRect(20,80,960,351);
   Sizeable(-1,-1,0,0);
   if (GuiType==kGuiCocoa) then begin
     MatrixBegin(h,v,-31,-20,-,199);
@@ -1835,6 +1929,9 @@ begin
   MatCol(1,540,"Manager",0,Manager,false,UserSClass);
   MatCol(1,620,"Act. Type",0,ActType,false,ActTypeSClass);
   MatCol(1,680,"Act. Text",0,ActText,false,0);
+  if (IsNovitiCustomer) then begin
+    MatCol(1,-60,"Email Text",0,EmailStdText,false,LTxtSClass);
+  end;
   EndMatrix;
   EndWindow;
 end;
@@ -2267,6 +2364,7 @@ begin
   CheckBox(h,v+=20,0,"Automatically send issued Invoices",AutoInvoiceSend);
   CheckBox(h,v+=16,0,"Automatically send Invoices created from Contracts",AutoMailsFromInvoices);
   CheckBox(h,v+=16,0,"When creating Email, use precreated PDFs",UsePreCreatedInvoicePdf);
+  CheckBox(h,v+=16,0,"Sender in manual created mail is current user",emailSenderCurrent);
 
 //  CheckBox(h,v+=16,0,"Remaining principle including Last Months Principle",LastPrincipleWithExtraMonth);
   
@@ -2301,6 +2399,7 @@ begin
   RadioButton(h,v+=16,3,0,"Separately for previous Calendar Month, on Day",InterestIVType);  
   EditField(h+360,v,30,"Day of Month",Normal,InterestIVDay,false,0);
 
+  CheckBox(h,v+=20,0,"F_EMAIL depends on following settings",eMailBasedOnCMSettings);
   v = v + 40;
   ButtonFrame(h,vm=v,200,5,"Invoice Recipients");
   Checkbox(h,v,0,"Primary Contact Email",SendToMainContact);
@@ -2332,7 +2431,8 @@ begin
   ButtonFrame(h,v+=40,150,2,"Overdue Rate");
   RadioButton(h,v,0,0,"Daily",OverdueRateType);
   RadioButton(h,v+=16,1,0,"Monthly",OverdueRateType);  
-
+  CheckBox(h,v+=20,0,"Invoice PDF after Receipt",PDFAfterReceipt);
+  CheckBox(h,v+=20,0,"Automatically send invoice generated from Receipt Entry",AutoSendOverdueInvoice);
   
   Tile(3,95,false,"3",FBuyerPayDeal);
   vs=20; h=160; vs2=16; hm=-100;
@@ -2542,15 +2642,16 @@ end;
 window CredManBuyoutWClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  real v,vs; 
+  real v,vs,h; 
 
   vs = 20;
   WindowBegin("Buyout Agreement",CredManBuyoutWClass,CGother,RcType);
   UseView(RcVc);
-  SetWRect(20,80,300,140);
+  SetWRect(20,80,300,160);
   AutoSizeWindow(false);  
-  EditFieldTL(100,v=6,90,"Date",M4Date,Normal,0,d1,false,PasteCurDate);
-  HalPushButton(100,v+=vs,200,v+vs,"CredManBuyoutWClassProceed","Confirm");
+  EditFieldTL(h=100,v=6,90,"Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  CheckBox(h,v+=vs,0,"Credit issued Interest",flags[1]);
+  HalPushButton(h,v+=vs,h+100,v+vs,"CredManBuyoutWClassProceed","Confirm");
   EndWindow;
 
   return;
@@ -2610,7 +2711,7 @@ begin
   EndWindow;
 end;
 
-window CMPropertyDClass:1
+window CMPropertyDClass:1// For Omega this window in Upper level for local view. If changes need for Omega - copy they on halcust/English
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   real h,v,vs,v2,vs2,hm,h2,h3,vm;
@@ -2657,7 +2758,7 @@ begin
     EditField(h,v+=vs,150,"City",Normal,Addr2,false,0);
     EditField(h,v+=vs,150,"Address",Normal,Addr3,false,0);
     EditField(h,v+=vs,150,"District",Normal,District,false,0);
-    //EditField(h,v+=vs,150,"ZIP",Normal,Addr4,false,0);comented
+    EditField(h,v+=vs,150,"ZIP",Normal,Addr4,false,0);
     EditField(h,v+=vs,100,"Reported Value",Normal,RepVal,false,0);
   end else begin
     if (type==0) then begin
@@ -3083,6 +3184,7 @@ begin
   Tile(4,700,false,"4",ScheduleYes);
   EditField(h,v=6,140,"Yes",Normal,ScheduleYes,false,0);
   CheckBox(h+150,v,0,"Schedules from last Agreement change",ScheduleFromLastAgrCh);
+  CheckBox(h+150,v+vs,0,"Print rows with blank fees (first)",PrintRowWithBlankFees);
   EditField(h,v+=vs,140,"No",Normal,ScheduleNo,false,0);
   EditField(h,v+=vs,140,"If Yes, then",Normal,ScheduleYes2,false,0);
   EditField(h,v+=vs,140,"Reimburs. Items",Normal,ReimbItems,false,INSClass);
@@ -3105,7 +3207,8 @@ begin
   EditField(h,v+=vs,140,"Company Prefix",Normal,CompPrefix,false,0);
   EditField(h,v+=vs,140,"Person Prefix",Normal,PersPrefix,false,0);
 	EditField(h,v+=vs,140,"Digital",Normal,AgrDigital,false,0);
-	EditField(h+200,v,140,"Digital2",Normal,AgrDigital2,false,0);
+	EditField(h+300,v,140,"Digital 2 Agreement",Normal,AgrDigital2,false,LTxtSClass);
+	EditField(h+300,v+vs,140,"Digital 2 Surety",Normal,SurDigital2,false,LTxtSClass);
 	EditField(h,v+=vs,140,"Not Digital",Normal,AgrNotDigital,false,0);
 
   EndWindow;
@@ -3818,3 +3921,100 @@ begin
   EndMatrix;
   EndWindow;
 end;
+
+
+window OwnAddressWClass:3
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real f,h,h2,v,vm,vs,v1;
+  string 255 label;
+  
+  WindowBegin("Own Actual Address",OwnAddressWClass,CGSbl,CYType);
+  SetWRect(20,80,580,200);
+  SetBlid(OwnAddressBlock);
+  vs = 20;
+  h = 100;
+  label = UserDefined("CUVc","InvAddr0");
+  if (blank(label)) then begin label = "Address"; end;
+  EditField(h,v=6,-20,label,Normal,Addr0,false,0);
+  label = UserDefined("CUVc","InvAddr1");
+  EditField(h,v+=vs,-20,label,Normal,Addr1,false,0);
+  label = UserDefined("CUVc","InvAddr2");
+  EditField(h,v+=vs,-20,label,Normal,Addr2,false,0);
+  label = UserDefined("CUVc","InvAddr3");
+  EditField(h,v+=vs,-20,label,Normal,Addr3,false,0);
+  label = UserDefined("CUVc","InvAddr4");
+  EditField(h,v+=vs,-20,label,Normal,Addr4,false,0);
+  
+  EndWindow;
+
+end;  
+
+window CredManAddLangsDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  Boolean pledge;
+  Integer type;
+  string 255 title;
+
+  WindowBegin("Additional Languages",CredManAddLangsDClass,CGview,-);
+  SetWRect(20,80,900,339);
+  DynamicWindow;
+  UseView(CredManAddLangVc);
+  vs=20; h=120; vs2=16; hm=-100;
+  MatrixBegin(10,20,-40,-20,-,99);
+  MatCol(1,24,"Customer Lang.",0,LangCode,false,LangSClass);
+  MatCol(1,124,"Interest Lang.",0,IntLang,false,LangSClass);
+  MatCol(1,224,"First Invoice Lang.",0,LangCode2,false,LangSClass);
+  MatCol(1,324,"Overdue Lang.",0,OverdueLangCode,false,LangSClass);
+  MatCol(1,424,"Buyout Lang.",0,BuyOutLangCode,false,LangSClass);
+  MatCol(1,524,"Inv. w. Overdue Lang.",0,InvOverdLangCode,false,LangSClass);
+  MatCol(1,624,"Comp. Lang.",0,CompensLangCode,false,LangSClass);
+  EndMatrix;
+  EndWindow;
+end;
+
+window LACompStatusDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm,h2;
+  WindowBegin("Company Status",LACompStatusDClass,CGview,-);
+  SetWRect(20,80,500,239);
+  UseView(LACompStatusVc);
+  vs=20; h=70; h2=220; vs2=16; hm=-100;
+  EditField(h,v=6,80,"Code",Normal,Code,false,0);
+  EditField(h,v+=20,-20,"Comment",Normal,Comment,false,0);
+  EndWindow;
+end;
+
+window LACompStatusLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Company Status",LACompStatusLClass,CGmlist,-);
+  SetWRect(20,80,100,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(LACompStatusDClass);
+  UseView(LACompStatusVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlColKey(150,150,"Comment",Comment,false,Comment);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window LACompStatusSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Company Status",LACompStatusSClass,CGslist,-);
+  SetWRect(20,80,100,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(LACompStatusDClass);
+  UseView(LACompStatusVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlColKey(150,150,"Comment",Comment,false,Comment);
+  SearchField("Search");
+  EndWindow;
+end;
+

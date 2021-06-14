@@ -36,3 +36,53 @@ begin
   SelectWindow(wn);
   return;
 end;
+
+global
+procedure IVInfoRClassReportDefaults(Integer wn)
+begin
+  record RcVc RepSpec;
+  
+  DeselectWindow(wn,false);
+  GetWindowRecord(wn,RepSpec);
+  ReportDefaults(RepSpec,"IVInfoRClass");  
+  RepSpec.flags[10] = 1;
+  PutWindowRecord(wn,RepSpec);
+  SelectWindow(wn);
+  return;
+end;
+
+global
+procedure IVInfoIVDsm()
+begin
+  record IVVc IVr;
+  record RcVc RepSpec;
+  Integer wn;
+
+  wn = CurWindow;
+  GetWindowRecord(wn,IVr);
+  RepSpec.repname = "IVInfoRn";
+  RepSpec.flags[10] = 1;//CUST
+  RepSpec.long1 = IVr.SerNr;
+  RepSpec.Media = mtScreen;
+  RunReport(RepSpec,0);
+  return;
+end;
+
+global
+procedure IVInfoIVLsm()
+BEGIN
+  Integer wn;
+  record IVVc IVr;
+  record RcVc RepSpec;
+  
+  wn = CurWindow;  
+//      RLGetSelectionIDs(wn,&ridh);
+  if (ReadMarkedRecord(wn,IVr)) then begin
+    RepSpec.long1 = IVr.SerNr;
+    RepSpec.Media = mtScreen;
+    RepSpec.repname = "IVInfoRn";
+    RepSpec.flags[10] = 1;//CUST
+    RunReport(RepSpec,0);
+  end;
+  RETURN
+END;

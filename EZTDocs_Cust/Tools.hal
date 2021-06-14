@@ -25,6 +25,9 @@ external inner procedure StripEndingSpaces(var string);
 external function Boolean InvoiceHasHiddenLine(record IVVc);
 external inner procedure OneARSFormOpenOnDate(record RcVc,record CUVc,Integer,var val,var Integer,var Integer);
 external procedure GetCredManChangePurpose(record CredManVc,var vector string);
+external function val GetCredHistOpenValueOnDate(Longint,Date);
+external function boolean getAdditionalLangCode(record CredManVc,string,var string);
+external function string 20 getAdditionalCredManLangCode(record CredManVc);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -237,78 +240,101 @@ end;
 
 
 function val findOpenlateFeeInvoices(record IVVc origIVr)
-begin	
-	record ARVc ARr;
-	record IVVc IVr;
-	row IVVc IVrw;
-	boolean TrHs,testf;
-	val res;
-	record CredManSetBlock CMb;
-	integer i,rwcnt;
-	
-	blockload(CMb);
-	
-	if(nonblank(CMb.LateFeeItem))then begin
-		ARr.CustCode = origIVr.CustCode;
-		TrHs = true;
-		while (LoopKey("CustCode",ARr,1,TrHs)) begin
-			testf = true;
-			if (TrHs) then begin
-				if (origIVr.CustCode!=ARr.CustCode) then begin TrHs = false; end;
-			end;
-			if(ARr.InvoiceNr==origIVr.SerNr)then begin
-				testf = false;
-			end;
-			
-			if (TrHs==false) then begin testf = false; end;
-			if (testf) then begin    
-				IVr.SerNr = ARr.InvoiceNr;
+begin  
+  record ARVc ARr;
+  record IVVc IVr;
+  row IVVc IVrw;
+  boolean TrHs,testf,TrHs1,testf1;
+  val res;
+  record CredManSetBlock CMb;
+  integer i,rwcnt;
+  record CredHistVc CredHistr,CredHist2r;
+  val t,tt,tot1,tot2,tot3;
+  longint t2;
+  date blankd;
+  string 255 tstr;
+  
+  blockload(CMb);
+  
+  if(nonblank(CMb.LateFeeItem))then begin
+    ARr.CustCode = origIVr.CustCode;
+    TrHs = true;
+    while (LoopKey("CustCode",ARr,1,TrHs)) begin
+      testf = true;
+      if (TrHs) then begin
+        if (origIVr.CustCode!=ARr.CustCode) then begin TrHs = false; end;
+      end;
+      if(ARr.InvoiceNr==origIVr.SerNr)then begin
+        testf = false;
+      end;
+      
+      if (TrHs==false) then begin testf = false; end;
+      if (testf) then begin    
+        IVr.SerNr = ARr.InvoiceNr;
 
-				if(ReadFirstMain(IVr,1,true))then begin
-					rwcnt = matrowcnt(IVr);
-					for(i=0;i<rwcnt;i=i+1)begin
-						matrowget(IVr,i,IVrw);
-						if(IVrw.stp==kInvoiceRowTypeNormal)then begin
-							if(IVrw.ArtCode==CMb.LateFeeItem)then begin
-								res = res + IVrw.Sum;
-							end;
-						end;
-						if(IVrw.stp==kInvoiceRowTypeHidden)then begin
-							i = rwcnt;
-						end;
-					end;
-				end;
-			
-			end;
-		end;	
-	end;
-	
-	findOpenlateFeeInvoices = res;
-	
+        if(ReadFirstMain(IVr,1,true))then begin
+          rwcnt = matrowcnt(IVr);
+          for(i=0;i<rwcnt;i=i+1)begin
+            matrowget(IVr,i,IVrw);
+            if(IVrw.stp==kInvoiceRowTypeNormal)then begin
+              if(IVrw.ArtCode==CMb.LateFeeItem)then begin
+                
+                resetloop(CredHistr);
+                CredHistr.RecordNr = IVr.SerNr;
+                CredHistr.RecordType = 0;
+                TrHs1 = true;
+                while (LoopKey("RecordNr",CredHistr,2,TrHs1)) begin
+                  if ((CredHistr.RecordNr!=IVr.SerNr) or (CredHistr.RecordType!=0)) then begin
+                    TrHs1 = false;
+                  end;
+                  if (TrHs1) then begin
+                    t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
+                    tt = CredHistr.Sum-t;
+                    if(CredHistr.ArtCode==CMb.LateFeeItem)then begin
+                      res = res - tt;
+                    end;
+                  end;
+                end;
+                
+                res = res + IVrw.Sum;
+              end;
+            end;
+            if(IVrw.stp==kInvoiceRowTypeHidden)then begin
+              i = rwcnt;
+            end;
+          end;
+        end;
+      
+      end;
+    end;  
+  end;
+  
+  findOpenlateFeeInvoices = res;
+  
 return;
 end;
 
 procedure printHiddenStrings(record IVVc IVr, var vector string vVals)
 begin
-	integer i,rwcnt;
-	row IVVc IVrw;
-	boolean ishidden;
-	
-	rwcnt = matrowcnt(IVr);
-	for(i=0;i<rwcnt;i=i+1)begin
-		matrowget(IVr,i,IVrw);
-		
-		if(ishidden)then begin
-			if(nonblank(IVrw.Spec))then begin
-				vVals["F_HIDDENROWSSPEC"] = vVals["F_HIDDENROWSSPEC"] & IVrw.Spec  & "\\n";
-			end;
-		end;
-		
-		if(IVrw.stp==kInvoiceRowTypeHidden)then begin
-			ishidden = true;
-		end;
-	end;
-	
+  integer i,rwcnt;
+  row IVVc IVrw;
+  boolean ishidden;
+  
+  rwcnt = matrowcnt(IVr);
+  for(i=0;i<rwcnt;i=i+1)begin
+    matrowget(IVr,i,IVrw);
+    
+    if(ishidden)then begin
+      if(nonblank(IVrw.Spec))then begin
+        vVals["F_HIDDENROWSSPEC"] = vVals["F_HIDDENROWSSPEC"] & IVrw.Spec  & "\\n";
+      end;
+    end;
+    
+    if(IVrw.stp==kInvoiceRowTypeHidden)then begin
+      ishidden = true;
+    end;
+  end;
+  
 return;
 end;
 
@@ -350,7 +376,7 @@ begin
   Ext_PrintInvoiceSigner(vVals);
 
   ExtPrintOwnBankDetails(vVals,IVr.CustCredManNr);
-	
+  
   CUr.Code = IVr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin end;
 
@@ -367,13 +393,13 @@ begin
   td = AddDay(IVr.InvDate,-1);
   //CustAged(CUr,td,bd,td,ARSSumod,ARSsactod,ARSs0od,ARSs1od,ARSs16od,ARSs31od,ARSs61od,ARSs91od,ARSs121od,ARSs151od,0);
   //GetOnAccBalance(RepSpec,CUr.Code,CUr.CurncyCode,false,0,ARSOnAccBalB1,rval2,ARSOnAccBal,sumbooked,sumnow,sumcurncy,sumdiff,CurTotalsr,debaccs,debbal,debcnt);//ObjStr
-	RepSpec.d1 = td;
-	OneARSFormOpenOnDate(RepSpec,CUr,1,ARSSumod,custcnt,invcnt);//Used this function to calc user balance
+  RepSpec.d1 = td;
+  OneARSFormOpenOnDate(RepSpec,CUr,2,ARSSumod,custcnt,invcnt);//Used this function to calc user balance
 
   //openamount2 = ARSSumod + ARSOnAccBal; //ARSSumod already included ARSOnAccBal
   openamount2 = ARSSumod;
   
-	
+  
   topay3 = openamount2;
   hiddenf = InvoiceHasHiddenLine(IVr);
   topay2 = openamount;
@@ -442,11 +468,11 @@ begin
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(IVr,i,IVrw);
     if (IVrw.stp==kInvoiceRowTypeNormal) then begin
-    	if(nonblank(CMb.LateFeeItem))then begin
-				if(IVrw.ArtCode==CMb.LateFeeItem)then begin
-					LateFeeItemSum = LateFeeItemSum + IVrw.Sum;
-				end;
-			end;
+      if(nonblank(CMb.LateFeeItem))then begin
+        if(IVrw.ArtCode==CMb.LateFeeItem)then begin
+          LateFeeItemSum = LateFeeItemSum + IVrw.Sum;
+        end;
+      end;
       FindVATCodeRow(IVrw.VATCode,VATb,VATbrw);
       if (nonblank(VATbrw.TaxRules)) then begin
         TRr.Code = VATbrw.TaxRules;
@@ -482,19 +508,19 @@ begin
       end;
     end;
   end;
-	
-	if(LateFeeItemSum!=0)then begin
-		vVals["F_LATEFEEITEMSUM"] = LateFeeItemSum;
-	end else begin
-		vVals["F_LATEFEEITEMSUM"] = "0,00";
-	end;
-	
-	OpenLateFeeItemSum = findOpenlateFeeInvoices(IVr);
-	if(OpenLateFeeItemSum!=0)then begin
-		vVals["F_OPENLATEFEEITEMSUM"] = OpenLateFeeItemSum;
-	end else begin
-		vVals["F_OPENLATEFEEITEMSUM"] = "0,00";
-	end;
+  
+  if(LateFeeItemSum!=0)then begin
+    vVals["F_LATEFEEITEMSUM"] = LateFeeItemSum;
+  end else begin
+    vVals["F_LATEFEEITEMSUM"] = "0,00";
+  end;
+  
+  OpenLateFeeItemSum = findOpenlateFeeInvoices(IVr);
+  if(OpenLateFeeItemSum!=0)then begin
+    vVals["F_OPENLATEFEEITEMSUM"] = OpenLateFeeItemSum;
+  end else begin
+    vVals["F_OPENLATEFEEITEMSUM"] = "0,00";
+  end;
 
   vVals["F_CREDITIVNO"] = credivno;
 
@@ -524,7 +550,7 @@ begin
   if (CredManr.SerNr>0) then begin
     tval = GetContactTotalPaidAmount(CredManr);
     vVals["F_TOTALBRUTO"] = tval;
-    ValToText(tval,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+    ValToText(tval,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
     vVals["F_TOTALBRUTOINTEXT"] = tstr;
   end;
   vVals["F_KUNDMOMSNR2"] = vatnr;
@@ -533,7 +559,7 @@ begin
   if (IVr.ManualInvoice==1) then begin
     vVals["F_NETTINGTEXT"] = PCb.InvoiceText;
   end;
-	printHiddenStrings(IVr,vVals);
+  printHiddenStrings(IVr,vVals);
 
   return;
 end;

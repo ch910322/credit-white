@@ -16,7 +16,8 @@ begin
   Setting("Number Series - Loan Applications",B2BLoanAppSerTClass,modCredMan);
   Setting("Credit Management Settings",CMApplicationSetTClass,modCredMan);
   Setting("Invoicing Settings",CMInvoicingTClass,modCredMan);
-  
+  Setting("Company Status",LACompStatusLClass,modCredMan);
+    
   Setting("Scoring Support",ScoringSupLClass,modCredMan);
   Setting("Agreement Properties",CredManPropertiesLClass,modCredMan);
   Setting("Order Classes",OrderClassLClass,modCredMan);
@@ -56,6 +57,7 @@ begin
 	Setting("Euribor Rates",EuriborRatesLClass,modCredMan);
 	Setting("Overdue calculations text",OverdueCalcTextWClass,modCredMan);
 	Setting("Agreement changes purposes",AgrChangesPurpLClass,modCredMan);
+  Setting("Own Actual Address",OwnAddressWClass,modSY);
 
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
 	Report("Application Overview",LoanApplicationListRClass,LoanApplicationListRn,0,modCredMan);
@@ -309,6 +311,9 @@ begin
   SString(200303,"Grace Period already registered");
   SString(200309,"Only one of ""Premature Term. Fee %"" or ""Premature Term. Months"" should be filled in");
 
+  /*IVInfoRn*/
+  SString(200310,"Item Total Incl VAT");
+  
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");
   StrSetText(B2BLoanApplicationVc,"Loan Applications");

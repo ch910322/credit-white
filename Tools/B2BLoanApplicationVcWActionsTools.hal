@@ -941,3 +941,16 @@ begin
   end;
   return;
 end;
+
+global
+procedure InsertB2BLoanApplicationShareHolderName(var record B2BLoanApplicationVc LAr,Integer num)
+begin
+  Boolean res;
+  record CUVc CUr;
+  
+  CUr.Code = GetFieldValueByName(LAr,"ShareHolder" & num & "Code",-1);
+  if (ReadFirstMain(CUr,1,true)) then begin
+    SetFieldValueByName(LAr,"ShareHolder" & num & "Name",CUr.Name,-1);
+  end;
+  return;
+end;

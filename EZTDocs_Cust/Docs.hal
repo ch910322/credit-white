@@ -60,6 +60,26 @@ external function Integer GetInterestPaymentType(record CredManVc);
 external function string 255 AgreementValToText(val);
 external inner procedure GetMonthText(string,Date,var string);
 external procedure BuildCredManPayPlanCust2(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean,Boolean);
+external function boolean getAdditionalLangCode(record CredManVc,string,var string);
+external function string 20 getAdditionalCredManLangCode(record CredManVc);
+
+procedure StandardTextToVector(string textCode,var vector string vVals,string vectorkey)
+begin
+  record LTxtVc LTxtr;
+  longint pos;
+  
+  LTxtr.Code = textCode;
+  if(readfirstmain(LTxtr,1,true))then begin
+    while (pos<SizeTextCnt(LTxtr)) begin
+      vVals[vectorkey] = vVals[vectorkey] & StringFromText(LTxtr,pos,255);
+      pos = pos + 255;
+    end;
+  end else begin
+    vVals[vectorkey] = textCode;
+  end;
+
+return;
+end;
 
 global procedure Ext_OutAddressOneLine(var vector string vVals,string keyame,string name,string addr0,string addr1,string addr2,string addr3,string addr4)
 begin
@@ -234,7 +254,7 @@ begin
   end;
   tval = GetTotalFromCredManInfoMatrix(SMr);
   vVals["F_TOTALBRUTO"] = tval;
-  ValToText(tval,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText(tval,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_TOTALBRUTOINTEXT"] = tstr;
   vVals["F_INSTALMENTDUEDATE"] = res;
 
@@ -506,7 +526,7 @@ begin
     if (nonblank(PCb.BOEValueLangCode)) then begin
 			ValToText(stringtoval(value,M4Val),M4Val,CredManr.CurncyCode,PCb.BOEValueLangCode,tstr);
 		end else begin
-			ValToText(stringtoval(value,M4Val),M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+			ValToText(stringtoval(value,M4Val),M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
 		end;
 		tstr = StrReplace(tstr,"  "," ");
 		tstr = StrReplace(tstr,"  "," ");
@@ -532,7 +552,8 @@ begin
 		
 		if(gIsDigitalDocument==1)then begin
       vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrDigital;
-      vVals["F_ISDIGITALDOCUMENT2"] = PCb.AgrDigital2;
+      StandardTextToVector(PCb.AgrDigital2,vVals,"F_ISDIGITALDOCUMENT2");
+      StandardTextToVector(PCb.SurDigital2,vVals,"F_SURDIGITALDOCUMENT2");
     end else begin
       vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrNotDigital;
     end;
@@ -716,7 +737,8 @@ begin
 
 	if(gIsDigitalDocument==1)then begin
 		vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrDigital;
-		vVals["F_ISDIGITALDOCUMENT2"] = PCb.AgrDigital2;
+		StandardTextToVector(PCb.AgrDigital2,vVals,"F_ISDIGITALDOCUMENT2");
+		StandardTextToVector(PCb.SurDigital2,vVals,"F_SURDIGITALDOCUMENT2");
 	end else begin
 		vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrNotDigital;
 	end;
@@ -794,8 +816,10 @@ end;
 procedure CommonDocumentFieldsWord(var vector string vVals)
 BEGIN
   record CYBlock CompYear;
+  record OwnAddressBlock OAb;
 
   BlockLoad(CompYear);
+  BlockLoad(OAb);
 	vVals["F_EGENEMAIL"] = CompYear.emailAddr;
 	vVals["F_EGENWWWADDRESS"] = CompYear.wwwAddr;
 	vVals["F_EGETNAMN"] = CompYear.CompName;
@@ -819,6 +843,9 @@ BEGIN
 	vVals["F_OWNSORTCODE"] = CompYear.SortCode; 
 	Ext_OutAddress(vVals,"F_EGENADRESS",CompYear.CompName,CompYear.Addr0,CompYear.Addr1,CompYear.Addr2,CompYear.Addr3,CompYear.Addr4);
 	Ext_OutAddressOneLine(vVals,"F_EGENADRESS3","",CompYear.Addr0,CompYear.Addr1,CompYear.Addr2,CompYear.Addr3,CompYear.Addr4);
+	
+	Ext_OutAddress(vVals,"F_OWNADRESS","",OAb.Addr0,OAb.Addr1,OAb.Addr2,OAb.Addr3,OAb.Addr4);
+	Ext_OutAddressOneLine(vVals,"F_OWNADRESS1","",OAb.Addr0,OAb.Addr1,OAb.Addr2,OAb.Addr3,OAb.Addr4);
 	
 	
   RETURN;
@@ -998,7 +1025,7 @@ begin
   vVals["F_BASE1SUMMA"] = MulRateToBase1(CredManr.CurncyCode,CredManr.InvSum4,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2,DefaultCurRoundOff);
   vVals["F_BASE2SUMMA"] = MulRateToBase2(CredManr.CurncyCode,CredManr.InvSum4,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2,DefaultCurRoundOff);
   vVals["F_ATTBETALA"] = CredManr.TotalSum;
-  ValToText(CredManr.TotalSum,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText(CredManr.TotalSum,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_ATTBETALATEXT"] = tstr;        
   vVals["F_BASE1BETALA"] = MulRateToBase1(CredManr.CurncyCode,CredManr.TotalSum,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2,DefaultCurRoundOff);
   vVals["F_BASE2BETALA"] = MulRateToBase2(CredManr.CurncyCode,CredManr.TotalSum,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2,DefaultCurRoundOff);
@@ -1017,7 +1044,7 @@ begin
   vVals["F_DATEDAY"] = CredManr.MonthlyPaymentDay;
   vVals["F_MONTHLYINST"] = CredManr.MonthlySum;
   vVals["F_DELAYMONTHS"] = CredManr.PrincipleDelayMonths;
-  ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_TOTSUMINTEXT"] = tstr;
   
   vVals["F_BANKACC"] = CUr.BankAccount;
@@ -1031,18 +1058,18 @@ begin
   ReadFirstMain(Bankr,1,true);
   vVals["F_ACCOUNTOPERATORNAME"] = Bankr.Name;
   vVals["F_CREDHALFSUM"] = (CredManr.InvSum4/2);
-  ValToText((CredManr.InvSum4/2),M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText((CredManr.InvSum4/2),M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_CREDHALFSUMTEXT"] = tstr;
 
   tstr = "";
   amt = GetMonthlyPaymentAmount(CredManr,6);
   vVals["F_AMOUNT"] = amt;
-  ValToText(amt,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText(amt,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_AMOUNTINTEXT"] = tstr;
 
   amt = GetMonthlyPaymentAmount(CredManr,14);
   vVals["F_AMOUNT2"] = amt;
-  ValToText(amt,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText(amt,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_AMOUNTINTEXT2"] = tstr;
 
   amt = GetMonthlyPaymentAmount(CredManr,8);
@@ -1070,11 +1097,11 @@ begin
   end;
   fees = Round(fees,SetRoundModeD(2));
   vVals["F_FEES"] = fees;
-  ValToText(fees,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText(fees,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_FEESINTEXT"] = tstr;
   prolong = Round(CredManr.StdProlongFee + (CredManr.InvSum4 * (CredManr.StdProlongPrc/100)),SetRoundModeD(2));
   vVals["F_PROLONG"] = prolong;
-  ValToText(prolong,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText(prolong,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_PROLONGINTEXT"] = tstr;
   vVals["F_OVERDUEPRC"] = CredManr.OverduePercentage;
   //ValToText(CredManr.OverduePercentage,M4Val,CredManr.CurncyCode,CMb.NumberLangCode,tstr);
@@ -1233,7 +1260,7 @@ begin
     ed = SMrw.Comment;
     ed.Day = DaysInMonth(ed.Year,ed.Month);
     while (td<=ed) begin
-      GetMonthText(CredManr.LangCode,td,tstr);
+      GetMonthText(getAdditionalCredManLangCode(CredManr),td,tstr);
       if (nonblank(res)) then begin
         res = res & ", ";
       end;
@@ -1373,6 +1400,7 @@ begin
   array string 100 afeeslist;
   vector val vfees;
   vector string 255 vfeename;
+  boolean prflag;
 
   
   BlockLoad(PCb);
@@ -1411,9 +1439,18 @@ begin
   rwcnt = MatRowCnt(SMr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(SMr,i,SMrw);
-    if (SMrw.TransDate<CredManr.FirstInvDate and SMrw.DebVal==0 and SMrw.CredVal==0 and SMrw.BaseRate1==0) then begin//i==0 and 
-      goto LNextRow;
+    prflag = false;
+    if(PCb.PrintRowWithBlankFees==1)then begin
+      if (SMrw.TransDate<CredManr.FirstInvDate and SMrw.DebVal==0 and SMrw.CredVal==0 and SMrw.BaseRate1==0) then begin//i==0 and 
+        goto LNextRow;
+      end;
+    end else begin
+      if (SMrw.TransDate<CredManr.FirstInvDate and SMrw.DebVal==0 and SMrw.CredVal==0) then begin//i==0 and 
+        goto LNextRow;
+      end;
     end;
+    
+   
     if (SMrw.RowSimStat==5) then begin
       goto LNextRow;
     end;
@@ -1441,7 +1478,7 @@ begin
     totfullpayment = totfullpayment + SMrw.CurDebVal;
     totfullvat = totfullvat + SMrw.FrRate;
     totinstalment = totinstalment + SMrw.DebVal;
-    if (SetInSet(CredManr.LangCode,PCb.ReimbLanguages)) then begin
+    if (SetInSet(getAdditionalCredManLangCode(CredManr),PCb.ReimbLanguages)) then begin
       reimbsumrow = 0;
       UnpackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
       rwcnt2 = MatRowCnt(FMr);
@@ -1485,12 +1522,13 @@ LNextRow:;
     topay2 = 0;
   end;
   vVals["F_TOPAY2"] = topay2;
-  ValToText(topay2,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText(topay2,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_TOPAY2_TEXT"] = tstr;
   
   if(gIsDigitalDocument==1)then begin
     vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrDigital;
-    vVals["F_ISDIGITALDOCUMENT2"] = PCb.AgrDigital2;
+    StandardTextToVector(PCb.AgrDigital2,vVals,"F_ISDIGITALDOCUMENT2");
+    StandardTextToVector(PCb.SurDigital2,vVals,"F_SURDIGITALDOCUMENT2");
   end else begin
     vVals["F_ISDIGITALDOCUMENT"] = PCb.AgrNotDigital;
   end;
@@ -1628,9 +1666,9 @@ begin
   vVals["F_REGNUMBER1"] = CUr.RegNr1;//Customer Registration No. 1
   Ext_OutAddress(vVals,"F_ADRESS",CUr.Name,CUr.InvAddr0,CUr.InvAddr1,CUr.InvAddr2,CUr.InvAddr3,CUr.InvAddr4);
   Ext_PrintCurrencyCode(vVals,"F_VALUTA",CredManr.CurncyCode);
-  vVals["F_VALUTANAME"] = GetCurncyComment(vVals["F_VALUTA"],CredManr.LangCode);
+  vVals["F_VALUTANAME"] = GetCurncyComment(vVals["F_VALUTA"],getAdditionalCredManLangCode(CredManr));
   vVals["F_TOTSUM"] = CredManr.InvSum4;
-  ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_TOTSUMINTEXT"] = LowerCase(tstr);
   vVals["F_OVERDUEPRC"] = CredManr.OverduePercentage;
 
@@ -1653,7 +1691,7 @@ begin
   Ext_PrintDocumentSigner(vVals);
   vVals["F_CREDHALFSUM"] = (CredManr.InvSum4/2);
   vVals["F_CREDCUSTCITY"] = GetCredManCity(CredManr);
-  ValToText((CredManr.InvSum4/2),M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText((CredManr.InvSum4/2),M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_CREDHALFSUMTEXT"] = LowerCase(tstr);
 
   ExtPrintOwnBankDetails(vVals,CredManr.SerNr);
@@ -1734,7 +1772,7 @@ begin
     if (nonblank(PCb.BOEValueLangCode)) then begin
       ValToText(value,M4Val,CredManr.CurncyCode,PCb.BOEValueLangCode,tstr);
     end else begin
-      ValToText(value,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+      ValToText(value,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
     end;
     tstr = StrReplace(tstr,"  "," ");
     tstr = StrReplace(tstr,"  "," ");
@@ -1742,10 +1780,10 @@ begin
     vVals["F_CONTACTVALUEINWORDSLC"] = LowerCase(trim(tstr));
     vVals["F_CONTACTSIGNER"] = signer;
     vVals["F_CONTACTDATE"] = td;
-    tstr = DateInWords(td,CredManr.LangCode,2);
+    tstr = DateInWords(td,getAdditionalCredManLangCode(CredManr),2);
     vVals["F_CONTACTDATEINWORDS"] = tstr;
     vVals["F_CONTACTDUEDATE"] = duedate;
-    tstr = DateInWords(duedate,CredManr.LangCode,1);
+    tstr = DateInWords(duedate,getAdditionalCredManLangCode(CredManr),1);
     vVals["F_CONTACTDUEDATEINWORDS"] = tstr;
     Ext_OutAddress(vVals,"F_CONTACTADRESS",name,addr0,addr1,addr2,addr3,addr4);
     Ext_OutAddressOneLine(vVals,"F_CONTACTADRESS2","",addr0,addr1,addr2,addr3,addr4);
@@ -1794,14 +1832,14 @@ begin
   vVals["F_ORT"] = CYb.Addr3;
 
   vVals["F_TOTSUM"] = CredManr.InvSum4;
-  ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_TOTSUMINTEXT"] = tstr;
   vVals["F_CREDHALFSUM"] = (CredManr.InvSum4/2);
-  ValToText((CredManr.InvSum4/2),M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText((CredManr.InvSum4/2),M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_CREDHALFSUMTEXT"] = tstr;
 
   vVals["F_CREDMULSUM"] = (CredManr.InvSum4*1.5);
-  ValToText((CredManr.InvSum4*1.5),M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+  ValToText((CredManr.InvSum4*1.5),M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_CREDMULSUMTEXT"] = tstr;
   ExtPrintOwnBankDetails(vVals,CredManr.SerNr);
 
@@ -1836,7 +1874,7 @@ begin
     enddate = AddMonth(enddate,CMTr.VekselisExtraMonths);
   end;
 
-  tstr = DateInWords(enddate,CredManr.LangCode,1);
+  tstr = DateInWords(enddate,getAdditionalCredManLangCode(CredManr),1);
   vVals["F_ENDDATE2"] = enddate;
   vVals["F_ENDDATE2INWORDS"] = tstr;
 
@@ -1953,7 +1991,7 @@ begin
   string 255 numstring,propid;
   Boolean haspropf;
   
-  GetLangNr(CredManr.LangCode,LangNrr);      
+  GetLangNr(getAdditionalCredManLangCode(CredManr),LangNrr);      
   Ext_CommonDocumentFields(vVals);
   CredManHeader(vVals,CredManr);
 /*
@@ -1963,7 +2001,7 @@ begin
     MatRowGet(CredManr,i,CredManrw);
     M4PadString(i,3,"0",true,strnum);
     //vVals["ROW_" & strnum & "_
-    GetUnitStr(CredManrw.ArtCode,CredManr.LangCode,tstr);
+    GetUnitStr(CredManrw.ArtCode,getAdditionalCredManLangCode(CredManr),tstr);
     vVals["ROW_" & strnum & "_F_ENHET"] = tstr;
     vVals["ROW_" & strnum & "_F_ARTNR"] = CredManrw.ArtCode;
     vVals["ROW_" & strnum & "_F_ARTNR2"] = CredManrw.ArtCode;
@@ -2075,7 +2113,7 @@ begin
   tstr = "";
   if (haspropf) then begin
     vVals["F_LOANHIPSUM"] = (CredManr.InvSum4*1.3) & " Eur";
-    ValToText((CredManr.InvSum4*1.3),M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+    ValToText((CredManr.InvSum4*1.3),M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
     vVals["F_LOANHIPSUMTEXT"] = "(" & tstr & ")";
   end else begin
     vVals["F_LOANHIPSUM"] = "-";  

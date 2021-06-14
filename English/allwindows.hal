@@ -711,7 +711,7 @@ begin
   EditField(h2,v,150,"Interest",Normal,InstalmentType,false,SetSClass);
   EditField(h,v+=vs,82, "Customer",Normal,CustCode,false,CUSClass);
   EnterSkip(InvSum4);
-  EditField(h2,v,n,"Name",Normal,Addr0,false,0);
+  EditField(h2,v,300,"Name",Normal,Addr0,false,0);
   EditField(h,v+=vs,82,"#Salesman#",Normal,SalesMan,false,UserSClass);
   EditField(h2,v,n,"Attn.",Normal,ClientContact,false,ContactSClass);
 //CUST-BEGIN
@@ -1416,6 +1416,7 @@ begin
   SpecialMenu("Terminate",' ',9,"CredManTerminateDsm");
   SpecialMenu("Sell Agreement",' ',9,"CredManSellDsm");
   SpecialMenu("Register Extended Grace Period",' ',10,"CredManGracePeriodDsm");
+  SpecialMenu("Email offer",' ',8,"EmailOfferDsm");
   
   
   
@@ -1574,8 +1575,7 @@ begin
   EditField(h2,v,82,"Princ. Delay Months",Normal,PrincipleDelayMonths,false,0);//CUST added
   EditField(h,vm2=(v+=vs),40,"Fixed Deposit",Normal,DepositSum,true,0);//CUST 82>>40
   EditField(h2,v,82,"Princ. Delay Interest %",Normal,PrincipleDelayInterest,false,0);//CUST added
-  //CUST-BEGIN
-  
+  //CUST-BEGIN 
   EditField(h,v+=vs,40,"Days in Year",Normal,DaysInYear,false,0);
   if (UseBuyOutMonths) then begin
     EditField(h2,v,82,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
@@ -1764,7 +1764,7 @@ begin
   if (SimplifiedSureties) then begin  
     EditField(h6+60,v,40,"",Normal,VekselisLangCode2,false,LangSClass);
   end;
-
+  HalPushButton(h2+110,v+30,h2+200,v+53,"CredManDClassAddLanguages","Add. Languages");   
   EditField(h2,v+=40,60,"Language",Normal,LangCode,false,LangSClass);
   EditField(h2,v+=vs,60,"First Invoice Language",Normal,LangCode2,false,LangSClass);
   EditField(h2,v+=vs,60,"Overdue Language",Normal,OverdueLangCode,false,LangSClass);
@@ -3767,3 +3767,41 @@ begin
   EndWindow;
 end;
 */
+
+window IVInfoRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs;
+  WindowBegin("Specify Invoice Status",IVInfoRClass,CGRcW,RcType);
+  SetWRect(20,80,520,220);
+  vs = 20;
+  EditFieldTL(h=150,v=6, 150,"Invoice No.",M4Long,Normal,0,long1,false,0);
+  CheckBox(h,v+=vs,0,"Payment status per item",flags[10]);
+  EndWindow;
+end;
+
+
+window IVToMailVClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm;
+  WindowBegin("Specify Create Mails from Invoices",IVToMailVClass,CGMnt,RcType);
+  SetWRect(64,80,509,340);
+  PeriodField(h=120,v=6,"Period");
+  EditFieldTL(h,v+=20, 150,"Customer",   M4UStr,Normal,40,f1,false,CUSClass);
+  EditFieldTL(h,vm=(v+=20), 70, "Category",   M4UStr,Normal,5,FirstAcc,false,CCatSClass);
+  EditFieldTL(h,v+=20 ,70,"Classification",M4UStr,Normal,30,f4,false,CClassSClass);
+  EditFieldTL(h,v+=20, 150,"Invoice",   M4UStr,Normal,20,f2,false,0);
+  EditFieldTL(h,v+=20, -50,"Customer Job Title",M4Str,Normal,200,f3,false,0);
+  CheckBox(h,v+=20,0,"Open Invoices Only",flags[0]);
+  CheckBox(h,v+=16,0,"Include not OKed Invoices",flags[8]);
+  CheckBox(h,v+=16,0,"Send emails automatically",flags[1]);
+  CheckBox(h,v+=16,0,"Consolidate all invoices for a customer in one email",flags[7]);
+  ButtonFrame(h,vm = (v+=40),123,4,"Invoice Type");
+  CheckBox(h,v,0,"Invoices",flags[3]);
+  CheckBox(h,v+=16,0,"Cash Notes",flags[4]);
+  CheckBox(h,v+=16,0,"#Credit Notes#",flags[5]);
+  CheckBox(h,v+=16,0,"I_nterest Invoices",flags[6]);
+  CheckBox(h,v+=20,0,"Use Persons e-mail address as From",flags[9]);
+  EndWindow;
+end;
