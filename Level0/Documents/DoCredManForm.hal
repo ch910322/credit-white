@@ -126,6 +126,7 @@ begin
   record IVVc voidIVr;
   integer rwcnt,i;
   string 255 newres;
+  vector boolean emailused;
 
   res = CUr.eMail;
   if (blank(res)) then begin
@@ -144,15 +145,17 @@ begin
       for(i=0;i<rwcnt;i=i+1)begin
         matrowget(voidMailr,i,MArw);
         if(MArw.RowTyp==0)then begin
-          newres = newres & MArw.AddrCode;
-          if(i<rwcnt-1)then begin
-            newres = newres & "\\n";
+          if(emailused[MArw.AddrCode]==false)then begin
+            if(nonblank(newres))then begin
+              newres = newres & "\\n";
+            end;
+            newres = newres & MArw.AddrCode;
+            emailused[MArw.AddrCode] = true;
           end;
         end;
       end;
       if(nonblank(newres))then begin
         res = newres;
-        logtext(0,newres & "  " & rwcnt);
       end;
   end;
   //Cust END

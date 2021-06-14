@@ -221,10 +221,12 @@ begin
   EditField(h,v+=vs,100,"Mailing List",Normal,MailingList,false,PersColSClass);
   EditField(h,v+=vs,100,"Mailing List 2",Normal,MailingList2,false,PersColSClass);
   EditField(h,v+=vs,100,"City Classification Type",Normal,CityAgreementClassType,false,CredManClassTypeSClass);
-  EditField(h,v+=30,100,"Document Signer",Normal,DocumentSigner,false,UserSClass);
+  EditField(h,v+=vs,100,"Document Signer",Normal,DocumentSigner,false,UserSClass);
   EditField(h,v+=vs,100,"Signer's Job Description",Normal,DocumentSignerPosition,false,0);
-  EditField(h,v+=30,100,"Invoice Signer",Normal,InvoiceSigner,false,UserSClass);
-  EditField(h,v+=30,100,"Language for Numbers",Normal,NumberLangCode,false,LangSClass);
+  EditField(h,v+=vs,100,"Invoice Signer",Normal,InvoiceSigner,false,UserSClass);
+  EditField(h,v+=vs,100,"Language for Numbers",Normal,NumberLangCode,false,LangSClass);
+  EditField(h,v+=vs,100,"Marketing email classification",Normal,MarkMailClass,false,CClassSClass);
+  EditField(h,v+=vs,100,"Marketing sms classification",Normal,MarkSMSClass,false,CClassSClass);
 
   if (UseCredManStatus) then begin
     CheckBox(h,v+=30,0,"Automatically pause Agreements",AutoPauseCredMan);
@@ -1925,7 +1927,9 @@ begin
   MatCol(1,540,"Manager",0,Manager,false,UserSClass);
   MatCol(1,620,"Act. Type",0,ActType,false,ActTypeSClass);
   MatCol(1,680,"Act. Text",0,ActText,false,0);
-  MatCol(1,-60,"Email Text",0,EmailStdText,false,LTxtSClass);
+  if (IsNovitiCustomer) then begin
+    MatCol(1,-60,"Email Text",0,EmailStdText,false,LTxtSClass);
+  end;
   EndMatrix;
   EndWindow;
 end;
