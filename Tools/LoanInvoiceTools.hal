@@ -2496,7 +2496,7 @@ begin
   record CredHistVc CredHistr;
   integer i,rwcnt,lasti;
   date lastduedate;
-  val res,calcbal;
+  val res,calcbal,t;
   boolean foundf,TrHs;
   Integer int_type;
 
@@ -2508,6 +2508,7 @@ begin
   end;
   foundf = false;
   //Get last interest invoice
+  /*
   TrHs = true;
   CredHistr.CredManNr = CredManr.SerNr;
   CredHistr.RecordType = 0;
@@ -2517,7 +2518,7 @@ begin
     end;
     if (TrHs) then begin
       if (CredHistr.ChargeType==kEventTypeIssueInterest) then begin
-         if ((CredHistr.CredFromDate>=untildate) /*and (CredHistr.CredToDate<=???) */ and (CredHistr.PaidFlag==0)) then begin
+         if ((CredHistr.CredFromDate>=untildate) and (CredHistr.CredToDate<=???) and (CredHistr.PaidFlag==0)) then begin
            if (blankdate(lastduedate)) then begin
             lastduedate = CredHistr.CredFromDate;
            end else begin
@@ -2531,21 +2532,31 @@ begin
     end;
   end;
   
+  */
   
-  /*
   rwcnt = MatRowCnt(CredManPayPlanr);
-  //OpenExportFile("GetLastDuePeriodInterest" & CredManr.SerNr & ".txt",false);
-  CreateFile("GetLastDuePeriodInterest_" & CredManr.SerNr & ".txt");
-  ExportRecord(CredManPayPlanr);
+//  CreateFile("GetLastDuePeriodInterest_" & CredManr.SerNr & ".txt");
+//  ExportRecord(CredManPayPlanr);
   
   //ExportString("rwcnt");
   //ExportString(rwcnt);
-  NewLine;
+  //NewLine;
   
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
     switch (CredManPayPlanrw.PlanType) begin
-      case kEventTypeIssueInterest:
+      case kEventTypeIssueInterest: 
+        if ((CredManPayPlanrw.FromDate<=untildate) and (untildate<=CredManPayPlanrw.ToDate)) then begin
+          lastduedate = CredManPayPlanrw.FromDate;
+                    LogText(0,"CredManPayPlanrw.FromDate=" & CredManPayPlanrw.FromDate & " CredManPayPlanrw.ToDate=" & CredManPayPlanrw.ToDate &  " CredManPayPlanrw.Sum=" & CredManPayPlanrw.Sum & " CredManPayPlanrw.IssuedNr=" & CredManPayPlanrw.IssuedNr);
+          t = CredManPayPlanrw.Sum/((DateDiff(CredManPayPlanrw.ToDate,CredManPayPlanrw.FromDate)+1));
+           LogText(0,"tperday=" & t & " " & lastduedate & " - " & CredManPayPlanrw.FromDate & "=" & DateDiff(untildate,CredManPayPlanrw.FromDate));
+          t = t * (DateDiff(untildate,CredManPayPlanrw.FromDate)+1);
+          LogText(0,"t=" & t);
+          i = rwcnt;
+          foundf = true;
+        end;
+/*        
         if (CredManPayPlanrw.IssuedNr!=-1) then begin
           CredHistr.SerNr = CredManPayPlanrw.IssuedNr;
           if (ReadFirstMain(CredHistr,1,true)) then begin
@@ -2564,16 +2575,19 @@ begin
             end;
           end;
         end;
+        */
     end;
   end;
-  */
+  
   if (foundf) then begin
-    MatRowGet(CredManPayPlanr,lasti,CredManPayPlanrw);
+    //MatRowGet(CredManPayPlanr,lasti,CredManPayPlanrw);
     //calc interest rate from CredManPayPlanrw.FromDate to  untildate
     //res = GetRateAmount(CredManr,CredManr.IntRate,kMonthTypeLast,CredManPayPlanrw.FromDate,untildate,calcbal,false,false);//last param fixeddays false?
-    res = GetRateAmount(CredManr,CredManr.IntRate,kMonthTypeLast,CredHistr.CredFromDate,untildate,calcbal,false,false);//last param fixeddays false?
+    //res = GetRateAmount(CredManr,CredManr.IntRate,kMonthTypeLast,CredHistr.CredFromDate,untildate,calcbal,false,false);//last param fixeddays false?
+    res = GetRateAmount(CredManr,CredManr.IntRate,kMonthTypeFirst,lastduedate,untildate,calcbal,false,false);//last param fixeddays false?
+    LogText(0,"GetLastDuePeriodInterest: LAsti=" & lasti & " lastduedate=" & lastduedate & " FromDate=" & CredManPayPlanrw.FromDate & " untildate=" & untildate & " calcbal=" & calcbal & " interest=" & res & " intplan=" & t & " CredManPayPlanrw.Sum=" & CredManPayPlanrw.Sum);
   end;
-  LogText(0,"GetLastDuePeriodInterest: LAsti=" & lasti & " lastduedate=" & lastduedate & " FromDate=" & CredManPayPlanrw.FromDate & " untildate=" & untildate & " calcbal=" & calcbal & " interest=" & res);
+  
   GetLastDuePeriodInterest = res;
   return;
 end;
