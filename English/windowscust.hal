@@ -361,8 +361,10 @@ begin
   UseView(CUVc);
   SpawnClass(CUDClass);
   
+  ToolBar;
   HalPushButton(-300,v=7,-200,v+=20,"CustSwitchToContacts","Contact Persons");
- 
+  EndToolBar;
+  
   RecordList(4,20,-21,-39);
   RlColKey(4,4,"No.",Code,false,Code);
   pos = 96;
@@ -3972,3 +3974,47 @@ begin
   EndMatrix;
   EndWindow;
 end;
+
+window LACompStatusDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm,h2;
+  WindowBegin("Company Status",LACompStatusDClass,CGview,-);
+  SetWRect(20,80,500,239);
+  UseView(LACompStatusVc);
+  vs=20; h=70; h2=220; vs2=16; hm=-100;
+  EditField(h,v=6,80,"Code",Normal,Code,false,0);
+  EditField(h,v+=20,-20,"Comment",Normal,Comment,false,0);
+  EndWindow;
+end;
+
+window LACompStatusLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Company Status",LACompStatusLClass,CGmlist,-);
+  SetWRect(20,80,100,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(LACompStatusDClass);
+  UseView(LACompStatusVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlColKey(150,150,"Comment",Comment,false,Comment);
+  SearchField("Search");
+  EndWindow;
+end;
+
+window LACompStatusSClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Company Status",LACompStatusSClass,CGslist,-);
+  SetWRect(20,80,100,298);
+  Sizeable(-1,-1,0,0);
+  SpawnClass(LACompStatusDClass);
+  UseView(LACompStatusVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"Code",Code,false,Code);
+  RlColKey(150,150,"Comment",Comment,false,Comment);
+  SearchField("Search");
+  EndWindow;
+end;
+

@@ -16,7 +16,8 @@ begin
   Setting("Number Series - Loan Applications",B2BLoanAppSerTClass,modCredMan);
   Setting("Credit Management Settings",CMApplicationSetTClass,modCredMan);
   Setting("Invoicing Settings",CMInvoicingTClass,modCredMan);
-  
+  Setting("Company Status",LACompStatusLClass,modCredMan);
+    
   Setting("Scoring Support",ScoringSupLClass,modCredMan);
   Setting("Agreement Properties",CredManPropertiesLClass,modCredMan);
   Setting("Order Classes",OrderClassLClass,modCredMan);
