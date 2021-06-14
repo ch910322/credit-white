@@ -19,6 +19,7 @@ remote procedure B2BLoanApplicationMakeEmailOffer_Remote(record B2BLoanApplicati
 remote procedure InsertB2BLoanApplicationDocSignerName(var record B2BLoanApplicationVc,Integer);
 remote updating procedure GetB2BLoanApplicationPropertyRecord(record B2BLoanApplicationVc,var record CredManPropertiesVc);
 remote procedure InsertB2BLoanApplicationBoardMemberName(var record B2BLoanApplicationVc,Integer);
+remote procedure InsertB2BLoanApplicationShareHolderName(var record B2BLoanApplicationVc,Integer);
 remote updating procedure GetB2BLoanApplicationDebtRecord(record B2BLoanApplicationVc,var record LoanAppDebtsVc);
 external inner function roundmode SetRoundModeD(Integer);
 
@@ -585,6 +586,20 @@ begin
   return;
 end;
 
+function Boolean B2BLoanApplicationDClassShareHolderEFAfter(Integer wn,Boolean changedf,Integer num)
+begin
+  record B2BLoanApplicationVc LAr;
+  record CUVc CUr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,LAr);
+    InsertB2BLoanApplicationShareHolderName(LAr,num);
+    PutWindowRecord(wn,LAr);   
+  end; 
+  B2BLoanApplicationDClassShareHolderEFAfter = true;
+  return;
+end;
+
 function Boolean B2BLoanApplicationDClassInterestRateEFAfter(Integer wn,Boolean changedf)
 begin
   record B2BLoanApplicationVc LAr;
@@ -602,6 +617,90 @@ begin
   UpdateB2BLoanApplicationSoftFields(wn,LAr,"Sum");
   PutWindowRecord(wn,LAr);
 end;
+
+
+
+function Boolean B2BLoanApplicationDClassArtCodeEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record B2BLoanApplicationVc LAr;
+  record INVc INr;
+  row B2BLoanApplicationVc LArw;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,LAr);
+    if (rownr>=0) then begin
+      matrowget(LAr,rownr,LArw);
+        INr.Code = LArw.ArtCode;
+        if(readfirstmain(INr,1,true))then begin
+          LArw.Comment = INr.Name;
+        end;
+      matrowput(LAr,rownr,LArw);
+      //if (CredManVc_PasteArtCode(CredManr,rownr)) then begin
+      //end;
+    end;
+    PutWindowRecord(wn,LAr);
+  end;
+  B2BLoanApplicationDClassArtCodeEFAfter = true;
+  return;
+end;
+
+function Boolean B2BLoanApplicationDClassQuantEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record B2BLoanApplicationVc LAr;
+  row B2BLoanApplicationVc LArw;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,LAr);
+    if (rownr>=0) then begin
+      matrowget(LAr,rownr,LArw);
+        LArw.Sum = round(LArw.Price * LArw.Quant/100*(100-LArw.vRebate),defaultcurroundoff);
+      matrowput(LAr,rownr,LArw);
+      //CredManVc_PasteQuant(CredManr,rownr);
+    end;
+    PutWindowRecord(wn,LAr);
+  end;
+  B2BLoanApplicationDClassQuantEFAfter = true;
+  return;
+end;
+
+function Boolean B2BLoanApplicationDClassvRebateEFAfter(Integer wn,Integer rownr,Boolean changedf)
+begin
+  record B2BLoanApplicationVc LAr;
+  row B2BLoanApplicationVc LArw;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,LAr);
+    if (rownr>=0) then begin
+      matrowget(LAr,rownr,LArw);
+        LArw.Sum = round(LArw.Price * LArw.Quant/100*(100-LArw.vRebate),defaultcurroundoff);
+      matrowput(LAr,rownr,LArw);
+      //CredManVc_PastevRebate(CredManr,rownr);
+    end;
+    PutWindowRecord(wn,LAr);
+  end;
+  B2BLoanApplicationDClassvRebateEFAfter = true;
+  return;
+end;
+
+
+function Boolean B2BLoanApplicationDClassDefaultEFAfter(Integer wn,Integer rownr,Boolean changedf,string fieldname)
+begin
+  record B2BLoanApplicationVc LAr;
+  row B2BLoanApplicationVc LArw;
+
+  if (changedf) then begin
+    GetWindowRecord(wn,LAr);
+      matrowget(LAr,rownr,LArw);
+        LArw.Sum = round(LArw.Price * LArw.Quant/100*(100-LArw.vRebate),defaultcurroundoff);
+      matrowput(LAr,rownr,LArw);
+    //CredManUpdateAndSumup(CredManr,rownr,fieldname);
+    PutWindowRecord(wn,LAr);
+  end;
+  B2BLoanApplicationDClassDefaultEFAfter = true;
+  return;
+end;
+
+
 
 global
 function Boolean B2BLoanApplicationDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
@@ -661,7 +760,17 @@ begin
       case "InterestRate":
         res = B2BLoanApplicationDClassInterestRateEFAfter(wn,changed);    
       case "Sum":
-        res=B2BLoanApplicationDClassSumEFAfter(wn,changed);
+        if(rownr==-1)then begin
+          res=B2BLoanApplicationDClassSumEFAfter(wn,changed);
+        end else begin
+          res = B2BLoanApplicationDClassDefaultEFAfter(wn,rownr,changed!=0,fieldname);
+        end;
+      
+      case "ArtCode": res = B2BLoanApplicationDClassArtCodeEFAfter(wn,rownr,changed!=0);
+      case "Quant": res = B2BLoanApplicationDClassQuantEFAfter(wn,rownr,changed!=0);
+      case "vRebate": res = B2BLoanApplicationDClassvRebateEFAfter(wn,rownr,changed!=0);
+      case "Price": res = B2BLoanApplicationDClassDefaultEFAfter(wn,rownr,changed!=0,fieldname);
+      
       otherwise
         if (fieldname=="MonthlyRepayment") or (fieldname=="NetProfit") or (fieldname=="Turnover") or (fieldname=="MonthlyLoadPayment") or (fieldname=="AvgIncome") 
         or (fieldname=="CurrentAssets") or (fieldname=="CurrentLiabilities") or (fieldname=="OtherObligations") then begin
@@ -680,6 +789,12 @@ begin
         if (left(fieldname,11)=="BoardMember") then begin
           num = StringToInt(right(fieldname,1));
           res = B2BLoanApplicationDClassBoardMemberEFAfter(wn,changed,num);
+        end;
+        if(rownr==-1)then begin
+          if (left(fieldname,11)=="ShareHolder" and right(fieldname,4)=="Code") then begin
+            num = StringToInt(mid(fieldname,11,1));
+            res = B2BLoanApplicationDClassShareHolderEFAfter(wn,changed,num);
+          end;
         end;
         
         
@@ -1124,7 +1239,7 @@ begin
     if (B2BLoanAppCreateCredMan(LAr,CredManr,true)) then begin
       PutWindowRecord(wn,LAr);
       WindowDoOK(wn,0);
-      nwn = OpenWindow("CredManDClass",0,0,"","",CredManr);
+      nwn = OpenWindow("B2BLoanApplicationDClass",0,0,"","",CredManr);
     end;
   end;
 
