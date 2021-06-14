@@ -750,10 +750,10 @@ begin
   GetWindowRecord(wn,ORr);
   mwn = MotherWindow(wn);
   GetWindowRecord(mwn,CredManr);
-  CredManr.LetterOfDemand = ORr.SumIncCom;
-  CredManr.InsuranceCost = ORr.RvrsVAT;
-  PutWindowRecord(mwn,CredManr);
-  if (WindowDoOK(mwn,0)) then begin
+  //CredManr.LetterOfDemand = ORr.SumIncCom;
+  //CredManr.InsuranceCost = ORr.RvrsVAT;//Martins: it should not update agreement from check buy-out value
+  //PutWindowRecord(mwn,CredManr);
+  if (true) then begin //if (WindowDoOK(mwn,0)) then begin
     threadremote.CheckBuyOutAgreementOmega(CredManr,ORr,false);
     PutWindowRecord(wn,ORr);
   end;

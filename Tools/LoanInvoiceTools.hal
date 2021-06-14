@@ -2497,7 +2497,7 @@ begin
   integer i,rwcnt,lasti;
   date lastduedate;
   val res,calcbal;
-  boolean foundf;
+  boolean foundf,TrHs;
   Integer int_type;
 
   int_type = GetInterestPaymentType(CredManr);
@@ -2507,13 +2507,39 @@ begin
     calcbal = CredManr.InvSum4;
   end;
   foundf = false;
-  rwcnt = MatRowCnt(CredManPayPlanr);
-  //OpenExportFile("CredManPayPlan_" & CredManr.SerNr & ".txt",false);
-  //CreateFile("CredManPayPlan_" & CredManr.SerNr & ".txt");
-  //ExportRecord(CredManPayPlanr);
+  //Get last interest invoice
+  TrHs = true;
+  CredHistr.CredManNr = CredManr.SerNr;
+  CredHistr.RecordType = 0;
+  while (LoopBackKey("CredManTypeDate",CredHistr,2,TrHs)) begin
+    if ((CredHistr.CredManNr!=CredManr.SerNr) or (CredHistr.RecordType!=0)) then begin
+      TrHs = false;
+    end;
+    if (TrHs) then begin
+      if (CredHistr.ChargeType==kEventTypeIssueInterest) then begin
+         if ((CredHistr.CredFromDate>=untildate) /*and (CredHistr.CredToDate<=???) */ and (CredHistr.PaidFlag==0)) then begin
+           if (blankdate(lastduedate)) then begin
+            lastduedate = CredHistr.CredFromDate;
+           end else begin
+             if (lastduedate>CredHistr.CredFromDate) then begin
+               lastduedate = CredHistr.CredFromDate;
+               foundf = true;
+             end;
+           end;
+         end;
+      end;
+    end;
+  end;
   
-  ExportString("rwcnt");
-  ExportString(rwcnt);
+  
+  /*
+  rwcnt = MatRowCnt(CredManPayPlanr);
+  //OpenExportFile("GetLastDuePeriodInterest" & CredManr.SerNr & ".txt",false);
+  CreateFile("GetLastDuePeriodInterest_" & CredManr.SerNr & ".txt");
+  ExportRecord(CredManPayPlanr);
+  
+  //ExportString("rwcnt");
+  //ExportString(rwcnt);
   NewLine;
   
   for (i=0;i<rwcnt;i=i+1) begin
@@ -2521,14 +2547,6 @@ begin
     switch (CredManPayPlanrw.PlanType) begin
       case kEventTypeIssueInterest:
         if (CredManPayPlanrw.IssuedNr!=-1) then begin
-          ExportString(CredManPayPlanrw.Sum);
-          ExportString(CredManPayPlanrw.AcumulatedInt);
-          ExportString(CredManPayPlanrw.Bal);
-          ExportDate(CredManPayPlanrw.FromDate)
-          ExportDate(CredManPayPlanrw.ToDate);
-          ExportLongint(CredManPayPlanrw.IssuedNr);
-          ExportString(CredManPayPlanrw.Comment);
-          ExportString(CredManPayPlanrw.OpenAmount);
           CredHistr.SerNr = CredManPayPlanrw.IssuedNr;
           if (ReadFirstMain(CredHistr,1,true)) then begin
             switch (CredHistr.RecordType) begin//invoice
@@ -2536,7 +2554,6 @@ begin
                 if (CredHistr.PaidSum<CredHistr.Sum) then begin
                   IVr.SerNr = CredHistr.RecordNr;
                   if (ReadFirstMain(IVr,1,true)) then begin
-                    ExportString(IVr.PayDate);
                     if ((lastduedate<IVr.PayDate) and (IVr.PayDate<=untildate)) then begin
                       lastduedate = IVr.PayDate;
                       lasti = i;
@@ -2546,19 +2563,17 @@ begin
                 end;
             end;
           end;
-          NewLine;
         end;
     end;
   end;
-  NewLine;
-  
+  */
   if (foundf) then begin
     MatRowGet(CredManPayPlanr,lasti,CredManPayPlanrw);
     //calc interest rate from CredManPayPlanrw.FromDate to  untildate
-    res = GetRateAmount(CredManr,CredManr.IntRate,kMonthTypeLast,CredManPayPlanrw.FromDate,untildate,calcbal,false,false);//last param fixeddays false?
+    //res = GetRateAmount(CredManr,CredManr.IntRate,kMonthTypeLast,CredManPayPlanrw.FromDate,untildate,calcbal,false,false);//last param fixeddays false?
+    res = GetRateAmount(CredManr,CredManr.IntRate,kMonthTypeLast,CredHistr.CredFromDate,untildate,calcbal,false,false);//last param fixeddays false?
   end;
-  ExportString("LAsti=" & lasti & " lastduedate=" & lastduedate & "FromDate=" & CredManPayPlanrw.FromDate & " untildate=" & untildate & " calcbal=" & calcbal & " interest=" & res);
-  CloseFile;
+  LogText(0,"GetLastDuePeriodInterest: LAsti=" & lasti & " lastduedate=" & lastduedate & " FromDate=" & CredManPayPlanrw.FromDate & " untildate=" & untildate & " calcbal=" & calcbal & " interest=" & res);
   GetLastDuePeriodInterest = res;
   return;
 end;
@@ -2809,7 +2824,7 @@ begin
   val actualbalance;
   vector val vItemVals;
   array string 255 aitems;
-  integer i;
+  integer i,rwcnt;
   longint dummy_ivnr;
   
 logtext(0,"CheckBuyOutAgreementOmega start");
@@ -2818,7 +2833,7 @@ logtext(0,"CheckBuyOutAgreementOmega start");
   gSilenceIVOpenPrepExists = true;
   BlockLoad(CMb);
     BuildCredManPayPlanCust2(CredManr,CredManPayPlanr,CMb,true,false,false);
-  //  LogText(0,"2 RepSpec.d1=" & RepSpec.d1);
+    LogText(0,"2 ORr.OrdDate=" & ORr.OrdDate);
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,ORr.OrdDate,IVr,true,sd2,balancef);
 //  end;
   CheckUnpaidInvoices(CredManr,dueamount,openamount);
@@ -2870,14 +2885,16 @@ logtext(0,"CheckBuyOutAgreementOmega start");
   ORr.Sum3 = interestlateamount;
   //RepSpec.f15 = t + notlateprinciple; //GetActualBalance(CredManr,CredManPayPlanr,true);PLUS total of all OPEN, but NOT overdue principle
   ORr.BaseSum4 = t + notlateprinciple;
-  currperiodinterest = GetLastDuePeriodInterest(CredManr,CredManPayPlanr,ORr.OrdDate);//should display interest from the last DUE period till today.
-  ORr.TotGP = currperiodinterest;
-  /*
-  CreateFile("credmanpayplan_e.txt");
+  /*CreateFile("credmanpayplan_e.txt");
     CredManPayPlanr.SerNr = CredManr.SerNr;
     ExportRecord(CredManPayPlanr);
     CloseFile;
-  */
+    */
+  currperiodinterest = GetLastDuePeriodInterest(CredManr,CredManPayPlanr,ORr.OrdDate);//should display interest from the last DUE period till today.
+  ORr.TotGP = currperiodinterest;
+  
+  
+  
   futurefees = GetBuyOutFutureFees(CredManr.SerNr,CredManPayPlanr,ORr.OrdDate);
   ORr.DiscSum = futurefees;
   otheropenfees = GetOtherOpenFees(CredManr.SerNr,blankd,vItemVals);
@@ -2887,6 +2904,10 @@ logtext(0,"CheckBuyOutAgreementOmega start");
   ORr.FrBase = ORr.Sum2+ORr.BaseSum4+ORr.TotGP+ORr.DiscSum+otheropenfees+lateamount+t;//total debt
   t = GetOpenLetterOfDemandValue(CredManr.SerNr,blankd);
   ORr.FrBase = ORr.FrBase+t+ORr.RvrsVAT+ORr.TAX2Sum-prepayval;
+  rwcnt = MatRowCnt(ORr);
+  for (i=rwcnt-1;i>=0;i=i-1) begin
+    MatRowDelete(ORr,i);
+  end;
   GetVectorTags(vItemVals,aitems);
   for (i=0;i<aitems.length;i=i+1) begin
     INr.Code = aitems[i];
