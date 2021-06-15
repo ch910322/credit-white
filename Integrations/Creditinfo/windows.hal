@@ -89,7 +89,7 @@ end;
 window CreditinfoFieldAssignBlockTClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  WindowBegin("Company Workflow Overview",CreditinfoFieldAssignBlockTClass,CGHbl,0);
+  WindowBegin("Creditinfo import fields assign",CreditinfoFieldAssignBlockTClass,CGHbl,0);
   SetBlid(CreditinfoFieldAssignBlock);
   Sizeable(-1,-1,0,0);
   SetWRect(50,100,1000,100);
