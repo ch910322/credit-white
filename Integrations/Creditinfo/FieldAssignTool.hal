@@ -80,13 +80,18 @@ integer ckbox;
     if(nonblank(CABrw.FieldName))then begin
       if(CABrw.Register=="B2BLoanApplicationVc")then begin
         if(nonblank(CABrw.ImportNode))then begin
-          if(nonblank(XmlGet(axml,root & CABrw.ImportNode)))then begin
+          if(nonblank(XmlGet(axml,root & CABrw.ImportNode)) or nonblank(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute)))then begin
             switch(CABrw.DataType)begin
               case M4Str: SetFieldValueByName(LAr,CABrw.FieldName,XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute),-1);
               case M4Date: SetFieldValueByName(LAr,CABrw.FieldName,DateFromString(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute),"YYYY.MM.DD"),-1);
               case M4Chk: ckbox = 0;
                           if (XmlNodeExists(axml,root & CABrw.ImportNode)) then begin
                             ckbox = 1;
+                            if(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute)=="false")then begin ckbox = 0; end;
+                            if(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute)=="true")then begin ckbox = 1; end;
+                            if(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute)=="0")then begin ckbox = 0; end;
+                            if(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute)=="1")then begin ckbox = 1; end;
+                            
                           end;
                           if(CABrw.Invert==1)then begin
                             if(ckbox==0)then begin
@@ -97,8 +102,6 @@ integer ckbox;
                           end;
                           SetFieldValueByName(LAr,CABrw.FieldName,ckbox,-1);
                case M4Val:SetFieldValueByName(LAr,CABrw.FieldName,ValFromString(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute),","," "),-1);
-              
-              
             end;
           end;
         end;
@@ -115,15 +118,40 @@ record CreditinfoFieldAssignBlock CABb;
 row CreditinfoFieldAssignBlock CABrw;
 integer i,rwcnt;
 string 255 lang,params,url,path,root,tstr,fn,name,surname,datestr,datestr1,datestr2;
+integer ckbox;
 
-  root = "root/BasicInfo";
+  //root = "root/BasicInfo";
   
   blockload(CABb);
   rwcnt = matrowcnt(CABb);
   for(i=0;i<rwcnt;i=i+1)begin
     matrowget(CABb,i,CABrw);
     if(CABrw.Register=="CUVc")then begin
-      
+      if(nonblank(CABrw.ImportNode))then begin
+        if(nonblank(XmlGet(axml,root & CABrw.ImportNode)) or nonblank(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute)))then begin
+          switch(CABrw.DataType)begin
+            case M4Str: SetFieldValueByName(CUr,CABrw.FieldName,XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute),-1);
+            case M4Date: SetFieldValueByName(CUr,CABrw.FieldName,DateFromString(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute),"YYYY.MM.DD"),-1);
+            case M4Chk: ckbox = 0;
+                        if (XmlNodeExists(axml,root & CABrw.ImportNode)) then begin
+                          ckbox = 1;
+                          if(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute)=="false")then begin ckbox = 0; end;
+                          if(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute)=="true")then begin ckbox = 1; end;
+                          if(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute)=="0")then begin ckbox = 0; end;
+                          if(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute)=="1")then begin ckbox = 1; end;
+                        end;
+                        if(CABrw.Invert==1)then begin
+                          if(ckbox==0)then begin
+                            ckbox = 1;
+                          end else begin
+                            ckbox = 0;
+                          end;
+                        end;
+                        SetFieldValueByName(CUr,CABrw.FieldName,ckbox,-1);
+             case M4Val:SetFieldValueByName(CUr,CABrw.FieldName,ValFromString(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute),","," "),-1);
+          end;
+        end;
+      end;
     end;
   end;
 

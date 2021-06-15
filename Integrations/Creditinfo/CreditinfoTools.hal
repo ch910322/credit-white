@@ -6,6 +6,8 @@ external inner updating function LongInt CUVcRecordUpdate(var record CUVc,record
 external function Boolean CheckIfCompanyInfoAvailable(string,string,var array Date,var array val,var array Integer,var array Longint);
 external function Boolean GetExistingCompanyInfo(string,string,Longint,var area);
 external procedure SendCompanyInfo(string,string,Integer,var area);
+external procedure CreditInfoFileAsignB2BLoanApplicationVc(var record B2BLoanApplicationVc,xml);
+external procedure CreditInfoFileAsignCUVc(var record CUVc,xml);
 
 function Integer YearDiff(Date d1,Date d2)
 begin
@@ -120,6 +122,7 @@ begin
       LAr.LiquidationFlag = 1;
     end;
   end;
+    
   root = "root/Capital/tr";
   LAr.Equity = ValFromString(XmlGetAttribute(axml,root & "[0]","IstatKap"),","," ");
   LAr.CapitalCurncyCode = XmlGetAttribute(axml,root & "[0]","Valiuta");
@@ -280,6 +283,8 @@ begin
     LAr.PrevPayables = ValFromString(XmlGetAttribute(axml,root & "[0]","MsaNumber"),","," ");
     LAr.PrevTotal = LAr.PrevReceivables-LAr.PrevPayables;
   end;
+    CreditInfoFileAsignB2BLoanApplicationVc(LAr,axml);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 15 06 2021 y. at 11:55:04 AM
+    CreditInfoFileAsignCUVc(CUr,axml);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 15 06 2021 y. at 11:55:04 AM
   RecordUpdate(oldCUr,CUr,false);
   CUVcRecordUpdate(CUr,oldCUr,Rs_Update,1);
   fn = CUr.RegNr1  & "_creditinfo.txt";
@@ -362,6 +367,7 @@ begin
       lang = "1";
     end;
     params = "username=" & CIb.APIUser & "&password=" & CIb.APIPassword & "&idnum=" & CUr.RegNr1 & "&lang=" & lang & "&productNumber=6202";
+    logtext(0,params);
     if (CIb.Mode==0) then begin//test
       url = "ds.infobankas.lt";
       port = 80;
@@ -374,6 +380,7 @@ begin
     path = "/creditinfogroup_lt/SAIS/WebServices/getsais.asmx/GetSAIS";
 
     if (SendWebRequest(url,port,-1,sslf,"GET",path & "?" & params,"text/xml; charset=utf-8","",false,request,reply,10)) then begin
+      writeareatofile(reply,"creditinfo.xlm",0);
       axml = ParseXmlArea(reply);
       root = "root/BasicInfo";
       if (XmlNodeExists(axml,"KLAIDA")) then begin
