@@ -71,6 +71,7 @@ begin
 
 
   Maintenance("Create Agreement Invoices",GenLoanInvoicesVClass,GenLoanInvoicesMn,modCredMan);
+  Maintenance("Create Agreement Invoices Test",GenLoanInvoicesVClass,GenLoanInvoicesTestMn,modDBMain);
   Maintenance("Create Payment Guarantee Invoices",PmtGrntInvoiceVClass,PmtGrntInvoiceMn,modCredMan);
   Maintenance("Create Overdue Invoices",GenOverdueInvVClass,GenOverdueInvMn,modCredMan);
   Maintenance("Fix Credit History",CredManRedoCredHistVClass,CredManRedoCredHistMn,modCredMan);

@@ -1,5 +1,6 @@
 //<halrule>server-only</halrule>
 external updating procedure CreateSingleAgreementInvoice2(record CredManVc,Date,var record IVVc,string,Boolean,Boolean);
+forward updating procedure recursiveGenLoanInvoicesMn(var record RcVc,var record IVVc);
 
 global
 updating function Boolean LoopAndGenLoanAgreementInvoice(var record RcVc RepSpec,var record IVVc nIVr)
@@ -37,10 +38,30 @@ begin
     end;
   end;
   
-  millisleep(500);
   logtext(0,RepSpec.long1 & " LoopAndGenLoanAgreementInvoice RES " & res);
   LoopAndGenLoanAgreementInvoice = res;
   return;
+end;
+
+global updating procedure recursiveGenLoanInvoicesMn1(var record RcVc RepSpec,var record IVVc nIVr)
+begin
+  boolean res;
+  
+  recursiveGenLoanInvoicesMn(RepSpec,nIVr);
+  
+return;
+end;
+
+updating procedure recursiveGenLoanInvoicesMn(var record RcVc RepSpec,var record IVVc nIVr)
+begin
+  boolean res;
+  
+  res = LoopAndGenLoanAgreementInvoice(RepSpec,nIVr);
+  if(res)then begin
+    queued.recursiveGenLoanInvoicesMn1(RepSpec,nIVr);
+  end;
+  
+return;
 end;
 
 global
@@ -52,5 +73,15 @@ begin
     logtext(0,"GenLoanInvoicesMn " & RepSpec.long1);
   end;
 
+  return;
+end;
+
+global
+updating procedure GenLoanInvoicesTestMn(record RcVc RepSpec)
+begin
+  record IVVc nIVr;
+  
+  recursiveGenLoanInvoicesMn(RepSpec,nIVr);
+  
   return;
 end;
