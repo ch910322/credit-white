@@ -487,6 +487,8 @@ begin
   CUr.Code = LAr.Beneficiary;
   if (ReadFirstMain(CUr,1,true)) then begin
     LAr.BeneficiaryName = CUr.Name;
+    LAr.BMID6 = CUr.RegNr1;
+    LAr.BMDOB6 = CUr.BirthDate;
     PutWindowRecord(wn,LAr);    
   end;
   B2BLoanApplicationDClassBeneficiaryEFAfter = res;
