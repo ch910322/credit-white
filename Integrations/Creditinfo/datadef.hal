@@ -10,7 +10,17 @@ begin
   RecordField(CheckHistory,M4Int,0,0);
   EndBlock;
 
-  
+  BlockBegin(CreditinfoFieldAssignBlock,-,"");
+    RecordField(Matrix,M4Matrix,0,0);
+    ArrayBegin(Matrix,-,1);
+		ArrayField(Register,M4StrSet,-3,0);
+		ArrayField(FieldName,M4Str,60,0);
+		ArrayField(DataType,M4Set,334,0);
+		ArrayField(ImportNode,M4Str,250,0);
+		ArrayField(Invert,M4Set,432,0);
+		ArrayField(XMLAtribute,M4Str,250,0);
+		endarray;
+  EndBlock;
 
   return;
 end;

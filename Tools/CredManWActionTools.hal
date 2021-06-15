@@ -1,4 +1,4 @@
-external updating procedure DoBuyOutAgreement(record CredManVc,Date,var record IVVc);
+external updating procedure DoBuyOutAgreement(record CredManVc,Date,Boolean,var record IVVc);
 external inner procedure CredManUpdate(var record CredManVc,Integer,string);
 external inner procedure CredManSumup(var record CredManVc);
 external inner procedure CredManVc_PasteCurncyCode(var record CredManVc);
@@ -83,7 +83,9 @@ external function Boolean FindCredManAcc(record CredManVc,var record CredManAccV
 external procedure ExternalPrintCredManScheduleForm(record CredManVc,var vector string);
 external updating function Boolean StoreEmailRecord(record LTxtVc,var record MailVc,record RcVc);
 external inner function string 255 CredManCustEmail(record CUVc);
-
+external inner function string 255 StrReplace(string,string,string);
+external function boolean getAdditionalLangCode(record CredManVc,string,var string);
+external function string 20 getAdditionalCredManLangCode(record CredManVc);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -210,6 +212,7 @@ begin
   record CredManTypeVc CMTr;
   record CUVc CUr;
   vector string 255 vVals;
+  string 20 reslang;
   
   
   CMTr.Code = CredManr.Type;
@@ -259,7 +262,7 @@ begin
   end;
 
   if (blank(res)) then begin
-    res = CredManr.LangCode;
+    res = getAdditionalCredManLangCode(CredManr);
   end;
 
   GetDocumentLangCode = res;
@@ -648,7 +651,8 @@ begin
   return;
 end;
 
-updating procedure CreditAndOKInvoice(Longint ivnr,val prc,var val credval,var vector val vCredVal,val rval,Boolean sellf,Date td)
+global
+updating procedure CreditAndOKInvoice(Longint ivnr,val prc,var val credval,var vector val vCredVal,val rval,Boolean sellf,Date td,string artcode,string findstr,string overrideperiod)
 begin
   record IVVc IVr,IVCreditr,oldIVr,IV2r;
   string 255 warning;
@@ -677,11 +681,16 @@ begin
       rwcnt = MatRowCnt(IVCreditr);
       for (i=0;i<rwcnt;i=i+1) begin
         MatRowGet(IVCreditr,i,IVrw);
-        if (nonblank(IVrw.ArtCode)) then begin
+        if ((blank(artcode) or artcode==IVrw.ArtCode) and nonblank(IVrw.ArtCode)) then begin
           if (IVrw.Price>0) then begin
-            credval = credval + IVrw.Sum;
             if (ratio!=1) then begin
               IVrw.Price = IVrw.Price * ratio;
+              MatRowPut(IVCreditr,i,IVrw);
+              IVVc_PastePrice(IVCreditr,IV2r,i,warning);
+              MatRowGet(IVCreditr,i,IVrw);
+            end;
+            if (nonblank(artcode)) then begin
+              IVrw.Price = rval;
               MatRowPut(IVCreditr,i,IVrw);
               IVVc_PastePrice(IVCreditr,IV2r,i,warning);
               MatRowGet(IVCreditr,i,IVrw);
@@ -690,6 +699,7 @@ begin
               IVrw.PeriodCode = "";
             end;
             MatRowPut(IVCreditr,i,IVrw);
+            credval = credval + IVrw.Sum;
 
 /* not used, because we can't change items on credit note
             if (nonblank(replaceitem) and IVrw.ChargeType!=1) then begin
@@ -699,6 +709,18 @@ begin
             end;
 */
             vCredVal[IVrw.ArtCode] = vCredVal[IVrw.ArtCode] + IVrw.Sum;
+          end;
+        end else begin
+          if (blank(IVrw.ArtCode) and nonblank(findstr)) then begin
+            if (IVrw.Spec==findstr) then begin
+              IVrw.Spec = overrideperiod;
+              MatRowPut(IVCreditr,i,IVrw);
+            end;
+          end;
+          if (nonblank(IVrw.ArtCode) and nonblank(artcode)) then begin
+            MatRowDelete(IVCreditr,i);
+            i = i - 1;
+            rwcnt = MatRowCnt(IVCreditr);
           end;
         end;
       end;
@@ -752,7 +774,7 @@ begin
     ARr.InvoiceNr = StringToLongint(invarr[i]);
     if (ReadFirstMain(ARr,1,true)) then begin
       if (ARr.RVal>0) then begin
-        CreditAndOKInvoice(ARr.InvoiceNr,prc,credval,vCredVal,ARr.RVal,sellf,td);
+        CreditAndOKInvoice(ARr.InvoiceNr,prc,credval,vCredVal,ARr.RVal,sellf,td,"","","");
       end;
     end;
   end;
@@ -777,7 +799,7 @@ begin
     CredManr.OrderClass = OCb.RefinClass;
     if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
       CreateRefinCredMan(RepSpec,nCredManr,CredManr);
-      DoBuyOutAgreement(CredManr,CurrentDate,IVr);
+      DoBuyOutAgreement(CredManr,CurrentDate,false,IVr);
       CreditCredManInvoices(CredManr,100,credval,vCredVal,false,"");
       res = true;
     end;
@@ -1740,7 +1762,7 @@ begin
     RecordClear(IPr);
     ReturnInvoiceAndMakePrepaymentSeparate(IVr);
     UnlinkCredManInvoice(IVr);
-    CreditAndOKInvoice(IVr.SerNr,100,credval,vCredVal,IVr.Sum4,false,CurrentDate);
+    CreditAndOKInvoice(IVr.SerNr,100,credval,vCredVal,IVr.Sum4,false,CurrentDate,"","","");
     res = true;
   end;
 

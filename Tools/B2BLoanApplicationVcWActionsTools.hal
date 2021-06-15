@@ -109,8 +109,10 @@ begin
     SetFieldValueByName(LAr,"Surety" & num & "Position",CUr.JobDesc,-1);
     SetFieldValueByName(LAr,"Surety" & num & "Phone",CUr.Phone,-1);
     SetFieldValueByName(LAr,"Surety" & num & "eMail",CUr.eMail,-1);
-    if (num<4) then begin
+    if (num<7) then begin
       SetFieldValueByName(LAr,"Surety" & num & "ID",CUr.RegNr1,-1);
+    end;
+    if (num<4) then begin
       SetFieldValueByName(LAr,"Surety" & num & "AccessToDataUntil",CUr.AccessToDataUntil,-1);
       SetFieldValueByName(LAr,"Surety" & num & "Addr0",CUr.InvAddr0,-1);
       SetFieldValueByName(LAr,"Surety" & num & "Addr1",CUr.InvAddr1,-1);
@@ -938,6 +940,21 @@ begin
   CUr.Code = GetFieldValueByName(LAr,"BoardMember" & num,-1);
   if (ReadFirstMain(CUr,1,true)) then begin
     SetFieldValueByName(LAr,"BoardMember" & num & "Name",CUr.Name,-1);
+    SetFieldValueByName(LAr,"BMID" & num,CUr.RegNr1,-1);
+    SetFieldValueByName(LAr,"BMDOB" & num,CUr.BirthDate,-1);
+  end;
+  return;
+end;
+
+global
+procedure InsertB2BLoanApplicationShareHolderName(var record B2BLoanApplicationVc LAr,Integer num)
+begin
+  Boolean res;
+  record CUVc CUr;
+  
+  CUr.Code = GetFieldValueByName(LAr,"ShareHolder" & num & "Code",-1);
+  if (ReadFirstMain(CUr,1,true)) then begin
+    SetFieldValueByName(LAr,"ShareHolder" & num & "Name",CUr.Name,-1);
   end;
   return;
 end;

@@ -4,11 +4,18 @@ begin
   SetLangMode(LangEnglish,"ENG",0);
 
   Setting("Creditinfo.lt",CreditinfoTClass,modInteg);
+  Setting("Creditinfo import fields assign",CreditinfoFieldAssignBlockTClass,modInteg);
   Setting("Company Info Settings",CompanyInfoTClass,modSY);
-
+    
+  
   SetBegin(30900);
   SetText(0,"-");
   SetText(1,"Creditinfo.lt");
+  EndSet;
+  
+  SetBegin(30901);
+  SetText(0,"XML Value");
+  SetText(1,"XML Attribute");
   EndSet;
 
 end;
@@ -75,5 +82,25 @@ begin
   HalPushButton(h,v+=vs,h+150,v+20,"CompanyInfoChooseWClassCancel","Cancel");
   EndWindow;
 
+  return;
+end;
+
+
+window CreditinfoFieldAssignBlockTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Creditinfo import fields assign",CreditinfoFieldAssignBlockTClass,CGHbl,0);
+  SetBlid(CreditinfoFieldAssignBlock);
+  Sizeable(-1,-1,0,0);
+  SetWRect(50,100,1000,100);
+  MatrixBegin(4,40,-32,-20,-,200);
+  MatCol(1,24,"Register",0,Register,false,StrSetSClass);
+  MatCol(1,124,"Field",0,FieldName,false,FieldSClass);
+  MatCol(1,210,"Type",0,DataType,false,SetSClass); 
+  MatCol(1,350,"Import Data",0,ImportNode,false,0); 
+  MatCol(1,-250,"XML Attribute",0,XMLAtribute,false,0); 
+  MatCol(1,-70,"Invert Yes/No",0,Invert,false,SetSClass); 
+  EndMatrix;
+  EndWindow;
   return;
 end;

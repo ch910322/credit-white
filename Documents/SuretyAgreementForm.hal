@@ -188,7 +188,31 @@ LBREAK:;
         OUTFORMFIELD("F_CONTACT3MAIL",email)
         OUTFORMFIELD("F_CONTACT3ID",id)
         OutAddress("F_CONTACT3ADRESS",name,addr0,addr1,addr2,addr3,addr4);
-
+        
+        GetSuretyValues(CredManr,4,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
+        OUTFORMFIELD("F_CONTACT4NAME",name)
+        OUTFORMFIELD("F_CONTACT4PHONE",phone)
+        OUTFORMFIELD("F_CONTACT4MOBILE",mobile)
+        OUTFORMFIELD("F_CONTACT4MAIL",email)
+        OUTFORMFIELD("F_CONTACT4ID",id)
+        OutAddress("F_CONTACT4ADRESS",name,addr0,addr1,addr2,addr3,addr4);
+        
+        GetSuretyValues(CredManr,5,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
+        OUTFORMFIELD("F_CONTACT5NAME",name)
+        OUTFORMFIELD("F_CONTACT5PHONE",phone)
+        OUTFORMFIELD("F_CONTACT5MOBILE",mobile)
+        OUTFORMFIELD("F_CONTACT5MAIL",email)
+        OUTFORMFIELD("F_CONTACT5ID",id)
+        OutAddress("F_CONTACT5ADRESS",name,addr0,addr1,addr2,addr3,addr4);
+        
+        GetSuretyValues(CredManr,6,name,phone,mobile,email,id,addr0,addr1,addr2,addr3,addr4);
+        OUTFORMFIELD("F_CONTACT6NAME",name)
+        OUTFORMFIELD("F_CONTACT6PHONE",phone)
+        OUTFORMFIELD("F_CONTACT6MOBILE",mobile)
+        OUTFORMFIELD("F_CONTACT6MAIL",email)
+        OUTFORMFIELD("F_CONTACT6ID",id)
+        OutAddress("F_CONTACT6ADRESS",name,addr0,addr1,addr2,addr3,addr4);
+        
         CUr.Code = CredManr.CustCode;
         ReadFirstMain(CUr,1,true);
         OUTFORMFIELD("F_NUMMER",CredManr.SerNr);

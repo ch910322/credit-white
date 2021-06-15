@@ -26,6 +26,8 @@ external function Boolean InvoiceHasHiddenLine(record IVVc);
 external inner procedure OneARSFormOpenOnDate(record RcVc,record CUVc,Integer,var val,var Integer,var Integer);
 external procedure GetCredManChangePurpose(record CredManVc,var vector string);
 external function val GetCredHistOpenValueOnDate(Longint,Date);
+external function boolean getAdditionalLangCode(record CredManVc,string,var string);
+external function string 20 getAdditionalCredManLangCode(record CredManVc);
 
 global
 procedure OuterPrintEBSDocument(string docname,string id,var Boolean printf,record RcVc RepSpec,var vector string vVals)
@@ -392,7 +394,7 @@ begin
   //CustAged(CUr,td,bd,td,ARSSumod,ARSsactod,ARSs0od,ARSs1od,ARSs16od,ARSs31od,ARSs61od,ARSs91od,ARSs121od,ARSs151od,0);
   //GetOnAccBalance(RepSpec,CUr.Code,CUr.CurncyCode,false,0,ARSOnAccBalB1,rval2,ARSOnAccBal,sumbooked,sumnow,sumcurncy,sumdiff,CurTotalsr,debaccs,debbal,debcnt);//ObjStr
   RepSpec.d1 = td;
-  OneARSFormOpenOnDate(RepSpec,CUr,1,ARSSumod,custcnt,invcnt);//Used this function to calc user balance
+  OneARSFormOpenOnDate(RepSpec,CUr,2,ARSSumod,custcnt,invcnt);//Used this function to calc user balance
 
   //openamount2 = ARSSumod + ARSOnAccBal; //ARSSumod already included ARSOnAccBal
   openamount2 = ARSSumod;
@@ -548,7 +550,7 @@ begin
   if (CredManr.SerNr>0) then begin
     tval = GetContactTotalPaidAmount(CredManr);
     vVals["F_TOTALBRUTO"] = tval;
-    ValToText(tval,M4Val,CredManr.CurncyCode,CredManr.LangCode,tstr);
+    ValToText(tval,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
     vVals["F_TOTALBRUTOINTEXT"] = tstr;
   end;
   vVals["F_KUNDMOMSNR2"] = vatnr;

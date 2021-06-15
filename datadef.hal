@@ -249,6 +249,186 @@ begin
   RecordField(BeneficiaryName,M4Str,200,0);
   RecordField(MonthlyRepayment,M4Val,0,0);
   RecordField(CustRegNr1,M4Str,20,0);
+  //CM>Registers>Loan Applications>Loan App. Record>Application window redesign Asana
+  RecordField(RegDate,M4Date,0,0);
+  RecordField(CompStatus,M4Code,20,0);
+  RecordField(CompStatusEval,M4Str,250,0);
+  RecordField(Industry,M4Code,20,0);
+  RecordField(AdminFee,M4Str,255,0);
+  RecordField(RejReason,M4Str,255,0);
+  RecordField(PaymGuarant,M4Str,255,0);
+  RecordField(Promisory,M4Str,255,0);
+  RecordField(Evaluation,M4Int,0,0);
+  RecordField(EDSGuarant,M4Int,0,0);
+  RecordField(NetProfitPrc,M4Val,0,0);
+  
+  RecordField(TotalAssets,M4Val,0,0);
+  RecordField(EquityPrc,M4Val,0,0);
+  RecordField(CurRatioPrc,M4Val,0,0);
+  
+  RecordField(OngoingDebts,M4Int,0,0);
+  RecordField(ActDefSodra,M4Int,0,0);
+  RecordField(ShCredHist,M4Int,0,0);
+  RecordField(SpiderwebNeg,M4Int,0,0);
+  RecordField(CESanctions,M4Int,0,0);
+  RecordField(AvailableFinStatementsText,M4Str,255,0);
+  
+  RecordField(BMID1,M4Str,100,0);  
+  RecordField(BMID2,M4Str,100,0);  
+  RecordField(BMID3,M4Str,100,0);  
+  RecordField(BMID4,M4Str,100,0);  
+  RecordField(BMID5,M4Str,100,0);  
+  RecordField(BMID6,M4Str,100,0);  
+  
+  RecordField(BMDOB1,M4Date,0,0);  
+  RecordField(BMDOB2,M4Date,0,0);  
+  RecordField(BMDOB3,M4Date,0,0);  
+  RecordField(BMDOB4,M4Date,0,0);  
+  RecordField(BMDOB5,M4Date,0,0);  
+  RecordField(BMDOB6,M4Date,0,0); 
+  
+  RecordField(BMSince1,M4Date,0,0);  
+  RecordField(BMSince2,M4Date,0,0);  
+  RecordField(BMSince3,M4Date,0,0);  
+  RecordField(BMSince4,M4Date,0,0);  
+  RecordField(BMSince5,M4Date,0,0);  
+  RecordField(BMSince6,M4Date,0,0);
+  
+  RecordField(BMBankr1,M4Int,0,0); 
+  RecordField(BMBankr2,M4Int,0,0); 
+  RecordField(BMBankr3,M4Int,0,0); 
+  RecordField(BMBankr4,M4Int,0,0); 
+  RecordField(BMBankr5,M4Int,0,0); 
+  RecordField(BMBankr6,M4Int,0,0);   
+  
+  RecordField(BMPEP1,M4Int,0,0);  
+  RecordField(BMPEP2,M4Int,0,0);  
+  RecordField(BMPEP3,M4Int,0,0);  
+  RecordField(BMPEP4,M4Int,0,0);  
+  RecordField(BMPEP5,M4Int,0,0);  
+  RecordField(BMPEP6,M4Int,0,0);
+  
+  RecordField(BMSanctions1,M4Int,0,0);   
+  RecordField(BMSanctions2,M4Int,0,0);   
+  RecordField(BMSanctions3,M4Int,0,0);   
+  RecordField(BMSanctions4,M4Int,0,0);   
+  RecordField(BMSanctions5,M4Int,0,0);   
+  RecordField(BMSanctions6,M4Int,0,0);  
+  
+  RecordField(Surety4ID,M4Str,200,0); 
+  RecordField(Surety5ID,M4Str,200,0); 
+  RecordField(Surety6ID,M4Str,200,0); 
+  
+  RecordField(Surety1TEUR,M4Str,200,0); 
+  RecordField(Surety2TEUR,M4Str,200,0); 
+  RecordField(Surety3TEUR,M4Str,200,0); 
+  RecordField(Surety4TEUR,M4Str,200,0); 
+  RecordField(Surety5TEUR,M4Str,200,0); 
+  RecordField(Surety6TEUR,M4Str,200,0); 
+  
+  RecordField(ShareHolder1Code,M4Code,20,CUVc);
+  RecordField(ShareHolder1Name,M4Str,200,0);
+  RecordField(ShareHolder1ID,M4Str,100,0);
+  RecordField(ShareHolder1Shares,M4Val,0,0);
+  RecordField(ShareHolder1Since,M4Date,0,0);
+  RecordField(ShareHolder1Bankr,M4Int,0,0); 
+  RecordField(ShareHolder1ActDeb,M4Int,0,0); 
+  RecordField(ShareHolder1PEP,M4Int,0,0); 
+  RecordField(ShareHolder1Sanctions,M4Int,0,0); 
+  
+  RecordField(ShareHolder2Code,M4Code,20,CUVc);
+  RecordField(ShareHolder2Name,M4Str,200,0);
+  RecordField(ShareHolder2ID,M4Str,100,0);
+  RecordField(ShareHolder2Shares,M4Val,0,0);
+  RecordField(ShareHolder2Since,M4Date,0,0);
+  RecordField(ShareHolder2Bankr,M4Int,0,0); 
+  RecordField(ShareHolder2ActDeb,M4Int,0,0); 
+  RecordField(ShareHolder2PEP,M4Int,0,0); 
+  RecordField(ShareHolder2Sanctions,M4Int,0,0);
+
+  RecordField(ShareHolder3Code,M4Code,20,CUVc);
+  RecordField(ShareHolder3Name,M4Str,200,0);
+  RecordField(ShareHolder3ID,M4Str,100,0);
+  RecordField(ShareHolder3Shares,M4Val,0,0);
+  RecordField(ShareHolder3Since,M4Date,0,0);
+  RecordField(ShareHolder3Bankr,M4Int,0,0); 
+  RecordField(ShareHolder3ActDeb,M4Int,0,0); 
+  RecordField(ShareHolder3PEP,M4Int,0,0); 
+  RecordField(ShareHolder3Sanctions,M4Int,0,0);
+  
+  RecordField(ShareHolder4Code,M4Code,20,CUVc);
+  RecordField(ShareHolder4Name,M4Str,200,0);
+  RecordField(ShareHolder4ID,M4Str,100,0);
+  RecordField(ShareHolder4Shares,M4Val,0,0);
+  RecordField(ShareHolder4Since,M4Date,0,0);
+  RecordField(ShareHolder4Bankr,M4Int,0,0); 
+  RecordField(ShareHolder4ActDeb,M4Int,0,0); 
+  RecordField(ShareHolder4PEP,M4Int,0,0); 
+  RecordField(ShareHolder4Sanctions,M4Int,0,0);
+  
+  RecordField(ShareHolder5Code,M4Code,20,CUVc);
+  RecordField(ShareHolder5Name,M4Str,200,0);
+  RecordField(ShareHolder5ID,M4Str,100,0);
+  RecordField(ShareHolder5Shares,M4Val,0,0);
+  RecordField(ShareHolder5Since,M4Date,0,0);
+  RecordField(ShareHolder5Bankr,M4Int,0,0); 
+  RecordField(ShareHolder5ActDeb,M4Int,0,0); 
+  RecordField(ShareHolder5PEP,M4Int,0,0); 
+  RecordField(ShareHolder5Sanctions,M4Int,0,0);
+  
+  RecordField(ShareHolder6Code,M4Code,20,CUVc);
+  RecordField(ShareHolder6Name,M4Str,200,0);
+  RecordField(ShareHolder6ID,M4Str,100,0);
+  RecordField(ShareHolder6Shares,M4Val,0,0);
+  RecordField(ShareHolder6Since,M4Date,0,0);
+  RecordField(ShareHolder6Bankr,M4Int,0,0); 
+  RecordField(ShareHolder6ActDeb,M4Int,0,0); 
+  RecordField(ShareHolder6PEP,M4Int,0,0); 
+  RecordField(ShareHolder61Sanctions,M4Int,0,0);
+  
+  RecordField(Beneficial1Name,M4Str,200,0);
+  RecordField(Beneficial1Shares,M4Val,0,0);
+  RecordField(Beneficial1Since,M4Date,0,0);
+  RecordField(Beneficial1Bankr,M4Int,0,0); 
+  RecordField(Beneficial1PEP,M4Int,0,0); 
+  RecordField(Beneficial1Sanctions,M4Int,0,0); 
+  
+  RecordField(Beneficial2Name,M4Str,200,0);
+  RecordField(Beneficial2Shares,M4Val,0,0);
+  RecordField(Beneficial2Since,M4Date,0,0);
+  RecordField(Beneficial2Bankr,M4Int,0,0); 
+  RecordField(Beneficial2PEP,M4Int,0,0); 
+  RecordField(Beneficial2Sanctions,M4Int,0,0);
+
+  RecordField(Beneficial3Name,M4Str,200,0);
+  RecordField(Beneficial3Shares,M4Val,0,0);
+  RecordField(Beneficial3Since,M4Date,0,0);
+  RecordField(Beneficial3Bankr,M4Int,0,0); 
+  RecordField(Beneficial3PEP,M4Int,0,0); 
+  RecordField(Beneficial3Sanctions,M4Int,0,0);
+  
+  RecordField(Beneficial4Name,M4Str,200,0);
+  RecordField(Beneficial4Shares,M4Val,0,0);
+  RecordField(Beneficial4Since,M4Date,0,0);
+  RecordField(Beneficial4Bankr,M4Int,0,0); 
+  RecordField(Beneficial4PEP,M4Int,0,0); 
+  RecordField(Beneficial4Sanctions,M4Int,0,0);
+  
+  RecordField(Beneficial5Name,M4Str,200,0);
+  RecordField(Beneficial5Shares,M4Val,0,0);
+  RecordField(Beneficial5Since,M4Date,0,0);
+  RecordField(Beneficial5Bankr,M4Int,0,0); 
+  RecordField(Beneficial5PEP,M4Int,0,0); 
+  RecordField(Beneficial5Sanctions,M4Int,0,0);
+  
+  RecordField(Beneficial6Code,M4Code,20,CUVc);
+  RecordField(Beneficial6Name,M4Str,200,0);
+  RecordField(Beneficial6Shares,M4Val,0,0);
+  RecordField(Beneficial6Since,M4Date,0,0);
+  RecordField(Beneficial6Bankr,M4Int,0,0); 
+  RecordField(Beneficial6PEP,M4Int,0,0); 
+  RecordField(Beneficial61Sanctions,M4Int,0,0);
+  
  //ak_end  
   ArrayBegin(Math,-,1);
   ArrayField(Period,M4Str,10,0);
@@ -290,6 +470,21 @@ begin
   ArrayField(ShareHolderMobile,M4Str,255,0);
   ArrayField(ShareHoldereMail,M4Str,255,0);
   ArrayField(ShareHoldereVal,M4Qty,0,0);
+  
+  ArrayField(ArtCode,M4Code,20,INVc);
+  ArrayField(Comment,M4Str,60,0);
+  ArrayField(ChargeType,M4Set,2002,0);
+  ArrayField(Quant,M4UVal,0,0);
+  ArrayField(Price,M423Val,0,0);
+  ArrayField(Sum,M4Val,0,0);
+  ArrayField(vRebate,M41Val,0,0);
+  ArrayField(PriceFactor,M45Val,0,0);
+  ArrayField(InvoicedOn,M4Long,0,0);
+  ArrayField(InvoicedSum,M4Val,0,0);
+  ArrayField(MinSum,M4Val,0,0);
+  ArrayField(MaxSum,M4Val,0,0);
+  ArrayField(InvDate,M4Date,0,0);
+  
   EndArray;
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
@@ -376,6 +571,8 @@ begin
   RecordField(BuyoutLangCode,M4Code,20,0);
   RecordField(AutoCreateObject,M4Int,0,0);
   RecordField(AutoOTCode,M4Code,5,OTVc);
+  RecordField(MarkMailClass,M4Code,20,0);
+  RecordField(MarkSMSClass,M4Code,20,0);
   EndBlock;
   
   RecordAddBegin(CUVc,"CredCUVc");
@@ -1617,6 +1814,7 @@ begin
   RecordField(emailSenderCurrent,M4Int,0,0);
   RecordField(AutoSendOverdueInvoice,M4Int,0,0);
   RecordField(PDFAfterReceipt,M4Int,0,0);
+  RecordField(eMailBasedOnCMSettings,M4Int,0,0);  
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
@@ -2235,6 +2433,33 @@ begin
   RecordField(Addr3,M4Str,60,0);
   RecordField(Addr4,M4Str,60,0);  
   EndBlock;
+  
+  RecordBegin(CredManAddLangVc,-,"");
+  RecordField(CredManTypeCode,M4Code,20,0);
+  RecordField(Math,M4Matrix,0,0);
+  ArrayBegin(Math,-,1);
+  ArrayField(LangCode,M4Code,20,0);
+  ArrayField(IntLang,M4Code,20,0);
+  ArrayField(LangCode2,M4Code,20,0);
+  ArrayField(OverdueLangCode,M4Code,20,0);
+  ArrayField(BuyOutLangCode,M4Code,20,0);
+  ArrayField(InvOverdLangCode,M4Code,20,0);
+  ArrayField(CompensLangCode,M4Code,20,0);
+  EndArray;
+  MainKeyBegin(CredManTypeCode,0);
+  KeySegment(CredManTypeCode);
+  EndRecord;
+  
+  RecordBegin(LACompStatusVc,-,"");
+  RecordField(Code,M4Code,20,0);
+  RecordField(Comment,M4Str,255,0);
+  MainKeyBegin(Code,0);
+  KeySegment(Code);
+  KeyBegin(Comment);
+  KeySegment(Comment);
+  KeySegment(Code);
+  EndRecord;
+  
   
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
