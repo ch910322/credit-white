@@ -92,199 +92,209 @@ begin
   record CMApplicationSetBlock ASb;
   string 255 lastcode,lastname;
   xml axml;
+  record CreditinfoFieldAssignBlock CIAb;
+  boolean newCIsettig;
 
 
   BlockLoad(ASb);
+  blockload(CIAb);
+  if(matrowcnt(CIAb)>0)then begin
+    newCIsettig = true;
+  end;
   RecordCopy(oldCUr,CUr);
+    
   res = 1;
   axml = ParseXmlArea(reply);
-  root = "root/BasicInfo";
-  if (nonblank(XmlGet(axml,root & "/Registered"))) then begin
-    LAr.Established = DateFromString(XmlGet(axml,root & "/Registered"),"YYYY.MM.DD");
-    CUr.BirthDate = LAr.Established;
-  end;
-  LAr.CEORep = XmlGet(axml,root & "/Atstovavimas");
-  CUr.Region = XmlGet(axml,root & "/Region");
-  root = "root/BankruptcyInfo/tr";
-  if (XmlCountChildren(axml,root)>0) then begin
-    LAr.BankruptcyFlag = 1;
-    //lets take the first row now.
-    tstr = XmlGetAttribute(axml,root & "[0]","CourtDate");
-    if (nonblank(tstr)) then begin
-      courtdate = DateFromString(tstr,"YYYY.MM.DD");
-      if (courtdate>CurrentDate) then begin
-        LAr.OngoingCourtCases = 1;
-      end else begin
-        LAr.HistoricalCourtCases = 1;
+  if(newCIsettig==false)then begin 
+    root = "root/BasicInfo";
+    if (nonblank(XmlGet(axml,root & "/Registered"))) then begin
+      LAr.Established = DateFromString(XmlGet(axml,root & "/Registered"),"YYYY.MM.DD");
+      CUr.BirthDate = LAr.Established;
+    end;
+    LAr.CEORep = XmlGet(axml,root & "/Atstovavimas");
+    CUr.Region = XmlGet(axml,root & "/Region");
+    root = "root/BankruptcyInfo/tr";
+    if (XmlCountChildren(axml,root)>0) then begin
+      LAr.BankruptcyFlag = 1;
+      //lets take the first row now.
+      tstr = XmlGetAttribute(axml,root & "[0]","CourtDate");
+      if (nonblank(tstr)) then begin
+        courtdate = DateFromString(tstr,"YYYY.MM.DD");
+        if (courtdate>CurrentDate) then begin
+          LAr.OngoingCourtCases = 1;
+        end else begin
+          LAr.HistoricalCourtCases = 1;
+        end;
+      end;
+      if (nonblank(XmlGetAttribute(axml,root & "[0]","NutarimasLikviduoti"))) then begin
+        LAr.LiquidationFlag = 1;
       end;
     end;
-    if (nonblank(XmlGetAttribute(axml,root & "[0]","NutarimasLikviduoti"))) then begin
-      LAr.LiquidationFlag = 1;
-    end;
-  end;
     
-  root = "root/Capital/tr";
-  LAr.Equity = ValFromString(XmlGetAttribute(axml,root & "[0]","IstatKap"),","," ");
-  LAr.CapitalCurncyCode = XmlGetAttribute(axml,root & "[0]","Valiuta");
-  root = "root/SpaudosPranesimai/SpaudosInformacijaNera";
-  if (XmlNodeExists(axml,root)) then begin
-    LAr.Publicity = 0;
-  end else begin
-    LAr.Publicity = 1;
-  end;
-  root = "root/Teismai/TeismaiNera";
-  if (XmlNodeExists(axml,root)) then begin
-    LAr.BeingSued = 0;
-  end else begin
-    LAr.BeingSued = 1;
-  end;
-  LAr.DebtCollections = 0;
-  root = "root/PretenzijosBendraInfo/PretenzijosBendraInfoPretenzijuNeraText";
-  if (XmlNodeExists(axml,root)==false) then begin
-    LAr.DebtCollections = 1;
-  end;
-  root = "root/Vekseliai/VekseliaiNeraInfo";
-  if (XmlNodeExists(axml,root)==false) then begin
-    LAr.DebtCollections = 1;
-  end;
-  root = "root/NepatikimiBendraInfo/NepatikimiBendraInfoDuomenuNeraText";
-  if (XmlNodeExists(axml,root)) then begin
-    LAr.UnreliableComp = 0;
-  end else begin
-    LAr.UnreliableComp = 1;
-  end;
-  root = "root/TurtoArestaiIreg/TurtoArestaiInfoNera";
-  if (XmlNodeExists(axml,root)) then begin
-    LAr.OngoingAssetArrests = 0;
-  end else begin
-    LAr.OngoingAssetArrests = 1;
-  end;
-  root = "root/TurtoArestaiIsreg/TurtoArestaiInfoNera";
-  if (XmlNodeExists(axml,root)) then begin
-    LAr.HistoricalAssetArrests = 0;
-  end else begin
-    LAr.HistoricalAssetArrests = 1;
-  end;
-  root = "root/IkeitimasAndTARInfo/IkeitimasAndTARInfoNera";
-  if (XmlNodeExists(axml,root)) then begin
-    LAr.HistoricalAssetArrests = 0;
-  end else begin
-    LAr.HistoricalAssetArrests = 1;
-  end;
-
-  //3.26
-  root = "root/SkolosBendraInfoLastDate/tr";
-  if (XmlNodeExists(axml,root)) then begin
-    LAr.LastRepaymentDate = DateFromString(XmlGetAttribute(axml,root,"SkolosBendraInfoLastDate"),"YYYY.MM.DD");
-  end;
-
-  //3.27
-  i = 0;
-  root = "root/Debts2/tr";
-  while (XmlNodeExists(axml,root & "[" & i & "]")) begin
-    i = i + 1;
-    ClearRow(LAr,LArw,1);
-    LArw.ClaimDate = DateFromString(XmlGetAttribute(axml,root & "[" & i & "]","Date"),"YYYY.MM.DD");
-    LArw.CreditorName = XmlGetAttribute(axml,root & "[" & i & "]","CreditorName");
-    LArw.CreditAmount = ValFromString(XmlGetAttribute(axml,root & "[" & i & "]","Amount"),","," ");
-    if (nonblank(LArw.CreditAmount)) then begin
-      MatRowPut(LAr,MatRowCnt(LAr),LArw);
-      LAr.CurrentDebts = LAr.CurrentDebts + LArw.CreditAmount;
+    root = "root/Capital/tr";
+    LAr.Equity = ValFromString(XmlGetAttribute(axml,root & "[0]","IstatKap"),","," ");
+    LAr.CapitalCurncyCode = XmlGetAttribute(axml,root & "[0]","Valiuta");
+    root = "root/SpaudosPranesimai/SpaudosInformacijaNera";
+    if (XmlNodeExists(axml,root)) then begin
+      LAr.Publicity = 0;
+    end else begin
+      LAr.Publicity = 1;
     end;
-  end;
-
-  //3.29
-  i = 0;
-  root = "root/Debts2History/tr";
-  while (XmlNodeExists(axml,root & "[" & i & "]")) begin
-    i = i + 1;
-    ClearRow(LAr,LArw,1);
-    pos = -1;
-    datestr = XmlGetAttribute(axml,root & "[" & i & "]","Date");
-    GetNextSubstring(datestr,pos,"/",datestr1);
-    GetNextSubstring(datestr,pos,"/",datestr2);
-    LArw.ClaimDate = DateFromString(datestr1,"YYYY.MM.DD");
-    LArw.PaymentDate = DateFromString(datestr2,"YYYY.MM.DD");
-    LArw.CreditorName = ReplaceWebStrings(XmlGetAttribute(axml,root & "[" & i & "]","CreditorName"));
-    LArw.CreditAmount = ValFromString(XmlGetAttribute(axml,root & "[" & i & "]","Amount"),","," ");
-    if (nonblank(LArw.CreditAmount)) then begin
-      MatRowPut(LAr,MatRowCnt(LAr),LArw);
+    root = "root/Teismai/TeismaiNera";
+    if (XmlNodeExists(axml,root)) then begin
+      LAr.BeingSued = 0;
+    end else begin
+      LAr.BeingSued = 1;
     end;
-  end;
-
-  //3.31
-  root = "root/SodraSkolos/SodraSkolosInfo";
-  if (XmlNodeExists(axml,root)) then begin
-    LAr.CurrentDebts = ValFromString(XmlGetAttribute(axml,root,"suma"),","," ");
-  end;
-
-  //3.32
-  root = "root/JARAtaskaitos/JARAtaskaitosInfoSvarbuText";
-  if (XmlNodeExists(axml,root)) then begin
-    LAr.AvailableFinStatements = 0;
-  end else begin
-    LAr.AvailableFinStatements = 1;
-  end;
-
-  i = 0;
-  root = "root/SHAREHOLDERS/Table";
-  while (XmlNodeExists(axml,root & "[" & i & "]")) begin
-    i = i + 1;
-    name = XmlGet(axml,root & "[" & i & "]/FirstNameLT");
-    surname = XmlGet(axml,root & "[" & i & "]/SurNameLT");
-    td = DateFromString(XmlGet(axml,root & "[" & i & "]/date"),"YYYY.MM.DD");
-    enddate = DateFromString(XmlGet(axml,root & "[" & i & "]/date_to"),"YYYY.MM.DD");
-    if (td>maxdate) then begin
-      maxdate = td;
+    LAr.DebtCollections = 0;
+    root = "root/PretenzijosBendraInfo/PretenzijosBendraInfoPretenzijuNeraText";
+    if (XmlNodeExists(axml,root)==false) then begin
+      LAr.DebtCollections = 1;
     end;
-    if (blank(enddate)) then begin
-      tCUr.Name = name & " " & surname;
-      if (ReadFirstKey("Name",tCUr,1,true)) then begin
-        CRr.CustCode = CUr.Code;
-        CRr.ContactCode = tCUr.Code;
-        if (ReadFirstMain(CRr,2,true)==false) then begin
-          AddContactCUDsmRemote(CUr,tCur.Code);
-        end;
-      end else begin
-        RecordNew(tCUr);
-        GetNextCustNr(tstr);
-        tCUr.Code = tstr;
-        tCUr.Name = name & " " & surname;
-        tCUr.JobDesc = ASb.OwnerTitle;
-        if (RecordInsert(tCUr,true)) then begin
-          AddContactCUDsmRemote(CUr,tCur.Code);
-        end;
+    root = "root/Vekseliai/VekseliaiNeraInfo";
+    if (XmlNodeExists(axml,root)==false) then begin
+      LAr.DebtCollections = 1;
+    end;
+    root = "root/NepatikimiBendraInfo/NepatikimiBendraInfoDuomenuNeraText";
+    if (XmlNodeExists(axml,root)) then begin
+      LAr.UnreliableComp = 0;
+    end else begin
+      LAr.UnreliableComp = 1;
+    end;
+    root = "root/TurtoArestaiIreg/TurtoArestaiInfoNera";
+    if (XmlNodeExists(axml,root)) then begin
+      LAr.OngoingAssetArrests = 0;
+    end else begin
+      LAr.OngoingAssetArrests = 1;
+    end;
+    root = "root/TurtoArestaiIsreg/TurtoArestaiInfoNera";
+    if (XmlNodeExists(axml,root)) then begin
+      LAr.HistoricalAssetArrests = 0;
+    end else begin
+      LAr.HistoricalAssetArrests = 1;
+    end;
+    root = "root/IkeitimasAndTARInfo/IkeitimasAndTARInfoNera";
+    if (XmlNodeExists(axml,root)) then begin
+      LAr.HistoricalAssetArrests = 0;
+    end else begin
+      LAr.HistoricalAssetArrests = 1;
+    end;
+
+    //3.26
+    root = "root/SkolosBendraInfoLastDate/tr";
+    if (XmlNodeExists(axml,root)) then begin
+      LAr.LastRepaymentDate = DateFromString(XmlGetAttribute(axml,root,"SkolosBendraInfoLastDate"),"YYYY.MM.DD");
+    end;
+
+    //3.27
+    i = 0;
+    root = "root/Debts2/tr";
+    while (XmlNodeExists(axml,root & "[" & i & "]")) begin
+      i = i + 1;
+      ClearRow(LAr,LArw,1);
+      LArw.ClaimDate = DateFromString(XmlGetAttribute(axml,root & "[" & i & "]","Date"),"YYYY.MM.DD");
+      LArw.CreditorName = XmlGetAttribute(axml,root & "[" & i & "]","CreditorName");
+      LArw.CreditAmount = ValFromString(XmlGetAttribute(axml,root & "[" & i & "]","Amount"),","," ");
+      if (nonblank(LArw.CreditAmount)) then begin
+        MatRowPut(LAr,MatRowCnt(LAr),LArw);
+        LAr.CurrentDebts = LAr.CurrentDebts + LArw.CreditAmount;
       end;
     end;
-    lastcode = tCUr.Code;
-    lastname = tCUr.Name;
-  end;
-  LAr.OwnershipChanges = 0;
-  if (nonblank(td) and ASb.OwnershipYears>0) then begin
-    if (YearDiff(td,CurrentDate)>=ASb.OwnershipYears) then begin
-      LAr.OwnershipChanges = 1;
+
+    //3.29
+    i = 0;
+    root = "root/Debts2History/tr";
+    while (XmlNodeExists(axml,root & "[" & i & "]")) begin
+      i = i + 1;
+      ClearRow(LAr,LArw,1);
+      pos = -1;
+      datestr = XmlGetAttribute(axml,root & "[" & i & "]","Date");
+      GetNextSubstring(datestr,pos,"/",datestr1);
+      GetNextSubstring(datestr,pos,"/",datestr2);
+      LArw.ClaimDate = DateFromString(datestr1,"YYYY.MM.DD");
+      LArw.PaymentDate = DateFromString(datestr2,"YYYY.MM.DD");
+      LArw.CreditorName = ReplaceWebStrings(XmlGetAttribute(axml,root & "[" & i & "]","CreditorName"));
+      LArw.CreditAmount = ValFromString(XmlGetAttribute(axml,root & "[" & i & "]","Amount"),","," ");
+      if (nonblank(LArw.CreditAmount)) then begin
+        MatRowPut(LAr,MatRowCnt(LAr),LArw);
+      end;
     end;
-  end;
-  if (blank(LAr.OwnerCustCode)) then begin
-    LAr.OwnerCustCode = lastcode;
-    LAr.OwnerName = lastname;
-  end;
 
-  //3.35.1
-  root = "root/DraudimoSprendimas/tr";
-  if (XmlNodeExists(axml,root)) then begin
-    LAr.CreditinfoLimit = ValFromString(XmlGetAttribute(axml,root & "[0]","DraudimoSprindimasSuma"),","," ");
-  end;
+    //3.31
+    root = "root/SodraSkolos/SodraSkolosInfo";
+    if (XmlNodeExists(axml,root)) then begin
+      LAr.CurrentDebts = ValFromString(XmlGetAttribute(axml,root,"suma"),","," ");
+    end;
 
-  root = "root/FinansiniaiImonesRodikliai/tr";
-  if (XmlNodeExists(axml,root)) then begin
-    LAr.PrevProfit = ValFromString(XmlGetAttribute(axml,root & "[0]","PNumber"),","," ");
-    LAr.PrevReceivables = ValFromString(XmlGetAttribute(axml,root & "[0]","GSaNumber"),","," ");
-    LAr.PrevPayables = ValFromString(XmlGetAttribute(axml,root & "[0]","MsaNumber"),","," ");
-    LAr.PrevTotal = LAr.PrevReceivables-LAr.PrevPayables;
-  end;
+    //3.32
+    root = "root/JARAtaskaitos/JARAtaskaitosInfoSvarbuText";
+    if (XmlNodeExists(axml,root)) then begin
+      LAr.AvailableFinStatements = 0;
+    end else begin
+      LAr.AvailableFinStatements = 1;
+    end;
+
+    i = 0;
+    root = "root/SHAREHOLDERS/Table";
+    while (XmlNodeExists(axml,root & "[" & i & "]")) begin
+      i = i + 1;
+      name = XmlGet(axml,root & "[" & i & "]/FirstNameLT");
+      surname = XmlGet(axml,root & "[" & i & "]/SurNameLT");
+      td = DateFromString(XmlGet(axml,root & "[" & i & "]/date"),"YYYY.MM.DD");
+      enddate = DateFromString(XmlGet(axml,root & "[" & i & "]/date_to"),"YYYY.MM.DD");
+      if (td>maxdate) then begin
+        maxdate = td;
+      end;
+      if (blank(enddate)) then begin
+        tCUr.Name = name & " " & surname;
+        if (ReadFirstKey("Name",tCUr,1,true)) then begin
+          CRr.CustCode = CUr.Code;
+          CRr.ContactCode = tCUr.Code;
+          if (ReadFirstMain(CRr,2,true)==false) then begin
+            AddContactCUDsmRemote(CUr,tCur.Code);
+          end;
+        end else begin
+          RecordNew(tCUr);
+          GetNextCustNr(tstr);
+          tCUr.Code = tstr;
+          tCUr.Name = name & " " & surname;
+          tCUr.JobDesc = ASb.OwnerTitle;
+          if (RecordInsert(tCUr,true)) then begin
+            AddContactCUDsmRemote(CUr,tCur.Code);
+          end;
+        end;
+      end;
+      lastcode = tCUr.Code;
+      lastname = tCUr.Name;
+    end;
+    LAr.OwnershipChanges = 0;
+    if (nonblank(td) and ASb.OwnershipYears>0) then begin
+      if (YearDiff(td,CurrentDate)>=ASb.OwnershipYears) then begin
+        LAr.OwnershipChanges = 1;
+      end;
+    end;
+    if (blank(LAr.OwnerCustCode)) then begin
+      LAr.OwnerCustCode = lastcode;
+      LAr.OwnerName = lastname;
+    end;
+
+    //3.35.1
+    root = "root/DraudimoSprendimas/tr";
+    if (XmlNodeExists(axml,root)) then begin
+      LAr.CreditinfoLimit = ValFromString(XmlGetAttribute(axml,root & "[0]","DraudimoSprindimasSuma"),","," ");
+    end;
+
+    root = "root/FinansiniaiImonesRodikliai/tr";
+    if (XmlNodeExists(axml,root)) then begin
+      LAr.PrevProfit = ValFromString(XmlGetAttribute(axml,root & "[0]","PNumber"),","," ");
+      LAr.PrevReceivables = ValFromString(XmlGetAttribute(axml,root & "[0]","GSaNumber"),","," ");
+      LAr.PrevPayables = ValFromString(XmlGetAttribute(axml,root & "[0]","MsaNumber"),","," ");
+      LAr.PrevTotal = LAr.PrevReceivables-LAr.PrevPayables;
+    end;
+  end else begin
     CreditInfoFileAsignB2BLoanApplicationVc(LAr,axml);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 15 06 2021 y. at 11:55:04 AM
     CreditInfoFileAsignCUVc(CUr,axml);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 15 06 2021 y. at 11:55:04 AM
+  end;
   RecordUpdate(oldCUr,CUr,false);
   CUVcRecordUpdate(CUr,oldCUr,Rs_Update,1);
   fn = CUr.RegNr1  & "_creditinfo.txt";
