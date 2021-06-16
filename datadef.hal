@@ -254,10 +254,10 @@ begin
   RecordField(CompStatus,M4Code,20,0);
   RecordField(CompStatusEval,M4Str,250,0);
   RecordField(Industry,M4Code,20,0);
-  RecordField(AdminFee,M4Str,255,0);
+  RecordField(AdminFee,M4Val,0,0);
   RecordField(RejReason,M4Str,255,0);
-  RecordField(PaymGuarant,M4Str,255,0);
-  RecordField(Promisory,M4Str,255,0);
+  RecordField(PaymGuarant,M4Val,0,0);
+  RecordField(Promisory,M4Val,0,0);
   RecordField(Evaluation,M4Int,0,0);
   RecordField(EDSGuarant,M4Int,0,0);
   RecordField(NetProfitPrc,M4Val,0,0);
@@ -434,6 +434,8 @@ begin
   RecordField(Beneficial3Code,M4Code,20,0);
   RecordField(Beneficial4Code,M4Code,20,0);
   RecordField(Beneficial5Code,M4Code,20,0);
+  
+  RecordField(LastRepaymentDateChk,M4Int,0,0); 
   
  //ak_end  
   ArrayBegin(Math,-,1);
