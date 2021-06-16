@@ -429,6 +429,12 @@ begin
   RecordField(Beneficial6PEP,M4Int,0,0); 
   RecordField(Beneficial61Sanctions,M4Int,0,0);
   
+  RecordField(Beneficial1Code,M4Code,20,0);
+  RecordField(Beneficial2Code,M4Code,20,0);
+  RecordField(Beneficial3Code,M4Code,20,0);
+  RecordField(Beneficial4Code,M4Code,20,0);
+  RecordField(Beneficial5Code,M4Code,20,0);
+  
  //ak_end  
   ArrayBegin(Math,-,1);
   ArrayField(Period,M4Str,10,0);

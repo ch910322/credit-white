@@ -1,6 +1,28 @@
 external inner function Date DateFromString(string,string);
 external inner function val ValFromString(string,string,string);
 
+function string 255 extractValueFromString(string refstr)
+begin
+  string 255 res;
+  string 2 ch;
+  integer i,l;
+  
+  l = Len(refstr);
+  for (i=0;i<l;i=i+1) begin
+    ch = Mid(refstr,i,1);
+    if(asc(ch)>47 and asc(ch)<58)then begin
+      res = res & ch;
+    end;
+    if(asc(ch)==44 or asc(ch)==46)then begin
+      res = res & ch;
+    end;
+    
+  end;
+  
+  extractValueFromString = res;
+  return;
+end;
+
 function string 2 ReplaceStrings(string tstr,string realstr,var integer movep)
 begin
   string 2 res;
@@ -101,7 +123,8 @@ integer ckbox;
                             end;
                           end;
                           SetFieldValueByName(LAr,CABrw.FieldName,ckbox,-1);
-               case M4Val:SetFieldValueByName(LAr,CABrw.FieldName,ValFromString(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute),","," "),-1);
+               case M4Val:tstr = extractValueFromString(XmlGetFrom(axml,root & CABrw.ImportNode,CABrw.XMLAtribute));
+                          SetFieldValueByName(LAr,CABrw.FieldName,ValFromString(tstr,","," "),-1);
             end;
           end;
         end;
