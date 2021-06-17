@@ -4026,7 +4026,7 @@ begin
   string 255 label;
   Integer rn;
   
-  WindowBegin("Create Credit Note for CM Invoice",IVCredManNoteDClass,CGview,-);
+  WindowBegin("Create Credit Note for CM Invoice",IVCredManNoteDClass,CGother,-);
   SetWRect(20,80,650,460);
   //Sizeable(-1,-1,0,0);
   UseView(IVVc);
