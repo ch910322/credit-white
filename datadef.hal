@@ -1815,6 +1815,7 @@ begin
   RecordField(AutoSendOverdueInvoice,M4Int,0,0);
   RecordField(PDFAfterReceipt,M4Int,0,0);
   RecordField(eMailBasedOnCMSettings,M4Int,0,0);  
+  RecordField(advancedCreditNote,M4Int,0,0);  
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");

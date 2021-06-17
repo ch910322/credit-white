@@ -3897,3 +3897,37 @@ begin
   GetCredManStartBalance = GetCredManBalanceOnDate(credmannr,d1);
   return;
 end;
+
+global function boolean checkIfInvoiceFromAgreement(record IVVc IVr,var vector val vIVItemOpenAmmount)
+begin
+boolean res;
+record CredHistVc CredHistr,CredHist2r;
+boolean TrHs,TrHs2;
+record INVc INr;
+string 255 tstr;
+val t,tt,tot1,tot2,tot3;
+longint t2;
+date blankd;
+
+  res = false;
+  CredHistr.RecordNr = IVr.SerNr;
+  CredHistr.RecordType = 0;
+  TrHs = true;
+  while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+    if ((CredHistr.RecordNr!=IVr.SerNr) or (CredHistr.RecordType!=0)) then begin
+      TrHs = false;
+    end;
+    if (TrHs) then begin
+      res = true;
+      t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
+      vIVItemOpenAmmount[CredHistr.ArtCode] = t;
+      //messagebox(0,CredHistr.ArtCode & "  " & t);
+      EndFormat;
+    end;
+  end;
+  
+  
+  
+  checkIfInvoiceFromAgreement = res;
+return;
+end;

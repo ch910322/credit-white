@@ -2365,6 +2365,7 @@ begin
   CheckBox(h,v+=16,0,"Automatically send Invoices created from Contracts",AutoMailsFromInvoices);
   CheckBox(h,v+=16,0,"When creating Email, use precreated PDFs",UsePreCreatedInvoicePdf);
   CheckBox(h,v+=16,0,"Sender in manual created mail is current user",emailSenderCurrent);
+  CheckBox(h,v+=16,0,"Advanced Credit Note",advancedCreditNote);
 
 //  CheckBox(h,v+=16,0,"Remaining principle including Last Months Principle",LastPrincipleWithExtraMonth);
   
@@ -4018,3 +4019,54 @@ begin
   EndWindow;
 end;
 
+window IVCredManNoteDClass:2
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h1,h2,h3,h4,hm,hs,t,v,v2,v3,vm,vs,width,h5;
+  string 255 label;
+  Integer rn;
+  
+  WindowBegin("Create Credit Note for CM Invoice",IVCredManNoteDClass,CGview,-);
+  SetWRect(20,80,650,460);
+  //Sizeable(-1,-1,0,0);
+  UseView(IVVc);
+  BrowseButtons(false);
+  modality(1);
+//if (HasTouchScreenLook==false) then begin  //no more TS interface in SL , Karls' order
+  ActiveFieldOnNew("ArtCode");
+  Tile(0,100,false,"",CustCode);
+  //EditField(75,vm=(v=6),95,"No.",Normal,SerNr,false,TSerSClass);
+  HalPushButton(290,25,490,50,"CreateCreditNoteFrommCRDsm","Confirm (Not Reversible)");
+  
+  v = 16;
+  h2 = 25;
+  ButtonFrame(h2,v=35,200,3,"Distribute Principal");
+  RadioButton(h2,v,0,0,"Equally To Upcoming Months",OKFlag);
+  RadioButton(h2,v+=16,1,0,"Last Month",OKFlag);
+
+  
+  TileButton(1,"Items");
+  Tile(1,200,false,"1",Math);
+  v = 24;
+  MatrixBegin(4,v,-50,200,-,20);
+  MatTypedRow(stp);
+  MatOverStrike(ovst);
+  Flip(0);
+  t = 1;
+  MatCol(t,32,"Item",0,ArtCode,false,0);
+  MatCol(t,94,"Qty",0,Quant,true,0);
+  EnterSkip(ArtCode);
+  Flip(1);
+  MatCol(t,144,"Description",0,Spec,false,0);
+  MatCol(t,-235,"Open. Sum",0,Price,true,0);
+  //MatCol(t,-135,"%",0,vRebate,true,0);
+  MatCol(t,-100,"Credit Sum",0,Sum,true,0);
+  InsertRowTest;
+  DeleteRowTest;
+  
+  EndMatrix;
+  vs = 22;
+  v = 18; VTab(-35,v,-16,v+vs,ToolFlip,1,"A");
+
+  EndWindow;
+end;
