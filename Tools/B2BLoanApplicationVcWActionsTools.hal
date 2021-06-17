@@ -955,6 +955,20 @@ begin
   CUr.Code = GetFieldValueByName(LAr,"ShareHolder" & num & "Code",-1);
   if (ReadFirstMain(CUr,1,true)) then begin
     SetFieldValueByName(LAr,"ShareHolder" & num & "Name",CUr.Name,-1);
+    SetFieldValueByName(LAr,"ShareHolder" & num & "ID",CUr.RegNr1,-1);
+  end;
+  return;
+end;
+
+global
+procedure InsertB2BLoanApplicationBeneficialName(var record B2BLoanApplicationVc LAr,Integer num)
+begin
+  Boolean res;
+  record CUVc CUr;
+  
+  CUr.Code = GetFieldValueByName(LAr,"Beneficial" & num & "Code",-1);
+  if (ReadFirstMain(CUr,1,true)) then begin
+    SetFieldValueByName(LAr,"Beneficial" & num & "Name",CUr.Name,-1);
   end;
   return;
 end;
