@@ -1,5 +1,9 @@
 remote inner procedure PrintEBSDocument(string,string,record RcVc,string,string,var area);
 remote updating procedure MakeMoneyRuturnIVVcRemote(record IVVc,var record IPVc);
+remote function boolean checkIfInvoiceFromAgreement(record IVVc,var vector val);
+remote inner function Integer CreateCreditNoteIV(record IVVc,Integer,var record IVVc,string,Boolean);
+remote inner procedure IVSumup(var record IVVc,Boolean);
+remote inner procedure IVDchsum(var record IVVc,Integer);
 
 global
 procedure Finance_DownloadPDFInvoiceLsm()
@@ -53,5 +57,199 @@ BEGIN
   end;
 
   IVDClassActiveEditField = res;
+  return;
+end;
+
+
+global
+updating procedure CreateCreditNoteIVDsm()
+begin
+  record IVVc IVr,credIVr;
+  integer wn,i,mtrw;
+  vector val vIVItemOpenAmmount;
+  row IVVc IVrw;
+  record CMInvoicingBlock CIb;
+  
+  wn = curwindow;
+  getwindowrecord(wn,IVr);
+  
+  blockload(CIb);
+  if(CIb.advancedCreditNote)then begin
+    if(checkIfInvoiceFromAgreement(IVr,vIVItemOpenAmmount))then begin  
+      recordcopy(credIVr,IVr);
+      mtrw = matrowcnt(credIVr);
+      for(i=0;i<mtrw;i=i+1)begin
+        matrowget(credIVr,i,IVrw);
+        IVrw.Price = vIVItemOpenAmmount[IVrw.ArtCode];
+        IVrw.Sum = vIVItemOpenAmmount[IVrw.ArtCode];
+        matrowput(credIVr,i,IVrw);
+      end;
+      for(i=0;i<mtrw;i=i+1)begin
+        matrowget(credIVr,i,IVrw);
+        if(IVrw.stp!=1 or blank(IVrw.ArtCode) or IVrw.Sum==0 or IVrw.Price==0)then begin
+          matrowdelete(credIVr,i);
+          i=i-1;
+          mtrw = mtrw - 1;
+        end;
+      end;
+      credIVr.SerNr = -1;
+      credIVr.OKFlag = 0;
+      openwindow("IVCredManNoteDClass",1,CurWindow,"","",credIVr);
+    end else begin
+      inner.CreateCreditNoteIVDsm;
+    end;
+  end else begin
+    inner.CreateCreditNoteIVDsm;
+  end;
+    
+return;
+end;
+
+global
+procedure IVCredManNoteDClassButtonFlags(Integer wn,var Boolean duplOK,var Boolean newOK,var Boolean saveOK,var Boolean restOK)
+begin 
+  duplOK = true;
+  newOK = false;
+  saveOK = false;
+  restOK = false;
+  return;
+end;
+
+global
+function Boolean IVCredManNoteDClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
+BEGIN
+  Boolean res;
+  
+  res = true;
+  if (fieldname!="Sum") then begin
+      res = false;
+  end;
+
+  IVCredManNoteDClassActiveEditField = res;
+  return;
+end;
+
+global
+function Boolean IVCredManNoteDClassInsertRowTest(Integer wn, Integer rownr)
+begin
+
+  IVCredManNoteDClassInsertRowTest = false;
+  return;
+end;
+
+
+global updating procedure CreateCreditNoteFrommCRDsm()
+begin
+  record IVVc IVr,setIVr;
+  row IVVc IVrw,IV2rw;
+  record IVVc IVCreditr,oldIVCreditr;
+  Integer wn,nwn,mwn,rwcnt,rwcnt2;
+  Integer normalstate;
+  Integer res,i,j;
+  record LocalMachineBlock LMb;
+  boolean foundf;
+
+  normalstate = 0;//Rs_normal
+  mwn = CurWindow;
+  DeselectWindow(mwn,false);
+  GetWindowRecord(mwn,setIVr);
+  
+  wn = motherwindow(mwn);
+  DeselectWindow(wn,false);
+  foundf = false;
+  rwcnt2 = matrowcnt(setIVr);
+  for(j=0;j<rwcnt2;j=j+1)begin
+    matrowget(setIVr,j,IV2rw);
+    if(IV2rw.Sum>0 and nonblank(IV2rw.ArtCode))then begin
+      foundf = true;
+    end;
+  end;
+  
+  if (foundf) then begin
+    GetWindowRecord(wn,IVr);
+    if ((IVr.OKFlag!=0) and (IVr.InvType!=kInvoiceTypeCredit and IVr.InvType!=kInvoiceTypeCreditSpecialSales)) then begin
+      BlockLoad(LMb);
+      res = CreateCreditNoteIV(IVr,kInvoiceTypeCredit,IVCreditr,LMb.DefReturnLocation,false);
+      if (res==0) then begin
+          if(IVCreditr.SerNr>-1)then begin
+            recordcopy(oldIVCreditr,IVCreditr);
+          end;
+          rwcnt = matrowcnt(IVCreditr);
+          for(i=0;i<rwcnt;i=i+1)begin
+            matrowget(IVCreditr,i,IVrw);
+            if((blank(IVrw.ArtCode) and IVrw.stp==1) or IVrw.stp==kInvoiceRowTypeHidden)then begin
+              matrowdelete(IVCreditr,i);
+              i=i-1;
+              rwcnt = rwcnt - 1;
+            end;
+          end;
+          rwcnt = matrowcnt(IVCreditr);
+          for(i=0;i<rwcnt;i=i+1)begin
+            matrowget(IVCreditr,i,IVrw);
+            rwcnt2 = matrowcnt(setIVr);
+            foundf = false;
+            for(j=0;j<rwcnt2;j=j+1)begin
+              matrowget(setIVr,j,IV2rw);
+              if(IV2rw.Sum>0 and nonblank(IV2rw.ArtCode) and IVrw.ArtCode==IV2rw.ArtCode)then begin
+                foundf = true;
+                IVrw.Price = IV2rw.Sum;
+                IVrw.Sum = IV2rw.Sum;
+                MatRowPut(IVCreditr,i,IVrw);
+                IVDchsum(IVCreditr,i);
+              end;
+            end;
+            if(foundf==false)then begin
+              matrowdelete(IVCreditr,i);
+              i=i-1;
+              rwcnt = rwcnt - 1;
+            end;
+          end;
+          IVSumup(IVCreditr,true);   
+          if(IVCreditr.SerNr>-1)then begin
+            recordupdate(oldIVCreditr,IVCreditr,true);
+          end;
+          closewindow(mwn);
+          nwn = OpenWindow("IVDClass",1,0,"","",IVCreditr);
+        if (WindowDoOK(nwn,0)) then begin
+          UpdateBrowses("IVVc");
+        end;
+      end else begin
+        MessageBox(res,"");
+      end;
+    end else begin
+      MessageBox(12556,"");      
+    end;
+  end else begin
+    MessageBox(20803,"");      
+  end;
+  
+  
+return;
+end;
+
+
+global
+function Boolean IVCredManNoteDClassAfterEditField(Integer wn,string fieldname,Integer fn,Integer rownr,Integer changed)
+begin
+  Boolean res;
+  record IVVc IVr;
+  integer i,mtrw;
+  vector val vIVItemOpenAmmount;
+  row IVVc IVrw;
+  
+  switch (fieldname) begin
+    case "Sum": 
+      if (changed!=0) then begin
+        GetWindowRecord(wn,IVr);
+        DeselectWindow(wn,false);
+          matrowget(IVr,rownr,IVrw);
+          if(IVrw.Sum>IVrw.Price)then begin
+            IVrw.Sum = IVrw.Price;
+            matrowput(IVr,rownr,IVrw);
+          end;
+        PutWindowRecord(wn,IVr);
+      end;
+  end;
+  IVCredManNoteDClassAfterEditField = res;
   return;
 end;

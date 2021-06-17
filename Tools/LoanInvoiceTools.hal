@@ -2404,6 +2404,7 @@ begin
   Integer i,rwcnt;
   string 255 vatcode;
 
+  dueamount = blankval; 
   paysum = CredHistr.Sum;
   IVr.SerNr = CredHistr.RecordNr;
   if (ReadFirstMain(IVr,1,true)) then begin
@@ -2425,7 +2426,7 @@ begin
     if (CredPayr.PreviousNr!=CredHistr.SerNr) then begin
       TrHs = false;
     end else begin
-      if (CredPayr.TransDate<=ed) then begin
+      if (CredPayr.PayDate<=ed) then begin
         InvVat(1,1,IVr.NoTAXonVAT,IVr.ExportFlag,vatcode,CredPayr.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
         paysum = paysum - (CredPayr.Sum/* - vatval*/);
       end;
@@ -2445,6 +2446,9 @@ begin
   return;
 end;
 
+/**
+chargetype=-1: any charge type
+*/
 global
 procedure GetCredManLateAmounts2(record CredManVc CredManr,Date sd,Date ed,Integer chargetype,var Longint maxlatedays,var val dueamount,var val notdueamount,var Date limitdate)
 begin
@@ -2453,19 +2457,36 @@ begin
   Boolean TrHs;
   Longint latedays;
   Date tmpdate;
-
+  val t;
+  integer keys;
+  
   dueamount = 0;
+  notdueamount = blankval;
   maxlatedays = 0;
   TrHs = true;
   CredHistr.CredManNr = CredManr.SerNr;
-  CredHistr.ChargeType = chargetype;
-  while (LoopKey("CredManChargeType",CredHistr,2,TrHs)) begin
-    if (CredHistr.CredManNr!=CredManr.SerNr or CredHistr.ChargeType!=chargetype) then begin
-      TrHs = false;
+  if (chargetype==-1) then begin
+    keys = 1;
+  end else begin;
+    CredHistr.ChargeType = chargetype;
+    keys = 2;
+  end;
+  while (LoopKey("CredManChargeType",CredHistr,keys,TrHs)) begin
+    if (chargetype==-1) then begin
+      if (CredHistr.CredManNr!=CredManr.SerNr) then begin
+        TrHs = false;
+      end;
     end else begin
-      if (CredHistr.RecordType==0) then begin
+      if (CredHistr.CredManNr!=CredManr.SerNr or CredHistr.ChargeType!=chargetype) then begin
+        TrHs = false;
+      end;
+    end;
+    if (TrHs) then begin
+      if ((CredHistr.RecordType==0) and (CredHistr.PaidFlag==0)) then begin
+        LogText(0,"CredHistr " & CredHistr.SerNr & " PayDate=" & CredHistr.PayDate & " CredHistr.Sum=" & CredHistr.Sum & " CredHistr.PaidSum=" & CredHistr.PaidSum);
         if (CredHistr.PayDate<=ed) then begin
-          latedays = GetLateDaysInPeriod2(CredHistr,sd,ed,dueamount);
+          latedays = GetLateDaysInPeriod2(CredHistr,sd,ed,t);
+          dueamount = dueamount + t;
           /*
           if (dueamount>0 and latedays>=90) then begin
             tmpdate = AddDay(CredHistr.PayDate,90);
@@ -2476,13 +2497,15 @@ begin
           */
           maxlatedays = MAXLongint(maxlatedays,latedays);
         end else begin
-          if (CredHistr.TransDate<=ed) then begin
-            latedays = GetLateDaysInPeriod2(CredHistr,sd,ed,notdueamount);
-          end;
+          //if (CredHistr.TransDate<=ed) then begin
+            latedays = GetLateDaysInPeriod2(CredHistr,sd,ed,t);
+            notdueamount = notdueamount + t;
+          //end;
         end;
       end;
     end;
   end;
+  LogText(0,"GetCredManLateAmounts2 " & CredManr.SerNr & " sd=" & sd & " ed=" & ed & " " & StringFromSet(2010,chargetype) & " dueamount="& dueamount & " notdueamount=" & notdueamount & " maxlatedays=" & maxlatedays);
   return;
 end;
 
@@ -2832,7 +2855,7 @@ begin
   Date limitdate;
   Longint principlelatedays,interestlatedays,overdueslatedays;
   val principlelateamount,interestlateamount;
-  val t;
+  val t,t2,totallate,totalnotlate;
   val notlateprinciple,notlateinterest;
   val currperiodinterest,futurefees,totopeninvoices,otheropenfees;
   val actualbalance;
@@ -2846,15 +2869,20 @@ logtext(0,"CheckBuyOutAgreementOmega start");
 
   gSilenceIVOpenPrepExists = true;
   BlockLoad(CMb);
-    BuildCredManPayPlanCust2(CredManr,CredManPayPlanr,CMb,true,false,false);
-    LogText(0,"2 ORr.OrdDate=" & ORr.OrdDate);
-    CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,ORr.OrdDate,IVr,true,sd2,balancef);
+  BuildCredManPayPlanCust2(CredManr,CredManPayPlanr,CMb,true,false,false);
+  CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,ORr.OrdDate,IVr,true,sd2,balancef);
 //  end;
   CheckUnpaidInvoices(CredManr,dueamount,openamount);
   sd = GetLastInvoiceDate(CredManr,ORr.OrdDate);
+  //lateamount=not invoiced overdues??? ->
   GetCredManOverdueInvoices2(CredManr,CMb,ORr.OrdDate,sd,latedays,lateamount,principlelateamount,interestlateamount,lateformula,false,false,calcsd);
-  GetCredManLateAmounts2(CredManr,CredManr.startDate,ORr.OrdDate,5,principlelatedays,principlelateamount,notlateprinciple,limitdate);
+  
+  GetCredManLateAmounts2(CredManr,CredManr.startDate,ORr.OrdDate,-1,principlelatedays,totallate,totalnotlate,limitdate);
+  LogText(0,"Totals: " & CredManr.SerNr & " totlate=" & totallate & " notlate=" & totalnotlate);
+  GetCredManLateAmounts2(CredManr,CredManr.startDate,ORr.OrdDate,5,principlelatedays,t,notlateprinciple,limitdate);
+  LogText(0,"Principal: " & CredManr.SerNr & " principlelateamount=" & t & " notlateprinciple=" & notlateprinciple);
   GetCredManLateAmounts2(CredManr,CredManr.startDate,ORr.OrdDate,6,interestlatedays,interestlateamount,notlateinterest,limitdate);
+  LogText(0,"Interest: " & CredManr.SerNr & " interestlateamount=" & interestlateamount & " notlateinterest=" & notlateinterest);
   //GetCredManLateAmounts(CredManr,RepSpec.sStartDate,RepSpec.sEndDate,9,overdueslatedays,overdueslateamount,limitdate);
   //TODO RepSpec.vals3 = GetActualBalance(CredManr,CredManPayPlanr,false);
   actualbalance = GetActualBalance(CredManr,CredManPayPlanr,false);
@@ -2890,7 +2918,7 @@ logtext(0,"CheckBuyOutAgreementOmega start");
   //RepSpec.f13 = t;
   ORr.Sum0 = t;
   //RepSpec.f17 = principlelateamount+interestlateamount;//was openamount;
-  ORr.Sum2 = principlelateamount+interestlateamount;//was openamount;
+  ORr.Sum2 = totallate+totalnotlate;//openamount;//principlelateamount+interestlateamount;//was openamount;
   //RepSpec.f16 = GetInterestAmount(CredManr,RepSpec.d1);
   ORr.Sum1 = GetInterestAmount(CredManr,ORr.OrdDate);
   //RepSpec.f10 = principlelateamount;//f20 - the last fxx
@@ -2898,7 +2926,7 @@ logtext(0,"CheckBuyOutAgreementOmega start");
   //RepSpec.f11 = interestlateamount;
   ORr.Sum3 = interestlateamount;
   //RepSpec.f15 = t + notlateprinciple; //GetActualBalance(CredManr,CredManPayPlanr,true);PLUS total of all OPEN, but NOT overdue principle
-  ORr.BaseSum4 = t + notlateprinciple;
+  ORr.BaseSum4 = ORr.Sum0 + notlateprinciple;
   /*CreateFile("credmanpayplan_e.txt");
     CredManPayPlanr.SerNr = CredManr.SerNr;
     ExportRecord(CredManPayPlanr);
@@ -2911,12 +2939,13 @@ logtext(0,"CheckBuyOutAgreementOmega start");
   
   futurefees = GetBuyOutFutureFees(CredManr.SerNr,CredManPayPlanr,ORr.OrdDate);
   ORr.DiscSum = futurefees;
-  otheropenfees = GetOtherOpenFees(CredManr.SerNr,blankd,vItemVals);
+  otheropenfees = GetOtherOpenFees(CredManr.SerNr,ORr.OrdDate,vItemVals);
   ORr.TAX1Sum = otheropenfees;
-  ORr.RvrsVAT = GetOpenInsuranceValue(CredManr.SerNr,blankd);
-  t = GetOpenOverdueFeesValue(CredManr.SerNr,blankd);
+  ORr.RvrsVAT = GetOpenInsuranceValue(CredManr.SerNr,ORr.OrdDate);
+  t = GetOpenOverdueFeesValue(CredManr.SerNr,ORr.OrdDate);
   ORr.FrBase = ORr.Sum2+ORr.BaseSum4+ORr.TotGP+ORr.DiscSum+otheropenfees+lateamount+t;//total debt
-  t = GetOpenLetterOfDemandValue(CredManr.SerNr,blankd);
+  t = GetOpenLetterOfDemandValue(CredManr.SerNr,ORr.OrdDate);
+  ORr.SumIncCom = t;
   ORr.FrBase = ORr.FrBase+t+ORr.RvrsVAT+ORr.TAX2Sum-prepayval;
   rwcnt = MatRowCnt(ORr);
   for (i=rwcnt-1;i>=0;i=i-1) begin
@@ -3896,4 +3925,38 @@ begin
   d1 = AddDay(d,-1);
   GetCredManStartBalance = GetCredManBalanceOnDate(credmannr,d1);
   return;
+end;
+
+global function boolean checkIfInvoiceFromAgreement(record IVVc IVr,var vector val vIVItemOpenAmmount)
+begin
+boolean res;
+record CredHistVc CredHistr,CredHist2r;
+boolean TrHs,TrHs2;
+record INVc INr;
+string 255 tstr;
+val t,tt,tot1,tot2,tot3;
+longint t2;
+date blankd;
+
+  res = false;
+  CredHistr.RecordNr = IVr.SerNr;
+  CredHistr.RecordType = 0;
+  TrHs = true;
+  while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+    if ((CredHistr.RecordNr!=IVr.SerNr) or (CredHistr.RecordType!=0)) then begin
+      TrHs = false;
+    end;
+    if (TrHs) then begin
+      res = true;
+      t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
+      vIVItemOpenAmmount[CredHistr.ArtCode] = t;
+      //messagebox(0,CredHistr.ArtCode & "  " & t);
+      EndFormat;
+    end;
+  end;
+  
+  
+  
+  checkIfInvoiceFromAgreement = res;
+return;
 end;

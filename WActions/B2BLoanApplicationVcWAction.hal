@@ -20,6 +20,7 @@ remote procedure InsertB2BLoanApplicationDocSignerName(var record B2BLoanApplica
 remote updating procedure GetB2BLoanApplicationPropertyRecord(record B2BLoanApplicationVc,var record CredManPropertiesVc);
 remote procedure InsertB2BLoanApplicationBoardMemberName(var record B2BLoanApplicationVc,Integer);
 remote procedure InsertB2BLoanApplicationShareHolderName(var record B2BLoanApplicationVc,Integer);
+remote procedure InsertB2BLoanApplicationBeneficialName(var record B2BLoanApplicationVc,Integer);
 remote updating procedure GetB2BLoanApplicationDebtRecord(record B2BLoanApplicationVc,var record LoanAppDebtsVc);
 external inner function roundmode SetRoundModeD(Integer);
 
@@ -602,6 +603,23 @@ begin
   return;
 end;
 
+function Boolean B2BLoanApplicationDClassBeneficialEFAfter(Integer wn,Boolean changedf,Integer num)
+begin
+  record B2BLoanApplicationVc LAr;
+  record CUVc CUr;
+
+  if (changedf) then begin  
+    GetWindowRecord(wn,LAr);
+    InsertB2BLoanApplicationBeneficialName(LAr,num);
+    PutWindowRecord(wn,LAr);   
+  end; 
+  B2BLoanApplicationDClassBeneficialEFAfter = true;
+  return;
+end;
+
+
+
+
 function Boolean B2BLoanApplicationDClassInterestRateEFAfter(Integer wn,Boolean changedf)
 begin
   record B2BLoanApplicationVc LAr;
@@ -797,6 +815,11 @@ begin
             num = StringToInt(mid(fieldname,11,1));
             res = B2BLoanApplicationDClassShareHolderEFAfter(wn,changed,num);
           end;
+          
+        end;
+        if (left(fieldname,10)=="Beneficial" and right(fieldname,4)=="Code") then begin
+          num = StringToInt(mid(fieldname,10,1));
+          res = B2BLoanApplicationDClassBeneficialEFAfter(wn,changed,num);
         end;
         
         
