@@ -113,6 +113,7 @@ begin
   return;
 end;
 
+global
 procedure CredManSchedRecalcBalance(var record CredManSchedVc CSr)
 begin
   record CredManVc CredManr;
@@ -142,6 +143,7 @@ begin
   return;
 end;
 
+global
 procedure SumupCredManSched(var record CredManSchedVc CSr,Integer rowno)
 begin
   row CredManSchedVc CSrw;
@@ -163,6 +165,9 @@ begin
   TestInvoiceBasedOnScheduleRow(CSr,CSrw,IVr);
 
   CSrw.Total = IVr.Sum4;
+  if(CSrw.Type==6)then begin
+    CSrw.Total = CSrw.Principle;
+  end;
   MatRowPut(CSr,rowno,CSrw);
 
   return;

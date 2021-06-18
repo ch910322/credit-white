@@ -47,6 +47,8 @@ external function val GetCredHistOpenValueOnDate(Longint,Date);
 external updating procedure CreditAndOKInvoice(Longint,val,var val,var vector val,val,Boolean,Date,string,string,string);
 external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean,Boolean);
 external inner function Boolean ItemInItemGroupOrClass(string,string,string);
+external procedure CredManSchedRecalcBalance(var record CredManSchedVc);
+external procedure SumupCredManSched(var record CredManSchedVc,Integer);
 
 
 enum begin
@@ -3293,29 +3295,138 @@ global
 updating procedure UpdateCredManScheduleFromInvoice(record IVVc IVr,Boolean setf)
 begin
   record CredManSchedVc CSr,oldCSr;
-  row CredManSchedVc CSrw;
-  Integer rwcnt,i;
+  row CredManSchedVc CSrw,CS2rw;
+  Integer rwcnt,i,j;
+  record CredManSetBlock CMb;
+  val instalmentSum,princpart,delta;
+  row IVVc IVrw;
+  integer counter;
 
   if (IVr.CustCredManNr>0) then begin
-    CSr.CredManNr = IVr.CustCredManNr;
-    if (ReadFirstMain(CSr,1,true)) then begin
-      RecordCopy(oldCSr,CSr);
-      rwcnt = MatRowCnt(CSr);
-      for (i=0;i<rwcnt;i=i+1) begin
-        MatRowGet(CSr,i,CSrw);
-        if (CSrw.InvDate==IVr.InvDate and (IVr.CredFromDate==CSrw.FromDate or (nonblank(IVr.CredFromDate) and nonblank(CSrw.FromDate)))) then begin
-          if (setf) then begin
-            CSrw.Invoiced = 1;
-            CSrw.InvoiceNr = IVr.SerNr;
-          end else begin
-            CSrw.Invoiced = 0;
-            CSrw.InvoiceNr = "";
+    if(IVr.InvType!=kInvoiceRowTypeCredit)then begin
+      CSr.CredManNr = IVr.CustCredManNr;
+      if (ReadFirstMain(CSr,1,true)) then begin
+        RecordCopy(oldCSr,CSr);
+        rwcnt = MatRowCnt(CSr);
+        for (i=0;i<rwcnt;i=i+1) begin
+          MatRowGet(CSr,i,CSrw);
+          if (CSrw.InvDate==IVr.InvDate and (IVr.CredFromDate==CSrw.FromDate or (nonblank(IVr.CredFromDate) and nonblank(CSrw.FromDate)))) then begin
+            if (setf) then begin
+              CSrw.Invoiced = 1;
+              CSrw.InvoiceNr = IVr.SerNr;
+            end else begin
+              CSrw.Invoiced = 0;
+              CSrw.InvoiceNr = "";
+            end;
+            MatRowPut(CSr,i,CSrw);
+            i = rwcnt;
           end;
-          MatRowPut(CSr,i,CSrw);
-          i = rwcnt;
+        end;
+        RecordUpdate(oldCSr,CSr,false);
+      end;
+    end else begin
+      BlockLoad(CMb);
+        if(nonblank(CMb.InstalmentItem))then begin
+        CSr.CredManNr = IVr.CustCredManNr;
+        rwcnt = matrowcnt(IVr);
+        for(i=0;i<rwcnt;i=i+1)begin
+          matrowget(IVr,i,IVrw);
+          if(IVrw.stp==1 and IVrw.ArtCode==CMb.InstalmentItem)then begin
+            instalmentSum = instalmentSum + IVrw.Sum;
+          end;
+        end;
+        if (ReadFirstMain(CSr,1,true)) then begin
+          RecordCopy(oldCSr,CSr);
+          rwcnt = MatRowCnt(CSr);
+        
+          for (i=rwcnt-1;i>=0;i=i-1) begin
+            MatRowGet(CSr,i,CSrw);
+            if(setf)then begin
+              if(CSrw.Invoiced==1)then begin
+                ClearRow(CSr,CSrw,1);
+                CSrw.InvDate = IVr.InvDate;
+                CSrw.Type = 6;
+                CSrw.Invoiced = 1;
+                CSrw.InvoiceNr = IVr.SerNr;
+                CSrw.Principle = -instalmentSum;
+                CSrw.Total = -instalmentSum;
+                matrowinsert(CSr,i+1,CSrw);
+                SumupCredManSched(CSr,i+1);
+                rwcnt = matrowcnt(CSr);
+                if(IVr.CreditPrincipleRule==0)then begin
+                  counter = 0;
+                  for(j=rwcnt-1;j>i+1;j=j-1)begin
+                    MatRowGet(CSr,j,CS2rw);
+                    if(CS2rw.Type==0 and CS2rw.Invoiced==0)then begin
+                      counter = counter + 1;
+                    end;
+                  end;
+                  princpart = round(instalmentSum/counter,defaultcurroundoff);
+                  delta = (princpart*counter)-instalmentSum;
+                  for(j=rwcnt-1;j>i+1;j=j-1)begin
+                    MatRowGet(CSr,j,CS2rw);
+                    if(CS2rw.Type==0 and CS2rw.Invoiced==0)then begin
+                      CS2rw.Principle = CS2rw.Principle + princpart - delta;
+                      delta = 0;
+                      MatRowPut(CSr,j,CS2rw);
+                      SumupCredManSched(CSr,j);
+                    end;
+                  end;
+                end else begin
+                  for(j=rwcnt-1;j>i+1;j=j-1)begin
+                    MatRowGet(CSr,j,CS2rw);
+                    if(CS2rw.Type==0 and CS2rw.Invoiced==0)then begin
+                      CS2rw.Principle = CS2rw.Principle + instalmentSum;
+                      MatRowPut(CSr,j,CS2rw);
+                      SumupCredManSched(CSr,j);
+                      j=i+1;
+                    end;
+                  end;
+                end;
+                i=0;
+              end;
+            end else begin
+              if(stringtolongint(CSrw.InvoiceNr)==IVr.SerNr)then begin
+                if(IVr.CreditPrincipleRule==0)then begin
+                  counter = 0;
+                  for(j=rwcnt-1;j>i;j=j-1)begin
+                    MatRowGet(CSr,j,CS2rw);
+                    if(CS2rw.Type==0 and CS2rw.Invoiced==0)then begin
+                      counter = counter + 1;
+                    end;
+                  end;
+                  princpart = round(instalmentSum/counter,defaultcurroundoff);
+                  delta = (princpart*counter)-instalmentSum;
+                  for(j=rwcnt-1;j>i;j=j-1)begin
+                    MatRowGet(CSr,j,CS2rw);
+                    if(CS2rw.Type==0 and CS2rw.Invoiced==0)then begin
+                      CS2rw.Principle = CS2rw.Principle - princpart + delta;
+                      delta = 0;
+                      MatRowPut(CSr,j,CS2rw);
+                      SumupCredManSched(CSr,j);
+                    end;
+                  end;
+                end else begin
+                  for(j=rwcnt-1;j>i;j=j-1)begin
+                    MatRowGet(CSr,j,CS2rw);
+                    if(CS2rw.Type==0 and CS2rw.Invoiced==0)then begin
+                      CS2rw.Principle = CS2rw.Principle - instalmentSum;
+                      logtext(0,"CS2rw.Principle " & CS2rw.Principle);
+                      MatRowPut(CSr,j,CS2rw);
+                      SumupCredManSched(CSr,j);
+                      j = i;
+                    end;
+                  end;
+                end;
+                matrowdelete(CSr,i);
+                i=0;
+              end;
+            end;
+          end;
+          CredManSchedRecalcBalance(CSr);
+          RecordUpdate(oldCSr,CSr,false);
         end;
       end;
-      RecordUpdate(oldCSr,CSr,false);
     end;
   end;
 
@@ -3543,6 +3654,11 @@ logtext(0,"GenerateAgreementSchedule1");
           bal = bal + CSrw.Principle;
           CSrw.Invoiced = 1;
           CSrw.Balance = bal;
+        case 6:
+          /*CSrw.Principle = SMrw.DebVal;
+          bal = bal + CSrw.Principle;
+          CSrw.Invoiced = 1;
+          CSrw.Balance = bal;*/
         otherwise
           CSrw.FromDate = SMrw.Objects;
           CSrw.Principle = SMrw.DebVal - SMrw.ToRateB1;

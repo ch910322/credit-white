@@ -1269,6 +1269,7 @@ begin
   RecordField(CredToDate,M4Date,0,0);
   RecordField(ManualInvoice,M4Int,0,0);
   RecordField(NoEmailFlag,M4Int,0,0);
+  RecordField(CreditPrincipleRule,M4Int,0,0);
   ArrayField(ChargeType,M4Set,2010,0);
   ArrayField(CredHistNr,M4Long,0,CredHistVc);
   ArrayField(FactoringInvoice,M4Long,0,CredManFactInvoiceVc);  
