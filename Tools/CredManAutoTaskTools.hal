@@ -11,27 +11,40 @@ external inner function Boolean FindCustomerRelation(string,string,var record CU
 external inner function boolean AddEMailRecipients(var record MailVc,string,string,integer);
 
 global
-updating procedure CreateTaskActivityCredMan(record CredManVc CredManr,string person,string acttype,string acttext,date TransDate,time StartTime)
+updating procedure CreateTaskActivityCredMan(record CredManVc CredManr,string person,string acttype,string acttext,date TransDate,time StartTime,boolean changemgr)
 begin
   record ActVc Actr;
   string 255 warning;
   record CredManVc oldCredManr;
-
+  boolean updstatef;
+  
+  updstatef = false;
   if (ReadFirstMain(CredManr,1,true)) then begin
-    Actr.SerNr = NextSerNr("ActVc",TransDate,-1,false,"");
-    Actr.TransDate = TransDate;
-    Actr.StartTime = StartTime;
-    Actr.Value = CredManr.InvSum4;
-    Actr.CUCode = CredManr.CustCode;
-    PasteCuInAct(Actr,warning);
-    Actr.ActType = acttype;
-    PasteActTypeInAct2("",Actr,warning);
-    Actr.MainPersons = person;
-    Actr.Comment = acttext;
-    Actr.TodoFlag = kTodoFlagTodo;
-    if (RecordInsert(Actr,true)) then begin
-      CreateRecordLink(Actr,CurrentCompany,CredManr,CurrentCompany);
-      CreateRecordLink(CredManr,CurrentCompany,Actr,CurrentCompany);
+    if ((changemgr) and (nonblank(person))) then begin
+      RecordCopy(oldCredManr,CredManr);
+      CredManr.SalesMan = person;
+      RecordUpdate(oldCredManr,CredManr,true);
+      updstatef = true;//??
+    end;
+    if (nonblank(acttype)) then begin
+      Actr.SerNr = NextSerNr("ActVc",TransDate,-1,false,"");
+      Actr.TransDate = TransDate;
+      Actr.StartTime = StartTime;
+      Actr.Value = CredManr.InvSum4;
+      Actr.CUCode = CredManr.CustCode;
+      PasteCuInAct(Actr,warning);
+      Actr.ActType = acttype;
+      PasteActTypeInAct2("",Actr,warning);
+      Actr.MainPersons = person;
+      Actr.Comment = acttext;
+      Actr.TodoFlag = kTodoFlagTodo;
+      if (RecordInsert(Actr,true)) then begin
+        CreateRecordLink(Actr,CurrentCompany,CredManr,CurrentCompany);
+        CreateRecordLink(CredManr,CurrentCompany,Actr,CurrentCompany);
+        updstatef = true;
+      end;
+    end;
+    if (updstatef) then begin
       RecordCopy(oldCredManr,CredManr);
       CredManr.StateNotified = 1;
       RecordUpdate(oldCredManr,CredManr,true);
@@ -42,27 +55,40 @@ begin
 end;
 
 global
-updating procedure CreateTaskActivityLoanApp(record B2BLoanApplicationVc LAr,string person,string acttype,string acttext,date TransDate,time StartTime)
+updating procedure CreateTaskActivityLoanApp(record B2BLoanApplicationVc LAr,string person,string acttype,string acttext,date TransDate,time StartTime,boolean changemgr)
 begin
   record ActVc Actr;
   string 255 warning;
   record B2BLoanApplicationVc oldLAr;
-
+  boolean updstatef;
+  
+  updstatef = false;
   if (ReadFirstMain(LAr,1,true)) then begin
-    Actr.SerNr = NextSerNr("ActVc",TransDate,-1,false,"");
-    Actr.TransDate = TransDate;
-    Actr.StartTime = StartTime;
-    Actr.Value = LAr.Sum;
-    Actr.CUCode = LAr.CustCode;
-    PasteCuInAct(Actr,warning);
-    Actr.ActType = acttype;
-    PasteActTypeInAct2("",Actr,warning);
-    Actr.MainPersons = person;
-    Actr.Comment = acttext;
-    Actr.TodoFlag = kTodoFlagTodo;
-    if (RecordInsert(Actr,true)) then begin
-      CreateRecordLink(Actr,CurrentCompany,LAr,CurrentCompany);
-      CreateRecordLink(LAr,CurrentCompany,Actr,CurrentCompany);
+    if ((changemgr) and (nonblank(person))) then begin
+      RecordCopy(oldLAr,LAr);
+      LAr.Manager = person;
+      RecordUpdate(oldLAr,LAr,true);
+      updstatef = true;//??
+    end;
+    if (nonblank(acttype)) then begin
+      Actr.SerNr = NextSerNr("ActVc",TransDate,-1,false,"");
+      Actr.TransDate = TransDate;
+      Actr.StartTime = StartTime;
+      Actr.Value = LAr.Sum;
+      Actr.CUCode = LAr.CustCode;
+      PasteCuInAct(Actr,warning);
+      Actr.ActType = acttype;
+      PasteActTypeInAct2("",Actr,warning);
+      Actr.MainPersons = person;
+      Actr.Comment = acttext;
+      Actr.TodoFlag = kTodoFlagTodo;
+      if (RecordInsert(Actr,true)) then begin
+        CreateRecordLink(Actr,CurrentCompany,LAr,CurrentCompany);
+        CreateRecordLink(LAr,CurrentCompany,Actr,CurrentCompany);
+        updstatef = true;
+      end;
+    end;
+    if (updstatef) then begin
       RecordCopy(oldLAr,LAr);
       LAr.StateNotified = 1;
       RecordUpdate(oldLAr,LAr,true);
@@ -517,7 +543,7 @@ begin
                   LogText(0,"GetLeastWorkLoadManager " & ATbrw.ActType & " failed");
                 end; 
               end;  
-              qupdating.CreateTaskActivityCredMan(CredManr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime);
+              qupdating.CreateTaskActivityCredMan(CredManr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime,ATbrw.AssignRecord==1);
             end;
           end;
         case 1://loan applications
@@ -542,7 +568,7 @@ begin
                   LogText(0,"GetLeastWorkLoadManager " & ATbrw.ActType & " failed");
                 end; 
               end;
-              qupdating.CreateTaskActivityLoanApp(LAr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime);
+              qupdating.CreateTaskActivityLoanApp(LAr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime,ATbrw.AssignRecord==1);
               qupdating.SendAutoEmailWithStdText(ATbrw.EmailStdText,person,LAr.CustCode);
             end;
           end;
