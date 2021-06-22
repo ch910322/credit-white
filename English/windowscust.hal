@@ -4044,7 +4044,8 @@ begin
   ButtonFrame(h2,v=35,200,2,"Distribute Principal");
   RadioButton(h2,v,0,0,"Equally To Upcoming Months",CreditPrincipleRule);
   RadioButton(h2,v+=16,1,0,"Last Month",CreditPrincipleRule);
-
+  
+  Checkbox(h2,v+=20,0,"Calculate overdues from this invoice",NoInterestFlag);//NoInterestFlag
   
   TileButton(1,"Items");
   Tile(1,200,false,"1",Math);
