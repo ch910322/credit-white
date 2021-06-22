@@ -211,7 +211,7 @@ begin
           end;
           closewindow(mwn);
           nwn = OpenWindow("IVDClass",1,0,"","",IVCreditr);
-          if(setIVr.NoInterestFlag==1)then begin
+          if(setIVr.NoInterestFlag==0)then begin
             IVr.NoInterestFlag = 1;
             recordstore(IVr,true);
           end;
