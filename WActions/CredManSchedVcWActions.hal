@@ -166,7 +166,7 @@ begin
 
   CSrw.Total = IVr.Sum4;
   if(CSrw.Type==6)then begin
-    CSrw.Total = CSrw.Principle;
+    CSrw.Total = CSrw.Principle + CSrw.Interest;
   end;
   MatRowPut(CSr,rowno,CSrw);
 

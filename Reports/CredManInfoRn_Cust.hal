@@ -254,8 +254,13 @@ begin
     if (IVrw.CustCredManNrRow==-1 or IVrw.CustCredManNrRow==CredManr.SerNr) then begin
       switch (IVrw.ChargeType) begin
         case 1: 
-          inst = inst + IVrw.Sum; 
-          calcbal = calcbal - IVrw.Sum;
+          if(IVr.InvType!=kInvoiceTypeCredit)then begin
+            inst = inst + IVrw.Sum; 
+            calcbal = calcbal - IVrw.Sum;
+          end else begin
+            inst = inst - IVrw.Sum; 
+            calcbal = calcbal + IVrw.Sum;
+          end;
           if (IVrw.ArtCode==CMb.DepositItem) then begin
             deposit = deposit + IVrw.Sum;
           end;
@@ -265,7 +270,11 @@ begin
           calcbal = calcbal - IVrw.Sum;
           addf = true;
         case 2: 
-          intrate = intrate + IVrw.Sum;
+          if(IVr.InvType!=kInvoiceTypeCredit)then begin
+            intrate = intrate + IVrw.Sum;
+          end else begin
+            intrate = intrate - IVrw.Sum;
+          end;
           addf = true;
         case 3: 
           calcbal = calcbal - IVrw.Sum;
@@ -360,6 +369,24 @@ begin
   return;
 end;
 
+procedure AddCreditToList(record CredManVc CredManr,row CredManSchedVc CSrw,var record SMVc SMr,var val calcbal)
+begin
+  Integer i,rwcnt;
+  val inst,intrate,fees,pen;
+  row SMVc SMrw;
+  record IVVc IVr;
+  row IVVc IVrw;
+  record CredManSetBlock CMb;
+  
+  IVr.SerNr = CSrw.InvoiceNr;
+  if (ReadFirstMain(IVr,1,true)) then begin
+    BlockLoad(CMb);
+    AddInvoiceToList(CredManr,IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate,CMb);
+  end;
+
+  
+return;
+end;
 
 procedure AddScheduleToList(record CredManVc CredManr,row CredManSchedVc CSrw,var record SMVc SMr,var val calcbal)
 begin
@@ -548,6 +575,9 @@ begin
                 SMrw.CurncyCode = i;
               matrowput(SMr,lastrow,SMrw);
             end;
+          case 6:
+            lastrow = matrowcnt(SMr);
+            AddCreditToList(CredManr,CSrw,SMr,calcbal);
         end;
       end;
     end;

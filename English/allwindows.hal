@@ -2808,9 +2808,9 @@ if (true) then begin
   CheckBox(h3+130,v+=16,0,"Don't include in Mass Emails",NoEmailFlag);
   
   
-  ButtonFrame(h3,v+=35,200,2,"Distribute Principal");
+  /*ButtonFrame(h3,v+=35,200,2,"Distribute Principal");
   RadioButton(h3,v,0,0,"Equally To Upcoming Months",CreditPrincipleRule);
-  RadioButton(h3,v+=16,1,0,"Last Month",CreditPrincipleRule);
+  RadioButton(h3,v+=16,1,0,"Last Month",CreditPrincipleRule);*/
 //CUST-END
 //    CheckBox(h3,v+=16,0,"Including VAT",InclVAT);
   //  CheckBox(h3,v+=16,0,"E-Invoice Exported",EInvExpFlag);
