@@ -94,6 +94,7 @@ begin
       end;
       credIVr.SerNr = -1;
       credIVr.OKFlag = 0;
+      credIVr.NoInterestFlag = 1;
       openwindow("IVCredManNoteDClass",1,CurWindow,"","",credIVr);
     end else begin
       inner.CreateCreditNoteIVDsm;
