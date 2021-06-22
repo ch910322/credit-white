@@ -2537,7 +2537,7 @@ begin
 end;
  
 global
-updating procedure CreateCredManObject(var record CredManVc CMr,Boolean autof)
+updating procedure CreateCredManObject(var record CredManVc CMr,Boolean autof,Boolean showerrors)
 begin
   record CMApplicationSetBlock CMAb;
   record OTVc OTr;
@@ -2555,7 +2555,9 @@ begin
   if (testf) then begin
     err = GenCredManObj(CMr,CMAb,Objr);
     if (err!=0) then begin
-      MessageBox(err,"");
+      if (showerrors) then begin
+        MessageBox(err,"");
+      end;
       Objr.Code = "";
     end else begin
       RecordStore(Objr,false);

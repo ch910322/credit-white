@@ -1,0 +1,37 @@
+//<halrule>server-only</halrule>
+external updating procedure CreateCredManObject(var record CredManVcVc,Boolean,Boolean);
+
+global
+updating procedure GenCredManObjMn(record RcVc RepSpec)
+begin
+  record CredManVc CMr,oldCMr;
+  boolean TrHs,testf;
+  
+  TrHs = true;
+  CMr.TransDate = RepSpec.sStartDate;
+  while (LoopKey("TransDate",CMr,1,TrHs)) begin
+    if (CMr.TransDate>RepSpec.sEndDate) then begin
+      TrHs = false;
+    end;
+    if (TrHs) then begin
+      testf = false;
+      switch (CMr.Status) begin
+        case 0: testf = RepSpec.flags[0]!=0;
+        case 1: testf = RepSpec.flags[1]!=0;
+        case 2: testf = RepSpec.flags[2]!=0;
+        case 3: testf = RepSpec.flags[3]!=0;
+        case 4: testf = RepSpec.flags[4]!=0;
+        case 5: testf = RepSpec.flags[5]!=0;
+        case 6: testf = RepSpec.flags[6]!=0;
+        case 7: testf = RepSpec.flags[7]!=0;
+      end;
+      if (testf) then begin
+        RecordCopy(oldCMr,CMr);
+        CreateCredManObject(CMr,false,false);
+        if (RecordUpdate(oldCMr,CMr,false)==0) then begin
+        end;
+      end;
+    end;
+  end;
+  return;
+end;
