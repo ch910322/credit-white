@@ -1,4 +1,6 @@
 //<halrule>server-only</halrule>
+external function Boolean IsNovitiCustomer;
+
 global
 procedure LoanApplicationListRn(record RcVc RepSpec)
 begin
@@ -7,7 +9,7 @@ begin
   Integer totcnt;
   val totamount;
   record CUVc CUr;
-  Integer c11,c12,c13,c14;
+  Integer c9,c11,c12,c13,c14;
   
   StartReportJob(UsetStr(200210));
 
@@ -24,8 +26,15 @@ begin
   SetRepCol(6,650);
   SetRepCol(7,660);
   c14 = 700;
-  SetRepCol(8,830);
+  if (IsNovitiCustomer()) then begin
+    c9 = 830;
+    SetRepCol(8,970);
+  end else begin
+    SetRepCol(8,830);
+  end;
+  
   SetRepCol(9,1110);
+
   c11 = 1160;
 //  SetRepCol(11,890);
 
@@ -39,6 +48,9 @@ begin
   OutString(c12,0,USetStr(200217),false);
   OutString(6,0,USetStr(200218),true);
   OutString(7,0,USetStr(200219),false);
+  if (IsNovitiCustomer()) then begin
+    OutString(c9,0,USetStr(200224),false);
+  end;
   OutString(c14,0,USetStr(200223),false);
   OutString(8,0,USetStr(200220),false);
   OutString(9,0,USetStr(200221),false);
@@ -89,6 +101,9 @@ begin
         OutString(7,0,LAr.Months,false);
         OutString(c14,0,CUr.BankAccount,false);
         OutString(8,0,LAr.Source,false);
+        if (IsNovitiCustomer()) then begin
+          OutString(c9,0,LAr.ContacteMail,false);
+        end;
         OutString(9,0,LAr.InterfaceLanguage,false);
         OutString(c11,0,LAr.BrowserOS,false);
         totcnt = totcnt + 1;
