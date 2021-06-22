@@ -19,6 +19,7 @@ begin
 		ArrayField(ImportNode,M4Str,250,0);
 		ArrayField(Invert,M4Set,432,0);
 		ArrayField(XMLAtribute,M4Str,250,0);
+		ArrayField(ExcludeXMLAtribute,M4Str,250,0);
 		endarray;
   EndBlock;
 
