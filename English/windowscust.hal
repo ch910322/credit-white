@@ -4044,7 +4044,8 @@ begin
   ButtonFrame(h2,v=35,200,2,"Distribute Principal");
   RadioButton(h2,v,0,0,"Equally To Upcoming Months",CreditPrincipleRule);
   RadioButton(h2,v+=16,1,0,"Last Month",CreditPrincipleRule);
-
+  
+  Checkbox(h2,v+=20,0,"Calculate overdues from credited invoice",NoInterestFlag);//NoInterestFlag
   
   TileButton(1,"Items");
   Tile(1,200,false,"1",Math);
@@ -4069,5 +4070,26 @@ begin
   vs = 22;
   v = 18; VTab(-35,v,-16,v+vs,ToolFlip,1,"A");
 
+  EndWindow;
+end;
+
+window GenCredManObjVClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,v2,v3,vm,vs;
+    
+  WindowBegin("Specify Generate Objects for Agreements",GenCredManObjVClass,CGMnt,RcType);
+  SetWRect(64,80,445,150);
+  h = 160; v = 6; vs = 20;
+  PeriodField(h,v,"Period"); 
+  ButtonFrame(h,v+=40,100,8,"Status");
+  CheckBox(h,v,0,"New",flags[0]);
+  CheckBox(h,v+=16,0,"Approved",flags[1]);
+  CheckBox(h,v+=16,0,"Signed",flags[2]);
+  CheckBox(h,v+=16,0,"Active",flags[3]);
+  CheckBox(h,v+=16,0,"Disbursed",flags[4]);
+  CheckBox(h,v+=16,0,"Cancelled",flags[5]);
+  CheckBox(h,v+=16,0,"Paused",flags[6]);
+  CheckBox(h,v+=16,0,"Finished",flags[7]);
   EndWindow;
 end;

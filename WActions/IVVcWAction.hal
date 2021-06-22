@@ -94,6 +94,7 @@ begin
       end;
       credIVr.SerNr = -1;
       credIVr.OKFlag = 0;
+      credIVr.NoInterestFlag = 1;
       openwindow("IVCredManNoteDClass",1,CurWindow,"","",credIVr);
     end else begin
       inner.CreateCreditNoteIVDsm;
@@ -211,6 +212,10 @@ begin
           end;
           closewindow(mwn);
           nwn = OpenWindow("IVDClass",1,0,"","",IVCreditr);
+          if(setIVr.NoInterestFlag==0)then begin
+            IVr.NoInterestFlag = 1;
+            recordstore(IVr,true);
+          end;
         if (WindowDoOK(nwn,0)) then begin
           UpdateBrowses("IVVc");
         end;
