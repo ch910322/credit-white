@@ -89,18 +89,29 @@ end;
 window CreditinfoFieldAssignBlockTClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
+  real v,vs,h,h2,h3,t,tilenr,vm,pos;
+  string 255 label1,label2,label3,label4,label5;
+  
   WindowBegin("Creditinfo import fields assign",CreditinfoFieldAssignBlockTClass,CGHbl,0);
   SetBlid(CreditinfoFieldAssignBlock);
   Sizeable(-1,-1,0,0);
   SetWRect(50,100,1000,100);
   MatrixBegin(4,40,-32,-20,-,200);
-  MatCol(1,24,"Register",0,Register,false,StrSetSClass);
-  MatCol(1,124,"Field",0,FieldName,false,FieldSClass);
-  MatCol(1,210,"Type",0,DataType,false,SetSClass); 
-  MatCol(1,350,"Import Data",0,ImportNode,false,0); 
-  MatCol(1,-250,"XML Attribute",0,XMLAtribute,false,0); 
-  MatCol(1,-70,"Invert Yes/No",0,Invert,false,SetSClass); 
+  Flip(0);
+    MatCol(1,24,"Register",0,Register,false,StrSetSClass);
+    MatCol(1,124,"Type",0,DataType,false,SetSClass);
+    MatCol(1,220,"Field",0,FieldName,false,FieldSClass);
+  Flip(1);
+    MatCol(1,-550,"Import Data",0,ImportNode,false,0); 
+    MatCol(1,-290,"XML Attribute",0,XMLAtribute,false,0); 
+    MatCol(1,-90,"Invert Yes/No",0,Invert,false,SetSClass); 
+  Flip(2);
+    MatCol(1,-400,"XML Attribute",0,XMLAtribute,false,0); 
   EndMatrix;
+  vs = 22;
+  v = 24; VTab(-35,v,-16,v+vs,ToolFlip,1,"A");
+  v=v+ vs; VTab(-35,v,-16,v+vs,ToolFlip,2,"B");
+  //v=v+ vs; VTab(-35,v,-16,v+vs,ToolFlip,3,"C");
   EndWindow;
   return;
 end;
