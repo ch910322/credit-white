@@ -78,11 +78,27 @@ end;
 function string 255 XmlGetFrom(xml axml,string node,string attributestr)
 begin
   string 255 res;
+  string 255 first,last;
+
+  first = firstinrange(attributestr,50);
+  last = lastinrange(attributestr,50);
+  
+  if(first==last)then begin
+    last = "";
+  end;
   
   if(blank(attributestr))then begin
     res = XmlGet(axml,node);
   end else begin
-    res = XmlGetAttribute(axml,node,attributestr);
+    if(nonblank(XmlGet(axml,node & "/" & first)))then begin
+      res = XmlGet(axml,node & "/" & first);
+    end else begin
+      if(nonblank(last))then begin
+        res = XmlGetAttribute(axml,node & "/" & first,last);
+      end else begin
+        res = XmlGetAttribute(axml,node,first);
+      end;
+    end;
   end;
   
   XmlGetFrom = res;
@@ -98,7 +114,7 @@ begin
   string 255 lang,params,url,path,root,tstr,fn,name,surname,datestr,datestr1,datestr2,attr,fieldtopaste,importnode;
   integer ckbox,countfields,countattributes,index;
   boolean attribfill,importdata,testf;
-      
+  val testval;    
       
       if(nonblank(CABrw.ImportNode))then begin
         index = 0;
@@ -146,21 +162,70 @@ begin
             logtext(0,"2 importnode " & importnode);
             k = steresult.length;
             if(CountObjects(CABrw.XMLAtribute)>1)then begin
-              pos = 0;
-              ExtractObj(CABrw.XMLAtribute,pos,attr);
-              while(nonblank(attr))begin
-                switch(CABrw.DataType)begin
-                  case M4Str:   tstr = XmlGetFrom(axml,importnode,attr);
-                                if(nonblank(tstr))then begin
-                                  if(blank(steresult[k]))then begin
-                                    steresult[k] = tstr;
-                                  end else begin
-                                    steresult[k] = steresult[k] & ", " & tstr;
-                                  end;
-                                end;
-                              
+              testf = true;
+              
+              if(nonblank(CABrw.ExcludeXMLAtribute))then begin
+                pos = 0;
+                ExtractObj(CABrw.ExcludeXMLAtribute,pos,attr);
+                while(nonblank(attr))begin
+                  if(nonblank(XmlGetFrom(axml,importnode,attr)))then begin
+                    testf = false;
+                  end;
+                  ExtractObj(CABrw.ExcludeXMLAtribute,pos,attr);
                 end;
+              end;
+              
+              if(testf)then begin
+                if(nonblank(CABrw.XMLAtributeFrom))then begin
+                  testval = stringtoval(XmlGetFrom(axml,importnode,CABrw.XMLAtributeFrom),m4val);
+                  logtext(0,"testval 1 " & testval);
+                  if(testval<CABrw.XMLAtributeFromVal)then begin
+                    testf = false;
+                  end;
+                end;
+                if(nonblank(CABrw.XMLAtributeTo))then begin
+                  testval = stringtoval(XmlGetFrom(axml,importnode,CABrw.XMLAtributeTo),m4val);
+                  logtext(0,"testval 2 " & testval);
+                  if(testval>CABrw.XMLAtributeToVal)then begin
+                    testf = false;
+                  end;
+                end;
+                if(nonblank(CABrw.ExcludeXMLAtributeFrom))then begin
+                  testval = stringtoval(XmlGetFrom(axml,importnode,CABrw.ExcludeXMLAtributeFrom),m4val);
+                  logtext(0,"testval 3 " & testval);
+                  if(testval>CABrw.ExcludeXMLAtributeFromVal)then begin
+                    testf = false;
+                  end;
+                end;
+                if(nonblank(CABrw.ExcludeXMLAtributeTo))then begin
+                  testval = stringtoval(XmlGetFrom(axml,importnode,CABrw.ExcludeXMLAtributeTo),m4val);
+                  logtext(0,"testval 4 " & testval);
+                  if(testval<CABrw.ExcludeXMLAtributeToVal)then begin
+                    testf = false;
+                  end;
+                end;
+              end;
+              logtext(0,testf & " testf " & index);
+              if(testf)then begin
+                pos = 0;
                 ExtractObj(CABrw.XMLAtribute,pos,attr);
+                while(nonblank(attr))begin
+                  switch(CABrw.DataType)begin
+                    case M4Str:   tstr = XmlGetFrom(axml,importnode,attr);
+                                  if(nonblank(tstr))then begin
+                                    if(blank(steresult[k]))then begin
+                                      steresult[k] = tstr;
+                                    end else begin
+                                      if(blank(CABrw.Separator))then begin
+                                        CABrw.Separator = ", ";
+                                      end;
+                                      steresult[k] = steresult[k] & CABrw.Separator & tstr;
+                                    end;
+                                  end;
+                              
+                  end;
+                  ExtractObj(CABrw.XMLAtribute,pos,attr);
+                end;
               end;
             end else begin
               if(nonblank(XmlGetFrom(axml,importnode,CABrw.XMLAtribute)))then begin
@@ -177,10 +242,36 @@ begin
                 end;
                 
                 if(testf)then begin
+                  if(nonblank(CABrw.XMLAtributeFrom))then begin
+                    testval = stringtoval(XmlGetFrom(axml,importnode,CABrw.XMLAtributeFrom),m4val);
+                    if(testval<CABrw.XMLAtributeFromVal)then begin
+                      testf = false;
+                    end;
+                  end;
+                  if(nonblank(CABrw.XMLAtributeTo))then begin
+                    testval = stringtoval(XmlGetFrom(axml,importnode,CABrw.XMLAtributeTo),m4val);
+                    if(testval>CABrw.XMLAtributeToVal)then begin
+                      testf = false;
+                    end;
+                  end;
+                  if(nonblank(CABrw.ExcludeXMLAtributeFrom))then begin
+                    testval = stringtoval(XmlGetFrom(axml,importnode,CABrw.ExcludeXMLAtributeFrom),m4val);
+                    if(testval>CABrw.ExcludeXMLAtributeFromVal)then begin
+                      testf = false;
+                    end;
+                  end;
+                  if(nonblank(CABrw.ExcludeXMLAtributeTo))then begin
+                    testval = stringtoval(XmlGetFrom(axml,importnode,CABrw.ExcludeXMLAtributeTo),m4val);
+                    if(testval<CABrw.ExcludeXMLAtributeToVal)then begin
+                      testf = false;
+                    end;
+                  end;
+                end;
+                
+                if(testf)then begin
                   switch(CABrw.DataType)begin
                     case M4Str:   tstr = XmlGetFrom(axml,importnode,CABrw.XMLAtribute);
                                   steresult[steresult.length] = tstr;
-                                  logtext(0,"tstr " & tstr);
                     case M4Date:  steresult[steresult.length]  = DateFromString(XmlGetFrom(axml,importnode,CABrw.XMLAtribute),"YYYY.MM.DD");
                     case M4Chk:   ckbox = 0;
                                 if (XmlNodeExists(axml,importnode)) then begin
@@ -225,7 +316,7 @@ row CreditinfoFieldAssignBlock CABrw;
 integer i,rwcnt,pos,pos1;
 string 255 lang,params,url,path,fieldtopaste;
 array string 255 steresult;
-integer ckbox,countfields,countattributes,index;
+integer ckbox,countfields,countattributes,index,step;
 boolean attribfill;
 
   //root = "root/BasicInfo";
@@ -241,6 +332,15 @@ boolean attribfill;
           index = 0;
           parsecreditinfoxml(CABrw,axml,steresult); 
           pos1 = 0;
+          
+          step = 1;
+          if(steresult.length>1)then begin
+            if(CABrw.GetOrder==1)then begin
+              index = steresult.length - 1;
+              step = -1;
+            end;
+          end;
+          
           ExtractObj(CABrw.FieldName,pos1,fieldtopaste);  
           while(nonblank(fieldtopaste))begin  
             logtext(0,"LA fieldtopaste " & fieldtopaste); 
@@ -253,7 +353,10 @@ boolean attribfill;
                 case M4Long:  SetFieldValueByName(LAr,fieldtopaste,stringtolongint(steresult[index]),-1);
                 case M4Int:  SetFieldValueByName(LAr,fieldtopaste,stringtoint(steresult[index]),-1);
               end;
-              index = index + 1;
+              index = index + step;
+              if(index<0)then begin
+                index = 9999;
+              end;
             end;
             ExtractObj(CABrw.FieldName,pos1,fieldtopaste);  
           end;
@@ -272,7 +375,7 @@ row CreditinfoFieldAssignBlock CABrw;
 integer i,rwcnt,pos,pos1;
 string 255 lang,params,url,path,root,tstr,fn,name,surname,datestr,datestr1,datestr2,attr,fieldtopaste,importnode;
 array string 255 steresult;
-integer ckbox,countfields,countattributes,index;
+integer ckbox,countfields,countattributes,index,step;
 boolean attribfill;
 
   //root = "root/BasicInfo";
@@ -288,6 +391,15 @@ boolean attribfill;
           index = 0;
           parsecreditinfoxml(CABrw,axml,steresult); 
           pos1 = 0;
+          
+          step = 1;
+          if(steresult.length>1)then begin
+            if(CABrw.GetOrder==1)then begin
+              index = steresult.length - 1;
+              step = -1;
+            end;
+          end;
+          
           ExtractObj(CABrw.FieldName,pos1,fieldtopaste);  
           while(nonblank(fieldtopaste))begin   
             logtext(0,"CU fieldtopaste " & fieldtopaste); 
@@ -300,7 +412,10 @@ boolean attribfill;
                 case M4Long:  SetFieldValueByName(CUr,fieldtopaste,stringtolongint(steresult[index]),-1);
                 case M4Int:  SetFieldValueByName(CUr,fieldtopaste,stringtoint(steresult[index]),-1);
               end;
-              index = index + 1;
+              index = index + step;
+              if(index<0)then begin
+                index = 9999;
+              end;
             end;
             ExtractObj(CABrw.FieldName,pos1,fieldtopaste);  
           end;
