@@ -86,9 +86,8 @@ begin
   Maintenance("Recreate Invoices with Prolong months",CredManRecreateDocsVClass,CredManRecreateDocsMn,modCredMan);
 
   Maintenance("Create Agreement Test from Agreement",CredManCreateTestVClass,CredManCreateTestMn,modCredMan);
-  if (IsOmegaCustomer) then begin
-    Maintenance("Generate Objects for Agreements",GenCredManObjVClass,GenCredManObjMn,modCredMan);
-  end;
+  Maintenance("Generate Objects for Agreements",GenCredManObjVClass,GenCredManObjMn,modCredMan);
+  
   Document("Credit Agreement Schedule",CredManScheduleRClass,CredManScheduleForm,CredManScheduleFClass,modCredMan);
   Document("Loan Application",LoanAppRClass,LoanAppForm,LoanAppFClass,modCredMan);
   //Document("Combined Application",LoanAppRClass,CombinedAgreementForm,CombinedAgreementFClass,modCredMan);
