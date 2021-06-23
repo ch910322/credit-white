@@ -11,7 +11,7 @@ external inner function Boolean FindCustomerRelation(string,string,var record CU
 external inner function boolean AddEMailRecipients(var record MailVc,string,string,integer);
 
 global
-updating procedure CreateTaskActivityCredMan(record CredManVc CredManr,string person,string acttype,string acttext,date TransDate,time StartTime,boolean changemgr)
+updating procedure CreateTaskActivityCredMan(var record CredManVc CredManr,string person,string acttype,string acttext,date TransDate,time StartTime,boolean changemgr)
 begin
   record ActVc Actr;
   string 255 warning;
@@ -26,7 +26,7 @@ begin
       RecordUpdate(oldCredManr,CredManr,true);
       updstatef = true;//??
     end;
-    if (nonblank(acttype)) then begin
+    if ((nonblank(acttype)) and (nonblank(person))) then begin
       Actr.SerNr = NextSerNr("ActVc",TransDate,-1,false,"");
       Actr.TransDate = TransDate;
       Actr.StartTime = StartTime;
@@ -55,13 +55,13 @@ begin
 end;
 
 global
-updating procedure CreateTaskActivityLoanApp(record B2BLoanApplicationVc LAr,string person,string acttype,string acttext,date TransDate,time StartTime,boolean changemgr)
+updating procedure CreateTaskActivityLoanApp(var record B2BLoanApplicationVc LAr,string person,string acttype,string acttext,date TransDate,time StartTime,boolean changemgr)
 begin
   record ActVc Actr;
   string 255 warning;
   record B2BLoanApplicationVc oldLAr;
   boolean updstatef;
-  
+
   updstatef = false;
   if (ReadFirstMain(LAr,1,true)) then begin
     if ((changemgr) and (nonblank(person))) then begin
@@ -70,7 +70,7 @@ begin
       RecordUpdate(oldLAr,LAr,true);
       updstatef = true;//??
     end;
-    if (nonblank(acttype)) then begin
+    if ((nonblank(acttype)) and (nonblank(person))) then begin
       Actr.SerNr = NextSerNr("ActVc",TransDate,-1,false,"");
       Actr.TransDate = TransDate;
       Actr.StartTime = StartTime;
@@ -138,7 +138,6 @@ begin
   boolean found;
   
   ev = 0;
-  res = false;
   while (GetNextSubString(apporderclass,pos,",",tstr)) begin
     ResetLoop(LAr);
     LAr.OrderClass = tstr;
@@ -157,48 +156,43 @@ begin
   return;
 end;
 
-function boolean GetManagerWorkLoadEvaluation(string user,Integer EvaluationType,string apporderclass,date d,var longint ev)
+procedure GetManagerWorkLoadEvaluation(string user,Integer EvaluationType,string apporderclass,date d,var longint ev)
 begin
   record ActVc Actr;
-  boolean testf,foundf,res;
+  boolean testf,foundf;
   string 255 keystr;
 
   ev = 0;
-  res = false;
   if (EvaluationType==3) then begin
-    res = GetManagerApplicationCount(user,apporderclass,ev);
+    GetManagerApplicationCount(user,apporderclass,ev);
   end else begin
-  keystr = "OKFlagUserMain:" & user;
-  Actr.OKFlag = 0;
-  Actr.MainPersons = user;
-  foundf = true;
-  while (LoopKey(keystr,Actr,1,foundf)) begin
-    if (!SetInSet(user,Actr.MainPersons)) then begin
-      foundf = false;
-    end; 
-    if (Actr.OKFlag != 0) then begin
-      foundf = false;
-    end;
-    if (foundf) then begin
-      switch (EvaluationType) begin
-        case 0: 
-          if (Actr.TransDate == d) then begin
-            ev = ev + TimeToMinutes(Actr.CostTime);
-            res = true;
-          end;
-        case 1:
-          if (Actr.TransDate == d) then begin
-            ev = ev +1;
-            res = true;
-          end;    
-        case 2:
-          ev = ev +1;  
-          res = true;          
+    keystr = "OKFlagUserMain:" & user;
+    Actr.OKFlag = 0;
+    Actr.MainPersons = user;
+    foundf = true;
+    while (LoopKey(keystr,Actr,1,foundf)) begin
+      if (!SetInSet(user,Actr.MainPersons)) then begin
+        foundf = false;
+      end; 
+      if (Actr.OKFlag != 0) then begin
+        foundf = false;
+      end;
+      if (foundf) then begin
+        switch (EvaluationType) begin
+          case 0: 
+            if (Actr.TransDate == d) then begin
+              ev = ev + TimeToMinutes(Actr.CostTime);
+            end;
+          case 1:
+            if (Actr.TransDate == d) then begin
+              ev = ev +1;
+            end;    
+          case 2:
+            ev = ev +1;  
+        end;  
       end;  
     end;  
-  end;  
   end;
-  GetManagerWorkLoadEvaluation = res;
   return;
 end;
 
@@ -226,6 +220,7 @@ begin
   end;
   if (!foundf) then begin
     //2. exact match of activity type and agreement type classification;
+    ResetLoop(MWr);
     CMTyper.Code = CredManType;
     if (ReadFirstMain(CMTyper,1,true)) then begin 
       while (GetNextSubString(CMTyper.Classifications,pos,",",tstr)) begin
@@ -241,6 +236,7 @@ begin
   end;
   if (!foundf) then begin
     //3. exact match of activity type and blank agreement type and agreement type classification fields;
+    ResetLoop(MWr);
     MWr.ActType = ActType;
     MWr.CredManType = "";
     MWr.CredManClass = "";
@@ -248,6 +244,7 @@ begin
   end;
   if (!foundf) then begin
     //4.Managers Workload record with blank activity type, blank agreement type and blank agreement type classification fields
+    ResetLoop(MWr);
     MWr.ActType = "";
     MWr.CredManType = "";
     MWr.CredManClass = "";
@@ -264,14 +261,16 @@ begin
          TrHs = false;
       end;
       if (TrHs) then begin
-        if (GetManagerWorkLoadEvaluation(Userr.Code,MWr.EvaluationType,MWr.OrderClass,d,ev)) then begin
-          if ((prevev==-1) or (ev <= prevev)) then begin
-            res = Userr.Code;
-            prevev = ev;  
-          end;  
+        GetManagerWorkLoadEvaluation(Userr.Code,MWr.EvaluationType,MWr.OrderClass,d,ev);
+        if ((prevev==-1) or (ev <= prevev)) then begin
+          res = Userr.Code;
+          prevev = ev;  
         end;
       end;  
     end;
+  end;
+  if (blank(res)) then begin
+    LogText(0,"GetLeastWorkLoadManager " & ActType & " " & CredManType & " failed");
   end;
   GetLeastWorkLoadManager = res;
   return;
@@ -539,9 +538,6 @@ begin
               end;
               if (ATBrw.PersonType==2) then begin
                 person = GetLeastWorkLoadManager(ATbrw.ActType,CredManr.Type,actdate);
-                if (blank(person)) then begin
-                  LogText(0,"GetLeastWorkLoadManager " & ATbrw.ActType & " failed");
-                end; 
               end;  
               qupdating.CreateTaskActivityCredMan(CredManr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime,ATbrw.AssignRecord==1);
             end;
@@ -564,9 +560,6 @@ begin
               end;
               if (ATBrw.PersonType==2) then begin
                 person = GetLeastWorkLoadManager(ATbrw.ActType,CredManr.Type,actdate);
-                if (blank(person)) then begin
-                  LogText(0,"GetLeastWorkLoadManager " & ATbrw.ActType & " failed");
-                end; 
               end;
               qupdating.CreateTaskActivityLoanApp(LAr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime,ATbrw.AssignRecord==1);
               qupdating.SendAutoEmailWithStdText(ATbrw.EmailStdText,person,LAr.CustCode);
@@ -601,9 +594,6 @@ begin
                 end;
                 if (ATBrw.PersonType==2) then begin
                   person = GetLeastWorkLoadManager(ATbrw.ActType,CredManr.Type,actdate);
-                  if (blank(person)) then begin
-                    LogText(0,"GetLeastWorkLoadManager " & ATbrw.ActType & " failed");
-                  end; 
                 end;
                 qupdating.CreateTaskActivityPropertyInsurance(CMpr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime);
               end;
