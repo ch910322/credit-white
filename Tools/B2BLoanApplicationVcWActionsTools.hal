@@ -13,6 +13,7 @@ external inner function string 255 LetVcDoReplaceToken(record RcVc,string);
 external function string 255 NovitiGetEmailSender();
 external inner function Boolean CheckAttachedFilesSizeToLetter(record LetVc);
 external inner procedure FindUserMailboxName(string,var string,var string);
+external inner procedure CredManSumup(var record CredManVc);
 
 global
 function Boolean InsertContactName(var record B2BLoanApplicationVc LAr)
@@ -318,6 +319,9 @@ begin
   record CMOrderClassBlock OCb;
   record CredManTypeVc CMTr;
   string 255 warning;
+  row B2BLoanApplicationVc LArw;
+  integer rwcnt,i;
+  row CredManVc CredManrw;
 
   CUr.Code = LAr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
@@ -336,6 +340,28 @@ begin
     CredManr.startDate = CurrentDate;//LAr.StartDate;
     CredManr.InstalmentMonths = LAr.Months;
     CMTr.Code = LAr.Type;
+    rwcnt = matrowcnt(LAr);
+    for(i=0;i<rwcnt;i=i+1)begin
+      matrowget(LAr,i,LArw);
+      if(nonblank(LArw.ArtCode))then begin
+        clearrow(CredManr,CredManrw,1);
+        CredManrw.ArtCode = LArw.ArtCode;
+        CredManrw.Comment = LArw.Comment;
+        CredManrw.ChargeType = LArw.ChargeType;
+        CredManrw.Quant = LArw.Quant;
+        CredManrw.Price = LArw.Price;
+        CredManrw.Sum = LArw.Sum;
+        CredManrw.vRebate = LArw.vRebate;
+        CredManrw.PriceFactor = LArw.PriceFactor;
+        CredManrw.InvoicedOn = LArw.InvoicedOn;
+        CredManrw.InvoicedSum = LArw.InvoicedSum;
+        CredManrw.MinSum = LArw.MinSum;
+        CredManrw.MaxSum = LArw.MaxSum;
+        CredManrw.InvDate = LArw.InvDate;
+        matrowput(CredManr,matrowcnt(CredManr),CredManrw);
+        CredManSumup(CredManr);
+      end;
+    end;
     if (ReadFirstMain(CMTr,1,true)) then begin
       CredManr.AnnualRate = CMTr.AnnualRate;
       CredManr.UseCompensationInvoices = CMTr.UseCompensationInvoices;
