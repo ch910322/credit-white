@@ -24,6 +24,39 @@ remote procedure InsertB2BLoanApplicationBeneficialName(var record B2BLoanApplic
 remote updating procedure GetB2BLoanApplicationDebtRecord(record B2BLoanApplicationVc,var record LoanAppDebtsVc);
 external inner function roundmode SetRoundModeD(Integer);
 
+
+procedure LASumUp(var record B2BLoanApplicationVc LAr)
+begin
+  row B2BLoanApplicationVc LArw;
+  integer i,rwcnt;
+  val sum;
+  
+  rwcnt = matrowcnt(LAr);
+  for(i=0;i<rwcnt;i=i+1)begin
+    matrowget(LAr,i,LArw);
+    sum = sum + LArw.Sum;
+  end;
+  LAr.AdminFee = sum;
+
+return;
+end;
+
+global
+function Boolean B2BLoanApplicationDClassOnOverStrike(Integer wn,Integer rownr)
+BEGIN
+  record B2BLoanApplicationVc LAr
+
+  if (rownr>=0) then begin
+    GetWindowRecord(wn,LAr);    
+    LASumUp(LAr);
+    PutWindowRecord(wn,LAr);    
+  end;
+  
+  B2BLoanApplicationDClassOnOverStrike = true;
+  RETURN;
+END;
+
+
 function Boolean B2BLoanApplicationDClassCustCodeEFAfter(Integer wn,Integer changed)
 begin
   Boolean res;
@@ -677,6 +710,7 @@ begin
       matrowput(LAr,rownr,LArw);
       //CredManVc_PasteQuant(CredManr,rownr);
     end;
+    LASumUp(LAr);
     PutWindowRecord(wn,LAr);
   end;
   B2BLoanApplicationDClassQuantEFAfter = true;
@@ -694,6 +728,7 @@ begin
       matrowget(LAr,rownr,LArw);
         LArw.Sum = round(LArw.Price * LArw.Quant/100*(100-LArw.vRebate),defaultcurroundoff);
       matrowput(LAr,rownr,LArw);
+      LASumUp(LAr);
       //CredManVc_PastevRebate(CredManr,rownr);
     end;
     PutWindowRecord(wn,LAr);
@@ -713,6 +748,7 @@ begin
       matrowget(LAr,rownr,LArw);
         LArw.Sum = round(LArw.Price * LArw.Quant/100*(100-LArw.vRebate),defaultcurroundoff);
       matrowput(LAr,rownr,LArw);
+      LASumUp(LAr);
     //CredManUpdateAndSumup(CredManr,rownr,fieldname);
     PutWindowRecord(wn,LAr);
   end;
