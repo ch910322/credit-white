@@ -1328,13 +1328,15 @@ begin
     BlockLoad(CredManSetb);
     BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
     rwcnt = MatRowCnt(SMr);
-    if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
+    if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0 and rwcnt>2) then begin
       MatRowGet(SMr,rwcnt-2,lastSMrw);
       MatRowGet(SMr,rwcnt-3,lastSM2rw);
       tmonthdiff = 1;
-    end else begin
-      MatRowGet(SMr,rwcnt-1,lastSMrw);
-      MatRowGet(SMr,rwcnt-2,lastSM2rw);
+    end else begin  
+      if(rwcnt>2)then begin
+        MatRowGet(SMr,rwcnt-1,lastSMrw);
+        MatRowGet(SMr,rwcnt-2,lastSM2rw);
+      end;
     end;
     if (blank(lastSM2rw.ExtraComment)) then begin
       if (TotalsDifferTooMuch(lastSM2rw.ToRateB2,lastSMrw.ToRateB2,diff,CredManr,usemonths-tmonthdiff)) then begin//funny name :)
