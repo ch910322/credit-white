@@ -14,12 +14,23 @@ begin
     RecordField(Matrix,M4Matrix,0,0);
     ArrayBegin(Matrix,-,1);
 		ArrayField(Register,M4StrSet,-3,0);
-		ArrayField(FieldName,M4Str,60,0);
+		ArrayField(FieldName,M4Str,255,0);
 		ArrayField(DataType,M4Set,334,0);
-		ArrayField(ImportNode,M4Str,250,0);
+		ArrayField(ImportNode,M4Str,255,0);
 		ArrayField(Invert,M4Set,432,0);
-		ArrayField(XMLAtribute,M4Str,250,0);
-		ArrayField(ExcludeXMLAtribute,M4Str,250,0);
+		ArrayField(XMLAtribute,M4Str,255,0);
+		ArrayField(ExcludeXMLAtribute,M4Str,255,0);
+		ArrayField(GetOrder,M4Set,30902,0);
+		ArrayField(XMLAtributeFrom,M4Str,255,0);
+		ArrayField(XMLAtributeFromVal,M4Val,0,0);
+		ArrayField(XMLAtributeTo,M4Str,255,0);
+		ArrayField(XMLAtributeToVal,M4Val,0,0);
+		ArrayField(ExcludeXMLAtributeFrom,M4Str,255,0);
+		ArrayField(ExcludeXMLAtributeFromVal,M4Val,0,0);
+		ArrayField(ExcludeXMLAtributeTo,M4Str,255,0);
+		ArrayField(ExcludeXMLAtributeToVal,M4Val,0,0);
+		ArrayField(Separator,M4Str,255,0);
+		
 		endarray;
   EndBlock;
 
