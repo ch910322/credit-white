@@ -97,11 +97,12 @@ begin
   real v,vs,h,h2,h3,t,tilenr,vm,pos;
   string 255 label1,label2,label3,label4,label5;
   
-  WindowBegin("Creditinfo import fields assign",CreditinfoFieldAssignBlockTClass,CGHbl,0);
+  WindowBegin("Creditinfo import fields assign",CreditinfoFieldAssignBlockTClass,CGHbl,HBlRecType);
   SetBlid(CreditinfoFieldAssignBlock);
+ // Sizeable(-1,-1,0,0);
+  SetWRect(20,80,900,457);
   Sizeable(-1,-1,0,0);
-  SetWRect(50,100,1000,100);
-  MatrixBegin(4,40,-32,-20,-,200);
+  MatrixBegin(20,20,-50,-20,-,99);
   Flip(0);
     MatCol(1,24,"Register",0,Register,false,StrSetSClass);
     MatCol(1,124,"Type",0,DataType,false,SetSClass);
