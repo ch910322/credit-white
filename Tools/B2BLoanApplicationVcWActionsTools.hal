@@ -14,6 +14,340 @@ external function string 255 NovitiGetEmailSender();
 external inner function Boolean CheckAttachedFilesSizeToLetter(record LetVc);
 external inner procedure FindUserMailboxName(string,var string,var string);
 external inner procedure CredManSumup(var record CredManVc);
+external inner function boolean AddEMailRecipients(var record MailVc,string,string,integer);
+external procedure AddSingleRecipient(var record MailVc,string);
+external inner procedure PrintEBSDocument(string,string,record RcVc,string,string,var area);
+external inner function Boolean FindCustomerRelation(string,string,var record CUVc);
+external inner procedure MailTextRow(string,string,string,var row MailTextVc,var Integer);
+external inner updating function LongInt MailVcRecordCheck(var record MailVc,record MailVc,LongInt,LongInt);
+
+//copy-paste
+procedure RemoveDuplicateRecipients(var record MailVc Mailr)
+begin
+  row MailVc Mailrw,Mail2rw;
+  Integer i,j,rwcnt;
+
+  rwcnt = MatRowCnt(Mailr);
+  for (i=1;i<rwcnt;i=i+1) begin
+    MatRowGet(Mailr,i,Mailrw);
+    for (j=i+1;j<rwcnt;j=j+1) begin
+      MatRowGet(Mailr,j,Mail2rw);
+      if (Mail2rw.AddrCode==Mailrw.AddrCode) then begin
+        MatRowDelete(Mailr,j);
+        j = j - 1;
+        rwcnt = rwcnt -1;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+global
+procedure AddSingleRecipient(var record MailVc Mailr,string email)
+begin
+  row MailVc Mailrw;
+  Integer i,rwcnt;
+  Boolean foundf;
+  
+  if (nonblank(email)) then begin 
+    rwcnt = MatRowCnt(Mailr);
+    for (i=1;i<rwcnt;i=i+1) begin
+      MatRowGet(Mailr,i,Mailrw);
+      if (Mailrw.AddrCode==email) then begin
+        foundf = true;
+        i = rwcnt;
+      end;
+    end;
+    if (!foundf) then begin
+      ClearRow(Mailr,Mailrw,1);
+      Mailrw.RowTyp = 0;
+      Mailrw.AddrCode = email;
+      MatRowPut(Mailr,MatRowCnt(Mailr),Mailrw);
+    end;
+  end; 
+
+  return;
+end;
+
+procedure AddContactsByJobDescription(record MailVc Mailr,record CUVc CUr,string jobdescr)
+begin
+  record CUVc ContactCUr;
+  record ContactRelVc CRr;
+  while (LoopKey("CustContactCode:" & CUr.Code,CRr,1,true)) begin
+    if (CRr.Invalid==0) then begin
+      ContactCUr.Code = CRr.ContactCode;
+      if (ReadFirstMain(ContactCUr,1,true)) then begin
+        if(nonblank(ContactCUr.JobDesc))then begin
+          if (SetInSet(ContactCUr.JobDesc,jobdescr)) then begin
+            AddSingleRecipient(Mailr,ContactCUr.eMail);
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+function Boolean AddLoanAppMailRecipients(string custcode,var record MailVc Mailr)
+begin
+  record CMInvoicingBlock CIb;
+  record CUVc CUr;
+  record CUVc ContactCUr;
+  Boolean res;
+
+  res = false;
+  BlockLoad(CIb);
+  CUr.Code = custcode;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    if (CIb.SendToMainContact==1) then begin
+      if (nonblank(CUr.Person)) then begin
+        if (FindCustomerRelation(CUr.Code,CUr.Person,ContactCUr)) then begin
+          if (nonblank(ContactCUr.eMail)) then begin
+            AddSingleRecipient(Mailr,ContactCUr.eMail);
+            res = true;
+          end;
+        end;
+      end;
+    end;
+    if (CIb.SendToCompany==1) then begin
+      if ((CIb.SendToCompNoContact==0) or (blank(CUr.Person))) then begin
+        AddSingleRecipient(Mailr,Cur.eMail);
+        res = true;
+      end;
+    end;
+    if (CIb.SendToAddRecip==1) then begin
+      AddEMailRecipients(Mailr,CUr.Code,"",kMailInvoice); 
+      res = true;
+    end;
+    if (nonblank(CIb.SendToJobDescr)) then begin
+      AddContactsByJobDescription(Mailr,CUr,CIb.SendToJobDescr);
+      res = true;
+    end;
+    RemoveDuplicateRecipients(Mailr);
+  end;
+  
+  AddLoanAppMailRecipients = res;
+  return;
+end;
+
+global
+updating function Integer CreateMailFromB2BLoanApplicationD(record B2BLoanApplicationVc LAr,var record MailVc Mailr,var string warning,Boolean additemstobodyf,string pdfform)
+begin
+  Integer res;
+  record MailVc dummyMailr;
+  record MailVc Mail2r;
+  record LTxtVc LTxtr;
+  record CUVc CUr;
+  record CUVc ContactCUr;
+  row B2BLoanApplicationVc LArw;
+  row MailVc MArw;
+  Integer i,rwcnt;
+  string 255 mailboxnr,tstr;
+  string 1 TAB;
+  record IVMailBlock IVMailr;
+  record MailSettingsBlock MSb;
+  string 255 docname,fname;
+  string 20 custemail;
+  record IVVc oldIVr;
+  row MailTextVc MTrw;
+  Integer IgnoreRecordDetails;
+  LongInt err;
+  record COCUServiceBlock CSb;
+  transaction Boolean gPDFEmailf;
+  transaction string 255 gaPDFEmailFiles;
+  record RcVc RepSpec;
+  area a,filearea;
+  record CYBlock CompYear;
+  Longint pos,l;
+  record Attach2Vc Attachr;
+  record RLinkVc RLr;
+  
+  BlockLoad(CompYear);
+
+  res = 0;
+  if (ReadFirstMain(LAr,0,true)) then begin end;  
+  TAB = chr(9);
+
+  BlockLoad(IVMailr);
+  tstr = IVMailr.EmailSender;
+  if (blank(tstr)) then begin
+    res = 2289;
+    warning = CurrentUser;
+    goto LCreateMailFromB2BLoanApplicationD;
+  end;  
+  MArw.RowTyp = 1;
+  MArw.AddrCode = tstr;
+  MatRowPut(Mailr,0,MArw);
+  CUr.Code = LAr.CustCode;
+  if (ReadFirstMain(CUr,1,true)) then begin end;
+  custemail = CredManCustEmail(CUr);
+  if (AddEMailRecipients(Mailr,CUr.Code,custemail,0)==false) then begin
+    res = 2289;
+    warning = CUr.Code;
+    goto LCreateMailFromB2BLoanApplicationD;
+  end;
+  //AddLoanAppMailRecipients(CUr.Code,Mailr);
+  
+  MailTextRow("B2BLoanApplicationVc","",CUr.LangCode,MTrw,IgnoreRecordDetails);
+  
+  
+  if (nonblank(MTrw.FirstTxt)) then begin
+    LTxtr.Code = MTrw.FirstTxt;
+  end else begin
+    LTxtr.Code = IVMailr.FirstTxt;
+  end;
+  if (ReadFirstMain(LTxtr,1,true)) then begin
+    Mailr.HtmlFlag = LTxtr.HtmlFlag;
+  end;
+  if (Mailr.HtmlFlag==0) then begin
+    if (nonblank(MTrw.LastTxt)) then begin
+      LTxtr.Code = MTrw.LastTxt;
+    end else begin
+      LTxtr.Code = IVMailr.LastTxt;
+    end;
+    if (ReadFirstMain(LTxtr,1,true)) then begin
+      Mailr.HtmlFlag = LTxtr.HtmlFlag;
+    end;
+  end;
+  
+  
+  RepSpec.f1 = LAr.ContactName;//F_CONTACTNAME
+  RepSpec.f2 = LAr.CustName;//F_CUSTOMERNAME
+  RepSpec.f3 = LAr.CustCode;//F_CUSTOMERCODE
+  RepSpec.f4 = CompYear.CompName;//F_EGETNAMN
+  RepSpec.f5 = CompYear.OrgNr;//F_EGETORGNR
+  RepSpec.f6 = CompYear.VATNr;//F_EGETMOMSNR
+  RepSpec.f7 = CompYear.Addr0;//F_EGENADRESS
+  RepSpec.f8 = CompYear.emailAddr;//F_EGENEMAIL
+  RepSpec.f9 = CompYear.Phone;//F_EGENTEL
+  
+  SetAreaZeroSize(a);
+  RecordClear(LTxtr);
+  AddToText(MTrw.Header,LTxtr);
+  ParseTextField(a,LTxtr,RepSpec,"LoanAppLtxtVcReplaceToken");
+  l = GetAreaLength(a);
+  pos = 0;
+  tstr = "";
+  while (pos<l) begin
+    tstr = GetStringFromArea(a,pos,255);
+    pos = pos+255;
+  end;
+  Mailr.Header = tstr;
+  
+  Mailr.TransDate = CurrentDate;
+  Mailr.SerNr = NextSerNr("MailVc",Mailr.TransDate,-1,false,"");
+  RecordCopy(Mail2r,Mailr);
+  SetRecordCheckVc("MailVc");
+  err = MailVcRecordCheck(Mail2r,dummyMailr,Rs_insert,0);
+  if (err!=0) then begin
+    res = -1;
+    goto LCreateMailFromB2BLoanApplicationD;
+  end;
+  
+  if (RecordStore(Mailr,false)) then begin 
+    CreateRecordLink(Mailr,CurrentCompany,LAr,CurrentCompany);  
+    CreateRecordLink(LAr,CurrentCompany,Mailr,CurrentCompany);  
+  end;
+ 
+  RecordCopy(Mail2r,Mailr);  
+  if (nonblank(MTrw.FirstTxt)) then begin
+    LTxtr.Code = MTrw.FirstTxt;
+  end else begin
+    LTxtr.Code = IVMailr.FirstTxt;
+  end;
+  if (ReadFirstMain(LTxtr,1,true)) then begin
+    if (Mailr.HtmlFlag==0) then begin
+      rwcnt = LineTextCnt(LTxtr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        tstr = LineTextGet(LTxtr,i);
+        LineTextPut(Mailr,LineTextCnt(Mailr),tstr);
+      end;    
+      AddCRToText(Mailr);
+    end else begin
+      if (LTxtr.HtmlFlag==0) then begin
+        AddToHtmlRecord(Ltxtr,false,Mailr,true,true);
+      end else begin
+        
+        if (ReadRecordLink(Mailr,1,Attachr,RLr)) begin
+          RecordRemove(RLr);
+        end;
+        
+        CopyRecordLinks(LTxtr,Mailr);
+        ParseHtmlField(Mailr,RepSpec,"LoanAppLtxtVcReplaceToken");
+        
+        l = GetAreaLength(a);
+        pos = 0;
+        while (pos<l) begin
+          tstr = GetStringFromArea(a,pos,255);
+          logtext(0,tstr);
+          AddToText(tstr,Mailr); 
+          pos = pos+255;
+        end;
+      end;
+      LineTextPutToHtmlRecord(Mailr,chr(13),false,true);
+    end;
+  end;
+   if (additemstobodyf or IgnoreRecordDetails==0) then begin
+    //tstr = PlainTextInvoice(IVr);
+    if (Mailr.HtmlFlag==0) then begin
+      //LineTextPut(Mailr,LineTextCnt(Mailr),tstr);
+    end else begin
+      //LineTextPutToHtmlRecord(Mailr,tstr,false,true);
+    end;
+  end;
+  if (nonblank(MTrw.LastTxt)) then begin
+    LTxtr.Code = MTrw.LastTxt;
+  end else begin
+    LTxtr.Code = IVMailr.LastTxt;
+  end;
+  if (ReadFirstMain(LTxtr,1,true)) then begin
+    if (Mailr.HtmlFlag==0) then begin
+      rwcnt = LineTextCnt(LTxtr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        tstr = LineTextGet(LTxtr,i);
+        LineTextPut(Mailr,LineTextCnt(Mailr),tstr);
+      end;
+      AddCRToText(Mailr);
+    end else begin
+      if (LTxtr.HtmlFlag==0) then begin
+        AddToHtmlRecord(Ltxtr,false,Mailr,true,true);
+      end else begin
+        AddHtmlRecordToHtmlRecord(Ltxtr,Mailr,true);
+      end;
+    end;
+  end;
+
+  RecordUpdate(Mail2r,Mailr,false);
+
+  Mail2r = Mailr;
+
+  RepSpec.long1 = LAr.SerNr;
+  if (Mailr.HtmlFlag==0) then begin
+    ParseTextField(a,Mailr,RepSpec,"MailFromIVReplaceToken");
+    SetTextField(Mailr,"");
+    AddAreaToTextField(a,Mailr);
+  end else begin
+    ParseHtmlField(Mailr,RepSpec,"MailFromIVReplaceToken");
+  end;
+
+  RecordUpdate(Mail2r,Mailr,false);
+
+  docname = pdfform;
+  if (blank(docname)) then begin
+    docname = "LoanAppForm";
+    fname = "LoanApplication" & LAr.SerNr & ".pdf";
+    PrintEBSDocument("LoanAppForm",fname,RepSpec,LAr.SerNr,CUr.LangCode,filearea);
+    RecordLinkFile(fname,0,Mailr,CurrentCompany);
+    Delete_File(fname);
+  end;
+  
+
+LCreateMailFromB2BLoanApplicationD:;
+  CreateMailFromB2BLoanApplicationD = res;
+  return;
+end;
 
 global
 function Boolean InsertContactName(var record B2BLoanApplicationVc LAr)
@@ -710,7 +1044,7 @@ global
 function string 255 InvLtxtVcReplaceToken(record LTxtVc LTxtr,record RcVc RepSpec,string token)
 begin
   string 255 res;
-
+    
   switch (token) begin
     case "F_DATUM": res = RepSpec.sStartDate;
     case "F_NUMMER": res = RepSpec.f8;
@@ -748,6 +1082,29 @@ begin
   end;
 
   InvLtxtVcReplaceToken = res;
+end;
+
+
+global
+function string 255 LoanAppLtxtVcReplaceToken(record LTxtVc LTxtr,record RcVc RepSpec,string token)
+begin
+  string 255 res;
+
+  switch (token) begin
+    case "F_CONTACTNAME": res = RepSpec.f1;
+    case "F_CUSTOMERNAME": res = RepSpec.f2;
+    case "F_CUSTOMERCODE": res = RepSpec.f3;
+    case "F_EGETNAMN": res = RepSpec.f4;
+    case "F_EGETORGNR": res = RepSpec.f5;
+    case "F_EGETMOMSNR": res = RepSpec.f6;
+    case "F_EGENADRESS": res = RepSpec.f7;
+    case "F_EGENEMAIL": res = RepSpec.f8;
+    case "F_EGENTEL": res = RepSpec.f9;
+    otherwise
+      res = LetVcReplaceTokenCust(RepSpec,token);
+  end;
+
+  LoanAppLtxtVcReplaceToken = res;
 end;
 
 global

@@ -23,6 +23,43 @@ remote procedure InsertB2BLoanApplicationShareHolderName(var record B2BLoanAppli
 remote procedure InsertB2BLoanApplicationBeneficialName(var record B2BLoanApplicationVc,Integer);
 remote updating procedure GetB2BLoanApplicationDebtRecord(record B2BLoanApplicationVc,var record LoanAppDebtsVc);
 external inner function roundmode SetRoundModeD(Integer);
+remote updating function Integer CreateMailFromB2BLoanApplicationD(record B2BLoanApplicationVc,var record MailVc,var string,Boolean,string);
+
+
+global 
+updating procedure CreateMailFromB2BLoanApplicationDsm()
+begin
+  Integer wn,nwn;
+  record MailVc Mailr;
+  row MailVc MArw;
+  record B2BLoanApplicationVc LAr;
+  Integer err,i;
+  string 255 tstr,docname,mailboxnr,tstr1;
+  record MailSettingsBlock MSb;
+  Boolean testf;
+  record ConfSignVc csp;
+  longint l;
+  record IVMailBlock IVMailr;
+  record CMInvoicingBlock CMIb;
+    
+  wn = CurWindow;
+  if (WindowState(wn)==0) then begin//normalstate
+    testf = true;
+    GetWindowRecord(wn,LAr); 
+    if (testf) then begin
+      BlockLoad(MSb);
+      err = CreateMailFromB2BLoanApplicationD(LAr,Mailr,tstr,false,"");
+      if (err!=0) then begin
+        if (err>0) then begin
+          MessageBox(err,": " & tstr);
+        end;
+      end else begin
+        nwn = OpenWindow("MailDClass",1,0,"","",Mailr);
+      end;
+    end;
+  end;
+  return;
+end;
 
 
 procedure LASumUp(var record B2BLoanApplicationVc LAr)
