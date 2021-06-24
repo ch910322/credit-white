@@ -62,6 +62,8 @@ external inner procedure GetMonthText(string,Date,var string);
 external procedure BuildCredManPayPlanCust2(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean,Boolean);
 external function boolean getAdditionalLangCode(record CredManVc,string,var string);
 external function string 20 getAdditionalCredManLangCode(record CredManVc);
+external updating function Boolean B2BLoanAppCreateCredMan(var record B2BLoanApplicationVc,var record CredManVc,Boolean);
+
 
 procedure StandardTextToVector(string textCode,var vector string vVals,string vectorkey)
 begin
@@ -2127,7 +2129,32 @@ global
 procedure ExternalPrintLoanAppForm(record B2BLoanApplicationVc LAr,var vector string vVals)
 begin
   record CUVc CUr;
-
+  record CredManPayPlanVc CredManPayPlanr;
+  row CredManPayPlanVc CredManPayPlanrw;
+  LongInt i,rwcnt,rwcnt2,j;
+  record SMVc SMr;
+  row SMVc SMrw;
+  val totpayment,totinterest,totfullpayment,totfullvat,totinstalment,reimbsum,reimbsumrow;
+  record CredManSetBlock CredManSetb;
+  Integer num;
+  string 255 strnum,tstr;
+  val topay2,openamount,paidout,totfees;
+  record IVVc IVr;
+  Integer int_type;
+  record CMPrintConstantsBlock PCb;
+  string 255 months;
+  record CredFeesMatrixVc FMr;
+  row CredFeesMatrixVc FMrw;
+  transaction integer gIsDigitalDocument;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  array string 100 afeeslist;
+  vector val vfees;
+  vector string 255 vfeename;
+  boolean prflag;
+  record CredManVc CredManr;
+  
+  CommonDocumentFieldsWord(vVals);
   Ext_CommonDocumentFields(vVals);
   if (GetLoanAppContact(LAr.ContactName,LAr.CustCode,CUr)) then begin
     vVals["F_CONTACTNAME"] = CUr.Name;
@@ -2145,6 +2172,102 @@ begin
   if (ReadFirstMain(CUr,1,true)) then begin
     vVals["F_SURETY1NAME"] = CUr.Name;
     vVals["F_SURETY1ID"] = CUr.RegNr1;
+  end;
+  
+  
+  vVals["F_SERNR"] = LAr.SerNr;//Ser. No.
+  vVals["F_TRANSDATE"] = LAr.TransDate;//Date
+  vVals["F_CUSTREGNR1"] = LAr.CustRegNr1;//Reg. No
+  vVals["F_MANAGER"] = LAr.Manager;//Manager
+  vVals["F_ORDERCLASS"] = LAr.OrderClass;//Order Class
+  vVals["F_CONTACTNAME"] = LAr.ContactName;//Contact Name
+  vVals["F_CONTACTEMAIL"] = LAr.ContacteMail;//Contact Email
+  vVals["F_CONTACTMOBILE"] = LAr.ContactMobile;//Contact Mobile
+  vVals["F_CONTACTPHONENO"] = LAr.ContactPhoneNo;//Contact Telephone
+  vVals["F_REJREASON"] = LAr.RejReason;//Reason For Rejection
+  vVals["F_CUSTCODE"] = LAr.CustCode;//Customer ID
+  vVals["F_CUSTNAME"] = LAr.CustName;//Customer Name
+  vVals["F_EMAIL"] = LAr.eMail;//Customer Email
+  vVals["F_PHONENO"] = LAr.PhoneNo;//Customer Telephone
+  vVals["F_REGDATE"] = LAr.RegDate;//Registration Date
+  vVals["F_INDUSTRY"] = LAr.Industry;//Industry
+  vVals["F_PAYMGUARANT"] = LAr.PaymGuarant;//Payment Guarantee
+  vVals["F_PROMISORY"] = LAr.Promisory;//Promissory Note With
+  vVals["F_TYPE"] = LAr.Type;//Type
+  vVals["F_SUM"] = LAr.Sum;//Total Amount
+  vVals["F_MONTHS"] = LAr.Months;//Months
+  vVals["F_INTERESTRATE"] = LAr.InterestRate;//Monthly Rate %
+  vVals["F_MONTHLYPAYMENTDAY"] = LAr.MonthlyPaymentDay;//Monthly Payment Day
+  vVals["F_PRINCIPLEDELAYMONTHS"] = LAr.PrincipleDelayMonths;//Grace Period, Months
+  vVals["F_ADMINFEE"] = LAr.AdminFee;//Admin Fee
+  
+  
+  if (qupdating.B2BLoanAppCreateCredMan(LAr,CredManr,false)) then begin
+    BlockLoad(CredManSetb);
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+    BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+    rwcnt = MatRowCnt(SMr);   
+    for (i=0;i<rwcnt;i=i+1) begin
+      logtext(0,i);
+      MatRowGet(SMr,i,SMrw);
+      prflag = false;
+      if(PCb.PrintRowWithBlankFees==1)then begin
+        if (SMrw.TransDate<CredManr.FirstInvDate and SMrw.DebVal==0 and SMrw.CredVal==0 and SMrw.BaseRate1==0) then begin//i==0 and 
+          goto LNextRow;
+        end;
+      end else begin
+        if (SMrw.TransDate<CredManr.FirstInvDate and SMrw.DebVal==0 and SMrw.CredVal==0) then begin//i==0 and 
+          goto LNextRow;
+        end;
+      end;
+    
+   
+      if (SMrw.RowSimStat==5) then begin
+        goto LNextRow;
+      end;
+      num = num + 1;
+      M4PadString(i,3,"0",true,strnum);
+      vVals["ROW_" & strnum & "_F_TRANSDATUM"] = SMrw.TransDate;//Transaction Date (transdate
+      vVals["ROW_" & strnum & "_F_CREDINTEREST"] = SMrw.CredVal;//interest
+      vVals["ROW_" & strnum & "_F_CREDFEES"] = SMrw.DebVal2;//fees
+      vVals["ROW_" & strnum & "_F_CREDINTEREST2"] = (SMrw.CredVal/*+SMrw.DebVal2*/);//interest+fees   //19/04/2021 SMrw.DebVal2 removed from this
+      vVals["ROW_" & strnum & "_F_CREDINSTAL"] = SMrw.DebVal;//instalment
+      vVals["ROW_" & strnum & "_F_CREDBAL"] = SMrw.CurCredVal;//Balance
+      vVals["ROW_" & strnum & "_F_DUEDATE"] = SMrw.DueDate;//Due date
+      vVals["ROW_" & strnum & "_F_CREDINVTOT"] = (SMrw.CredVal+SMrw.DebVal2+SMrw.DebVal);//Balance
+      vVals["ROW_" & strnum & "_F_ROWNR"] = num;
+      vVals["ROW_" & strnum & "_F_VATROWSUM"] = SMrw.FrRate;//vat amount;
+      vVals["ROW_" & strnum & "_F_TOTROWSUM"] = SMrw.CurDebVal;//total amount;
+      if(ValToString(SMrw.BaseRate1,M4Val,"",DecimalSeparator,0)=="")then begin
+        SMrw.BaseRate1 = 0;
+      end;
+      vVals["ROW_" & strnum & "_F_FEESROW"] = ValToString(SMrw.BaseRate1,M4Val,"",DecimalSeparator,0);//valtostring(SMrw.BaseRate1,M42Val,"",DecimalSeparator,0);//fees;
+      PrintCredManScheldue3ROW(CSr,PCb,vVals,CredManr,SMrw,strnum,vfees,vfeename);
+      totfees = totfees + SMrw.BaseRate1;
+      totinterest = totinterest + (SMrw.CredVal/*+SMrw.DebVal2*/);//19/04/2021 SMrw.DebVal2 removed from this
+      totpayment = totpayment + (SMrw.CredVal+SMrw.DebVal2) + SMrw.DebVal;
+      totfullpayment = totfullpayment + SMrw.CurDebVal;
+      totfullvat = totfullvat + SMrw.FrRate;
+      totinstalment = totinstalment + SMrw.DebVal;
+      if (SetInSet(getAdditionalCredManLangCode(CredManr),PCb.ReimbLanguages)) then begin
+        reimbsumrow = 0;
+        UnpackRowFieldMatrix(SMrw,"FeesMatrix",FMr);
+        rwcnt2 = MatRowCnt(FMr);
+        for (j=0;j<rwcnt2;j=j+1) begin
+          MatRowGet(FMr,j,FMrw);
+          if (SetInSet(FMrw.ArtCode,PCb.ReimbItems)) then begin
+            reimbsum = reimbsum + FMrw.Sum;
+            reimbsumrow = FMrw.Sum;
+          end;
+        end;
+        months = GetMonthList(CredManr,SMrw);
+        vVals["ROW_" & strnum & "_F_REIMBROWSUM"] = reimbsumrow;
+        vVals["ROW_" & strnum & "_F_REIMBROWMONTHS"] = months;
+      end;
+  LNextRow:;
+    end;
+    strnum = 0;
+    
   end;
 
   return;

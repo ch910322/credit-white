@@ -320,20 +320,7 @@ begin
   end;
 
   RecordUpdate(Mail2r,Mailr,false);
-
-  Mail2r = Mailr;
-
-  RepSpec.long1 = LAr.SerNr;
-  if (Mailr.HtmlFlag==0) then begin
-    ParseTextField(a,Mailr,RepSpec,"MailFromIVReplaceToken");
-    SetTextField(Mailr,"");
-    AddAreaToTextField(a,Mailr);
-  end else begin
-    ParseHtmlField(Mailr,RepSpec,"MailFromIVReplaceToken");
-  end;
-
-  RecordUpdate(Mail2r,Mailr,false);
-
+  
   docname = pdfform;
   if (blank(docname)) then begin
     docname = "LoanAppForm";
