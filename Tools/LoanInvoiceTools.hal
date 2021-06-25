@@ -50,7 +50,6 @@ external inner function Boolean ItemInItemGroupOrClass(string,string,string);
 external procedure CredManSchedRecalcBalance(var record CredManSchedVc);
 external procedure SumupCredManSched(var record CredManSchedVc,Integer);
 
-
 enum begin
   kCredHistRecTypeInvoice = 0,
   kCredHistRecTypeReceipt = 1,
