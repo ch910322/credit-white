@@ -2032,3 +2032,229 @@ begin
   end;
   return;
 end;
+
+procedure SplitFormula(string formula, var string firstargument, var string sign, var string lastargument)
+begin
+  integer i,length;
+  
+  firstargument = "";
+  sign = "";
+  lastargument = "";
+  
+  if(nonblank(formula))then begin
+    length = len(formula);
+    for(i=0;i<length;i=i+1)begin
+      if(mid(formula,i,1)=="+")then begin
+        sign = "+";
+        firstargument = trim(left(formula,i-1));
+        lastargument = trim(right(formula,len(formula)-i-1));
+        i = length;
+      end;
+      if(mid(formula,i,1)=="-")then begin
+        sign = "-";
+        firstargument = trim(left(formula,i-1));
+        lastargument = trim(right(formula,len(formula)-i-1));
+        i = length;
+      end;
+      if(mid(formula,i,1)=="*")then begin
+        sign = "*";
+        firstargument = trim(left(formula,i-1));
+        lastargument = trim(right(formula,len(formula)-i-1));
+        i = length;
+      end;
+      if(mid(formula,i,1)=="/")then begin
+        sign = "/";
+        firstargument = trim(left(formula,i-1));
+        lastargument = trim(right(formula,len(formula)-i-1));
+        i = length;
+      end;
+      if(i==length-1)then begin
+        firstargument = trim(formula);
+      end;
+    end;
+  end;
+
+return;
+end;
+
+function boolean argumentIsvValue(string argument,var val resval)
+begin
+  boolean res;
+  
+  res = false;
+  resval = blankval;
+  if(argument=="0" or argument=="0.0" or argument=="0.00" or argument=="0,0" or argument=="0,00")then begin
+    resval = 0;
+    res = true;
+  end else begin
+    resval = stringtoval(argument,M4Val);
+    if(resval!=0)then begin
+      res = true;
+    end;
+  end;
+  
+  argumentIsvValue = res;
+  return;
+end;
+
+global updating procedure B2BLoanAppEvaluateBuSettings()
+begin
+  integer wn;
+  record B2BLoanApplicationVc LAr;
+  record LoanAppEvaluationVc LAEr;
+  row LoanAppEvaluationVc LAErw;
+  boolean foundf;
+  integer i,rwcnt;
+  vector val varguments;
+  string 50 firstarg,sign,lastarg;
+  vector boolean isargument;
+  boolean resrow,totalres,nottrue;
+  val vals,firstargval,lastargval,resval;
+  
+  totalres = false;
+  nottrue = true;
+  
+  wn = curwindow;
+  deselectwindow(wn,true);
+  if(windowstate(wn)==0)then begin
+    getwindowrecord(wn,LAr);
+    LAEr.Code = LAr.Type;
+    foundf = false;
+    if(readfirstmain(LAEr,1,true))then begin
+      foundf = true;
+    end else begin
+      LAEr.Code = "";
+      if(readfirstmain(LAEr,1,true))then begin
+        foundf = true;
+      end;
+    end;
+    if(foundf)then begin
+      rwcnt = matrowcnt(LAEr);
+      for(i=0;i<rwcnt;i=i+1)begin
+        matrowget(LAEr,i,LAErw);
+        if(nonblank(LAErw.Argument))then begin
+          isargument[LAErw.Argument] = true;
+        end;
+      end;
+      rwcnt = matrowcnt(LAEr);
+      for(i=0;i<rwcnt;i=i+1)begin
+        matrowget(LAEr,i,LAErw);
+        //logtext(0,"=====================  " & i);
+        firstargval = blankval;
+        lastargval = blankval;
+        resrow = false;
+        if(nonblank(LAErw.Formula))then begin
+          SplitFormula(LAErw.Formula,firstarg,sign,lastarg);
+          //logtext(0,LAErw.Formula & " | " & firstarg & " " & sign & " " & lastarg);
+          if(isargument[firstarg]==false)then begin
+            if(argumentIsvValue(firstarg,vals))then begin
+              firstargval = vals;
+            end else begin
+              //logtext(0,"firstarg " & firstarg);
+              firstargval = stringtoval(GetFieldValueByName(LAr,firstarg,-1),m4val);
+            end;
+          end else begin
+            firstargval = stringtoval(varguments[firstarg],m4val);
+          end;
+          if(nonblank(lastarg))then begin
+            if(isargument[lastarg]==false)then begin
+              if(argumentIsvValue(lastarg,vals))then begin
+                lastargval = vals;
+              end else begin
+                //logtext(0,"lastarg " & lastarg);
+                lastargval = stringtoval(GetFieldValueByName(LAr,lastarg,-1),m4val);
+              end;
+            end else begin
+              lastargval = stringtoval(varguments[lastarg],m4val);
+            end;
+          end;
+          if(nonblank(sign))then begin
+            resval = blankval;
+            switch(sign)begin
+              case "+":resval = firstargval + lastargval;
+              case "-":resval = firstargval - lastargval;
+              case "*":resval = firstargval * lastargval;
+              case "/":resval = firstargval / lastargval;
+            end;
+            if(LAErw.Type==0)then begin
+              if(resval>=LAErw.RangeFrom and resval<=LAErw.RangeTo)then begin
+                resrow = true;
+                if(LAEr.Values==0)then begin
+                  goto lCheckEnd;
+                end;
+              end;
+              nottrue = resrow;
+              //logtext(0,"resrow " & resrow);
+              
+            end;
+            if(nonblank(LAErw.Argument))then begin 
+              varguments[LAErw.Argument] = resval; 
+            end;
+          end else begin
+            if(isargument[firstarg])then begin
+              firstarg = varguments[firstarg];
+            end;
+            if(argumentIsvValue(firstarg,firstargval))then begin
+              if(LAErw.Type==0)then begin
+                if(firstargval>=LAErw.RangeFrom and firstargval<=LAErw.RangeTo)then begin
+                  resrow = true;
+                  if(LAEr.Values==0)then begin
+                    goto lCheckEnd;
+                  end;
+                end;
+                nottrue = resrow;
+                //logtext(0,"resrow " & resrow);
+              end else begin
+                if(nonblank(LAErw.Argument))then begin
+                  varguments[LAErw.Argument] = firstargval;
+                end;
+              end;
+            end else begin
+              firstargval = stringtoval(GetFieldValueByName(LAr,firstarg,-1),m4val);
+              if(LAErw.Type==0)then begin
+                if(firstargval>=LAErw.RangeFrom and firstargval<=LAErw.RangeTo)then begin
+                  resrow = true;
+                  if(LAEr.Values==0)then begin
+                    goto lCheckEnd;
+                  end;
+                end;
+                nottrue = resrow;
+                //logtext(0,"resrow " & resrow);
+              end else begin
+                if(nonblank(LAErw.Argument))then begin
+                  varguments[LAErw.Argument] = firstargval; 
+                end;
+              end;
+            end;
+          end;
+        end;
+        //logtext(0,"firstargval "  & firstargval);
+        //logtext(0,"lastargval "  & lastargval);
+      end;
+      
+lCheckEnd:;
+      if(LAEr.Decisions==0)then begin
+        if(nottrue==false)then begin
+          totalres = true;
+          LAr.Evaluation = 1;
+        end else begin
+          LAr.Evaluation = 2;
+        end;
+      end else begin
+        if(nottrue==true)then begin
+          totalres = true;
+          LAr.Evaluation = 1;
+        end else begin
+          LAr.Evaluation = 2;
+        end;
+      end;
+      PutWindowRecord(wn,LAr);
+      windowdook(wn,0);
+    end;
+  end;
+  
+  
+
+  
+return;
+end;
