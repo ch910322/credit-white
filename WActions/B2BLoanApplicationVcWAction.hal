@@ -2139,18 +2139,18 @@ begin
       rwcnt = matrowcnt(LAEr);
       for(i=0;i<rwcnt;i=i+1)begin
         matrowget(LAEr,i,LAErw);
-        logtext(0,"=====================  " & i);
+        //logtext(0,"=====================  " & i);
         firstargval = blankval;
         lastargval = blankval;
         resrow = false;
         if(nonblank(LAErw.Formula))then begin
           SplitFormula(LAErw.Formula,firstarg,sign,lastarg);
-          logtext(0,LAErw.Formula & " | " & firstarg & " " & sign & " " & lastarg);
+          //logtext(0,LAErw.Formula & " | " & firstarg & " " & sign & " " & lastarg);
           if(isargument[firstarg]==false)then begin
             if(argumentIsvValue(firstarg,vals))then begin
               firstargval = vals;
             end else begin
-              logtext(0,"firstarg " & firstarg);
+              //logtext(0,"firstarg " & firstarg);
               firstargval = stringtoval(GetFieldValueByName(LAr,firstarg,-1),m4val);
             end;
           end else begin
@@ -2161,7 +2161,7 @@ begin
               if(argumentIsvValue(lastarg,vals))then begin
                 lastargval = vals;
               end else begin
-                logtext(0,"lastarg " & lastarg);
+                //logtext(0,"lastarg " & lastarg);
                 lastargval = stringtoval(GetFieldValueByName(LAr,lastarg,-1),m4val);
               end;
             end else begin
@@ -2184,7 +2184,7 @@ begin
                 end;
               end;
               nottrue = resrow;
-              logtext(0,"resrow " & resrow);
+              //logtext(0,"resrow " & resrow);
               
             end;
             if(nonblank(LAErw.Argument))then begin 
@@ -2203,7 +2203,7 @@ begin
                   end;
                 end;
                 nottrue = resrow;
-                logtext(0,"resrow " & resrow);
+                //logtext(0,"resrow " & resrow);
               end else begin
                 if(nonblank(LAErw.Argument))then begin
                   varguments[LAErw.Argument] = firstargval;
@@ -2219,7 +2219,7 @@ begin
                   end;
                 end;
                 nottrue = resrow;
-                logtext(0,"resrow " & resrow);
+                //logtext(0,"resrow " & resrow);
               end else begin
                 if(nonblank(LAErw.Argument))then begin
                   varguments[LAErw.Argument] = firstargval; 
@@ -2228,8 +2228,8 @@ begin
             end;
           end;
         end;
-        logtext(0,"firstargval "  & firstargval);
-        logtext(0,"lastargval "  & lastargval);
+        //logtext(0,"firstargval "  & firstargval);
+        //logtext(0,"lastargval "  & lastargval);
       end;
       
 lCheckEnd:;
