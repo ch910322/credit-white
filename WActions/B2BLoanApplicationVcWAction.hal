@@ -23,8 +23,8 @@ remote procedure InsertB2BLoanApplicationShareHolderName(var record B2BLoanAppli
 remote procedure InsertB2BLoanApplicationBeneficialName(var record B2BLoanApplicationVc,Integer);
 remote updating procedure GetB2BLoanApplicationDebtRecord(record B2BLoanApplicationVc,var record LoanAppDebtsVc);
 external inner function roundmode SetRoundModeD(Integer);
+external function Boolean InsertB2BLoanApplicationType(var record B2BLoanApplicationVc);
 remote updating function Integer CreateMailFromB2BLoanApplicationD(record B2BLoanApplicationVc,var record MailVc,var string,Boolean,string);
-
 
 global 
 updating procedure CreateMailFromB2BLoanApplicationDsm()
@@ -142,6 +142,7 @@ begin
   return;
 end;
 
+global
 procedure CalculateEndDate(var record B2BLoanApplicationVc LAr)
 begin
 
@@ -456,23 +457,12 @@ begin
   
   wstate = WindowState(wn);
   GetWindowRecord(wn,LAr);
-  CMTr.Code = LAr.Type;
-  if (ReadFirstMain(CMTr,1,true)) then begin
-    LAr.InterestRate = CMTr.IntRate;
-    LAr.Months = CMTr.InstalmentMonths;
-/* -1 month issue fixed by changing field type
-    if (LAr.Months==-1) then begin 
-      LAr.Months = 0;
-    end;
-*/
-    LAr.PrincipleDelayMonths = CMTr.PrincipleDelayMonths;
-    LAr.PrincipleDelayInterest = CMTr.PrincipleDelayInterest;
-    CalculateEndDate(LAr);
-    //CloseWindow(wn);
-    //nwn = OpenWindow("B2BLoanApplicationDClass",0,0,"","",LAr);
-    //SetWindowState(nwn,wstate);
-    PutWindowRecord(wn,LAr);    
-  end;
+  InsertB2BLoanApplicationType(LAr);
+  
+  //CloseWindow(wn);
+  //nwn = OpenWindow("B2BLoanApplicationDClass",0,0,"","",LAr);
+  //SetWindowState(nwn,wstate);
+  PutWindowRecord(wn,LAr);    
   
   B2BLoanApplicationDClassTypeEFAfter = res;
   return;

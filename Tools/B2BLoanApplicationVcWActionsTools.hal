@@ -14,6 +14,7 @@ external function string 255 NovitiGetEmailSender();
 external inner function Boolean CheckAttachedFilesSizeToLetter(record LetVc);
 external inner procedure FindUserMailboxName(string,var string,var string);
 external inner procedure CredManSumup(var record CredManVc);
+external procedure CalculateEndDate(var record B2BLoanApplicationVc);
 external inner function boolean AddEMailRecipients(var record MailVc,string,string,integer);
 external procedure AddSingleRecipient(var record MailVc,string);
 external inner procedure PrintEBSDocument(string,string,record RcVc,string,string,var area);
@@ -1340,5 +1341,31 @@ begin
   if (ReadFirstMain(CUr,1,true)) then begin
     SetFieldValueByName(LAr,"Beneficial" & num & "Name",CUr.Name,-1);
   end;
+  return;
+end;
+
+global
+function Boolean InsertB2BLoanApplicationType(var record B2BLoanApplicationVc LAr)
+begin
+  Boolean res;
+  record CredManTypeVc CMTr;
+  Integer nwn;
+  Integer wstate;
+  
+  CMTr.Code = LAr.Type;
+  if (ReadFirstMain(CMTr,1,true)) then begin
+    LAr.InterestRate = CMTr.IntRate;
+    LAr.Months = CMTr.InstalmentMonths;
+/* -1 month issue fixed by changing field type
+    if (LAr.Months==-1) then begin 
+      LAr.Months = 0;
+    end;
+*/
+    LAr.PrincipleDelayMonths = CMTr.PrincipleDelayMonths;
+    LAr.PrincipleDelayInterest = CMTr.PrincipleDelayInterest;
+    CalculateEndDate(LAr);
+  end;
+
+  InsertB2BLoanApplicationType = res;
   return;
 end;
