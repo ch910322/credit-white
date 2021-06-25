@@ -193,6 +193,7 @@ begin
       end;  
     end;  
   end;
+  LogText(0,"GetManagerWorkLoadEvaluation " & user & " EvaluationType=" & EvaluationType & " " & apporderclass & " ev=" & ev);
   return;
 end;
 
@@ -252,6 +253,7 @@ begin
   end;
   if (!foundf) then begin
     //if neither of previously described are found, should not create any tasks  
+    LogText(0,"GetLeastWorkLoadManager: Manager workload not found");
   end;
   if (foundf) then begin
     Userr.SalesGroup = MWr.SalesGroup;
