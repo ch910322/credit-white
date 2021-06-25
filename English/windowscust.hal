@@ -4093,3 +4093,51 @@ begin
   CheckBox(h,v+=16,0,"Finished",flags[7]);
   EndWindow;
 end;
+
+window LoanAppEvaluationLClass:1
+	wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+	WindowBegin("LoanApp Evaluation",LoanAppEvaluationLClass,CGmlist,-);
+	SetWRect(20,80,660,298);
+	Sizeable(-1,-1,0,0);
+	SpawnClass(LoanAppEvaluationDClass);
+	UseView(LoanAppEvaluationVc);
+	RecordList(4,17,-21,-39);
+	RlColKey(4,4,"Type",Code,false,Code);
+	RlCol(129,129,"Type",Comment,false);
+	EndWindow;
+end;
+
+window LoanAppEvaluationDClass:1
+	wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+	real h,v,vs,v2,vs2,hm;
+
+	WindowBegin("LoanApp Evaluations",LoanAppEvaluationDClass,CGview,-);
+	SetWRect(20,80,760,339);
+	DynamicWindow;
+	UseView(LoanAppEvaluationVc);
+	vs=20; h=120; vs2=16; hm=-100;
+	
+	EditField(h,v=20,100,"Type",Normal,Code,false,CredManTypeSClass);
+	EditField(h+190,v,-20,"Comment",Normal,Comment,false,0);
+	
+	ButtonFrame(h,v+=35,200,2,"Decisions");
+	RadioButton(h,v,0,0,"Negative decision",Decisions);
+	RadioButton(h,v+=vs,1,0,"Positive decision",Decisions);
+	
+	ButtonFrame(h,v+=35,200,2,"Values");
+	RadioButton(h,v,0,0,"One of the values",Values);
+	RadioButton(h,v+=vs,1,0,"All of the values",Values);
+	
+	Sizeable(-1,-1,0,0);
+	MatrixBegin(10,v=v+40,-40,-20,-,99);
+	MatCol(1,24,"Argument",0,Argument,false,0)
+	MatCol(1,124,"Formula",0,Formula,false,0);
+	MatCol(1,-240,"RangeFrom",0,RangeFrom,false,0);
+	MatCol(1,-160,"RangeTo",0,RangeTo,false,0);
+	MatCol(1,-80,"Type",0,Type,false,SetSClass)
+	EndMatrix;
+
+	EndWindow;
+end;
