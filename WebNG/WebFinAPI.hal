@@ -1248,7 +1248,6 @@ begin
   paramf = false;
   success = false;
   WebGetPostData(a);
-  LogAreaToFile("NewLoanApplication.txt",a);
   root = "NewLoanApplication";
   axml = ParseXmlArea(a);
   cc = XmlGet(axml,root & "/CountryCode");
