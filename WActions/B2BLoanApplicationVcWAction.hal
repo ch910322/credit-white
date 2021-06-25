@@ -24,7 +24,7 @@ remote procedure InsertB2BLoanApplicationBeneficialName(var record B2BLoanApplic
 remote updating procedure GetB2BLoanApplicationDebtRecord(record B2BLoanApplicationVc,var record LoanAppDebtsVc);
 external inner function roundmode SetRoundModeD(Integer);
 external function Boolean InsertB2BLoanApplicationType(var record B2BLoanApplicationVc);
-remote updating function Integer CreateMailFromB2BLoanApplicationD(record B2BLoanApplicationVc,var record MailVc,var string,Boolean,string);
+remote updating function Integer RA_CreateMailFromB2BLoanApplication(record B2BLoanApplicationVc,var record MailVc,var string,Boolean,string);
 
 global 
 updating procedure CreateMailFromB2BLoanApplicationDsm()
@@ -48,7 +48,7 @@ begin
     GetWindowRecord(wn,LAr); 
     if (testf) then begin
       BlockLoad(MSb);
-      err = CreateMailFromB2BLoanApplicationD(LAr,Mailr,tstr,false,"");
+      err = RA_CreateMailFromB2BLoanApplication(LAr,Mailr,tstr,false,"");
       if (err!=0) then begin
         if (err>0) then begin
           MessageBox(err,": " & tstr);

@@ -134,7 +134,7 @@ begin
 end;
 
 global
-updating function Integer CreateMailFromB2BLoanApplicationD(record B2BLoanApplicationVc LAr,var record MailVc Mailr,var string warning,Boolean additemstobodyf,string pdfform)
+updating function Integer RA_CreateMailFromB2BLoanApplication(record B2BLoanApplicationVc LAr,var record MailVc Mailr,var string warning,Boolean additemstobodyf,string pdfform)
 begin
   Integer res;
   record MailVc dummyMailr;
@@ -333,7 +333,7 @@ begin
   
 
 LCreateMailFromB2BLoanApplicationD:;
-  CreateMailFromB2BLoanApplicationD = res;
+  RA_CreateMailFromB2BLoanApplication = res;
   return;
 end;
 
@@ -1077,7 +1077,9 @@ global
 function string 255 LoanAppLtxtVcReplaceToken(record LTxtVc LTxtr,record RcVc RepSpec,string token)
 begin
   string 255 res;
-
+  
+  logtext(0,"LoanAppLtxtVcReplaceToken " & token);
+  
   switch (token) begin
     case "F_CONTACTNAME": res = RepSpec.f1;
     case "F_CUSTOMERNAME": res = RepSpec.f2;
