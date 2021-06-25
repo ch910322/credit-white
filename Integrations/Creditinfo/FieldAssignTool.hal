@@ -1,9 +1,51 @@
 external inner function Date DateFromString(string,string);
 external inner function val ValFromString(string,string,string);
-external inner function Integer CountObjects(string);
-external inner procedure ExtractObj(string,var Integer,var string);
-external inner function string 60 AddObjectToObjectList(string,string);
 
+
+procedure ExtractObj(string ostr,var Integer pos,var string rstr)
+BEGIN
+  string 1 c1;
+
+  rstr = "";
+L47:;
+  if (pos>=len(ostr)) then begin goto L999; end;
+  c1 = Mid(ostr,pos,1); 
+  pos = pos + 1;
+  if ((c1==",") or (c1==".") or (c1==";")) then begin
+    if (len(rstr)==0) then begin 
+      goto L47; 
+    end;
+    goto L888;
+  end;
+  if ((len(rstr)<50)) then begin 
+    rstr = rstr & c1;
+  end;
+  goto L47;
+L888:;
+  if (pos>len(ostr)) then begin goto L999; end;
+  c1 = Mid(ostr,pos,1);  
+  pos = pos + 1;
+  if ((c1==",") or (c1==".") or (c1==";")) then begin goto L888; end;
+  pos = pos - 1;
+L999:;
+  RETURN;
+END;
+
+
+function Integer CountObjects(string objstr)
+BEGIN
+  string 255 tstr;
+  Integer pos;
+  Integer res;
+  
+  ExtractObj(objstr,pos,tstr);
+  while (nonblank(tstr)) begin
+    res = res + 1;
+    ExtractObj(objstr,pos,tstr);
+  end;
+  CountObjects = res;
+  RETURN;
+END; 
 
 function string 255 extractValueFromString(string refstr)
 begin
