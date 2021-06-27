@@ -2253,8 +2253,33 @@ lCheckEnd:;
     end;
   end;
   
-  
-
-  
 return;
+end;
+
+
+global
+function Boolean LoanAppEvaluationDClassAfterEditField(Integer wn,string fieldname,Integer fn,Integer rownr,Integer changed)
+begin
+  Boolean res;
+	integer i,j,rwcnt,rwcnt2;
+	string 255 vatcode;
+	row LoanAppEvaluationVc LAErw,LAE2rw;
+	record CredManTypeVc CredManTyper;
+	record LoanAppEvaluationVc LAEr
+	
+	
+	if(changed!=0)then begin
+	  getwindowrecord(wn,LAEr);
+    switch (fieldname) begin
+      case "Code":if(nonblank(LAEr.Code))then begin
+                    CredManTyper.Code = LAEr.Code;
+                    if(readfirstmain(CredManTyper,1,true))then begin
+                      LAEr.Comment = CredManTyper.Comment;
+                      putwindowrecord(wn,LAEr);
+                    end;
+                  end;
+    end;
+  end;
+  LoanAppEvaluationDClassAfterEditField = true;
+  return;
 end;
