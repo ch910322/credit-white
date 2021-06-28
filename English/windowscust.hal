@@ -1930,9 +1930,7 @@ begin
   MatCol(1,620,"Assign Rec.",0,AssignRecord,false,SetSClass);
   MatCol(1,680,"Act. Type",0,ActType,false,ActTypeSClass);
   MatCol(1,740,"Act. Text",0,ActText,false,0);
-  if (IsNovitiCustomer) then begin
-    MatCol(1,-60,"Email Text",0,EmailStdText,false,LTxtSClass);
-  end;
+  MatCol(1,-60,"Email Text",0,EmailStdText,false,LTxtSClass);
   EndMatrix;
   EndWindow;
 end;
