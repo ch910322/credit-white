@@ -15,7 +15,6 @@ begin
   Register("Agreement Tests","Agreement Tests",CredManTestVc,modCredMan);
   Register("Agreement Changes","Agreement Changes",CredManChangeVc,modCredMan);
  
-  Setting("LoanApp Evaluation",LoanAppEvaluationLClass,modCredMan);
   Setting("Number Series - Loan Applications",B2BLoanAppSerTClass,modCredMan);
   Setting("Credit Management Settings",CMApplicationSetTClass,modCredMan);
   Setting("Invoicing Settings",CMInvoicingTClass,modCredMan);
@@ -577,11 +576,6 @@ begin
   if (ISb.ShowLoanType6==1) then begin
     SetText(6,"Balloon");
   end;
-  EndSet;
-  
-  SetBegin(2032);
-  SetText(0,"Check");
-  SetText(1,"Sum");
   EndSet;
 
   return;
