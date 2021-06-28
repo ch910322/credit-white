@@ -692,8 +692,24 @@ end;
 function Boolean B2BLoanApplicationDClassSumEFAfter(Integer wn,Boolean changedf)
 begin
   record B2BLoanApplicationVc LAr;
+  row B2BLoanApplicationVc LArw;
+  integer rwcnt,i;
 
   GetWindowRecord(wn,LAr);
+  
+  
+  rwcnt = matrowcnt(LAr);
+  for(i=0;i<rwcnt;i=i+1)begin
+    matrowget(LAr,i,LArw);
+    if(blank(LArw.Price) and LArw.vRebate!=0)then begin
+      LArw.Sum = round(LAr.Sum/100*(LArw.vRebate),defaultcurroundoff);
+      matrowput(LAr,i,LArw);
+    end;
+  end;
+
+  LASumUp(LAr);
+  PutWindowRecord(wn,LAr);
+  
   UpdateB2BLoanApplicationSoftFields(wn,LAr,"Sum");
   PutWindowRecord(wn,LAr);
 end;
@@ -753,7 +769,11 @@ begin
     GetWindowRecord(wn,LAr);
     if (rownr>=0) then begin
       matrowget(LAr,rownr,LArw);
-        LArw.Sum = round(LArw.Price * LArw.Quant/100*(100-LArw.vRebate),defaultcurroundoff);
+        if(nonblank(LArw.Price))then begin
+          LArw.Sum = round(LArw.Price * LArw.Quant/100*(100-LArw.vRebate),defaultcurroundoff);
+        end else begin
+          LArw.Sum = round(LAr.Sum * LArw.Quant/100*(LArw.vRebate),defaultcurroundoff);
+        end;
       matrowput(LAr,rownr,LArw);
       LASumUp(LAr);
       //CredManVc_PastevRebate(CredManr,rownr);
