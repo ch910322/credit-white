@@ -138,6 +138,7 @@ begin
   boolean found;
   
   ev = 0;
+  res = false;
   while (GetNextSubString(apporderclass,pos,",",tstr)) begin
     ResetLoop(LAr);
     LAr.OrderClass = tstr;
