@@ -36,16 +36,16 @@ BEGIN
 			res = -1;
 			goto LAEVcRecordCheck;
 		end;
-		if(LAErw.Type==0 and blank(LAErw.RangeTo))then begin
+		if(LAErw.Type==0 and blank(LAErw.RangeTo) and blank(LAErw.RangeFrom) and blankdate(LAErw.RangeFromDate) and blankdate(LAErw.RangeToDate))then begin
 			RecordCheckError(1854,"",i,"RangeTo");
 			res = -1;
 			goto LAEVcRecordCheck;
 		end;
-		if(LAErw.Type==0 and blank(LAErw.RangeFrom))then begin
+		/*if(LAErw.Type==0 and blank(LAErw.RangeFrom))then begin
 			RecordCheckError(1854,"",i,"RangeFrom");
 			res = -1;
 			goto LAEVcRecordCheck;
-		end;
+		end;*/
 	end;
 	
 LAEVcRecordCheck:;

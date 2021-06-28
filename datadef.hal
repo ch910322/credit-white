@@ -2483,6 +2483,8 @@ begin
   ArrayField(Formula,M4Str,255,0);
   ArrayField(RangeFrom,M4Val,0,0);
   ArrayField(RangeTo,M4Val,0,0);
+  ArrayField(RangeFromDate,M4Str,110,0);
+  ArrayField(RangeToDate,M4Str,110,0);
   EndArray;
   MainKeyBegin(Code,0);
   KeySegment(Code);

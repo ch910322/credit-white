@@ -2033,38 +2033,42 @@ begin
   return;
 end;
 
-procedure SplitFormula(string formula, var string firstargument, var string sign, var string lastargument)
+procedure SplitFormula(string formula1, var string firstargument, var string sign, var string lastargument)
 begin
   integer i,length;
+  string 100 formula;
+  
   
   firstargument = "";
   sign = "";
   lastargument = "";
+  
+  formula = trim(formula1);
   
   if(nonblank(formula))then begin
     length = len(formula);
     for(i=0;i<length;i=i+1)begin
       if(mid(formula,i,1)=="+")then begin
         sign = "+";
-        firstargument = trim(left(formula,i-1));
+        firstargument = trim(left(formula,i));
         lastargument = trim(right(formula,len(formula)-i-1));
         i = length;
       end;
       if(mid(formula,i,1)=="-")then begin
         sign = "-";
-        firstargument = trim(left(formula,i-1));
+        firstargument = trim(left(formula,i));
         lastargument = trim(right(formula,len(formula)-i-1));
         i = length;
       end;
       if(mid(formula,i,1)=="*")then begin
         sign = "*";
-        firstargument = trim(left(formula,i-1));
+        firstargument = trim(left(formula,i));
         lastargument = trim(right(formula,len(formula)-i-1));
         i = length;
       end;
       if(mid(formula,i,1)=="/")then begin
         sign = "/";
-        firstargument = trim(left(formula,i-1));
+        firstargument = trim(left(formula,i));
         lastargument = trim(right(formula,len(formula)-i-1));
         i = length;
       end;
@@ -2106,10 +2110,12 @@ begin
   boolean foundf;
   integer i,rwcnt;
   vector val varguments;
+  vector date vargumentsdate;
   string 50 firstarg,sign,lastarg;
-  vector boolean isargument;
-  boolean resrow,totalres,nottrue;
+  vector boolean isargument,isdateargument;
+  boolean resrow,totalres,nottrue,isdataformula;
   val vals,firstargval,lastargval,resval;
+  date calcdate,bd,checkdatefr,checkdateto;
   
   totalres = false;
   nottrue = true;
@@ -2132,8 +2138,26 @@ begin
       rwcnt = matrowcnt(LAEr);
       for(i=0;i<rwcnt;i=i+1)begin
         matrowget(LAEr,i,LAErw);
-        if(nonblank(LAErw.Argument))then begin
-          isargument[LAErw.Argument] = true;
+        if(nonblank(LAErw.Formula))then begin
+          isdataformula = false;
+          if(left(LAErw.Formula,6)=="ADDDAY")then begin
+            isdataformula = true;
+          end;  
+          if(left(LAErw.Formula,8)=="ADDMONTH")then begin
+            isdataformula = true;
+          end;  
+          if(left(LAErw.Formula,7)=="ADDYEAR")then begin
+            isdataformula = true;
+          end;  
+        end;
+        if(isdataformula==false)then begin
+          if(nonblank(LAErw.Argument))then begin
+            isargument[LAErw.Argument] = true;
+          end;
+        end else begin
+          if(nonblank(LAErw.Argument))then begin
+            isdateargument[LAErw.Argument] = true;
+          end;
         end;
       end;
       rwcnt = matrowcnt(LAEr);
@@ -2144,88 +2168,217 @@ begin
         lastargval = blankval;
         resrow = false;
         if(nonblank(LAErw.Formula))then begin
-          SplitFormula(LAErw.Formula,firstarg,sign,lastarg);
-          //logtext(0,LAErw.Formula & " | " & firstarg & " " & sign & " " & lastarg);
-          if(isargument[firstarg]==false)then begin
-            if(argumentIsvValue(firstarg,vals))then begin
-              firstargval = vals;
-            end else begin
-              //logtext(0,"firstarg " & firstarg);
-              firstargval = stringtoval(GetFieldValueByName(LAr,firstarg,-1),m4val);
-            end;
-          end else begin
-            firstargval = stringtoval(varguments[firstarg],m4val);
-          end;
-          if(nonblank(lastarg))then begin
-            if(isargument[lastarg]==false)then begin
-              if(argumentIsvValue(lastarg,vals))then begin
-                lastargval = vals;
+          isdataformula = false;
+          if(left(LAErw.Formula,6)=="ADDDAY")then begin
+            isdataformula = true;
+          end;  
+          if(left(LAErw.Formula,8)=="ADDMONTH")then begin
+            isdataformula = true;
+          end;  
+          if(left(LAErw.Formula,7)=="ADDYEAR")then begin
+            isdataformula = true;
+          end; 
+          
+          if(isdataformula==false)then begin
+            SplitFormula(LAErw.Formula,firstarg,sign,lastarg);
+            //logtext(0,LAErw.Formula & " | " & firstarg & " " & sign & " " & lastarg);
+            if(isargument[firstarg]==false)then begin
+              if(argumentIsvValue(firstarg,vals))then begin
+                firstargval = vals;
               end else begin
-                //logtext(0,"lastarg " & lastarg);
-                lastargval = stringtoval(GetFieldValueByName(LAr,lastarg,-1),m4val);
+                //logtext(0,"firstarg " & firstarg);
+                firstargval = stringtoval(GetFieldValueByName(LAr,firstarg,-1),m4val);
               end;
             end else begin
-              lastargval = stringtoval(varguments[lastarg],m4val);
+              firstargval = stringtoval(varguments[firstarg],m4val);
             end;
-          end;
-          if(nonblank(sign))then begin
-            resval = blankval;
-            switch(sign)begin
-              case "+":resval = firstargval + lastargval;
-              case "-":resval = firstargval - lastargval;
-              case "*":resval = firstargval * lastargval;
-              case "/":resval = firstargval / lastargval;
+            if(nonblank(lastarg))then begin
+              if(isargument[lastarg]==false)then begin
+                if(argumentIsvValue(lastarg,vals))then begin
+                  lastargval = vals;
+                end else begin
+                  //logtext(0,"lastarg " & lastarg);
+                  lastargval = stringtoval(GetFieldValueByName(LAr,lastarg,-1),m4val);
+                end;
+              end else begin
+                lastargval = stringtoval(varguments[lastarg],m4val);
+              end;
             end;
-            if(LAErw.Type==0)then begin
-              if(resval>=LAErw.RangeFrom and resval<=LAErw.RangeTo)then begin
+            if(nonblank(sign))then begin
+              resval = blankval;
+              switch(sign)begin
+                case "+":resval = firstargval + lastargval;
+                case "-":resval = firstargval - lastargval;
+                case "*":resval = firstargval * lastargval;
+                case "/":resval = firstargval / lastargval;
+              end;
+              if(LAErw.Type==0)then begin
+                if(resval>=LAErw.RangeFrom and resval<=LAErw.RangeTo)then begin
+                  resrow = true;
+                  if(LAEr.Values==0)then begin
+                    goto lCheckEnd;
+                  end;
+                end;
+                nottrue = resrow;
+                //logtext(0,"resrow " & resrow);
+              
+              end;
+              if(nonblank(LAErw.Argument))then begin 
+                varguments[LAErw.Argument] = resval; 
+              end;
+            end else begin
+              if(isargument[firstarg])then begin
+                firstarg = varguments[firstarg];
+              end;
+              if(argumentIsvValue(firstarg,firstargval))then begin
+                if(LAErw.Type==0)then begin
+                  if(firstargval>=LAErw.RangeFrom and firstargval<=LAErw.RangeTo)then begin
+                    resrow = true;
+                    if(LAEr.Values==0)then begin
+                      goto lCheckEnd;
+                    end;
+                  end;
+                  nottrue = resrow;
+                  //logtext(0,"resrow " & resrow);
+                end else begin
+                  if(nonblank(LAErw.Argument))then begin
+                    varguments[LAErw.Argument] = firstargval;
+                  end;
+                end;
+              end else begin
+                firstargval = stringtoval(GetFieldValueByName(LAr,firstarg,-1),m4val);
+                if(LAErw.Type==0)then begin
+                  if(firstargval>=LAErw.RangeFrom and firstargval<=LAErw.RangeTo)then begin
+                    resrow = true;
+                    if(LAEr.Values==0)then begin
+                      goto lCheckEnd;
+                    end;
+                  end;
+                  nottrue = resrow;
+                  //logtext(0,"resrow " & resrow);
+                end else begin
+                  if(nonblank(LAErw.Argument))then begin
+                    varguments[LAErw.Argument] = firstargval; 
+                  end;
+                end;
+              end;
+            end;
+          end else begin
+            calcdate = bd;
+            if(left(uppercase(LAErw.Formula),6)=="ADDDAY")then begin
+              SplitFormula(right(LAErw.Formula,len(LAErw.Formula)-6),firstarg,sign,lastarg);
+              if(sign=="-")then begin
+                calcdate = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+              end else begin
+                calcdate = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+              end;
+            end;  
+            if(left(uppercase(LAErw.Formula),8)=="ADDMONTH")then begin
+              SplitFormula(right(LAErw.Formula,len(LAErw.Formula)-8),firstarg,sign,lastarg);
+              if(sign=="-")then begin
+                calcdate = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+              end else begin
+                calcdate = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+              end;
+            end;  
+            if(left(uppercase(LAErw.Formula),7)=="ADDYEAR")then begin
+              SplitFormula(right(LAErw.Formula,len(LAErw.Formula)-7),firstarg,sign,lastarg);
+              if(sign=="-")then begin
+                calcdate = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+              end else begin
+                calcdate = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+              end;
+            end; 
+            
+            checkdatefr = bd;
+            checkdateto = bd;
+            if(nonblank(LAErw.RangeFromDate))then begin
+              if(LAErw.RangeFromDate=="currentdate")then begin
+                checkdatefr = currentdate;
+              end else begin
+                if(left(LAErw.RangeFromDate,6)=="ADDDAY")then begin
+                  SplitFormula(right(LAErw.RangeFromDate,len(LAErw.RangeFromDate)-6),firstarg,sign,lastarg);
+                  if(sign=="-")then begin
+                    checkdatefr = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  end else begin
+                    checkdatefr = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  end;
+                end;  
+                if(left(LAErw.RangeFromDate,8)=="ADDMONTH")then begin
+                  SplitFormula(right(LAErw.RangeFromDate,len(LAErw.RangeFromDate)-8),firstarg,sign,lastarg);
+                  if(sign=="-")then begin
+                    checkdatefr = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  end else begin
+                    checkdatefr = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  end;
+                end;  
+                if(left(LAErw.RangeFromDate,7)=="ADDYEAR")then begin
+                  SplitFormula(right(LAErw.RangeFromDate,len(LAErw.RangeFromDate)-7),firstarg,sign,lastarg);
+                  if(sign=="-")then begin
+                    checkdatefr = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  end else begin
+                    checkdatefr = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  end;
+                end;
+              end;
+            end;
+            
+            if(nonblank(LAErw.RangeToDate))then begin
+              if(LAErw.RangeToDate=="currentdate")then begin
+                checkdateto = currentdate;
+              end else begin
+                if(left(LAErw.RangeToDate,6)=="ADDDAY")then begin
+                  SplitFormula(right(LAErw.RangeToDate,len(LAErw.RangeToDate)-6),firstarg,sign,lastarg);
+                  if(sign=="-")then begin
+                    checkdateto = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  end else begin
+                    checkdateto = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  end;
+                end;  
+                if(left(LAErw.RangeToDate,8)=="ADDMONTH")then begin
+                  SplitFormula(right(LAErw.RangeToDate,len(LAErw.RangeToDate)-8),firstarg,sign,lastarg);
+                  if(sign=="-")then begin
+                    checkdateto = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  end else begin
+                    checkdateto = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  end;
+                end;  
+                if(left(LAErw.RangeToDate,7)=="ADDYEAR")then begin
+                  SplitFormula(right(LAErw.RangeToDate,len(LAErw.RangeToDate)-7),firstarg,sign,lastarg);
+                  if(sign=="-")then begin
+                    checkdateto = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  end else begin
+                    checkdateto = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  end;
+                end;
+              end;
+            end;
+            
+            logtext(0,"calcdate " & calcdate & " checkdateto " & checkdateto);
+            logtext(0,"calcdate " & calcdate & " checkdatefr " & checkdatefr);
+            if(nonblankdate(calcdate) and nonblankdate(checkdateto))then begin
+              if(calcdate<=checkdateto)then begin
                 resrow = true;
                 if(LAEr.Values==0)then begin
                   goto lCheckEnd;
                 end;
               end;
               nottrue = resrow;
-              //logtext(0,"resrow " & resrow);
-              
             end;
-            if(nonblank(LAErw.Argument))then begin 
-              varguments[LAErw.Argument] = resval; 
-            end;
-          end else begin
-            if(isargument[firstarg])then begin
-              firstarg = varguments[firstarg];
-            end;
-            if(argumentIsvValue(firstarg,firstargval))then begin
-              if(LAErw.Type==0)then begin
-                if(firstargval>=LAErw.RangeFrom and firstargval<=LAErw.RangeTo)then begin
-                  resrow = true;
-                  if(LAEr.Values==0)then begin
-                    goto lCheckEnd;
-                  end;
-                end;
-                nottrue = resrow;
-                //logtext(0,"resrow " & resrow);
-              end else begin
-                if(nonblank(LAErw.Argument))then begin
-                  varguments[LAErw.Argument] = firstargval;
+            
+            
+            if(nonblankdate(calcdate) and nonblankdate(checkdatefr))then begin
+              if(calcdate>=checkdatefr)then begin
+                resrow = true;
+                if(LAEr.Values==0)then begin
+                  goto lCheckEnd;
                 end;
               end;
-            end else begin
-              firstargval = stringtoval(GetFieldValueByName(LAr,firstarg,-1),m4val);
-              if(LAErw.Type==0)then begin
-                if(firstargval>=LAErw.RangeFrom and firstargval<=LAErw.RangeTo)then begin
-                  resrow = true;
-                  if(LAEr.Values==0)then begin
-                    goto lCheckEnd;
-                  end;
-                end;
-                nottrue = resrow;
-                //logtext(0,"resrow " & resrow);
-              end else begin
-                if(nonblank(LAErw.Argument))then begin
-                  varguments[LAErw.Argument] = firstargval; 
-                end;
-              end;
+              nottrue = resrow;
             end;
+            
+            //checkdatefr
+            
           end;
         end;
         //logtext(0,"firstargval "  & firstargval);
