@@ -256,6 +256,7 @@ begin
     LogText(0,"GetLeastWorkLoadManager: Manager workload not found");
   end;
   if (foundf) then begin
+    //LogText(0,"MWr.SalesGroup=" & MWr.SalesGroup & " MWr.SerNr=" & MWr.SerNr);
     Userr.SalesGroup = MWr.SalesGroup;
     TrHs = true;
     while (LoopKey("SalesGroup",Userr,1,TrHs)) begin
@@ -263,6 +264,7 @@ begin
          TrHs = false;
       end;
       if (TrHs) then begin
+      //  LogText(0,"Userr.SalesGroup=" & Userr.SalesGroup & " Userr.Code=" & Userr.Code); 
         GetManagerWorkLoadEvaluation(Userr.Code,MWr.EvaluationType,MWr.OrderClass,d,ev);
         if ((prevev==-1) or (ev <= prevev)) then begin
           res = Userr.Code;
@@ -271,15 +273,16 @@ begin
       end;  
     end;
   end;
+  LogText(0,"GetLeastWorkLoadManager " & ActType & " " & CredManType & " res=" & res);
   if (blank(res)) then begin
-    LogText(0,"GetLeastWorkLoadManager " & ActType & " " & CredManType & " failed");
+    
   end;
   GetLeastWorkLoadManager = res;
   return;
 end;
 
 //based on SendEmailWithStdTextFromUser
-updating procedure CreateEmailWithStdText(string stdtxt,string fromuser,string emailto,var record MailVc Mailr)
+updating function boolean CreateEmailWithStdText(string stdtxt,string fromuser,string emailto,var record MailVc Mailr)
 begin
   row MailVc Mailrw;
   string 255 tstr;
@@ -289,7 +292,9 @@ begin
   record LTxtVc LTxtr;
   string 255 mailboxnr,mailboxname;
   LongInt rwcnt;
+  boolean res;
   
+  res = false;
   LTxtr.Code = stdtxt;
   if (ReadFirstMain(LTxtr,1,true)) then begin
     RecordNew(Mailr);
@@ -301,6 +306,9 @@ begin
       Mailrw.AddrCode = mailboxname;
       mailrw.Mailbox = StringToLongInt(mailboxnr);
       MatRowPut(Mailr,0,Mailrw);
+    end else begin
+      LogText(0,fromuser & " has no mailbox");
+      goto LCreateEmailWithStdText;
     end;
     if (nonblank(emailto)) then begin
       ClearRow(Mailr,Mailrw,1);
@@ -341,9 +349,11 @@ begin
     
     Mailr.SerNr = NextSerNr("MailVc",CurrentDate,-1,false,"");
     if (RecordInsert(Mailr,true)) then begin
+      res = true;
     end;
   end;
-  
+  LCreateEmailWithStdText:;
+  CreateEmailWithStdText = res;
   return;
 end;
 
@@ -459,17 +469,34 @@ begin
 end;
 
 global 
-updating procedure SendAutoEmailWithStdText(string stdtext,string fromuser,string custcode)
+updating procedure SendAutoEmailWithStdText(string stdtext,string fromuser,string custcode,integer linkrecord,longint linkrecordid)
 begin
   record MailVc Mailr,oldMailr;
+  record CredManVc CredManr;
+  record B2BLoanApplicationVc LAr;
   
-  CreateEmailWithStdText(stdtext,fromuser,"",Mailr);
-  if (AddCredManInvoiceMailRecipients(custcode,Mailr)) then begin
-    RecordCopy(OldMailr,Mailr);
-    Mailr.SendFlag = 1;
-    RecordUpdate(OldMailr,Mailr,true);
+  if (CreateEmailWithStdText(stdtext,fromuser,"",Mailr)) then begin
+    if (AddCredManInvoiceMailRecipients(custcode,Mailr)) then begin
+      RecordCopy(OldMailr,Mailr);
+      Mailr.SendFlag = 1;
+      if (RecordUpdate(OldMailr,Mailr,true)==0) then begin
+        switch linkrecord begin
+          case 0: 
+            LAr.SerNr = linkrecordid;
+            if (ReadFirstMain(LAr,1,true)) then begin
+              CreateRecordLink(Mailr,CurrentCompany,LAr,CurrentCompany);
+              CreateRecordLink(LAr,CurrentCompany,Mailr,CurrentCompany);
+            end;
+          case 1: 
+            CredManr.SerNr = linkrecordid;
+            if (ReadFirstMain(CredManr,1,true)) then begin
+              CreateRecordLink(Mailr,CurrentCompany,CredManr,CurrentCompany);
+              CreateRecordLink(CredManr,CurrentCompany,Mailr,CurrentCompany);
+            end;
+        end;
+      end;
+    end;
   end;
-  
   return;
 end;
 
@@ -564,7 +591,7 @@ begin
                 person = GetLeastWorkLoadManager(ATbrw.ActType,CredManr.Type,actdate);
               end;
               qupdating.CreateTaskActivityLoanApp(LAr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime,ATbrw.AssignRecord==1);
-              qupdating.SendAutoEmailWithStdText(ATbrw.EmailStdText,person,LAr.CustCode);
+              qupdating.SendAutoEmailWithStdText(ATbrw.EmailStdText,person,LAr.CustCode,0,LAr.SerNr);
             end;
           end;
         case 2: //property insurance
