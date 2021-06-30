@@ -173,7 +173,9 @@ begin
   Boolean testf;
 
   for (i=0;i<aMailr.length;i=i+1) begin
+    
     Mailr = aMailr[i];
+    logtext(0,"Try to sent Mail " & Mailr.SerNr);
     testf = false;
     while (testf==false) begin
       if (prev==-1 or qupdating.PreviousEmailQueueCreated(prev)) then begin
