@@ -1,0 +1,54 @@
+//<halrule>server-only</halrule>
+global
+updating function LongInt LoanAppEvaluationVcRecordCheck(var record LoanAppEvaluationVc LAEr,record LoanAppEvaluationVc LAE2r,LongInt stat,LongInt long4)
+BEGIN
+	LongInt res;
+	integer i,j,rwcnt,rwcnt2;
+	string 255 vatcode;
+	row LoanAppEvaluationVc LAErw,LAE2rw;
+	record CredManTypeVc CredManTyper;
+
+	res = 0;
+	
+	if(nonblank(LAEr.Code))then begin
+	  CredManTyper.Code = LAEr.Code;
+	  if(readfirstmain(CredManTyper,1,true))then begin
+	    LAEr.Comment = CredManTyper.Comment;
+	  end;
+	end;
+	rwcnt = matrowcnt(LAEr);
+	for(i=0;i<rwcnt;i=i+1) begin
+		matrowget(LAEr,i,LAErw);	
+		if(nonblank(LAErw.Argument))then begin
+			for(j=0;j<rwcnt;j=j+1)begin
+				matrowget(LAEr,j,LAE2rw);	
+				if(LAE2rw.Argument==LAErw.Argument)then begin
+					if(j!=i)then begin  
+						RecordCheckError(23512,LAE2rw.Argument,j,"Argument");
+						res = -1;
+						goto LAEVcRecordCheck;
+					end;
+				end;
+			end;
+		end;
+		if(LAErw.Type==1 and blank(LAErw.Argument))then begin
+			RecordCheckError(1854,"",i,"Argument");
+			res = -1;
+			goto LAEVcRecordCheck;
+		end;
+		if(LAErw.Type==0 and blank(LAErw.RangeTo) and blank(LAErw.RangeFrom) and blankdate(LAErw.RangeFromDate) and blankdate(LAErw.RangeToDate))then begin
+			RecordCheckError(1854,"",i,"RangeTo");
+			res = -1;
+			goto LAEVcRecordCheck;
+		end;
+		/*if(LAErw.Type==0 and blank(LAErw.RangeFrom))then begin
+			RecordCheckError(1854,"",i,"RangeFrom");
+			res = -1;
+			goto LAEVcRecordCheck;
+		end;*/
+	end;
+	
+LAEVcRecordCheck:;
+	LoanAppEvaluationVcRecordCheck = res;
+	RETURN;
+END;

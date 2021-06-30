@@ -28,6 +28,13 @@ external inner function Integer TypeOfCurncy(var string,var Integer);
 external inner function string 255 StrReplace(string,string,string);
 external inner procedure SplitEclass(string,var Array string);
 external inner procedure SplitString(string,string,var array string);
+external inner updating function boolean UpdateCUAddrFromLookup(var record CUVc,string,string,integer,Integer);
+external inner updating function Boolean AddContactCUDsmRemote(record CUVc,string);
+external inner function val ValFromString(string,string,string);
+external inner function Boolean GetNextCustNr(var string);
+external function Boolean InsertCustomerInB2BApplication(var record B2BLoanApplicationVc,var string);
+external function Boolean InsertB2BLoanApplicationType(var record B2BLoanApplicationVc);
+external function Boolean InsertContactName(var record B2BLoanApplicationVc);
 
 enum begin
   kEventTypeNone = 0,
@@ -1225,43 +1232,166 @@ begin
   return;
 end;
 
+updating procedure NewLoanApplication()
+begin
+  string 255 root,type,regnr,name,surname,phone,email,tstr,cc;
+  val t;
+  xml axml;
+  area a;
+  record CUVc CUr,ContCUr;
+  record ContactRelVc CRr;
+  record B2BLoanApplicationVc LAr;
+  boolean cufoundf,contactfoundf,res2,success;
+  string 255 warning;
+  boolean paramf;
+  
+  paramf = false;
+  success = false;
+  WebGetPostData(a);
+  root = "NewLoanApplication";
+  axml = ParseXmlArea(a);
+  cc = XmlGet(axml,root & "/CountryCode");
+  if (blank(cc)) then begin
+    cc = "LT";
+  end;
+  type = XmlGet(axml,root & "/Type");
+  regnr = XmlGet(axml,root & "/RegNr");
+  name = XmlGet(axml,root & "/Name");
+  surname = XmlGet(axml,root & "/Surname");
+  phone = XmlGet(axml,root & "/Telephone");
+  email = XmlGet(axml,root & "/Email");
+  tstr =  XmlGet(axml,root & "/TotalSum");
+  if ((blank(type)) or (blank(regnr)) or (blank(name)) or (blank(surname)) or (blank(phone)) or (blank(email)) or (blank(tstr))) then begin
+    paramf = true;
+    goto LOutput;
+  end;
+  t = ValFromString(tstr,".","");
+  cufoundf = false;
+  CUr.RegNr1 = regnr;
+  if ReadFirstKey("RegNr1",CUr,1,true) then begin
+    cufoundf = true;
+  end else begin
+    RecordNew(CUr);
+    GetNextCustNr(tstr);
+    CUr.Code = tstr;
+    CUr.CUType = 1;
+    CUr.RegNr1 = regnr;
+    CUr.CountryCode = cc;
+    if (!UpdateCUAddrFromLookup(CUr,"",regnr,1,CUr.CustType)) then begin
+      LogText(0,"UpdateCUAddrFromLookup failed");
+      CUr.Name = "Failed address";
+    end;
+    if (blank(CUr.VATNr)) then begin
+      CUr.VATNr = "ND";
+    end;
+    if (RecordInsert(CUr,true)) then begin
+      cufoundf = true;
+    end;
+  end;  
+  contactfoundf = false;
+  if (cufoundf) then begin
+    ContCUr.eMail = email;
+    if (!ReadFirstKey("eMail",ContCUr,1,true)) then begin
+      RecordNew(ContCUr);
+      GetNextCustNr(tstr);
+      ContCUr.Code = tstr;
+      ContCUr.Name = name & " " & surname;
+      ContCUr.eMail = email;
+      ContCUr.Mobile = phone;
+      if (RecordInsert(ContCUr,true)) then begin
+        contactfoundf = true;
+      end;
+    end else begin
+      contactfoundf = true;
+    end;
+  end;
+  if (contactfoundf) then begin
+    res2 = qupdating.AddContactCUDsmRemote(CUr,ContCUr.Code);
+  end;
+  if (cufoundf) then begin
+    RecordNew(LAr);
+    LAr.CustCode = CUr.Code;
+    if (InsertCustomerInB2BApplication(LAr,warning)) then begin
+    end;
+    LAr.Type = type;
+    if (InsertB2BLoanApplicationType(LAr)) then begin end;
+    LAr.ContactName = name & " " & surname;
+    if (InsertContactName(LAr)) then begin end;
+    LAr.Sum = t;
+    if (RecordInsert(LAr,true)) then begin
+      success = true; 
+    end;
+  end;
+  LOutput:;
+  WebSetContentType("text/xml");
+  WebOutStringNL("<?xml version='1.0' encoding='UTF-8' standalone='yes'?>");
+  if (success) then begin
+    tstr = "<data  register=""B2BLoanApplicationVc"" " & "systemversion=""" & VersionBuild & """>";
+    //WebOutStringNL(tstr);
+    SetAreaZeroSize(a);
+    AddPlainXmlToArea(a,tstr,0);
+    AddPlainXmlToArea(a,"<B2BLoanApplicationVc>",0);
+    AddXMLTagToArea(a,"SerNr","",LAr.SerNr,1);
+    AddPlainXmlToArea(a,"</B2BLoanApplicationVc>",0);
+    AddPlainXmlToArea(a,"</data>",0);
+    WebOutArea2(a);
+  end else begin
+    if (paramf) then begin
+      WebOutString("<error>Missing required params</error>");
+    end else begin
+      WebOutString("<error>Failed to insert a new Loan application</error>"); 
+    end;
+  end;
+  return;
+end;
+
 global
 updating procedure WebFinAPI()
 begin
   string 255 tstr,rep;
   string 20 compcode;
   Integer newcomp,oldcomp;
-  boolean compset;
+  boolean compset,ok;
   area a;
   
   compset=false;
+  ok = false;
   newcomp = StringToInt(WebGetArg("company"));
   rep = WebGetArg("register");
   if (newcomp<=0) then begin 
     WebSetContentType("text/xml");
-    WebOutString("<error>Wrong company specified</error>")    
+    WebOutString("<error>Wrong company specified</error>");    
     goto LWebFinAPI;
   end;
   oldcomp = CurrentCompany;
   if (newcomp!=oldcomp) then begin
     if (SetCompany(newcomp,false)) then begin
-      compset=true;  
+      compset = true;  
+      ok = true;
     end;
+  end else begin
+    ok = true;
   end;
-  switch (rep) begin
-    case "CredManSchedVc":
-      GenCredManSchedVcXml;
-    case "GetTotalOverDue":
-      GetTotalOverDue;
-    case "GetRepaidPrincipal":
-      GetRepaidPrincipal;
-    case "GetDocument":
-      GetDocument;
-    case "GetDisburseDetails":
-      GetDisburseDetails;
-    case "GetCustomerInvoiceDetails": 
-//14:47
-      GetCustomerInvoiceDetails;   
+  if (ok) then begin
+    switch (rep) begin
+      case "CredManSchedVc":
+        GenCredManSchedVcXml;
+      case "GetTotalOverDue":
+        GetTotalOverDue;
+      case "GetRepaidPrincipal":
+        GetRepaidPrincipal;
+      case "GetDocument":
+        GetDocument;
+      case "GetDisburseDetails":
+        GetDisburseDetails;
+      case "GetCustomerInvoiceDetails": 
+        GetCustomerInvoiceDetails;   
+    end;
+    rep = WebGetArg("new");
+    switch (rep) begin
+      case "loanapp":
+        NewLoanApplication;
+    end;
   end;
   if (compset) then begin
     ResetCompany(oldcomp);

@@ -17,6 +17,11 @@ begin
   SetText(0,"XML Value");
   SetText(1,"XML Attribute");
   EndSet;
+  
+  SetBegin(30902);
+  SetText(0,"First");
+  SetText(1,"Last");
+  EndSet;
 
 end;
 
@@ -89,18 +94,49 @@ end;
 window CreditinfoFieldAssignBlockTClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  WindowBegin("Creditinfo import fields assign",CreditinfoFieldAssignBlockTClass,CGHbl,0);
+  real v,vs,h,h2,h3,t,tilenr,vm,pos;
+  string 255 label1,label2,label3,label4,label5;
+  
+  WindowBegin("Creditinfo import fields assign",CreditinfoFieldAssignBlockTClass,CGHbl,HBlRecType);
   SetBlid(CreditinfoFieldAssignBlock);
+ // Sizeable(-1,-1,0,0);
+  SetWRect(20,80,900,457);
   Sizeable(-1,-1,0,0);
-  SetWRect(50,100,1000,100);
-  MatrixBegin(4,40,-32,-20,-,200);
-  MatCol(1,24,"Register",0,Register,false,StrSetSClass);
-  MatCol(1,124,"Field",0,FieldName,false,FieldSClass);
-  MatCol(1,210,"Type",0,DataType,false,SetSClass); 
-  MatCol(1,350,"Import Data",0,ImportNode,false,0); 
-  MatCol(1,-250,"XML Attribute",0,XMLAtribute,false,0); 
-  MatCol(1,-70,"Invert Yes/No",0,Invert,false,SetSClass); 
+  MatrixBegin(20,20,-50,-20,-,99);
+  Flip(0);
+    MatCol(1,24,"Register",0,Register,false,StrSetSClass);
+    MatCol(1,124,"Type",0,DataType,false,SetSClass);
+    MatCol(1,220,"Field",0,FieldName,false,0);
+  Flip(1);
+    MatCol(1,-550,"Path",0,ImportNode,false,0);
+    MatCol(1,-290,"XML Attribute",0,XMLAtribute,false,0); 
+    MatCol(1,-90,"Invert Yes/No",0,Invert,false,SetSClass); 
+  Flip(2);
+    MatCol(1,-400,"XML Attribute",0,XMLAtribute,false,0); 
+  Flip(3);
+    MatCol(1,-400,"Exclude XML Attribute",0,ExcludeXMLAtribute,false,0);
+  Flip(4);
+    MatCol(1,-260,"Separator for attributes",0,Separator,false,0);
+    MatCol(1,-80,"Get Order",0,GetOrder,false,SetSClass);
+  Flip(5);
+    MatCol(1,-400,"Attr From",0,XMLAtributeFrom,false,0);
+    MatCol(1,-250,"Val",0,XMLAtributeFromVal,false,0);
+    MatCol(1,-200,"Attr To",0,XMLAtributeTo,false,0);
+    MatCol(1,-50,"Val",0,XMLAtributeToVal,false,0);
   EndMatrix;
+  Flip(6);
+    MatCol(1,-400,"Excl. Attr From",0,ExcludeXMLAtributeFrom,false,0);
+    MatCol(1,-250,"Val",0,ExcludeXMLAtributeFromVal,false,0);
+    MatCol(1,-200,"Excl. Attr To",0,ExcludeXMLAtributeTo,false,0);
+    MatCol(1,-50,"Val",0,ExcludeXMLAtributeToVal,false,0);
+  EndMatrix;
+  vs = 22;
+  v = 24; VTab(-35,v,-16,v+vs,ToolFlip,1,"A");
+  v=v+ vs; VTab(-35,v,-16,v+vs,ToolFlip,2,"B");
+  v=v+ vs; VTab(-35,v,-16,v+vs,ToolFlip,3,"C");
+  v=v+ vs; VTab(-35,v,-16,v+vs,ToolFlip,4,"D");
+  v=v+ vs; VTab(-35,v,-16,v+vs,ToolFlip,5,"E");
+  v=v+ vs; VTab(-35,v,-16,v+vs,ToolFlip,6,"F");
   EndWindow;
   return;
 end;

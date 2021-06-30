@@ -13,7 +13,7 @@ external inner function Boolean GetAccName(string,var string,Integer);
 external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
 external function Boolean CheckCredManSchedule();
 external function Boolean UseDisburseUntil();
-external updating procedure CreateCredManObject(var record CredManVcVc,Boolean);
+external updating procedure CreateCredManObject(var record CredManVcVc,Boolean,Boolean);
 external function integer GenCredManObj(record CredManVc, record CMApplicationSetBlock,var record ObjVc);
 external inner function string 60 RemoveObjectFromObjectList(string,string);
 
@@ -377,7 +377,7 @@ BEGIN
     end;
   end;
   if ((CredManr.Approved==1) and ((CredManr.Status==2) or (CredManr.Status==3))) then begin
-    CreateCredManObject(CredManr,true);
+    CreateCredManObject(CredManr,true,true);
   end;
   res = inner.CredManVcRecordSave(CredManr,CredMan2r,stat,long4);
   
@@ -418,7 +418,7 @@ BEGIN
     end;
   end;
   if ((CredManr.Approved==1) and ((CredManr.Status==2) or (CredManr.Status==3))) then begin
-    CreateCredManObject(CredManr,true);
+    CreateCredManObject(CredManr,true,true);
   end;
   res = inner.CredManVcRecordUpdate(CredManr,CredMan2r,stat,long4);
   

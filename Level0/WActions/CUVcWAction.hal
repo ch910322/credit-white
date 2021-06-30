@@ -3120,3 +3120,159 @@ begin
 LCheckEUVATNumberCUDsm:;  
   return;  
 end;
+
+//duplicate code, because of the way the original code is written 
+procedure Lithuanian_UpdateCustomerAddressA(Area a_reply,var record CUVc CUr,integer type)
+begin
+  string 255 tstr,addr1,post,root,name,city,fulladdr,vatcode;
+
+  LogAreaToFile("_Lithuanian_UpdateCustomerAddressA.txt",a_reply);
+  
+
+    tstr  = GetTabTextFromArea(0,1,a_reply);
+    if (nonblank(tstr)) then begin
+      CUr.Name = tstr; 
+    end;
+    
+    tstr  = GetTabTextFromArea(0,4,a_reply);
+    if (nonblank(tstr)) then begin
+      CUr.InvAddr0 = tstr;
+    end;
+    
+    tstr  = GetTabTextFromArea(0,5,a_reply);
+    if (nonblank(tstr)) then begin
+      if (nonblank(CUr.InvAddr0)) then begin
+        CUr.InvAddr0 = CUr.InvAddr0 & " ";
+      end;
+      CUr.InvAddr0 = CUr.InvAddr0 & tstr;
+    end;
+    tstr  = GetTabTextFromArea(0,6,a_reply);
+    if (nonblank(tstr)) then begin
+      if (nonblank(CUr.InvAddr0)) then begin
+        CUr.InvAddr0 = CUr.InvAddr0 & " ";
+      end;
+      CUr.InvAddr0 = CUr.InvAddr0 & tstr;
+    end;
+    tstr  = GetTabTextFromArea(0,7,a_reply);
+    if (nonblank(tstr)) then begin
+      CUr.InvAddr2 = tstr;
+    end;
+    
+    tstr  = GetTabTextFromArea(0,3,a_reply);
+    if (nonblank(tstr)) then begin
+      CUr.InvAddr3 = tstr;
+    end;
+
+    tstr  = GetTabTextFromArea(0,9,a_reply);
+    if (nonblank(tstr)) then begin
+      CUr.Phone = tstr;
+    end;
+
+    tstr  = GetTabTextFromArea(0,10,a_reply);
+    if (nonblank(tstr)) then begin
+      CUr.Mobile = tstr;
+    end;
+
+    tstr  = GetTabTextFromArea(0,11,a_reply);
+    if (nonblank(tstr)) then begin
+      CUr.Fax = tstr;
+    end;
+
+    tstr  = GetTabTextFromArea(0,12,a_reply);
+    if (nonblank(tstr)) then begin
+      CUr.wwwAddr = tstr;
+    end;
+
+    tstr  = GetTabTextFromArea(0,13,a_reply);
+    if (nonblank(tstr)) then begin
+      CUr.eMail = tstr;
+    end;
+    tstr  = GetTabTextFromArea(0,14,a_reply);
+    if (nonblank(tstr)) then begin
+      CUr.VATNr = tstr;
+    end;
+
+  
+  return;
+end;    
+
+//based on (duplicate of) UpdateCUAddr because of the way the original code is written
+global
+updating function boolean UpdateCUAddrFromLookup(var record CUVc CUr,string postcode,string regno,integer type,Integer custtype) // only for CUVc: 1 - invoice addr, 2 - delivery addr, other values - nothing happens
+begin
+  record DelAddrVc DelAddrr;
+  Area a_req,a_reply;
+  Boolean res,retres;
+  string 255 compid;
+  record InternetEnablerBlock IEb;
+  LongInt rerror;  
+  string 255 rerrordesc;
+  integer regcountry;
+  record TXServiceReplyVc TXSrvReplyr;
+  record LocalMachineBlock LMb;
+  record CYBlock CYb;
+
+  retres = false;
+  BlockLoad(IEb);
+  BlockLoad(CYb);
+  
+  regcountry = CYb.VATLaw;
+  switch (regcountry) begin
+    case vatEstonian:     if (type!=1) then begin goto LUpdateCUAddrFromLookup; end;//Estonia: HansaRaama and Excellent only supports updating main/invoice address
+    case vatLithuanian:   if (type!=1) then begin goto LUpdateCUAddrFromLookup; end;//Lithuania only supports updating main/invoice address
+    case vatLatvian:      if (type!=1) then begin goto LUpdateCUAddrFromLookup; end;//Latvia only supports updating main/invoice address
+    case vatPolish:       if (type!=1) then begin goto LUpdateCUAddrFromLookup; end;//Poland only supports updating main/invoice address
+    case vatSwedish:      if (type!=1) then begin goto LUpdateCUAddrFromLookup; end;//Sweden only supports updating main/invoice address
+    case vatNorwegian:    if (type!=1) then begin goto LUpdateCUAddrFromLookup; end;//Norway only supports updating main/invoice address
+    case vatEnglish: ;
+    otherwise 
+      if (HasLocalization("CAN,USA")) then begin
+      end else begin
+        goto LUpdateCUAddrFromLookup;
+      end;
+  end;
+
+  compid = regno;
+  if (regcountry==vatEnglish) then begin
+    compid = postcode;
+  end;
+
+  if (nonblank(compid)) then begin 
+    SendFunctionVersion("54.0","",a_req);
+    SendTextParameter(CurrentUser,a_req);
+    SendTextParameter(compid,a_req);
+    SendTextParameter(custtype,a_req);
+    
+    res = SendServiceRequest("UPDATECOMPANYDATA",false,a_req,a_reply);    
+    if (res) then begin
+      ReadTXServiceReply(TXSrvReplyr,a_reply,true);
+      rerror = TXSrvReplyr.ErrorCode;
+      rerrordesc = TXSrvReplyr.ErrorDescription;
+      if (rerror==0) then begin
+        switch (regcountry) begin
+          //case vatEstonian:     Estonian_UpdateCustomerAddress(wn,a_reply,CUr);               CUr.RegNr1 = regno;
+          case vatLithuanian:   Lithuanian_UpdateCustomerAddressA(a_reply,CUr,type);        CUr.RegNr1 = regno;
+          //case vatLatvian:      Latvian_UpdateCustomerAddress(wn,a_reply,CUr,DelAddrr,type);  CUr.RegNr1 = regno;
+          //case vatPolish:       Polish_UpdateCustomerAddress(wn,a_reply,CUr,type);            CUr.VATNr = regno;
+          //case vatSwedish:      Swedish_UpdateCustomerAddress(wn,a_reply,CUr);            
+          //case vatNorwegian:    Norwegian_UpdateCustomerAddress(wn,a_reply,CUr);            
+          //case vatEnglish:      UKian_UpdateCustomerAddress(wn,a_reply,CUr,DelAddrr,type);            
+          otherwise goto LUpdateCUAddrFromLookup;
+        end;
+        retres = true;
+      end else begin
+        //MessageBox(rerror,rerrordesc);
+        LogText(0,"UpdateCUAddrFromLookup " & rerrordesc);
+        retres = false;
+      end;
+    end else begin
+      //MessageBox(20241,"");
+      LogText(0,"UpdateCUAddrFromLookup " & USetStr(20241));
+      retres = false;
+    end;
+  end else begin
+  end;
+  LUpdateCUAddrFromLookup:;
+  UpdateCUAddrFromLookup = retres;
+  return;
+end;

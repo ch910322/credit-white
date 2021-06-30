@@ -94,6 +94,7 @@ begin
       end;
       credIVr.SerNr = -1;
       credIVr.OKFlag = 0;
+      credIVr.NoInterestFlag = 1;
       openwindow("IVCredManNoteDClass",1,CurWindow,"","",credIVr);
     end else begin
       inner.CreateCreditNoteIVDsm;
@@ -174,6 +175,7 @@ begin
           if(IVCreditr.SerNr>-1)then begin
             recordcopy(oldIVCreditr,IVCreditr);
           end;
+          IVCreditr.CreditPrincipleRule = setIVr.CreditPrincipleRule;
           rwcnt = matrowcnt(IVCreditr);
           for(i=0;i<rwcnt;i=i+1)begin
             matrowget(IVCreditr,i,IVrw);
@@ -198,7 +200,7 @@ begin
                 IVDchsum(IVCreditr,i);
               end;
             end;
-            if(foundf==false)then begin
+            if(foundf==false and IVrw.stp!=kInvoiceRowTypeCredit)then begin
               matrowdelete(IVCreditr,i);
               i=i-1;
               rwcnt = rwcnt - 1;
@@ -210,6 +212,10 @@ begin
           end;
           closewindow(mwn);
           nwn = OpenWindow("IVDClass",1,0,"","",IVCreditr);
+          if(setIVr.NoInterestFlag==0)then begin
+            IVr.NoInterestFlag = 1;
+            recordstore(IVr,true);
+          end;
         if (WindowDoOK(nwn,0)) then begin
           UpdateBrowses("IVVc");
         end;

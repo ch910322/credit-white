@@ -11,27 +11,40 @@ external inner function Boolean FindCustomerRelation(string,string,var record CU
 external inner function boolean AddEMailRecipients(var record MailVc,string,string,integer);
 
 global
-updating procedure CreateTaskActivityCredMan(record CredManVc CredManr,string person,string acttype,string acttext,date TransDate,time StartTime)
+updating procedure CreateTaskActivityCredMan(var record CredManVc CredManr,string person,string acttype,string acttext,date TransDate,time StartTime,boolean changemgr)
 begin
   record ActVc Actr;
   string 255 warning;
   record CredManVc oldCredManr;
-
+  boolean updstatef;
+  
+  updstatef = false;
   if (ReadFirstMain(CredManr,1,true)) then begin
-    Actr.SerNr = NextSerNr("ActVc",TransDate,-1,false,"");
-    Actr.TransDate = TransDate;
-    Actr.StartTime = StartTime;
-    Actr.Value = CredManr.InvSum4;
-    Actr.CUCode = CredManr.CustCode;
-    PasteCuInAct(Actr,warning);
-    Actr.ActType = acttype;
-    PasteActTypeInAct2("",Actr,warning);
-    Actr.MainPersons = person;
-    Actr.Comment = acttext;
-    Actr.TodoFlag = kTodoFlagTodo;
-    if (RecordInsert(Actr,true)) then begin
-      CreateRecordLink(Actr,CurrentCompany,CredManr,CurrentCompany);
-      CreateRecordLink(CredManr,CurrentCompany,Actr,CurrentCompany);
+    if ((changemgr) and (nonblank(person))) then begin
+      RecordCopy(oldCredManr,CredManr);
+      CredManr.SalesMan = person;
+      RecordUpdate(oldCredManr,CredManr,true);
+      updstatef = true;//??
+    end;
+    if ((nonblank(acttype)) and (nonblank(person))) then begin
+      Actr.SerNr = NextSerNr("ActVc",TransDate,-1,false,"");
+      Actr.TransDate = TransDate;
+      Actr.StartTime = StartTime;
+      Actr.Value = CredManr.InvSum4;
+      Actr.CUCode = CredManr.CustCode;
+      PasteCuInAct(Actr,warning);
+      Actr.ActType = acttype;
+      PasteActTypeInAct2("",Actr,warning);
+      Actr.MainPersons = person;
+      Actr.Comment = acttext;
+      Actr.TodoFlag = kTodoFlagTodo;
+      if (RecordInsert(Actr,true)) then begin
+        CreateRecordLink(Actr,CurrentCompany,CredManr,CurrentCompany);
+        CreateRecordLink(CredManr,CurrentCompany,Actr,CurrentCompany);
+        updstatef = true;
+      end;
+    end;
+    if (updstatef) then begin
       RecordCopy(oldCredManr,CredManr);
       CredManr.StateNotified = 1;
       RecordUpdate(oldCredManr,CredManr,true);
@@ -42,27 +55,40 @@ begin
 end;
 
 global
-updating procedure CreateTaskActivityLoanApp(record B2BLoanApplicationVc LAr,string person,string acttype,string acttext,date TransDate,time StartTime)
+updating procedure CreateTaskActivityLoanApp(var record B2BLoanApplicationVc LAr,string person,string acttype,string acttext,date TransDate,time StartTime,boolean changemgr)
 begin
   record ActVc Actr;
   string 255 warning;
   record B2BLoanApplicationVc oldLAr;
+  boolean updstatef;
 
+  updstatef = false;
   if (ReadFirstMain(LAr,1,true)) then begin
-    Actr.SerNr = NextSerNr("ActVc",TransDate,-1,false,"");
-    Actr.TransDate = TransDate;
-    Actr.StartTime = StartTime;
-    Actr.Value = LAr.Sum;
-    Actr.CUCode = LAr.CustCode;
-    PasteCuInAct(Actr,warning);
-    Actr.ActType = acttype;
-    PasteActTypeInAct2("",Actr,warning);
-    Actr.MainPersons = person;
-    Actr.Comment = acttext;
-    Actr.TodoFlag = kTodoFlagTodo;
-    if (RecordInsert(Actr,true)) then begin
-      CreateRecordLink(Actr,CurrentCompany,LAr,CurrentCompany);
-      CreateRecordLink(LAr,CurrentCompany,Actr,CurrentCompany);
+    if ((changemgr) and (nonblank(person))) then begin
+      RecordCopy(oldLAr,LAr);
+      LAr.Manager = person;
+      RecordUpdate(oldLAr,LAr,true);
+      updstatef = true;//??
+    end;
+    if ((nonblank(acttype)) and (nonblank(person))) then begin
+      Actr.SerNr = NextSerNr("ActVc",TransDate,-1,false,"");
+      Actr.TransDate = TransDate;
+      Actr.StartTime = StartTime;
+      Actr.Value = LAr.Sum;
+      Actr.CUCode = LAr.CustCode;
+      PasteCuInAct(Actr,warning);
+      Actr.ActType = acttype;
+      PasteActTypeInAct2("",Actr,warning);
+      Actr.MainPersons = person;
+      Actr.Comment = acttext;
+      Actr.TodoFlag = kTodoFlagTodo;
+      if (RecordInsert(Actr,true)) then begin
+        CreateRecordLink(Actr,CurrentCompany,LAr,CurrentCompany);
+        CreateRecordLink(LAr,CurrentCompany,Actr,CurrentCompany);
+        updstatef = true;
+      end;
+    end;
+    if (updstatef) then begin
       RecordCopy(oldLAr,LAr);
       LAr.StateNotified = 1;
       RecordUpdate(oldLAr,LAr,true);
@@ -131,48 +157,44 @@ begin
   return;
 end;
 
-function boolean GetManagerWorkLoadEvaluation(string user,Integer EvaluationType,string apporderclass,date d,var longint ev)
+procedure GetManagerWorkLoadEvaluation(string user,Integer EvaluationType,string apporderclass,date d,var longint ev)
 begin
   record ActVc Actr;
-  boolean testf,foundf,res;
+  boolean testf,foundf;
   string 255 keystr;
 
   ev = 0;
-  res = false;
   if (EvaluationType==3) then begin
-    res = GetManagerApplicationCount(user,apporderclass,ev);
+    GetManagerApplicationCount(user,apporderclass,ev);
   end else begin
-  keystr = "OKFlagUserMain:" & user;
-  Actr.OKFlag = 0;
-  Actr.MainPersons = user;
-  foundf = true;
-  while (LoopKey(keystr,Actr,1,foundf)) begin
-    if (!SetInSet(user,Actr.MainPersons)) then begin
-      foundf = false;
-    end; 
-    if (Actr.OKFlag != 0) then begin
-      foundf = false;
-    end;
-    if (foundf) then begin
-      switch (EvaluationType) begin
-        case 0: 
-          if (Actr.TransDate == d) then begin
-            ev = ev + TimeToMinutes(Actr.CostTime);
-            res = true;
-          end;
-        case 1:
-          if (Actr.TransDate == d) then begin
-            ev = ev +1;
-            res = true;
-          end;    
-        case 2:
-          ev = ev +1;  
-          res = true;          
+    keystr = "OKFlagUserMain:" & user;
+    Actr.OKFlag = 0;
+    Actr.MainPersons = user;
+    foundf = true;
+    while (LoopKey(keystr,Actr,1,foundf)) begin
+      if (!SetInSet(user,Actr.MainPersons)) then begin
+        foundf = false;
+      end; 
+      if (Actr.OKFlag != 0) then begin
+        foundf = false;
+      end;
+      if (foundf) then begin
+        switch (EvaluationType) begin
+          case 0: 
+            if (Actr.TransDate == d) then begin
+              ev = ev + TimeToMinutes(Actr.CostTime);
+            end;
+          case 1:
+            if (Actr.TransDate == d) then begin
+              ev = ev +1;
+            end;    
+          case 2:
+            ev = ev +1;  
+        end;  
       end;  
     end;  
-  end;  
   end;
-  GetManagerWorkLoadEvaluation = res;
+  LogText(0,"GetManagerWorkLoadEvaluation " & user & " EvaluationType=" & EvaluationType & " " & apporderclass & " ev=" & ev);
   return;
 end;
 
@@ -200,6 +222,7 @@ begin
   end;
   if (!foundf) then begin
     //2. exact match of activity type and agreement type classification;
+    ResetLoop(MWr);
     CMTyper.Code = CredManType;
     if (ReadFirstMain(CMTyper,1,true)) then begin 
       while (GetNextSubString(CMTyper.Classifications,pos,",",tstr)) begin
@@ -215,6 +238,7 @@ begin
   end;
   if (!foundf) then begin
     //3. exact match of activity type and blank agreement type and agreement type classification fields;
+    ResetLoop(MWr);
     MWr.ActType = ActType;
     MWr.CredManType = "";
     MWr.CredManClass = "";
@@ -222,6 +246,7 @@ begin
   end;
   if (!foundf) then begin
     //4.Managers Workload record with blank activity type, blank agreement type and blank agreement type classification fields
+    ResetLoop(MWr);
     MWr.ActType = "";
     MWr.CredManType = "";
     MWr.CredManClass = "";
@@ -229,8 +254,10 @@ begin
   end;
   if (!foundf) then begin
     //if neither of previously described are found, should not create any tasks  
+    LogText(0,"GetLeastWorkLoadManager: Manager workload not found");
   end;
   if (foundf) then begin
+    //LogText(0,"MWr.SalesGroup=" & MWr.SalesGroup & " MWr.SerNr=" & MWr.SerNr);
     Userr.SalesGroup = MWr.SalesGroup;
     TrHs = true;
     while (LoopKey("SalesGroup",Userr,1,TrHs)) begin
@@ -238,21 +265,25 @@ begin
          TrHs = false;
       end;
       if (TrHs) then begin
-        if (GetManagerWorkLoadEvaluation(Userr.Code,MWr.EvaluationType,MWr.OrderClass,d,ev)) then begin
-          if ((prevev==-1) or (ev <= prevev)) then begin
-            res = Userr.Code;
-            prevev = ev;  
-          end;  
+      //  LogText(0,"Userr.SalesGroup=" & Userr.SalesGroup & " Userr.Code=" & Userr.Code); 
+        GetManagerWorkLoadEvaluation(Userr.Code,MWr.EvaluationType,MWr.OrderClass,d,ev);
+        if ((prevev==-1) or (ev <= prevev)) then begin
+          res = Userr.Code;
+          prevev = ev;  
         end;
       end;  
     end;
+  end;
+  LogText(0,"GetLeastWorkLoadManager " & ActType & " " & CredManType & " res=" & res);
+  if (blank(res)) then begin
+    
   end;
   GetLeastWorkLoadManager = res;
   return;
 end;
 
 //based on SendEmailWithStdTextFromUser
-updating procedure CreateEmailWithStdText(string stdtxt,string fromuser,string emailto,var record MailVc Mailr)
+updating function boolean CreateEmailWithStdText(string stdtxt,string fromuser,string emailto,var record MailVc Mailr)
 begin
   row MailVc Mailrw;
   string 255 tstr;
@@ -262,7 +293,9 @@ begin
   record LTxtVc LTxtr;
   string 255 mailboxnr,mailboxname;
   LongInt rwcnt;
+  boolean res;
   
+  res = false;
   LTxtr.Code = stdtxt;
   if (ReadFirstMain(LTxtr,1,true)) then begin
     RecordNew(Mailr);
@@ -274,6 +307,9 @@ begin
       Mailrw.AddrCode = mailboxname;
       mailrw.Mailbox = StringToLongInt(mailboxnr);
       MatRowPut(Mailr,0,Mailrw);
+    end else begin
+      LogText(0,fromuser & " has no mailbox");
+      goto LCreateEmailWithStdText;
     end;
     if (nonblank(emailto)) then begin
       ClearRow(Mailr,Mailrw,1);
@@ -314,9 +350,11 @@ begin
     
     Mailr.SerNr = NextSerNr("MailVc",CurrentDate,-1,false,"");
     if (RecordInsert(Mailr,true)) then begin
+      res = true;
     end;
   end;
-  
+  LCreateEmailWithStdText:;
+  CreateEmailWithStdText = res;
   return;
 end;
 
@@ -432,17 +470,34 @@ begin
 end;
 
 global 
-updating procedure SendAutoEmailWithStdText(string stdtext,string fromuser,string custcode)
+updating procedure SendAutoEmailWithStdText(string stdtext,string fromuser,string custcode,integer linkrecord,longint linkrecordid)
 begin
   record MailVc Mailr,oldMailr;
+  record CredManVc CredManr;
+  record B2BLoanApplicationVc LAr;
   
-  CreateEmailWithStdText(stdtext,fromuser,"",Mailr);
-  if (AddCredManInvoiceMailRecipients(custcode,Mailr)) then begin
-    RecordCopy(OldMailr,Mailr);
-    Mailr.SendFlag = 1;
-    RecordUpdate(OldMailr,Mailr,true);
+  if (CreateEmailWithStdText(stdtext,fromuser,"",Mailr)) then begin
+    if (AddCredManInvoiceMailRecipients(custcode,Mailr)) then begin
+      RecordCopy(OldMailr,Mailr);
+      Mailr.SendFlag = 1;
+      if (RecordUpdate(OldMailr,Mailr,true)==0) then begin
+        switch linkrecord begin
+          case 0: 
+            LAr.SerNr = linkrecordid;
+            if (ReadFirstMain(LAr,1,true)) then begin
+              CreateRecordLink(Mailr,CurrentCompany,LAr,CurrentCompany);
+              CreateRecordLink(LAr,CurrentCompany,Mailr,CurrentCompany);
+            end;
+          case 1: 
+            CredManr.SerNr = linkrecordid;
+            if (ReadFirstMain(CredManr,1,true)) then begin
+              CreateRecordLink(Mailr,CurrentCompany,CredManr,CurrentCompany);
+              CreateRecordLink(CredManr,CurrentCompany,Mailr,CurrentCompany);
+            end;
+        end;
+      end;
+    end;
   end;
-  
   return;
 end;
 
@@ -513,11 +568,8 @@ begin
               end;
               if (ATBrw.PersonType==2) then begin
                 person = GetLeastWorkLoadManager(ATbrw.ActType,CredManr.Type,actdate);
-                if (blank(person)) then begin
-                  LogText(0,"GetLeastWorkLoadManager " & ATbrw.ActType & " failed");
-                end; 
               end;  
-              qupdating.CreateTaskActivityCredMan(CredManr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime);
+              qupdating.CreateTaskActivityCredMan(CredManr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime,ATbrw.AssignRecord==1);
             end;
           end;
         case 1://loan applications
@@ -538,12 +590,9 @@ begin
               end;
               if (ATBrw.PersonType==2) then begin
                 person = GetLeastWorkLoadManager(ATbrw.ActType,CredManr.Type,actdate);
-                if (blank(person)) then begin
-                  LogText(0,"GetLeastWorkLoadManager " & ATbrw.ActType & " failed");
-                end; 
               end;
-              qupdating.CreateTaskActivityLoanApp(LAr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime);
-              qupdating.SendAutoEmailWithStdText(ATbrw.EmailStdText,person,LAr.CustCode);
+              qupdating.CreateTaskActivityLoanApp(LAr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime,ATbrw.AssignRecord==1);
+              qupdating.SendAutoEmailWithStdText(ATbrw.EmailStdText,person,LAr.CustCode,0,LAr.SerNr);
             end;
           end;
         case 2: //property insurance
@@ -575,9 +624,6 @@ begin
                 end;
                 if (ATBrw.PersonType==2) then begin
                   person = GetLeastWorkLoadManager(ATbrw.ActType,CredManr.Type,actdate);
-                  if (blank(person)) then begin
-                    LogText(0,"GetLeastWorkLoadManager " & ATbrw.ActType & " failed");
-                  end; 
                 end;
                 qupdating.CreateTaskActivityPropertyInsurance(CMpr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime);
               end;

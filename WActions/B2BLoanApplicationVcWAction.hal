@@ -23,6 +23,76 @@ remote procedure InsertB2BLoanApplicationShareHolderName(var record B2BLoanAppli
 remote procedure InsertB2BLoanApplicationBeneficialName(var record B2BLoanApplicationVc,Integer);
 remote updating procedure GetB2BLoanApplicationDebtRecord(record B2BLoanApplicationVc,var record LoanAppDebtsVc);
 external inner function roundmode SetRoundModeD(Integer);
+external function Boolean InsertB2BLoanApplicationType(var record B2BLoanApplicationVc);
+remote updating function Integer RA_CreateMailFromB2BLoanApplication(record B2BLoanApplicationVc,var record MailVc,var string,Boolean,string);
+
+global 
+updating procedure CreateMailFromB2BLoanApplicationDsm()
+begin
+  Integer wn,nwn;
+  record MailVc Mailr;
+  row MailVc MArw;
+  record B2BLoanApplicationVc LAr;
+  Integer err,i;
+  string 255 tstr,docname,mailboxnr,tstr1;
+  record MailSettingsBlock MSb;
+  Boolean testf;
+  record ConfSignVc csp;
+  longint l;
+  record IVMailBlock IVMailr;
+  record CMInvoicingBlock CMIb;
+    
+  wn = CurWindow;
+  if (WindowState(wn)==0) then begin//normalstate
+    testf = true;
+    GetWindowRecord(wn,LAr); 
+    if (testf) then begin
+      BlockLoad(MSb);
+      err = RA_CreateMailFromB2BLoanApplication(LAr,Mailr,tstr,false,"");
+      if (err!=0) then begin
+        if (err>0) then begin
+          MessageBox(err,": " & tstr);
+        end;
+      end else begin
+        nwn = OpenWindow("MailDClass",1,0,"","",Mailr);
+      end;
+    end;
+  end;
+  return;
+end;
+
+
+procedure LASumUp(var record B2BLoanApplicationVc LAr)
+begin
+  row B2BLoanApplicationVc LArw;
+  integer i,rwcnt;
+  val sum;
+  
+  rwcnt = matrowcnt(LAr);
+  for(i=0;i<rwcnt;i=i+1)begin
+    matrowget(LAr,i,LArw);
+    sum = sum + LArw.Sum;
+  end;
+  LAr.AdminFee = sum;
+
+return;
+end;
+
+global
+function Boolean B2BLoanApplicationDClassOnOverStrike(Integer wn,Integer rownr)
+BEGIN
+  record B2BLoanApplicationVc LAr
+
+  if (rownr>=0) then begin
+    GetWindowRecord(wn,LAr);    
+    LASumUp(LAr);
+    PutWindowRecord(wn,LAr);    
+  end;
+  
+  B2BLoanApplicationDClassOnOverStrike = true;
+  RETURN;
+END;
+
 
 function Boolean B2BLoanApplicationDClassCustCodeEFAfter(Integer wn,Integer changed)
 begin
@@ -72,6 +142,7 @@ begin
   return;
 end;
 
+global
 procedure CalculateEndDate(var record B2BLoanApplicationVc LAr)
 begin
 
@@ -386,23 +457,12 @@ begin
   
   wstate = WindowState(wn);
   GetWindowRecord(wn,LAr);
-  CMTr.Code = LAr.Type;
-  if (ReadFirstMain(CMTr,1,true)) then begin
-    LAr.InterestRate = CMTr.IntRate;
-    LAr.Months = CMTr.InstalmentMonths;
-/* -1 month issue fixed by changing field type
-    if (LAr.Months==-1) then begin 
-      LAr.Months = 0;
-    end;
-*/
-    LAr.PrincipleDelayMonths = CMTr.PrincipleDelayMonths;
-    LAr.PrincipleDelayInterest = CMTr.PrincipleDelayInterest;
-    CalculateEndDate(LAr);
-    //CloseWindow(wn);
-    //nwn = OpenWindow("B2BLoanApplicationDClass",0,0,"","",LAr);
-    //SetWindowState(nwn,wstate);
-    PutWindowRecord(wn,LAr);    
-  end;
+  InsertB2BLoanApplicationType(LAr);
+  
+  //CloseWindow(wn);
+  //nwn = OpenWindow("B2BLoanApplicationDClass",0,0,"","",LAr);
+  //SetWindowState(nwn,wstate);
+  PutWindowRecord(wn,LAr);    
   
   B2BLoanApplicationDClassTypeEFAfter = res;
   return;
@@ -632,8 +692,24 @@ end;
 function Boolean B2BLoanApplicationDClassSumEFAfter(Integer wn,Boolean changedf)
 begin
   record B2BLoanApplicationVc LAr;
+  row B2BLoanApplicationVc LArw;
+  integer rwcnt,i;
 
   GetWindowRecord(wn,LAr);
+  
+  
+  rwcnt = matrowcnt(LAr);
+  for(i=0;i<rwcnt;i=i+1)begin
+    matrowget(LAr,i,LArw);
+    if(blank(LArw.Price) and LArw.vRebate!=0)then begin
+      LArw.Sum = round(LAr.Sum/100*(LArw.vRebate),defaultcurroundoff);
+      matrowput(LAr,i,LArw);
+    end;
+  end;
+
+  LASumUp(LAr);
+  PutWindowRecord(wn,LAr);
+  
   UpdateB2BLoanApplicationSoftFields(wn,LAr,"Sum");
   PutWindowRecord(wn,LAr);
 end;
@@ -677,6 +753,7 @@ begin
       matrowput(LAr,rownr,LArw);
       //CredManVc_PasteQuant(CredManr,rownr);
     end;
+    LASumUp(LAr);
     PutWindowRecord(wn,LAr);
   end;
   B2BLoanApplicationDClassQuantEFAfter = true;
@@ -692,8 +769,13 @@ begin
     GetWindowRecord(wn,LAr);
     if (rownr>=0) then begin
       matrowget(LAr,rownr,LArw);
-        LArw.Sum = round(LArw.Price * LArw.Quant/100*(100-LArw.vRebate),defaultcurroundoff);
+        if(nonblank(LArw.Price))then begin
+          LArw.Sum = round(LArw.Price * LArw.Quant/100*(100-LArw.vRebate),defaultcurroundoff);
+        end else begin
+          LArw.Sum = round(LAr.Sum * LArw.Quant/100*(LArw.vRebate),defaultcurroundoff);
+        end;
       matrowput(LAr,rownr,LArw);
+      LASumUp(LAr);
       //CredManVc_PastevRebate(CredManr,rownr);
     end;
     PutWindowRecord(wn,LAr);
@@ -713,6 +795,7 @@ begin
       matrowget(LAr,rownr,LArw);
         LArw.Sum = round(LArw.Price * LArw.Quant/100*(100-LArw.vRebate),defaultcurroundoff);
       matrowput(LAr,rownr,LArw);
+      LASumUp(LAr);
     //CredManUpdateAndSumup(CredManr,rownr,fieldname);
     PutWindowRecord(wn,LAr);
   end;
@@ -1967,5 +2050,409 @@ begin
     GetB2BLoanApplicationDebtRecord(LAr,LADr);
     nwn = OpenWindow("LoanAppDebtsDClass",0,0,"","",LADr);
   end;
+  return;
+end;
+
+procedure SplitFormula(string formula1, var string firstargument, var string sign, var string lastargument)
+begin
+  integer i,length;
+  string 100 formula;
+  
+  
+  firstargument = "";
+  sign = "";
+  lastargument = "";
+  
+  formula = trim(formula1);
+  
+  if(nonblank(formula))then begin
+    length = len(formula);
+    for(i=0;i<length;i=i+1)begin
+      if(mid(formula,i,1)=="+")then begin
+        sign = "+";
+        firstargument = trim(left(formula,i));
+        lastargument = trim(right(formula,len(formula)-i-1));
+        i = length;
+      end;
+      if(mid(formula,i,1)=="-")then begin
+        sign = "-";
+        firstargument = trim(left(formula,i));
+        lastargument = trim(right(formula,len(formula)-i-1));
+        i = length;
+      end;
+      if(mid(formula,i,1)=="*")then begin
+        sign = "*";
+        firstargument = trim(left(formula,i));
+        lastargument = trim(right(formula,len(formula)-i-1));
+        i = length;
+      end;
+      if(mid(formula,i,1)=="/")then begin
+        sign = "/";
+        firstargument = trim(left(formula,i));
+        lastargument = trim(right(formula,len(formula)-i-1));
+        i = length;
+      end;
+      if(i==length-1)then begin
+        firstargument = trim(formula);
+      end;
+    end;
+  end;
+
+return;
+end;
+
+function boolean argumentIsvValue(string argument,var val resval)
+begin
+  boolean res;
+  
+  res = false;
+  resval = blankval;
+  if(argument=="0" or argument=="0.0" or argument=="0.00" or argument=="0,0" or argument=="0,00")then begin
+    resval = 0;
+    res = true;
+  end else begin
+    resval = stringtoval(argument,M4Val);
+    if(resval!=0)then begin
+      res = true;
+    end;
+  end;
+  
+  argumentIsvValue = res;
+  return;
+end;
+
+global updating procedure B2BLoanAppEvaluateBuSettings()
+begin
+  integer wn;
+  record B2BLoanApplicationVc LAr;
+  record LoanAppEvaluationVc LAEr;
+  row LoanAppEvaluationVc LAErw;
+  boolean foundf;
+  integer i,rwcnt;
+  vector val varguments;
+  vector date vargumentsdate;
+  string 50 firstarg,sign,lastarg;
+  vector boolean isargument,isdateargument;
+  boolean resrow,totalres,nottrue,isdataformula;
+  val vals,firstargval,lastargval,resval;
+  date calcdate,bd,checkdatefr,checkdateto;
+  
+  totalres = false;
+  nottrue = true;
+  
+  wn = curwindow;
+  deselectwindow(wn,true);
+  if(windowstate(wn)==0)then begin
+    getwindowrecord(wn,LAr);
+    LAEr.Code = LAr.Type;
+    foundf = false;
+    if(readfirstmain(LAEr,1,true))then begin
+      foundf = true;
+    end else begin
+      LAEr.Code = "";
+      if(readfirstmain(LAEr,1,true))then begin
+        foundf = true;
+      end;
+    end;
+    if(foundf)then begin
+      rwcnt = matrowcnt(LAEr);
+      for(i=0;i<rwcnt;i=i+1)begin
+        matrowget(LAEr,i,LAErw);
+        if(nonblank(LAErw.Formula))then begin
+          isdataformula = false;
+          if(left(LAErw.Formula,6)=="ADDDAY")then begin
+            isdataformula = true;
+          end;  
+          if(left(LAErw.Formula,8)=="ADDMONTH")then begin
+            isdataformula = true;
+          end;  
+          if(left(LAErw.Formula,7)=="ADDYEAR")then begin
+            isdataformula = true;
+          end;  
+        end;
+        if(isdataformula==false)then begin
+          if(nonblank(LAErw.Argument))then begin
+            isargument[LAErw.Argument] = true;
+          end;
+        end else begin
+          if(nonblank(LAErw.Argument))then begin
+            isdateargument[LAErw.Argument] = true;
+          end;
+        end;
+      end;
+      rwcnt = matrowcnt(LAEr);
+      for(i=0;i<rwcnt;i=i+1)begin
+        matrowget(LAEr,i,LAErw);
+        //logtext(0,"=====================  " & i);
+        firstargval = blankval;
+        lastargval = blankval;
+        resrow = false;
+        if(nonblank(LAErw.Formula))then begin
+          isdataformula = false;
+          if(left(LAErw.Formula,6)=="ADDDAY")then begin
+            isdataformula = true;
+          end;  
+          if(left(LAErw.Formula,8)=="ADDMONTH")then begin
+            isdataformula = true;
+          end;  
+          if(left(LAErw.Formula,7)=="ADDYEAR")then begin
+            isdataformula = true;
+          end; 
+          
+          if(isdataformula==false)then begin
+            SplitFormula(LAErw.Formula,firstarg,sign,lastarg);
+            //logtext(0,LAErw.Formula & " | " & firstarg & " " & sign & " " & lastarg);
+            if(isargument[firstarg]==false)then begin
+              if(argumentIsvValue(firstarg,vals))then begin
+                firstargval = vals;
+              end else begin
+                //logtext(0,"firstarg " & firstarg);
+                firstargval = stringtoval(GetFieldValueByName(LAr,firstarg,-1),m4val);
+              end;
+            end else begin
+              firstargval = stringtoval(varguments[firstarg],m4val);
+            end;
+            if(nonblank(lastarg))then begin
+              if(isargument[lastarg]==false)then begin
+                if(argumentIsvValue(lastarg,vals))then begin
+                  lastargval = vals;
+                end else begin
+                  //logtext(0,"lastarg " & lastarg);
+                  lastargval = stringtoval(GetFieldValueByName(LAr,lastarg,-1),m4val);
+                end;
+              end else begin
+                lastargval = stringtoval(varguments[lastarg],m4val);
+              end;
+            end;
+            if(nonblank(sign))then begin
+              resval = blankval;
+              switch(sign)begin
+                case "+":resval = firstargval + lastargval;
+                case "-":resval = firstargval - lastargval;
+                case "*":resval = firstargval * lastargval;
+                case "/":resval = firstargval / lastargval;
+              end;
+              if(LAErw.Type==0)then begin
+                if(resval>=LAErw.RangeFrom and resval<=LAErw.RangeTo)then begin
+                  resrow = true;
+                  if(LAEr.Values==0)then begin
+                    goto lCheckEnd;
+                  end;
+                end;
+                nottrue = resrow;
+                //logtext(0,"resrow " & resrow);
+              
+              end;
+              if(nonblank(LAErw.Argument))then begin 
+                varguments[LAErw.Argument] = resval; 
+              end;
+            end else begin
+              if(isargument[firstarg])then begin
+                firstarg = varguments[firstarg];
+              end;
+              if(argumentIsvValue(firstarg,firstargval))then begin
+                if(LAErw.Type==0)then begin
+                  if(firstargval>=LAErw.RangeFrom and firstargval<=LAErw.RangeTo)then begin
+                    resrow = true;
+                    if(LAEr.Values==0)then begin
+                      goto lCheckEnd;
+                    end;
+                  end;
+                  nottrue = resrow;
+                  //logtext(0,"resrow " & resrow);
+                end else begin
+                  if(nonblank(LAErw.Argument))then begin
+                    varguments[LAErw.Argument] = firstargval;
+                  end;
+                end;
+              end else begin
+                firstargval = stringtoval(GetFieldValueByName(LAr,firstarg,-1),m4val);
+                if(LAErw.Type==0)then begin
+                  if(firstargval>=LAErw.RangeFrom and firstargval<=LAErw.RangeTo)then begin
+                    resrow = true;
+                    if(LAEr.Values==0)then begin
+                      goto lCheckEnd;
+                    end;
+                  end;
+                  nottrue = resrow;
+                  //logtext(0,"resrow " & resrow);
+                end else begin
+                  if(nonblank(LAErw.Argument))then begin
+                    varguments[LAErw.Argument] = firstargval; 
+                  end;
+                end;
+              end;
+            end;
+          end else begin
+            calcdate = bd;
+            if(left(uppercase(LAErw.Formula),6)=="ADDDAY")then begin
+              SplitFormula(right(LAErw.Formula,len(LAErw.Formula)-6),firstarg,sign,lastarg);
+              if(sign=="-")then begin
+                calcdate = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+              end else begin
+                calcdate = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+              end;
+            end;  
+            if(left(uppercase(LAErw.Formula),8)=="ADDMONTH")then begin
+              SplitFormula(right(LAErw.Formula,len(LAErw.Formula)-8),firstarg,sign,lastarg);
+              if(sign=="-")then begin
+                calcdate = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+              end else begin
+                calcdate = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+              end;
+            end;  
+            if(left(uppercase(LAErw.Formula),7)=="ADDYEAR")then begin
+              SplitFormula(right(LAErw.Formula,len(LAErw.Formula)-7),firstarg,sign,lastarg);
+              if(sign=="-")then begin
+                calcdate = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+              end else begin
+                calcdate = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+              end;
+            end; 
+            
+            checkdatefr = bd;
+            checkdateto = bd;
+            if(nonblank(LAErw.RangeFromDate))then begin
+              if(LAErw.RangeFromDate=="currentdate")then begin
+                checkdatefr = currentdate;
+              end else begin
+                if(left(LAErw.RangeFromDate,6)=="ADDDAY")then begin
+                  SplitFormula(right(LAErw.RangeFromDate,len(LAErw.RangeFromDate)-6),firstarg,sign,lastarg);
+                  if(sign=="-")then begin
+                    checkdatefr = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  end else begin
+                    checkdatefr = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  end;
+                end;  
+                if(left(LAErw.RangeFromDate,8)=="ADDMONTH")then begin
+                  SplitFormula(right(LAErw.RangeFromDate,len(LAErw.RangeFromDate)-8),firstarg,sign,lastarg);
+                  if(sign=="-")then begin
+                    checkdatefr = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  end else begin
+                    checkdatefr = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  end;
+                end;  
+                if(left(LAErw.RangeFromDate,7)=="ADDYEAR")then begin
+                  SplitFormula(right(LAErw.RangeFromDate,len(LAErw.RangeFromDate)-7),firstarg,sign,lastarg);
+                  if(sign=="-")then begin
+                    checkdatefr = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  end else begin
+                    checkdatefr = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  end;
+                end;
+              end;
+            end;
+            
+            if(nonblank(LAErw.RangeToDate))then begin
+              if(LAErw.RangeToDate=="currentdate")then begin
+                checkdateto = currentdate;
+              end else begin
+                if(left(LAErw.RangeToDate,6)=="ADDDAY")then begin
+                  SplitFormula(right(LAErw.RangeToDate,len(LAErw.RangeToDate)-6),firstarg,sign,lastarg);
+                  if(sign=="-")then begin
+                    checkdateto = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  end else begin
+                    checkdateto = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  end;
+                end;  
+                if(left(LAErw.RangeToDate,8)=="ADDMONTH")then begin
+                  SplitFormula(right(LAErw.RangeToDate,len(LAErw.RangeToDate)-8),firstarg,sign,lastarg);
+                  if(sign=="-")then begin
+                    checkdateto = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  end else begin
+                    checkdateto = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  end;
+                end;  
+                if(left(LAErw.RangeToDate,7)=="ADDYEAR")then begin
+                  SplitFormula(right(LAErw.RangeToDate,len(LAErw.RangeToDate)-7),firstarg,sign,lastarg);
+                  if(sign=="-")then begin
+                    checkdateto = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  end else begin
+                    checkdateto = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  end;
+                end;
+              end;
+            end;
+            
+            logtext(0,"calcdate " & calcdate & " checkdateto " & checkdateto);
+            logtext(0,"calcdate " & calcdate & " checkdatefr " & checkdatefr);
+            if(nonblankdate(calcdate) and nonblankdate(checkdateto))then begin
+              if(calcdate<=checkdateto)then begin
+                resrow = true;
+                if(LAEr.Values==0)then begin
+                  goto lCheckEnd;
+                end;
+              end;
+              nottrue = resrow;
+            end;
+            
+            
+            if(nonblankdate(calcdate) and nonblankdate(checkdatefr))then begin
+              if(calcdate>=checkdatefr)then begin
+                resrow = true;
+                if(LAEr.Values==0)then begin
+                  goto lCheckEnd;
+                end;
+              end;
+              nottrue = resrow;
+            end;
+            
+            //checkdatefr
+            
+          end;
+        end;
+        //logtext(0,"firstargval "  & firstargval);
+        //logtext(0,"lastargval "  & lastargval);
+      end;
+      
+lCheckEnd:;
+      if(LAEr.Decisions==0)then begin
+        if(nottrue==false)then begin
+          totalres = true;
+          LAr.Evaluation = 1;
+        end else begin
+          LAr.Evaluation = 2;
+        end;
+      end else begin
+        if(nottrue==true)then begin
+          totalres = true;
+          LAr.Evaluation = 1;
+        end else begin
+          LAr.Evaluation = 2;
+        end;
+      end;
+      PutWindowRecord(wn,LAr);
+      windowdook(wn,0);
+    end;
+  end;
+  
+return;
+end;
+
+
+global
+function Boolean LoanAppEvaluationDClassAfterEditField(Integer wn,string fieldname,Integer fn,Integer rownr,Integer changed)
+begin
+  Boolean res;
+	integer i,j,rwcnt,rwcnt2;
+	string 255 vatcode;
+	row LoanAppEvaluationVc LAErw,LAE2rw;
+	record CredManTypeVc CredManTyper;
+	record LoanAppEvaluationVc LAEr
+	
+	
+	if(changed!=0)then begin
+	  getwindowrecord(wn,LAEr);
+    switch (fieldname) begin
+      case "Code":if(nonblank(LAEr.Code))then begin
+                    CredManTyper.Code = LAEr.Code;
+                    if(readfirstmain(CredManTyper,1,true))then begin
+                      LAEr.Comment = CredManTyper.Comment;
+                      putwindowrecord(wn,LAEr);
+                    end;
+                  end;
+    end;
+  end;
+  LoanAppEvaluationDClassAfterEditField = true;
   return;
 end;
