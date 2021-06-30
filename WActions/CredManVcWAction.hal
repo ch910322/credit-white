@@ -29,8 +29,6 @@ remote updating procedure RecreateAgreementSchedule3(record CredManVc,Boolean,In
 remote function Boolean ContractHasInvoiceCreated(record CredManVc);
 remote updating procedure CheckAndCreateAutoMailFromInvoice(record IVVc);
 remote procedure GenerateAgreementSchedule(record CredManVc,Boolean,Boolean);
-remote procedure GenerateAgreementScheduleTask(record CredManVc,Boolean,Boolean);
-
 remote function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,Boolean,Boolean);
 remote updating procedure CreateManualExtraInvoice(record RcVc,var record IVVc);
 remote procedure CredLegalNrSerNrSClassOnOpenWindowRemote(string,string,Date,string,string,var array string);
@@ -2274,7 +2272,7 @@ begin
       RepSpec.long1 = CredManr.SerNr;
       OpenWindow("SchedYesNoWClass",0,0,"","",RepSpec);
     end else begin
-      GenerateAgreementScheduleTask(CredManr,false,true);
+      threadremote.GenerateAgreementSchedule(CredManr,false,true);
     end;
 //  end;
 
@@ -2423,7 +2421,7 @@ begin
   
   CredManr.SerNr = RepSpec.long1;
   if (ReadFirstMain(CredManr,1,true)) then begin
-    GenerateAgreementScheduleTask(CredManr,true,true);
+    threadremote.GenerateAgreementSchedule(CredManr,true,true);
   end;
 
   CloseWindow(wn);
