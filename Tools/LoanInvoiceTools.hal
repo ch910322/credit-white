@@ -1130,7 +1130,7 @@ begin
   lateamount = 0;
   CUr.Code = CredManr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
-    if (CUr.InterestFlag==1) then begin
+    if (CUr.InterestFlag==1 and CredManr.SkipOverDue==0) then begin
       BlockLoad(CIb);
       temp_td = prevtd;
       if (!paidf) then begin
