@@ -1084,6 +1084,7 @@ L20OneARSFormOpenOnDate:;
         case 1: 
           balp = balp + ARSOnAccBal;
           ARSrList(RepSpec,CUp,ARSSum,ARSOnAccBal,ARSIntSum,ARSs0,ARSs1,ARSs16,ARSs31,ARSs61,ARSs91,ARSs121,ARSs151,aRwtype,aInvoiceNr,aRecNr,alatedays,aRemndr,aInvDate,aDueDate,aIntVal,aRVal,aRValCur,aSum4,aVEInvNo,aCurncyCode,aOfficialSerNo,acnt,custcnt,invcnt); 
+        case 2 : balp = balp + ARSOnAccBal;
       end;
   end;
   balp = balp + ARSSum;
