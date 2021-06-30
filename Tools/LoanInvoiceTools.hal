@@ -3705,6 +3705,28 @@ logtext(0,"GenerateAgreementSchedule2");
   return;
 end;
 
+global procedure GenerateAgreementScheduleTask(record CredManVc CredManr,Boolean forcef,Boolean fullf)
+begin
+  
+  NewTimedTask2("CreateCredManSched" & CredManr.SerNr,"CreateCredManSched","CreateCredManSchedTask1",CredManr.SerNr,CurrentDate,AddSeconds(CurrentTime,1),"","");
+
+
+return;
+end;
+
+global
+procedure CreateCredManSchedTask1(string args)
+begin
+  record CredManVc CredManr;
+  
+  CredManr.SerNr = StringToLongint(args);
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    GenerateAgreementSchedule(CredManr,true,true);
+  end;
+
+  return;
+end;
+
 global
 procedure CreateCredManSchedTask(string args)
 begin
