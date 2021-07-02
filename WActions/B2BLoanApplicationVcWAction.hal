@@ -1327,7 +1327,7 @@ begin
   GetWindowRecord(CurWindow,CUr);
   CredManr.CustCode = CUr.Code;
   PasteCustInCredMan(CredManr);
-  nwn = OpenWindow("B2BLoanApplicationDClass",0,0,"","",CredManr);
+  nwn = OpenWindow("CredManDClass",0,0,"","",CredManr);
 
   return;
 end;
@@ -1347,7 +1347,7 @@ begin
     if (B2BLoanAppCreateCredMan(LAr,CredManr,true)) then begin
       PutWindowRecord(wn,LAr);
       WindowDoOK(wn,0);
-      nwn = OpenWindow("B2BLoanApplicationDClass",0,0,"","",CredManr);
+      nwn = OpenWindow("CredManDClass",0,0,"","",CredManr);
     end;
   end;
 

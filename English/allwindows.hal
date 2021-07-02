@@ -856,6 +856,7 @@ begin
   if (statusf) then begin
     v = v + vs;
   end;
+  v = v + vs;
   if (type!=4 and type!=5 and type!=7) then begin
     EditField(h4,v+=vs,-40,"Max Monthly Payment",Normal,MaxMonthlyPayment,true,0);
 //CUST-BEGIN
@@ -3817,6 +3818,7 @@ begin
   CheckBox(h,v+=16,0,"#Credit Notes#",flags[5]);
   CheckBox(h,v+=16,0,"I_nterest Invoices",flags[6]);
   CheckBox(h,v+=20,0,"Use Persons e-mail address as From",flags[9]);
+  CheckBox(h,v+=20,0,"Include Only Credit Agreement Invoices",flags[10]);
   EndWindow;
 end;
 

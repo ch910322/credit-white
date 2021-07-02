@@ -265,7 +265,7 @@ begin
          TrHs = false;
       end;
       if (TrHs) then begin
-      //  LogText(0,"Userr.SalesGroup=" & Userr.SalesGroup & " Userr.Code=" & Userr.Code); 
+        LogText(0,"Userr.SalesGroup=" & Userr.SalesGroup & " Userr.Code=" & Userr.Code); 
         GetManagerWorkLoadEvaluation(Userr.Code,MWr.EvaluationType,MWr.OrderClass,d,ev);
         if ((prevev==-1) or (ev <= prevev)) then begin
           res = Userr.Code;

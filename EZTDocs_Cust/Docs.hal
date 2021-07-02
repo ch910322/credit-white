@@ -2237,6 +2237,7 @@ begin
       vVals["ROW_" & strnum & "_F_CREDINVTOT"] = (SMrw.CredVal+SMrw.DebVal2+SMrw.DebVal);//Balance
       vVals["ROW_" & strnum & "_F_ROWNR"] = num;
       vVals["ROW_" & strnum & "_F_VATROWSUM"] = SMrw.FrRate;//vat amount;
+      logtext(0,"_F_VATROWSUM " & SMrw.FrRate);
       vVals["ROW_" & strnum & "_F_TOTROWSUM"] = SMrw.CurDebVal;//total amount;
       if(ValToString(SMrw.BaseRate1,M4Val,"",DecimalSeparator,0)=="")then begin
         SMrw.BaseRate1 = 0;
@@ -2266,6 +2267,14 @@ begin
       end;
   LNextRow:;
     end;
+    vVals["F_SUMMA"] = CredManr.InvSum4;
+    vVals["F_TOTFEES"] = totfees;
+    vVals["F_CREDTOTINT"] = totinterest;
+    vVals["F_CREDTOTINSTAL"] = totinstalment;
+    vVals["F_CREDTOTPAY"] = totpayment;
+    vVals["F_CREDFULLTOTPAY"] = totfullpayment;
+    vVals["F_CREDTOTVAT"] = totfullvat;
+    vVals["F_REIMBURSMENT"] = reimbsum;	
     strnum = 0;
     
   end;
