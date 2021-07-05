@@ -3305,6 +3305,7 @@ begin
     RadioButton(h,v+=16,6,0,"Rate Diff. Detailed",ArtMode);
 //CUST-BEGIN
     RadioButton(h,v+=16,7,0,"Aged with Items",ArtMode);
+    RadioButton(h,v+=16,8,0,"Overview with Items",ArtMode);
 //CUST-END
     ButtonFrame(h,v=vm,123,2,"Status");
     RadioButton(h,v,0,0,"Op_en",flags[0]);

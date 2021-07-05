@@ -55,7 +55,75 @@ external outer procedure PrintAgedLineWithItems(val,vector val,vector val,vector
 external outer  function val GetCredHistOpenValue(Longint);
 external outer function Boolean CheckInvoiceDebtorsAC(string,record IVVc,var val);
 external outer function Boolean CheckInvoiceDebtorsACOnDate(string,record IVVc,var val,Date);
+external outer function val GetCredHistOpenValueOnDate(Longint,Date);
 //CUST-END
+
+//same as in IVInfoRn
+procedure PrintCredManReceiptsByItems(record IVVc IVr, date d,string itemsfilter)
+begin
+  record CredHistVc CredHistr,CredHist2r;
+  boolean TrHs,TrHs2;
+  record INVc INr;
+  string 255 tstr;
+  val t,tt,tot1,tot2,tot3;
+  longint t2;
+  date blankd;
+  boolean testf;
+  
+  StartFormat(15);
+  OutString(0,0,USetStr(12002),false);
+  OutString(150,0,UsetStr(25552),false);//12003
+  OutString(320,0,UsetStr(200310),true);
+  OutString(380,0,USetStr(19063),true);
+  OutString(480,0,USetStr(39403),true);
+  EndFormat;
+  CredHistr.RecordNr = IVr.SerNr;
+  CredHistr.RecordType = 0;
+  TrHs = true;
+  while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+    if ((CredHistr.RecordNr!=IVr.SerNr) or (CredHistr.RecordType!=0)) then begin
+      TrHs = false;
+    end;
+    if (TrHs) then begin
+      testf = true;
+      if (nonblank(itemsfilter)) then begin
+        if (CredHistr.ArtCode!=itemsfilter) then begin
+          testf = false;
+        end;
+      end;
+      if (testf) then begin
+        t = GetCredHistOpenValueOnDate(CredHistr.SerNr,d);
+        tt = CredHistr.Sum-t;
+        tot1 = tot1 + CredHistr.Sum;
+        tot2 = tot2 + tt;
+        tot3 = tot3 + t;
+        INr.Code = CredHistr.ArtCode;
+        ReadFirstMain(INr,1,true);
+        tstr = USetStr(1151);
+        tstr = tstr & ":";
+        t2 = CredHist2r.RecordNr;
+        tstr = tstr & t2;
+        StartFormat(15);
+        
+        OutString(0,"DblINVc",CredHistr.ArtCode,false) ;
+        //OutVal(180,0,111,M4Val,true);//qty
+        OutString(150,0,INr.Name,false);
+        OutVal(320,0,CredHistr.Sum,M4Val,true);
+        OutVal(380,0,tt,M4Val,true);
+        OutVal(480,0,t,M4Val,true);
+        EndFormat;
+      end;
+    end;
+  end;
+  Black_Divider(300,480);
+  StartFormat(15);
+  OutVal(320,0,tot1,M4Val,true);
+  OutVal(380,0,tot2,M4Val,true);
+  OutVal(480,0,tot3,M4Val,true);
+  EndFormat;
+  Gray_Divider(0,1);
+  return;
+end;
 
 global
 function LongInt CalcARRnColumnSpacing(LongInt nrofper,Integer UseAccPeriod,var LongInt colwidth,var LongInt colstart,var LongInt col2start)
@@ -797,6 +865,11 @@ L22:;
         end;        
         if (RepSpec.ArtMode==1) then begin// Overview        
           ARRPrintOverView(CUr,IVr,IPrsr,TRr,RepSpec,rval,rs,latedays);
+          AddCurncyTotals(acur,av1,curcnt,IVr.CurncyCode,rval);
+        end;
+        if (RepSpec.ArtMode==8) then begin// Overview with items       
+          ARRPrintOverView(CUr,IVr,IPrsr,TRr,RepSpec,rval,rs,latedays);
+          PrintCredManReceiptsByItems(IVr,agedate,RepSpec.f14);
           AddCurncyTotals(acur,av1,curcnt,IVr.CurncyCode,rval);
         end;
         if (RepSpec.ArtMode==2) then begin// Aged
