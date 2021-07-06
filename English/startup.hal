@@ -71,7 +71,7 @@ begin
 	Report("Check Schedule Periods",CheckCMSchedRClass,CheckCMSchedRn,0,modCredMan);
 	Report("Test Credit Agreements",CredManTestRClass,CredManTestRn,0,modCredMan);
 	Report("Late to be invoiced Contracts",CMInvoiceableContractsRClass,CMInvoiceableContractsRn,0,modCredMan);
-
+  
 
   Maintenance("Create Agreement Invoices",GenLoanInvoicesVClass,GenLoanInvoicesMn,modCredMan);
   Maintenance("Create Agreement Invoices Test",GenLoanInvoicesVClass,GenLoanInvoicesTestMn,modDBMain);
@@ -105,6 +105,7 @@ begin
 
 /* Sales ledger */
 	Report("Income Analysis",EBSIncomeAnalysisRClass,EBSIncomeAnalysisRn,0,modSL);
+	Report("Invoice Overview",InvoiceOverviewRClass,InvoiceOverviewRn,0,modSL);
 
 /*CRM */
   Setting("Manager Replacements",ManagerReplacementLClass,modCRM);

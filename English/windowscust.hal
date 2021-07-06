@@ -4149,3 +4149,21 @@ begin
 
 	EndWindow;
 end;
+
+window InvoiceOverviewRClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm,vs;
+  WindowBegin("Invoice Overview",InvoiceOverviewRClass,CGRcW,RcType);
+  SetWRect(20,80,420,310);
+  vs = 20;
+  h = 140;
+  v = 40;
+  PeriodField(h,v,"Period");   
+  EditFieldTL(h,v+=vs,150,"Customer",M4UStr,Normal,41,f1,false,CUSClass);
+  EditFieldTL(h,v+=vs,50,"Customer Category",M4UStr,Normal,5,f2,false,CCatSClass);
+  EditFieldTL(h,v+=vs,120,"Agreement",M4Long,Normal,0,long1,false,CredManSClass);
+  EditFieldTL(h,v+=vs,82,"Agreement Classification",M4Str,Normal,60,f3,false,CredManClassSClass);
+  
+  EndWindow;
+end;
