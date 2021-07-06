@@ -193,9 +193,6 @@ begin
       for(i=0;i<rwcnt;i=i+1)begin
         matrowget(IVr,i,IVrw);
         if(IVrw.stp==kInvoiceRowTypeNormal and nonblank(IVrw.ArtCode))then begin
-          INr.Code = IVrw.ArtCode;
-          readfirstmain(INr,1,true);
-          
           startformat(15);
             outstring(pos,0,IVr.SerNr/*Invoice Id*/,false);pos = pos+50;
             outstring(pos,0,IVr.CustCode/*Customer Id*/,false);pos = pos+50;
@@ -230,9 +227,6 @@ begin
           endformat;
         end;
         if(IVrw.stp==kInvoiceRowTypePrepayment)then begin
-          INr.Code = IVrw.ArtCode;
-          readfirstmain(INr,1,true);
-          
           startformat(15);
             outstring(pos,0,IVr.SerNr/*Invoice Id*/,false);pos = pos+50;
             outstring(pos,0,IVr.CustCode/*Customer Id*/,false);pos = pos+50;
