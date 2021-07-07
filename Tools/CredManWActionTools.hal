@@ -1479,7 +1479,9 @@ begin
   end;
   if (extrapayment) then begin
     VIr.CredManExtraPayment = 1;
-    VIr.InvoiceNr = VIr.InvoiceNr & "/" & 2+GetCredManExtraPaymentInvCount(CredManr.SerNr);
+    if (CIb.PurchInvNoFromCredMan!=0) then begin
+      VIr.InvoiceNr = VIr.InvoiceNr & "/" & 2+GetCredManExtraPaymentInvCount(CredManr.SerNr);
+    end;
   end;
   ClearRow(VIr,VIrw,1);
   tstr = CM_GetCredManTypePurchItemAccount2(CredManr,CIb.PaymentAccount,true);
