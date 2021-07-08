@@ -291,11 +291,11 @@ begin
     if (ReadFirstMain(CMTr,1,true)) then begin
       credmanpmcode = CMTr.PMCode;
     end;
-
+        
     ResetLoop(CMTr);
     CMTr.PMCode = pmcode;
     if (ReadFirstKey("PMCode",CMTr,1,true)) then begin
-      if (pmcode!=credmanpmcode) then begin
+      if (pmcode!=credmanpmcode and  nonblank(credmanpmcode)) then begin
         res = false;
       end;
     end else begin
