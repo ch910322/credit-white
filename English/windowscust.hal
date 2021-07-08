@@ -2919,7 +2919,7 @@ begin
       title = "Properties";
   end;
   WindowBegin(title,CredManPropertiesDClass,CGview,-);
-  SetWRect(20,80,900,339);
+  SetWRect(20,80,990,339);
   DynamicWindow;
   UseView(CredManPropertiesVc);
   vs=20; h=120; vs2=16; hm=-100;
@@ -2927,12 +2927,23 @@ begin
   MatCol(1,24,"Property",0,Property,false,CMPropertySClass);
   MatCol(1,104,"Address",0,Address,false,0);
   if (type==3) then begin
-    MatCol(1,-530,"Cadastral Code",0,SerialNo,false,0);
-    MatCol(1,-440,"Living Area",0,LivingArea,true,0);
-    MatCol(1,-350,"Evaluated Value",0,EvalVal,true,0);
-    MatCol(1,-260,"Pledge Type",0,PledgeType,false,SetSClass);
-    MatCol(1,-170,"Pledge Val",0,PledgeVal,true,0);
-    MatCol(1,-80,"Pledge Date",0,PledgeDate,false,PasteCurDate);
+    if (IsOmegaCustomer) then begin
+      MatCol(1,-680,"Cadastral Code",0,SerialNo,false,0);
+      MatCol(1,-590,"Living Area",0,LivingArea,true,0);
+      MatCol(1,-530,"Evaluated Value",0,EvalVal,true,0);
+      MatCol(1,-440,"Pledge Type",0,PledgeType,false,SetSClass);
+      MatCol(1,-350,"Pledge Val",0,PledgeVal,true,0);
+      MatCol(1,-260,"Pledge Date",0,PledgeDate,false,PasteCurDate);
+      MatCol(1,-170,"Status",0,Status,false,SetSClass);
+      MatCol(1,-80,"Closing Date",0,CloseDate,false,PasteCurDate);
+    end else begin
+      MatCol(1,-530,"Cadastral Code",0,SerialNo,false,0);
+      MatCol(1,-440,"Living Area",0,LivingArea,true,0);
+      MatCol(1,-350,"Evaluated Value",0,EvalVal,true,0);
+      MatCol(1,-260,"Pledge Type",0,PledgeType,false,SetSClass);
+      MatCol(1,-170,"Pledge Val",0,PledgeVal,true,0);
+      MatCol(1,-80,"Pledge Date",0,PledgeDate,false,PasteCurDate);
+    end;
   end else begin
     if (type==2) then begin
       MatCol(1,-380,"VIN Number",0,SerialNo,false,0);

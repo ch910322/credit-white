@@ -584,6 +584,10 @@ begin
   SetText(0,"Check");
   SetText(1,"Sum");
   EndSet;
-
+  
+  SetBegin(2033);
+  SetText(0,"Active");
+  SetText(1,"Not Active");
+  EndSet;
   return;
 end;
