@@ -198,7 +198,7 @@ begin
             outstring(pos,0,IVr.SerNr/*Invoice Id*/,false);pos = pos+25;
             outstring(pos,0,IVr.CustCode/*Customer Id*/,false);pos = pos+25;
             outstring(pos,0,IVr.OfficialSerNr/*Invoice Nr*/,false);pos = pos+25;
-            outstring(pos,0,""/*Channel Id*/,false);pos = pos+25;
+            outstring(pos,0,IVr.BankCode/*Channel Id*/,false);pos = pos+25;
             outstring(pos,0,IVr.InvDate/*Invoice Date*/,false);pos = pos+25;
             outstring(pos,0,sdate/*Periodstart Date*/,false);pos = pos+25;
             outstring(pos,0,edate/*Period End Date*/,false);pos = pos+25;
@@ -233,7 +233,7 @@ begin
             outstring(pos,0,IVr.SerNr/*Invoice Id*/,false);pos = pos+25;
             outstring(pos,0,IVr.CustCode/*Customer Id*/,false);pos = pos+25;
             outstring(pos,0,IVr.OfficialSerNr/*Invoice Nr*/,false);pos = pos+25;
-            outstring(pos,0,""/*Channel Id*/,false);pos = pos+25;
+            outstring(pos,0,IVr.BankCode/*Channel Id*/,false);pos = pos+25;
             outstring(pos,0,IVr.InvDate/*Invoice Date*/,false);pos = pos+25;
             outstring(pos,0,sdate/*Periodstart Date*/,false);pos = pos+25;
             outstring(pos,0,edate/*Period End Date*/,false);pos = pos+25;
