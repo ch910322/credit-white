@@ -467,6 +467,13 @@ begin
   if (ReadFirstMain(CredManr,1,true)) then begin
     vVals["F_CREDMANCREATEDATE"] = CredManr.TransDate;
     GetCredManChangePurpose(CredManr,vVals);
+    if (nonblank(CredManr.DocumentSigner)) then begin
+      Userr.Code = CredManr.SalesMan;
+      if (ReadFirstMain(Userr,1,true)) then begin
+        vVals["F_CREDMANDOCUMENTSIGNERNAME"] = Userr.Name;
+        vVals["F_CREDMANDOCUMENTSIGNERJOB"] = Userr.Job;
+      end;
+    end;
   end;
 
   BlockLoad(CMb);

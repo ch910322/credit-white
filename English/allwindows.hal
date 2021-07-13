@@ -90,6 +90,7 @@ external outer function Boolean UseCompensationInvoices();
 external outer function Boolean ShowToDisburse();
 external outer function Boolean UseBuyoutSummary();
 external outer function Boolean ShowBuyOutFeePrcAllTypes();
+external outer function Boolean IsNovitiCustomer();
 //CUST-END
 
 window CUDClass:14
@@ -1041,6 +1042,9 @@ begin
   EditField(h2,v=vm-20,-40,"Bank Code",Normal,BankCode,false,BankSClass);
   EditField(h2,v+=vs,-40,"Bank Name",Normal,BankName,false,0);
   EditField(h2,v+=vs,-40,"Bank Account",Normal,BankAccount,false,BankAccountSClass);
+  if (IsNovitiCustomer) then begin
+    EditField(h2,v+=vs,80,"Documents Signer",Normal,DocumentSigner,false,UserSClass);
+  end;
   CheckBox(h2,v+=20,0,"Remaining principle including Last Months Principle",LastPrincipleWithExtraMonth);
   if (UseCompensationInvoices) then begin
     CheckBox(h2,v+=16,0,"Use Compensation, not Overdue",UseCompensationInvoices);

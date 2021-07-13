@@ -1243,7 +1243,13 @@ begin
     vVals["F_SALESMANEMAIL"] = Userr.emailAddr;
     vVals["F_SALESMANJOB"] = Userr.Job;
   end;
-
+  if (nonblank(CredManr.DocumentSigner)) then begin
+    Userr.Code = CredManr.SalesMan;
+    if (ReadFirstMain(Userr,1,true)) then begin
+      vVals["F_DOCUMENTSIGNERNAME"] = Userr.Name;
+      vVals["F_DOCUMENTSIGNERJOB"] = Userr.Job;
+    end;
+  end;
   vVals["F_FIRSTINVDATE"] = CredManr.FirstInvDate;
   vVals["F_OTHERCONDITIONSLONG"] = GetConditionsText(CredManr,0);
   vVals["F_PMTCONDITIONS"] = GetConditionsText(CredManr,1);
@@ -1717,6 +1723,13 @@ begin
     vVals["F_SALESMANEMAIL"] = Userr.emailAddr;
     vVals["F_SALESMANJOB"] = Userr.Job;
   end;
+  if (nonblank(CredManr.DocumentSigner)) then begin
+    Userr.Code = CredManr.SalesMan;
+    if (ReadFirstMain(Userr,1,true)) then begin
+      vVals["F_CREDMANDOCUMENTSIGNERNAME"] = Userr.Name;
+      vVals["F_CREDMANDOCUMENTSIGNERJOB"] = Userr.Job;
+    end;
+  end;
   vVals["F_OTHERCONDITIONS"] = GetConditionsText(CredManr,0);
   vVals["F_PMTCONDITIONS"] = GetConditionsText(CredManr,1);
 
@@ -1758,7 +1771,7 @@ begin
   Integer gnum;
   record CMApplicationSetBlock CMb;
   record CMPrintConstantsBlock PCb;
-
+  record UserVc Userr;
 
   Ext_CommonDocumentFields(vVals);
 
@@ -1881,7 +1894,13 @@ begin
   vVals["F_ENDDATE2INWORDS"] = tstr;
 
   Ext_PrintDocumentSigner(vVals);
-
+  if (nonblank(CredManr.DocumentSigner)) then begin
+      Userr.Code = CredManr.SalesMan;
+      if (ReadFirstMain(Userr,1,true)) then begin
+        vVals["F_CREDMANDOCUMENTSIGNERNAME"] = Userr.Name;
+        vVals["F_CREDMANDOCUMENTSIGNERJOB"] = Userr.Job;
+      end;
+    end;
   vVals["F_OTHERCONDITIONS"] = GetConditionsText(CredManr,0);
   vVals["F_PMTCONDITIONS"] = GetConditionsText(CredManr,1);
 

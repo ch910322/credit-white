@@ -16,6 +16,7 @@ external function Boolean UseDisburseUntil();
 external updating procedure CreateCredManObject(var record CredManVcVc,Boolean,Boolean);
 external function integer GenCredManObj(record CredManVc, record CMApplicationSetBlock,var record ObjVc);
 external inner function string 60 RemoveObjectFromObjectList(string,string);
+external function Boolean IsNovitiCustomer;
 
 global
 function LongInt CredManVcRecordDefaults(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
@@ -25,11 +26,13 @@ BEGIN
   record CredManSetBlock CMb;
   record CMOrderClassBlock OCb;
   record CMInvoicingBlock CIb;
+  record CMApplicationSetBlock CMAb;
 
   BlockLoad(BCb);
   BlockLoad(CMb);
   BlockLoad(OCb);
   BlockLoad(CIb);
+  BlockLoad(CMAb);
   CredManr.CurncyCode = BCb.BaseCur1;
   CredManr.MonthlyPaymentDay = CMb.InvDay;
   CredManr.FirstIntDate = CurrentDate;
@@ -39,8 +42,13 @@ BEGIN
   res = inner.CredManVcRecordDefaults(CredManr,CredMan2r,stat,long4);
   CredManVc_PasteType(CredManr);
   RecalcCredManFees(CredManr);
-
-
+  if (IsNovitiCustomer) then begin
+    if (nonblank(CMAb.DocumentSigner)) then begin
+      CredManr.DocumentSigner = CMAb.DocumentSigner;
+    end else begin
+      CredManr.DocumentSigner = CredManr.SalesMan;
+    end;
+  end;
   CredManr.OrderClass = OCb.CMDefOrderClass;
 
   CredManVcRecordDefaults = res;
