@@ -227,9 +227,10 @@ begin
   EditField(h,v+=vs,100,"Language for Numbers",Normal,NumberLangCode,false,LangSClass);
   EditField(h,v+=vs,100,"Marketing email classification",Normal,MarkMailClass,false,CClassSClass);
   EditField(h,v+=vs,100,"Marketing sms classification",Normal,MarkSMSClass,false,CClassSClass);
-
+  CheckBox(h,v+=25,0,"First full month invoice for 30 days",FirstPeriodIsFullMonth);
+  
   if (UseCredManStatus) then begin
-    CheckBox(h,v+=30,0,"Automatically pause Agreements",AutoPauseCredMan);
+    CheckBox(h,v+=25,0,"Automatically pause Agreements",AutoPauseCredMan);
     EditField(h,v+=20,100,"Time",Normal,AutoPauseCredManTime,false,PasteCurTime);
   end;
 

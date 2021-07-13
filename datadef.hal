@@ -581,6 +581,7 @@ begin
   RecordField(AutoOTCode,M4Code,5,OTVc);
   RecordField(MarkMailClass,M4Code,20,0);
   RecordField(MarkSMSClass,M4Code,20,0);
+  RecordField(FirstPeriodIsFullMonth,M4Int,0,0);
   EndBlock;
   
   RecordAddBegin(CUVc,"CredCUVc");
