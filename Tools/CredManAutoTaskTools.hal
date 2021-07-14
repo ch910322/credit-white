@@ -257,7 +257,7 @@ begin
     LogText(0,"GetLeastWorkLoadManager: Manager workload not found");
   end;
   if (foundf) then begin
-    //LogText(0,"MWr.SalesGroup=" & MWr.SalesGroup & " MWr.SerNr=" & MWr.SerNr);
+    LogText(0,"GetLeastWorkLoadManager found SalesGroup=" & MWr.SalesGroup & " MWr.SerNr=" & MWr.SerNr);
     Userr.SalesGroup = MWr.SalesGroup;
     TrHs = true;
     while (LoopKey("SalesGroup",Userr,1,TrHs)) begin
@@ -476,27 +476,31 @@ begin
   record CredManVc CredManr;
   record B2BLoanApplicationVc LAr;
   
-  if (CreateEmailWithStdText(stdtext,fromuser,"",Mailr)) then begin
-    if (AddCredManInvoiceMailRecipients(custcode,Mailr)) then begin
-      RecordCopy(OldMailr,Mailr);
-      Mailr.SendFlag = 1;
-      if (RecordUpdate(OldMailr,Mailr,true)==0) then begin
-        switch linkrecord begin
-          case 0: 
-            LAr.SerNr = linkrecordid;
-            if (ReadFirstMain(LAr,1,true)) then begin
-              CreateRecordLink(Mailr,CurrentCompany,LAr,CurrentCompany);
-              CreateRecordLink(LAr,CurrentCompany,Mailr,CurrentCompany);
-            end;
-          case 1: 
-            CredManr.SerNr = linkrecordid;
-            if (ReadFirstMain(CredManr,1,true)) then begin
-              CreateRecordLink(Mailr,CurrentCompany,CredManr,CurrentCompany);
-              CreateRecordLink(CredManr,CurrentCompany,Mailr,CurrentCompany);
-            end;
+  if (nonblank(fromuser)) then begin
+    if (CreateEmailWithStdText(stdtext,fromuser,"",Mailr)) then begin
+      if (AddCredManInvoiceMailRecipients(custcode,Mailr)) then begin
+        RecordCopy(OldMailr,Mailr);
+        Mailr.SendFlag = 1;
+        if (RecordUpdate(OldMailr,Mailr,true)==0) then begin
+          switch linkrecord begin
+            case 0: 
+              LAr.SerNr = linkrecordid;
+              if (ReadFirstMain(LAr,1,true)) then begin
+                CreateRecordLink(Mailr,CurrentCompany,LAr,CurrentCompany);
+                CreateRecordLink(LAr,CurrentCompany,Mailr,CurrentCompany);
+              end;
+            case 1: 
+              CredManr.SerNr = linkrecordid;
+              if (ReadFirstMain(CredManr,1,true)) then begin
+                CreateRecordLink(Mailr,CurrentCompany,CredManr,CurrentCompany);
+                CreateRecordLink(CredManr,CurrentCompany,Mailr,CurrentCompany);
+              end;
+          end;
         end;
       end;
     end;
+  end  else begin
+    LogText(0,"SendAutoEmailWithStdText empty fromuser");
   end;
   return;
 end;
