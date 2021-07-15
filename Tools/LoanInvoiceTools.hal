@@ -3188,8 +3188,9 @@ begin
   ORr.TAX1Sum = vcalcval["OPENINVOICED"] - vcalcval["OPENINVOICED:" & princItem] - vcalcval["OPENINVOICED:" & intItem] - vcalcval["OPENINVOICED:" & demandItem] - vcalcval["OPENINVOICED:" & feesItem];
   logtext(0,"------Open Overdue Fee Invoices" & vcalcval["OPENINVOICED:" & feesItem]);
 //  ORr.??????????
+  ORr.DownPayRedcd = vcalcval["OPENINVOICED:" & feesItem];
   logtext(0,"------Credited Interest" & vcalcval1["INVOICEDCURRENTPERIOD"]);
-  //ORr.Commission = vcalcval1["INVOICEDCURRENTPERIOD"];
+  ORr.DownPaySent = vcalcval1["INVOICEDCURRENTPERIOD"];
   
   logtext(0,"------Letter Of Demand" & vcalcval["OPENINVOICED:" & demandItem]);
   ORr.SumIncCom = vcalcval["OPENINVOICED:" & demandItem];
@@ -3197,6 +3198,11 @@ begin
   ORr.RvrsVAT = vcalcval["OPENINVOICED:" & insurItem];
   logtext(0,"------Premature Term. Fee" & vcalcval["OPENINVOICED:" & prematureItem]);
   ORr.TAX2Sum = vcalcval["OPENINVOICED:" & prematureItem];
+    
+  //t = GetOpenOverdueFeesValue(CredManr.SerNr,ORr.OrdDate);
+  ORr.FrBase = ORr.Sum2+ORr.BaseSum4+ORr.TotGP+ORr.DiscSum+ORr.TAX1Sum+ORr.FrPrice+ORr.DownPayRedcd;//total debt
+
+  
     
   getvectortags(vcalcval,acalcval);
   
