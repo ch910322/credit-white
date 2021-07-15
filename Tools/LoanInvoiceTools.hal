@@ -3017,6 +3017,7 @@ begin
   record CMInvoicingBlock CIb;
   array string 30 acalcval;
   val interestammount;
+  boolean testf;
   
   
   blockload(CIb);
@@ -3212,22 +3213,26 @@ begin
   end;
   
   for(i=0;i<acalcval.length;i=i+1)begin
-    if(left(acalcval[i],15)=="OVDOPENINVOICED")then begin
-      if(lastinrange(acalcval[i],20)!=intItem and lastinrange(acalcval[i],20)!=princItem)then begin
-        if(nonblank(lastinrange(acalcval[i],20)) and lastinrange(acalcval[i],20)!=firstinrange(acalcval[i],20))then begin
-          logtext(0,"MATRIX " & lastinrange(acalcval[i],20) & vcalcval["OVDOPENINVOICED:" & lastinrange(acalcval[i],20)]);
-          if(nonblank(lastinrange(acalcval[i],20)))then begin
-          //for (i=0;i<aitems.length;i=i+1) begin
+    if(left(acalcval[i],12)=="OPENINVOICED")then begin
+      if(nonblank(lastinrange(acalcval[i],20)) and lastinrange(acalcval[i],20)!=firstinrange(acalcval[i],20))then begin
+        logtext(0,"MATRIX " & lastinrange(acalcval[i],20) & vcalcval["OPENINVOICED:" & lastinrange(acalcval[i],20)]);
+        if(nonblank(lastinrange(acalcval[i],20)))then begin
+          testf = true;
+          
+          if(lastinrange(acalcval[i],20)==intItem)then begin testf = false; end;
+          if(lastinrange(acalcval[i],20)==princItem)then begin testf = false; end;
+          if(vcalcval["OPENINVOICED:" & lastinrange(acalcval[i],20)]==0)then begin testf = false; end;
+          if(lastinrange(acalcval[i],20)==feesItem)then begin testf = false; end;
+          
+          if(testf)then begin
             INr.Code = lastinrange(acalcval[i],20);
             ReadFirstMain(INr,1,true);
             ClearRow(ORr,ORrw,1);
             ORrw.ArtCode = lastinrange(acalcval[i],20);
             ORrw.Spec = INr.Name;
-            ORrw.Sum = vcalcval["OVDOPENINVOICED:" & lastinrange(acalcval[i],20)];
+            ORrw.Sum = vcalcval["OPENINVOICED:" & lastinrange(acalcval[i],20)];
             MatRowPut(ORr,matrowcnt(ORr),ORrw);
-          //end;  
           end;
-          
         end;
       end;
     end;
