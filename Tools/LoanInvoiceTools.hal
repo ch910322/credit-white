@@ -1114,7 +1114,7 @@ begin
 end;
 
 global
-procedure GetCredManOverdueInvoices2(record CredManVc CredManr,record CredManSetBlock CMb,Date invdate,Date prevtd,var Integer latedays,var val lateamount,var val lateprincipal,var val lateinterest,var array string lateformula,Boolean paidf,Boolean ignorelastoverduef,var Date calcsd)
+procedure GetCredManOverdueInvoices2(record CredManVc CredManr,record CredManSetBlock CMb,Date originvdate,Date prevtd,var Integer latedays,var val lateamount,var val lateprincipal,var val lateinterest,var array string lateformula,Boolean paidf,Boolean ignorelastoverduef,var Date calcsd)
 begin
   record CMInvoicingBlock CIb;
   record INVc INr;
@@ -1124,6 +1124,15 @@ begin
   vector boolean useditems;
   integer notusedlatedays;
   array string 255 notusedlateformula;
+  date invdate;
+  record CMApplicationSetBlock CMAb;
+  
+  invdate = originvdate;
+  
+  blockload(CMAb);
+  if(CMAb.BuyOutInclPaymDay==1)then begin
+    invdate = addday(invdate,1);
+  end;
   
   ClearStringArray(lateformula);
   latedays = 0;
