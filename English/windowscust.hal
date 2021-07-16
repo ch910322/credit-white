@@ -463,6 +463,13 @@ begin
   EditFieldTL(h,v+=vs,153,"Customer",M4Code,Normal,20,f1,false,CUSClass);
   EditFieldTL(h,v+=vs,153,"Manager",M4Code,Normal,10,f2,false,UserSClass);
   EndWindow;
+  
+  WindowBegin("Connect Prepayments To Invoices",CnnctPrpaymentsToInvVClass,CGMnt,RcType);
+  SetWRect(64,80,445,95);
+  h = 150; v = 6; vs = 20;
+  PeriodField(h=140,v=6,"Period");
+  EditFieldTL(h,v+=vs,153,"Customer",M4Code,Normal,20,f1,false,CUSClass);
+  EndWindow;
 
   WindowBegin("Specify Mails from Schedules",SendScheduleEmailsVClass,CGMnt,RcType);
   SetWRect(64,80,445,95);

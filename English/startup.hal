@@ -72,7 +72,8 @@ begin
 	Report("Test Credit Agreements",CredManTestRClass,CredManTestRn,0,modCredMan);
 	Report("Late to be invoiced Contracts",CMInvoiceableContractsRClass,CMInvoiceableContractsRn,0,modCredMan);
   
-
+  
+  Maintenance("Connect Prepayments To Invoices",CnnctPrpaymentsToInvVClass,CnnctPrpaymentsToInvMn,modCredMan);
   Maintenance("Create Agreement Invoices",GenLoanInvoicesVClass,GenLoanInvoicesMn,modCredMan);
   Maintenance("Create Agreement Invoices Test",GenLoanInvoicesVClass,GenLoanInvoicesTestMn,modDBMain);
   Maintenance("Create Payment Guarantee Invoices",PmtGrntInvoiceVClass,PmtGrntInvoiceMn,modCredMan);
