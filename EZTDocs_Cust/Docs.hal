@@ -27,6 +27,7 @@ external inner procedure GetLangNr(string,var record LangNrVc);
 /* Tools*/
 external inner procedure Ext_PrintValue(var vector string,string,val,Integer,record LangNrVc,record SysFormatBlock,Boolean);
 external procedure Ext_PrintDocumentSigner(var vector string);
+external procedure Ext_PrintCredManDocumentSigner(string,var vector string);
 external inner procedure Ext_PrintCurrencyCode(var vector string,string,string);
 external inner procedure Ext_PrintCountryCode(var vector string,string,string);
 external inner procedure Ext_OutAddress(var vector string,string,string,string,string,string,string,string);
@@ -1243,7 +1244,7 @@ begin
     vVals["F_SALESMANEMAIL"] = Userr.emailAddr;
     vVals["F_SALESMANJOB"] = Userr.Job;
   end;
-
+  Ext_PrintCredManDocumentSigner(CredManr.DocumentSigner,vVals);
   vVals["F_FIRSTINVDATE"] = CredManr.FirstInvDate;
   vVals["F_OTHERCONDITIONSLONG"] = GetConditionsText(CredManr,0);
   vVals["F_PMTCONDITIONS"] = GetConditionsText(CredManr,1);
@@ -1691,6 +1692,7 @@ begin
   end;
 
   Ext_PrintDocumentSigner(vVals);
+  Ext_PrintCredManDocumentSigner(CredManr.DocumentSigner,vVals);
   vVals["F_CREDHALFSUM"] = (CredManr.InvSum4/2);
   vVals["F_CREDCUSTCITY"] = GetCredManCity(CredManr);
   ValToText((CredManr.InvSum4/2),M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
@@ -1719,7 +1721,6 @@ begin
   end;
   vVals["F_OTHERCONDITIONS"] = GetConditionsText(CredManr,0);
   vVals["F_PMTCONDITIONS"] = GetConditionsText(CredManr,1);
-
 
   return;
 end;
@@ -1758,7 +1759,7 @@ begin
   Integer gnum;
   record CMApplicationSetBlock CMb;
   record CMPrintConstantsBlock PCb;
-
+  record UserVc Userr;
 
   Ext_CommonDocumentFields(vVals);
 
@@ -1881,7 +1882,7 @@ begin
   vVals["F_ENDDATE2INWORDS"] = tstr;
 
   Ext_PrintDocumentSigner(vVals);
-
+  Ext_PrintCredManDocumentSigner(CredManr.DocumentSigner,vVals);
   vVals["F_OTHERCONDITIONS"] = GetConditionsText(CredManr,0);
   vVals["F_PMTCONDITIONS"] = GetConditionsText(CredManr,1);
 

@@ -1114,7 +1114,7 @@ begin
 end;
 
 global
-procedure GetCredManOverdueInvoices2(record CredManVc CredManr,record CredManSetBlock CMb,Date invdate,Date prevtd,var Integer latedays,var val lateamount,var val lateprincipal,var val lateinterest,var array string lateformula,Boolean paidf,Boolean ignorelastoverduef,var Date calcsd)
+procedure GetCredManOverdueInvoices2(record CredManVc CredManr,record CredManSetBlock CMb,Date originvdate,Date prevtd,var Integer latedays,var val lateamount,var val lateprincipal,var val lateinterest,var array string lateformula,Boolean paidf,Boolean ignorelastoverduef,var Date calcsd)
 begin
   record CMInvoicingBlock CIb;
   record INVc INr;
@@ -1124,6 +1124,15 @@ begin
   vector boolean useditems;
   integer notusedlatedays;
   array string 255 notusedlateformula;
+  date invdate;
+  record CMApplicationSetBlock CMAb;
+  
+  invdate = originvdate;
+  
+  blockload(CMAb);
+  if(CMAb.BuyOutInclPaymDay==1)then begin
+    invdate = addday(invdate,1);
+  end;
   
   ClearStringArray(lateformula);
   latedays = 0;
@@ -1245,12 +1254,13 @@ begin
   Boolean res;
   record IPVc IPr;
   record ARPayHistVc ARPayHistr;
-
+    
   ARPayHistr.CUPNr = cupnr;
   ARPayHistr.FileName = "IPVc";
   if (ReadFirstKey("MainKey",ARPayHistr,2,true)) then begin
     IPr.SerNr = ARPayHistr.SerNr;
     if (ReadFirstMain(IPr,1,true)) then begin
+      logtext(0,"PMCodeMatches");
       if (CredManPMCodeMatches2(IPr.PayMode,CredManr,true)) then begin
         res = true;
       end;
@@ -2315,14 +2325,18 @@ begin
   record ARPayVc ARPayr;
   Boolean TrHs;
   val res;
-
+  
+  
+  logtext(0,"GetPrepaymentValue");
   ARPayr.CustCode = CredManr.CustCode;
   TrHs = true;
   while (LoopKey("CustCode",ARPayr,1,TrHs)) begin
     if (ARPayr.CustCode!=CredManr.CustCode) then begin
       TrHs = false;
     end else begin
+      logtext(0,"GetPrepaymentValue 1");
       if (PMCodeMatches(CredManr,ARPayr.CUPNr)) then begin
+        logtext(0,"GetPrepaymentValue 2");
         res = res + ARPayr.RVal;
       end;
     end;
@@ -2836,6 +2850,148 @@ logtext(0,"CheckBuyOutAgreement end");
   return;
 end;
 
+
+procedure FindAllInvoicesAndPrepayments(record CredManVc CredManr,var vector val vcalcval,date todate)
+begin
+  record IVVc IVr;
+  row IVVc IVrw;
+  integer i,rwcnt;
+  boolean TrHs,testf,isfullpayed;
+  record ARVc ARr;
+  integer credflag;
+  record CredHistVc CredHistr,CredHist2r;
+  boolean TrHs2,foundf;
+  record INVc INr;
+  string 255 tstr;
+  val t,tt,tot1,tot2,tot3;
+  longint t2;
+  date blankd;
+  
+  
+  IVr.CustCode = CredManr.CustCode;
+  TrHs = true;
+  while(loopkey("CustCode",IVr,1,TrHs))begin
+    testf = true;
+    if(IVr.CustCode!=CredManr.CustCode)then begin TrHs = false; testf = false; end;
+    if(IVr.CustCredManNr!=CredManr.SerNr)then begin testf = false; end;
+    if(IVr.OKFlag==0)then begin testf = false; end;
+    if(IVr.Invalid==1)then begin testf = false; end;
+    if(IVr.InvType==kInvoiceTypeCredit)then begin testf = false; end;
+    
+    
+    if(testf)then begin
+      isfullpayed = false;
+      ARr.InvoiceNr = IVr.SerNr;
+      if(!readfirstmain(ARr,1,true))then begin
+        isfullpayed = true;
+      end;
+      credflag = 1;
+      if(IVr.InvType==kInvoiceTypeCredit)then begin
+        credflag = -1;
+      end;
+      
+      rwcnt = matrowcnt(IVr);
+      for(i=0;i<rwcnt;i=i+1)begin
+        matrowget(IVr,i,IVrw);
+        if(IVrw.stp==kInvoiceRowTypeNormal and nonblank(IVrw.ArtCode))then begin
+          vcalcval["INVOICED:" & IVrw.ArtCode] = vcalcval["INVOICED:" & IVrw.ArtCode] + IVrw.Sum*credflag;
+          vcalcval["INVOICED"] = vcalcval["INVOICED"] + IVrw.Sum*credflag;
+          logtext(0,IVr.SerNr & "INVOICED:" & IVrw.ArtCode & " " & IVrw.Sum*credflag);
+          if(isfullpayed)then begin
+            vcalcval["CLOSEDINVOICED:" & IVrw.ArtCode] = vcalcval["CLOSEDINVOICED:" & IVrw.ArtCode] + IVrw.Sum*credflag; 
+            vcalcval["CLOSEDINVOICED"] = vcalcval["CLOSEDINVOICED"] + IVrw.Sum*credflag;
+            logtext(0,IVr.SerNr & "CLOSEDINVOICED:" & IVrw.ArtCode & " " & IVrw.Sum*credflag);
+          end else begin
+            if(IVr.InvType!=kInvoiceTypeCredit)then begin
+              resetloop(CredHistr);
+              CredHistr.RecordNr = IVr.SerNr;
+              CredHistr.RecordType = 0;
+              TrHs2 = true;
+              foundf = false;
+              while (LoopKey("RecordNr",CredHistr,2,TrHs2)) begin
+                if ((CredHistr.RecordNr!=IVr.SerNr) or (CredHistr.RecordType!=0)) then begin
+                  TrHs2 = false;
+                end;
+                if (TrHs2 and CredHistr.ArtCode==IVrw.ArtCode) then begin
+                  foundf = true;
+                  t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
+                  vcalcval["OPENINVOICED:" & IVrw.ArtCode] = vcalcval["OPENINVOICED:" & IVrw.ArtCode] + t; 
+                  vcalcval["OPENINVOICED"] = vcalcval["OPENINVOICED"] + t; 
+                  logtext(0,IVr.SerNr & "OPENINVOICED:" & IVrw.ArtCode & " " & t);
+                  if(IVr.PayDate<todate)then begin
+                    vcalcval["OVDOPENINVOICED:" & IVrw.ArtCode] = vcalcval["OVDOPENINVOICED:" & IVrw.ArtCode] + t; 
+                    vcalcval["OVDOPENINVOICED"] = vcalcval["OVDOPENINVOICED"] + t; 
+                    logtext(0,IVr.SerNr & "OVDOPENINVOICED:" & IVrw.ArtCode & " " & t);//overdued
+                  end;
+                end;
+              end;
+            end;
+          end;
+        end;
+      end;
+    end;    
+  end;
+
+return;
+end;
+
+
+global
+function val GetOpenPrinciples(record CredManVc CredManr,var vector val vvals1,date todate)
+begin
+  val res,curbal;
+  Integer rwcnt,i;
+  val openamount;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  val x,y,z;
+  
+  CSr.CredManNr = CredManr.SerNr;
+  if(readfirstmain(CSr,1,true))then begin
+    rwcnt = matrowcnt(CSr);
+    for(i=0;i<rwcnt;i=i+1)begin
+      matrowget(CSr,i,CSrw);
+      //logtext(0,"todate " & todate);
+      //logtext(0,"CSrw.FromDate " & CSrw.FromDate);
+      //logtext(0,"CSrw.ToDate " & CSrw.ToDate);
+      if(CSrw.Invoiced==0)then begin
+        curbal = curbal + CSrw.Principle;
+      end;
+      if(nonblankdate(CSrw.FromDate) and nonblankdate(CSrw.ToDate))then begin
+        
+        if(CSrw.Invoiced==0)then begin
+          if(todate<=CSrw.FromDate)then begin
+            vvals1["FUTUREFEES"] = vvals1["FUTUREFEES"] + CSrw.Fees;
+          end;
+        end;
+        
+        if(dateinrange(todate,CSrw.FromDate,CSrw.ToDate))then begin
+          if(CSrw.Invoiced==0)then begin
+            vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(CSrw.Interest * (datediff(todate,CSrw.FromDate)+1) / (datediff(CSrw.ToDate,CSrw.FromDate)+1),defaultcurroundoff);
+            //logtext(0,CSrw.Interest & " vvals1[\"CURRPERIODINTEREST\"] " & vvals1["CURRPERIODINTEREST"]);
+          end else begin
+            x = CSrw.Interest;
+            y = (datediff(CSrw.ToDate,CSrw.FromDate) + 1) - (datediff(todate,CSrw.FromDate) + 1);
+            z = datediff(CSrw.ToDate,CSrw.FromDate) + 1;
+            vvals1["INVOICEDCURRENTPERIOD"] = x * y / z;
+            vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(vvals1["OPENNOTOVERDUEINT"] * ((datediff(todate,CSrw.FromDate)+1) / (datediff(CSrw.ToDate,CSrw.FromDate)+1)),defaultcurroundoff);
+          end;
+        end else begin
+          if(CSrw.Invoiced==0)then begin
+            if(CSrw.ToDate<todate)then begin
+              vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + CSrw.Interest;
+              //logtext(0,CSrw.Interest & " vvals1[\"CURRPERIODINTEREST\"] " & vvals1["CURRPERIODINTEREST"]);
+           end;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  GetOpenPrinciples = curbal;
+  return;
+end;
+
 global
 procedure CheckBuyOutAgreementOmega(record CredManVc CredManr,var record ORVc ORr,Boolean balancef)
 begin
@@ -2864,13 +3020,32 @@ begin
   array string 255 aitems;
   integer i,rwcnt;
   longint dummy_ivnr;
+  record CredHistVc CredHistr;
+  vector val vcalcval,vcalcval1;
+  string 50 intItem,princItem,demandItem,insurItem,prematureItem,feesItem;
+  record CMInvoicingBlock CIb;
+  array string 30 acalcval;
+  val interestammount;
+  boolean testf;
   
-logtext(0,"CheckBuyOutAgreementOmega start");
+  
+  blockload(CIb);
+  BlockLoad(CMb);
+  
+  
+  logtext(0,"CheckBuyOutAgreementOmega start");
 //LogText(0,"aa RepSpec.d1=" & RepSpec.d1); //d1 is CurrentDate here. Why?
 
   gSilenceIVOpenPrepExists = true;
-  BlockLoad(CMb);
+  
   BuildCredManPayPlanCust2(CredManr,CredManPayPlanr,CMb,true,false,false);
+  
+  CredHistr.CredManNr = CredManr.SerNr;
+  readlastkey("CredManTypeDate",CredHistr,1,true);
+  if(ORr.OrdDate<CredHistr.TransDate)then begin
+    ORr.OrdDate = CredHistr.TransDate;
+  end;
+  
   CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,ORr.OrdDate,IVr,true,sd2,balancef);
 //  end;
   CheckUnpaidInvoices(CredManr,dueamount,openamount);
@@ -2915,11 +3090,13 @@ logtext(0,"CheckBuyOutAgreementOmega start");
   if (ORr.InvMark==1) then begin
     ORr.Commision = GetCreditedInterest(CredManr,ORr.OrdDate,dummy_ivnr);  
   end;
-  t = GetActualBalance(CredManr,CredManPayPlanr,true);
+  //t = GetActualBalance(CredManr,CredManPayPlanr,true);
+  
   //RepSpec.f13 = t;
+  
   ORr.Sum0 = t;
   //RepSpec.f17 = principlelateamount+interestlateamount;//was openamount;
-  ORr.Sum2 = totallate+totalnotlate;//openamount;//principlelateamount+interestlateamount;//was openamount;
+  ORr.Sum2 = totallate;//+totalnotlate;//openamount;//principlelateamount+interestlateamount;//was openamount;
   //RepSpec.f16 = GetInterestAmount(CredManr,RepSpec.d1);
   ORr.Sum1 = GetInterestAmount(CredManr,ORr.OrdDate);
   //RepSpec.f10 = principlelateamount;//f20 - the last fxx
@@ -2963,6 +3140,113 @@ logtext(0,"CheckBuyOutAgreementOmega start");
     MatRowPut(ORr,i,ORrw);
   end;  
   //LogText(0,"futurefees=" & futurefees & " otheropenfees=" & otheropenfees);
+  
+  
+  //////======================== NEW Logics
+  
+  demandItem = CIb.LetterOfDemand;
+  insurItem = CIb.InsuranceCost;
+  prematureItem = CIb.BuyOutItem;
+  intItem = CMb.RateItem;
+  feesItem = CMb.LateRateItem;
+  princItem = CMb.InstalmentItem;
+  
+  FindAllInvoicesAndPrepayments(CredManr,vcalcval,ORr.OrdDate);
+  vcalcval1["OPENNOTOVERDUEINT"] = vcalcval["OPENINVOICED:" & intItem] - vcalcval["OVDOPENINVOICED:" & intItem];
+  t = GetOpenPrinciples(CredManr,vcalcval1,ORr.OrdDate);
+  
+  
+  
+  //getvectortags(vcalcval,acalcval);
+  //Interest Ammount
+  logtext(0,"Interest Ammount All " & intItem & " " & vcalcval["INVOICED:" & intItem]);
+  logtext(0,"Interest Ammount Open " & intItem & " " & vcalcval["OPENINVOICED:" & intItem]);
+  logtext(0,"Interest Ammount Open Overdued " & intItem & " " & vcalcval["OVDOPENINVOICED:" & intItem]);
+  
+  logtext(0,"Principle Ammount All " & princItem & " " & vcalcval["INVOICED:" & princItem]);
+  logtext(0,"Principle Ammount Open " & princItem & " " & vcalcval["OPENINVOICED:" & princItem]);
+  logtext(0,"Principle Ammount Open Overdued " & princItem & " " & vcalcval["OVDOPENINVOICED:" & princItem]);
+  
+  logtext(0,"Fees Ammount All " & feesItem & " " & vcalcval["INVOICED:" & feesItem]);
+  logtext(0,"Fees Ammount Open " & feesItem & " " & vcalcval["OPENINVOICED:" & feesItem]);
+  logtext(0,"Fees Ammount Open Overdued " & feesItem & " " & vcalcval["OVDOPENINVOICED:" & feesItem]);
+  
+  ORr.Sum0 = t;
+  logtext(0,"------Interest Ammount" & intItem & " " & vcalcval["OPENINVOICED:" & intItem] - vcalcval["OVDOPENINVOICED:" & intItem]);
+  ORr.Sum1 = vcalcval["OPENINVOICED:" & intItem] - vcalcval["OVDOPENINVOICED:" & intItem];
+  interestammount = vcalcval["OPENINVOICED:" & intItem] - vcalcval["OVDOPENINVOICED:" & intItem];
+  logtext(0,"------Overdue Invoices" & vcalcval["OVDOPENINVOICED"]);
+  ORr.Sum2 = vcalcval["OVDOPENINVOICED"];
+  logtext(0,"------of withc Interest" & vcalcval["OVDOPENINVOICED:" & intItem]);
+  ORr.Sum3 = vcalcval["OVDOPENINVOICED:" & intItem];
+  logtext(0,"------of withc Principle" & vcalcval["OVDOPENINVOICED:" & princItem]);
+  ORr.Sum4 = vcalcval["OVDOPENINVOICED:" & princItem];
+  logtext(0,"------Balance" & t + vcalcval["OPENINVOICED:" & princItem] - vcalcval["OVDOPENINVOICED:" & princItem]);
+  ORr.BaseSum4 = t + vcalcval["OPENINVOICED:" & princItem]- vcalcval["OVDOPENINVOICED:" & princItem];
+  logtext(0,"------Current Period Interest" & interestammount - vcalcval1["INVOICEDCURRENTPERIOD"]  );//???????????
+  ORr.TotGP = interestammount - vcalcval1["INVOICEDCURRENTPERIOD"];
+  logtext(0,"------Future Fees" & vcalcval1["FUTUREFEES"]);
+  ORr.DiscSum = vcalcval1["FUTUREFEES"];
+  
+  
+  logtext(0,"OPENINVOICED " & vcalcval["OVDOPENINVOICED"]);
+  logtext(0,"OPENINVOICED:" & princItem & " " & vcalcval["OPENINVOICED:" & princItem]);
+  logtext(0,"OPENINVOICED:" & intItem & " " &vcalcval["OPENINVOICED:" & intItem]);
+  logtext(0,"OPENINVOICED:" & demandItem & " " & vcalcval["OPENINVOICED:" & demandItem]);
+  logtext(0,"OPENINVOICED:" & feesItem & " " & vcalcval["OPENINVOICED:" & feesItem]);
+  logtext(0,"------Other Open Fees" & vcalcval["OPENINVOICED"] - vcalcval["OPENINVOICED:" & princItem] - vcalcval["OPENINVOICED:" & intItem] - vcalcval["OPENINVOICED:" & demandItem] - vcalcval["OPENINVOICED:" & feesItem]);
+  ORr.TAX1Sum = vcalcval["OPENINVOICED"] - vcalcval["OPENINVOICED:" & princItem] - vcalcval["OPENINVOICED:" & intItem] - vcalcval["OPENINVOICED:" & demandItem] - vcalcval["OPENINVOICED:" & feesItem];
+  logtext(0,"------Open Overdue Fee Invoices" & vcalcval["OPENINVOICED:" & feesItem]);
+//  ORr.??????????
+  ORr.DownPayRedcd = vcalcval["OPENINVOICED:" & feesItem];
+  logtext(0,"------Credited Interest" & vcalcval1["INVOICEDCURRENTPERIOD"]);
+  ORr.DownPaySent = vcalcval1["INVOICEDCURRENTPERIOD"];
+  
+  logtext(0,"------Letter Of Demand" & vcalcval["OPENINVOICED:" & demandItem]);
+  ORr.SumIncCom = vcalcval["OPENINVOICED:" & demandItem];
+  logtext(0,"------Insurance Cost" & vcalcval["OPENINVOICED:" & insurItem]);
+  ORr.RvrsVAT = vcalcval["OPENINVOICED:" & insurItem];
+  logtext(0,"------Premature Term. Fee" & vcalcval["OPENINVOICED:" & prematureItem]);
+  ORr.TAX2Sum = vcalcval["OPENINVOICED:" & prematureItem];
+    
+  //t = GetOpenOverdueFeesValue(CredManr.SerNr,ORr.OrdDate);
+  ORr.FrBase = ORr.Sum2+ORr.BaseSum4+ORr.TotGP+ORr.DiscSum+ORr.TAX1Sum+ORr.FrPrice+ORr.DownPayRedcd;//total debt
+
+  
+    
+  getvectortags(vcalcval,acalcval);
+  
+  rwcnt = MatRowCnt(ORr);
+  for (i=rwcnt-1;i>=0;i=i-1) begin
+    MatRowDelete(ORr,i);
+  end;
+  
+  for(i=0;i<acalcval.length;i=i+1)begin
+    if(left(acalcval[i],12)=="OPENINVOICED")then begin
+      if(nonblank(lastinrange(acalcval[i],20)) and lastinrange(acalcval[i],20)!=firstinrange(acalcval[i],20))then begin
+        logtext(0,"MATRIX " & lastinrange(acalcval[i],20) & vcalcval["OPENINVOICED:" & lastinrange(acalcval[i],20)]);
+        if(nonblank(lastinrange(acalcval[i],20)))then begin
+          testf = true;
+          
+          if(lastinrange(acalcval[i],20)==intItem)then begin testf = false; end;
+          if(lastinrange(acalcval[i],20)==princItem)then begin testf = false; end;
+          if(vcalcval["OPENINVOICED:" & lastinrange(acalcval[i],20)]==0)then begin testf = false; end;
+          if(lastinrange(acalcval[i],20)==feesItem)then begin testf = false; end;
+          
+          if(testf)then begin
+            INr.Code = lastinrange(acalcval[i],20);
+            ReadFirstMain(INr,1,true);
+            ClearRow(ORr,ORrw,1);
+            ORrw.ArtCode = lastinrange(acalcval[i],20);
+            ORrw.Spec = INr.Name;
+            ORrw.Sum = vcalcval["OPENINVOICED:" & lastinrange(acalcval[i],20)];
+            MatRowPut(ORr,matrowcnt(ORr),ORrw);
+          end;
+        end;
+      end;
+    end;
+  end;
+  
   
   gSilenceIVOpenPrepExists = false;
 

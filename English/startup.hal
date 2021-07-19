@@ -71,8 +71,9 @@ begin
 	Report("Check Schedule Periods",CheckCMSchedRClass,CheckCMSchedRn,0,modCredMan);
 	Report("Test Credit Agreements",CredManTestRClass,CredManTestRn,0,modCredMan);
 	Report("Late to be invoiced Contracts",CMInvoiceableContractsRClass,CMInvoiceableContractsRn,0,modCredMan);
-
-
+  
+  
+  Maintenance("Connect Prepayments To Invoices",CnnctPrpaymentsToInvVClass,CnnctPrpaymentsToInvMn,modCredMan);
   Maintenance("Create Agreement Invoices",GenLoanInvoicesVClass,GenLoanInvoicesMn,modCredMan);
   Maintenance("Create Agreement Invoices Test",GenLoanInvoicesVClass,GenLoanInvoicesTestMn,modDBMain);
   Maintenance("Create Payment Guarantee Invoices",PmtGrntInvoiceVClass,PmtGrntInvoiceMn,modCredMan);
@@ -105,6 +106,7 @@ begin
 
 /* Sales ledger */
 	Report("Income Analysis",EBSIncomeAnalysisRClass,EBSIncomeAnalysisRn,0,modSL);
+	Report("Invoice Overview",InvoiceOverviewRClass,InvoiceOverviewRn,0,modSL);
 
 /*CRM */
   Setting("Manager Replacements",ManagerReplacementLClass,modCRM);
@@ -583,6 +585,10 @@ begin
   SetText(0,"Check");
   SetText(1,"Sum");
   EndSet;
-
+  
+  SetBegin(2033);
+  SetText(0,"Active");
+  SetText(1,"Not Active");
+  EndSet;
   return;
 end;

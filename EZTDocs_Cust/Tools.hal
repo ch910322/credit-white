@@ -107,6 +107,20 @@ begin
   return;
 end;
 
+global
+procedure Ext_PrintCredManDocumentSigner(string user, var vector string vVals)
+begin
+  record UserVc Userr;
+  
+  if (nonblank(user)) then begin
+    Userr.Code = user;
+    if (ReadFirstMain(Userr,1,true)) then begin
+      vVals["F_CREDMANDOCUMENTSIGNERNAME"] = Userr.Name;
+      vVals["F_CREDMANDOCUMENTSIGNERJOB"] = Userr.Job;
+    end;  
+  end;
+  return;
+end;
 
 global
 procedure Ext_PrintInvoiceSigner(var vector string vVals)
@@ -372,6 +386,7 @@ begin
   val rval,rval2,tval,LateFeeItemSum,OpenLateFeeItemSum;
   record CMPrintConstantsBlock PCb;
   Boolean hiddenf;
+  record ARVc ARr;
 
   Ext_PrintInvoiceSigner(vVals);
 
@@ -408,6 +423,14 @@ begin
     if (hiddenf) then begin
       topay2 = topay2 + GetCredManItemValue(IVr,CMb.InstalmentItem,true);;
     end; 
+  end;
+  ARr.InvoiceNr = IVr.SerNr;
+  if(readfirstmain(ARr,1,true))then begin
+    if(ARr.BookRVal!=IVr.Sum4)then begin
+      topay2 = (topay2 - (IVr.Sum4-ARr.BookRVal));
+    end;
+  end else begin
+      topay2 = topay2 - IVr.Sum4;
   end;
   topay3 = topay3 + abovehiddenbase + abovehiddenvat;
   topay4 = topay3;
@@ -458,6 +481,7 @@ begin
   if (ReadFirstMain(CredManr,1,true)) then begin
     vVals["F_CREDMANCREATEDATE"] = CredManr.TransDate;
     GetCredManChangePurpose(CredManr,vVals);
+    Ext_PrintCredManDocumentSigner(CredManr.DocumentSigner,vVals);
   end;
 
   BlockLoad(CMb);

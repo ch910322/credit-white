@@ -1407,6 +1407,29 @@ begin
   return;
 end;
 
+function integer GetCredManExtraPaymentInvCount(longint credmannr)
+begin
+  record VIVc VIr;
+  integer res;
+  boolean TrHs;
+  
+  res = 0;
+  VIr.CustCredManNr = credmannr;
+  TrHs = true;
+  while (LoopKey("CustCredManNr",VIr,1,TrHs)) begin
+    if (VIr.CustCredManNr!=credmannr) then begin
+      TrHs = false;
+    end;
+    if (TrHs) then begin
+      if (VIr.CredManExtraPayment!=0) then begin
+        res = res + 1;
+      end;
+    end;
+  end;
+  GetCredManExtraPaymentInvCount = res;
+  return;
+end;
+
 global
 updating procedure CreateCredmanPurchaseInvoice(record CredManVc CredManr,val credsum,var record VIVc VIr,val overridesum,Boolean extrapayment,Date overridedate)
 begin
@@ -1447,8 +1470,18 @@ begin
   VIr.Objects = AddObjectToObjectList(VIr.Objects,CredManr.Objects);
   VIr.PayVal = sum;
   VIr.CustCredManNr = CredManr.SerNr;
+  if (CIb.PurchInvNoFromCredMan!=0) then begin
+    if (nonblank(CredManr.OfficialSerNr)) then begin
+      VIr.InvoiceNr = CredManr.OfficialSerNr;
+    end else begin
+      VIr.InvoiceNr = CredManr.SerNr;
+    end;
+  end;
   if (extrapayment) then begin
     VIr.CredManExtraPayment = 1;
+    if (CIb.PurchInvNoFromCredMan!=0) then begin
+      VIr.InvoiceNr = VIr.InvoiceNr & "/" & 2+GetCredManExtraPaymentInvCount(CredManr.SerNr);
+    end;
   end;
   ClearRow(VIr,VIrw,1);
   tstr = CM_GetCredManTypePurchItemAccount2(CredManr,CIb.PaymentAccount,true);

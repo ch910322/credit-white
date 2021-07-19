@@ -1268,7 +1268,7 @@ begin
   Boolean res;
   record CredManVc CredManr;
   Integer num,nwn,mwn;
-
+  
   if (GetWindowString(wn,"checktype")!="1") then begin
     GetWindowRecord(wn,CredManr);
     num = StringToInt(mid(GetWindowClass(wn),7,1));
@@ -1277,7 +1277,7 @@ begin
     end;
     PutWindowString(wn,"checktype",1);
   end;
-
+  
   CredManDClassBeforeEditField = true;
   return;
 end;
@@ -2466,7 +2466,7 @@ function Boolean CredManDClassActiveEditField(Integer wn,string fieldname,Intege
 begin
   Boolean res;
   record CredManVc CredManr;
-
+ 
   res = false;
   if (wnst==2) then begin//Rs_update
     switch (fieldname) begin
@@ -2475,6 +2475,8 @@ begin
         if (UserCanAction("CredManChangeTransferDate",false)==true) then begin
           res = true;
         end;
+      case "DocumentSigner":
+        res = true;
       otherwise
         if (left(fn,6)=="Surety") then begin
           res = true;

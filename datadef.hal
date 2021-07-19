@@ -581,6 +581,8 @@ begin
   RecordField(AutoOTCode,M4Code,5,OTVc);
   RecordField(MarkMailClass,M4Code,20,0);
   RecordField(MarkSMSClass,M4Code,20,0);
+  RecordField(FirstPeriodIsFullMonth,M4Int,0,0);
+  RecordField(BuyOutInclPaymDay,M4Int,0,0);
   EndBlock;
   
   RecordAddBegin(CUVc,"CredCUVc");
@@ -981,6 +983,7 @@ begin
   RecordField(Surety5SignManager,M4Str,100,0);
   RecordField(Surety6SignManager,M4Str,100,0);
   RecordField(ForcePayDeal,M4Code,5,PDVc);
+  RecordField(DocumentSigner,M4Code,20,UserVc);
   
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -1826,6 +1829,7 @@ begin
   RecordField(PDFAfterReceipt,M4Int,0,0);
   RecordField(eMailBasedOnCMSettings,M4Int,0,0);  
   RecordField(advancedCreditNote,M4Int,0,0);  
+  RecordField(PurchInvNoFromCredMan,M4Int,0,0)  ;
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");
@@ -1981,6 +1985,8 @@ begin
   ArrayField(SerialNo,M4Str,255,0);
   ArrayField(Address,M4Str,255,0);
   ArrayField(LivingArea,M4Str,255,0);
+  ArrayField(Status,M4Set,2033,0);
+  ArrayField(CloseDate,M4Date,0,0);
   EndArray;
   MainKeyBegin(CredManNr,0);
   KeySegment(CredManNr);
@@ -2485,6 +2491,7 @@ begin
   ArrayField(RangeTo,M4Val,0,0);
   ArrayField(RangeFromDate,M4Str,110,0);
   ArrayField(RangeToDate,M4Str,110,0);
+  ArrayField(Reason,M4Str,255,0);
   EndArray;
   MainKeyBegin(Code,0);
   KeySegment(Code);

@@ -14,6 +14,7 @@ external procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 external procedure TestInvoiceBasedOnSchedule(record CredManVc,record CredManSchedVc,Date,var array record IVVc);
 external function Boolean CMShowVATColumn();
 external function Integer GetInterestPaymentType(record CredManVc);
+external function Boolean IsOmegaCustomer();
 
 procedure PrintLeft(string col1str,string col1val,string col2str,string col2val)
 begin
@@ -215,14 +216,23 @@ begin
   settlesum = RepSpec2.vals2;
 
   //CalcCredManSums(CredManr,CredManPayPlanr,CredManSetb,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,d,v,cursuginst,l);
-
-  PrintLeft(USetStr(17317),CredManr.SerNr,USetStr(200270),StringFromSet(2001,CredManr.InstalmentType));
-  PrintLeft2("Customer",CredManr.CustCode,CredManr.Addr0,USetStr(17315),CredManr.startDate);
-  PrintLeft(USetStr(17309),CredManr.Type,"Interest From Date",CredManr.FirstIntDate);
-  PrintLeft(USetStr(17313),CredManr.InvSum4,"First Invoice Date",CredManr.FirstInvDate);
-  PrintLeft(USetStr(17311),CredManr.IntRate,USetStr(17316),CredManr.endDate);
-  PrintLeft(USetStr(17312),CredManr.InstalmentMonths,USetStr(17318),CredManr.TransDate);
-  PrintLeft("","","","");
+  if(IsOmegaCustomer) then begin
+    PrintLeft(USetStr(17317),CredManr.SerNr,USetStr(200270),StringFromSet(2001,CredManr.InstalmentType));
+    PrintLeft2("Customer",CredManr.CustCode,CredManr.Addr0,"Agreement Date",CredManr.TransDate);
+    PrintLeft(USetStr(17309),CredManr.Type,USetStr(17315),CredManr.startDate);
+    PrintLeft(USetStr(17313),CredManr.InvSum4,"First Invoice Date",CredManr.FirstInvDate);
+    PrintLeft(USetStr(17311),CredManr.IntRate,USetStr(17316),CredManr.endDate);
+    PrintLeft(USetStr(17312),CredManr.InstalmentMonths,"","");
+    PrintLeft("","","","");
+  end else begin
+    PrintLeft(USetStr(17317),CredManr.SerNr,USetStr(200270),StringFromSet(2001,CredManr.InstalmentType));
+    PrintLeft2("Customer",CredManr.CustCode,CredManr.Addr0,USetStr(17315),CredManr.startDate);
+    PrintLeft(USetStr(17309),CredManr.Type,"Interest From Date",CredManr.FirstIntDate);
+    PrintLeft(USetStr(17313),CredManr.InvSum4,"First Invoice Date",CredManr.FirstInvDate);
+    PrintLeft(USetStr(17311),CredManr.IntRate,USetStr(17316),CredManr.endDate);
+    PrintLeft(USetStr(17312),CredManr.InstalmentMonths,USetStr(17318),CredManr.TransDate);
+    PrintLeft("","","","");
+  end;
   
   PrintRight("Deposit",CredManr.DepositSum,"Deposit Paid",paiddep,"Deposit Due",CredManr.DepositSum - paiddep);
   PrintRight("Current Balance",curbal,"Next Instal.",cursuginst,"Original Instal.",CredManr.MonthlySum);

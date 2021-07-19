@@ -659,6 +659,7 @@ begin
   CreditIVr.BaseRate1 = IVr.BaseRate1;
   CreditIVr.BaseRate2 = IVr.BaseRate2;
   CreditIVr.CredInv = IVr.SerNr;  
+  //maybe neet to add in future after testing CreditIVr.CustCredManNr = IVr.CustCredManNr;// Edit ************************** BPI Ukraine - KramarAlexandr - 05, 09 07 2021 y. at 10:08:17 AM
   CreditIVr.SVONr = IVr.SVONr;  
   CreditIVr.CredOfficialSerNr = IVr.OfficialSerNr;  
   if (Mb.CredUpdStock!=0) then begin
