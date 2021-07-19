@@ -4161,11 +4161,14 @@ begin
 	Flip(2);
 	MatCol(1,-240,"Date From",0,RangeFromDate,false,0);
 	MatCol(1,-160,"Date To",0,RangeToDate,false,0);
-	MatCol(1,-80,"Type",0,Type,false,SetSClass)
+	MatCol(1,-80,"Type",0,Type,false,SetSClass);
+	Flip(3);
+	MatCol(1,-80,"Reason",0,Reason,false,StandProblemsSClass);
 	EndMatrix;
 	vs = 22;
   v = 24; VTab(-35,v,-16,v+vs,ToolFlip,1,"A");
   v=v+vs; VTab(-35,v,-16,v+vs,ToolFlip,2,"B");
+  v=v+vs; VTab(-35,v,-16,v+vs,ToolFlip,3,"C");
   
 
 	EndWindow;
