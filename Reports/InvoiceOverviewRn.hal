@@ -10,6 +10,7 @@ external inner procedure HT2Per(Date, Date , var string);
 external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
 external inner function Boolean FindCustomerRelation(string,string,var record CUVc);
 
+SetLangMode(LangLithuanian,"LIT",2);
 
 function string 255 AddCredManInvoiceMailRecipients(record CUVc CUr,var string mobile)
 begin
@@ -241,7 +242,7 @@ begin
             outstring(pos,0,IVr.Sum4/*Total Sum*/,false);pos = pos+25;
             outstring(pos,0,IVr.CurncyCode/*Currency*/,false);pos = pos+25;
             outstring(pos,0,""/*Item Type*/,false);pos = pos+25;
-            outstring(pos,0,"Iäankstiniai mok˜jimai"/*Item Description*/,false);pos = pos+25;
+            outstring(pos,0,"IÅ¡ankstiniai mokÄ—jimai"/*Item Description*/,false);pos = pos+25;
             outstring(pos,0,1/*Item Amount*/,false);pos = pos+25;
             outstring(pos,0,-IVrw.Sum/*Item Price*/,false);pos = pos+25;
             outstring(pos,0,-IVrw.Sum/*Item Sum*/,false);pos = pos+25;
