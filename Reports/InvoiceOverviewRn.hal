@@ -100,11 +100,21 @@ begin
   integer rw,pos;
   record IVVc IVr;
   row IVVc IVrw;
-  integer i,rwcnt,cred;
+  integer i,rwcnt,cred,j,k;
   boolean TrHs,testf;
   record CredManVc CredManr;
   record INVc INr;
   record CUVc CUr;
+  record CYBlock CYb;
+  string 100 paytoaccount;
+  record CredManTypeVc CMTr;
+  record PMBlock PMb;
+  row PMBlock PMrw;
+  vector string 100 CMpayModeBankAcc;
+  
+  
+  blockload(CYb);
+  blockload(PMb);
   
   StartReportJob("Invoice Overview");
   rw = 1;
@@ -190,6 +200,63 @@ begin
         end;
       end;
       
+      paytoaccount = "";
+      if(IVr.CustCredManNr>-1)then begin
+        if(CredManr.SerNr==IVr.CustCredManNr)then begin
+          if(nonblank(CredManr.Type))then begin
+            if(blank(CMpayModeBankAcc[CredManr.Type]))then begin
+              CMTr.Code = CredManr.Type;
+              if(readfirstmain(CMTr,1,true))then begin
+                if(nonblank(CMTr.PMCode))then begin
+                  for(k=0;k<matrowcnt(PMb);k=k+1)begin
+                    matrowget(PMb,k,PMrw);
+                    if(PMrw.Code==CMTr.PMCode)then begin
+                      if(nonblank(PMrw.BankNr))then begin
+                        CMpayModeBankAcc[CredManr.Type] = PMrw.BankNr;
+                        paytoaccount = PMrw.BankNr;
+                      end;
+                    end;
+                  end;
+                
+                end;
+              end;
+            end else begin
+              paytoaccount = CMpayModeBankAcc[CredManr.Type];
+            end;
+          end;
+        end else begin
+          CredManr.SerNr = IVr.CustCredManNr;
+          if(readfirstmain(CredManr,1,true))then begin
+            if(nonblank(CredManr.Type))then begin
+              if(blank(CMpayModeBankAcc[CredManr.Type]))then begin
+                CMTr.Code = CredManr.Type;
+                if(readfirstmain(CMTr,1,true))then begin
+                  if(nonblank(CMTr.PMCode))then begin
+                    for(k=0;k<matrowcnt(PMb);k=k+1)begin
+                      matrowget(PMb,k,PMrw);
+                      if(PMrw.Code==CMTr.PMCode)then begin
+                        if(nonblank(PMrw.BankNr))then begin
+                          CMpayModeBankAcc[CredManr.Type] = PMrw.BankNr;
+                          paytoaccount = PMrw.BankNr;
+                        end;
+                      end;
+                    end;
+                
+                  end;
+                end;
+              end else begin
+                paytoaccount = CMpayModeBankAcc[CredManr.Type];
+              end;
+            end;
+          end;
+        end;
+      end;
+      if(blank(paytoaccount))then begin
+        paytoaccount = CYb.Bank1;
+      end;
+      if(blank(paytoaccount))then begin
+        paytoaccount = CYb.Bank2;
+      end;
 
       for(i=0;i<rwcnt;i=i+1)begin
         matrowget(IVr,i,IVrw);
@@ -217,7 +284,7 @@ begin
               outstring(pos,0,""/*Contract Id*/,false);pos = pos+25;
             end;
             outstring(pos,0,IVr.PayDate/*Pay Due Date*/,false);pos = pos+25;
-            outstring(pos,0,CUr.BankAccount/*Pay To Account*/,false);pos = pos+25;
+            outstring(pos,0,paytoaccount/*Pay To Account*/,false);pos = pos+25;
             outstring(pos,0,IVr.Addr0/*Company Name*/,false);pos = pos+25;
             outstring(pos,0,Cur.RegNr1/*Reg Number*/,false);pos = pos+25;
             outstring(pos,0,CUr.VATNr/*Vat Reg Number*/,false);pos = pos+25;
@@ -252,7 +319,7 @@ begin
               outstring(pos,0,""/*Contract Id*/,false);pos = pos+25;
             end;
             outstring(pos,0,IVr.PayDate/*Pay Due Date*/,false);pos = pos+25;
-            outstring(pos,0,CUr.BankAccount/*Pay To Account*/,false);pos = pos+25;
+            outstring(pos,0,paytoaccount/*Pay To Account*/,false);pos = pos+25;
             outstring(pos,0,IVr.Addr0/*Company Name*/,false);pos = pos+25;
             outstring(pos,0,Cur.RegNr1/*Reg Number*/,false);pos = pos+25;
             outstring(pos,0,CUr.VATNr/*Vat Reg Number*/,false);pos = pos+25;
