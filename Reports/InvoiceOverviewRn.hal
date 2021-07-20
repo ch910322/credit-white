@@ -242,7 +242,7 @@ begin
             outstring(pos,0,IVr.Sum4/*Total Sum*/,false);pos = pos+25;
             outstring(pos,0,IVr.CurncyCode/*Currency*/,false);pos = pos+25;
             outstring(pos,0,""/*Item Type*/,false);pos = pos+25;
-            outstring(pos,0,"Iäankstiniai mok˜jimai"/*Item Description*/,false);pos = pos+25;
+            outstring(pos,0,"IÅ¡ankstiniai mokÄ—jimai"/*Item Description*/,false);pos = pos+25;
             outstring(pos,0,1/*Item Amount*/,false);pos = pos+25;
             outstring(pos,0,-IVrw.Sum/*Item Price*/,false);pos = pos+25;
             outstring(pos,0,-IVrw.Sum/*Item Sum*/,false);pos = pos+25;
