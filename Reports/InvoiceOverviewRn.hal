@@ -10,6 +10,7 @@ external inner procedure HT2Per(Date, Date , var string);
 external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var val,var val,var val,var val,var val);
 external inner function Boolean FindCustomerRelation(string,string,var record CUVc);
 
+SetLangMode(LangLithuanian,"LIT",2);
 
 function string 255 AddCredManInvoiceMailRecipients(record CUVc CUr,var string mobile)
 begin
