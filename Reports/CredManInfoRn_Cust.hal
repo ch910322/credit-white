@@ -15,6 +15,8 @@ external procedure TestInvoiceBasedOnSchedule(record CredManVc,record CredManSch
 external function Boolean CMShowVATColumn();
 external function Integer GetInterestPaymentType(record CredManVc);
 external function Boolean IsOmegaCustomer();
+external procedure GetCredManLateAmounts2(record CredManVc,Date,Date,Integer,var Longint,var val,var val,var Date);
+external updating procedure GetCustomerLoanAmounts2(var record IPVc,var integer,string,var string,var val,string,boolean,string,string,var vector Boolean,Date,Longint);
 
 procedure PrintLeft(string col1str,string col1val,string col2str,string col2val)
 begin
@@ -100,7 +102,7 @@ begin
   return;
 end;
 
-procedure PrintCredManTop(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb)
+procedure PrintCredManTop(var record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb)
 begin
   record CredManPayPlanVc CredManPayPlan2r;
   row CredManPayPlanVc CredManPayPlanrw;
@@ -118,7 +120,15 @@ begin
   Boolean stopnextzero;
   Integer latedays;
   record RCVc RepSpec2;
-
+  val principlelateamount,notlateprinciple,interestlateamount,notlateinterest,overdueslateamount,overduesnotlate,totoverdue,totnotlate;
+  longint principlelatedays,interestlatedays,overdueslatedays;
+  record CredManPropertiesVc CMPr;
+  row CredManPropertiesVc CMPrw;
+  record IPVc IPr;
+  vector Boolean invused;
+  integer k;
+  string 255 tstr;
+  
   rwcnt = MatRowCnt(CredManPayPlanr);
   RecordCopy(CredManPayPlan2r,CredManPayPlanr);
   CalcCredManSums(CredManr,CredManPayPlanr,CredManSetb,planinst,planint,planfee,plandep,suginst,sugint,sugfee,sugdep,
@@ -222,7 +232,19 @@ begin
     PrintLeft(USetStr(17309),CredManr.Type,USetStr(17315),CredManr.startDate);
     PrintLeft(USetStr(17313),CredManr.InvSum4,"First Invoice Date",CredManr.FirstInvDate);
     PrintLeft(USetStr(17311),CredManr.IntRate,USetStr(17316),CredManr.endDate);
-    PrintLeft(USetStr(17312),CredManr.InstalmentMonths,"","");
+    PrintLeft(USetStr(17312),CredManr.InstalmentMonths,"LTV",CredManr.LoanToValue);
+    PrintLeft("","","","");
+    if (CredManr.LoanType==3) then begin
+      CMPr.CredManNr = CredManr.SerNr;
+      CMPr.RecordType = 0;
+      if (ReadFirstMain(CMPr,2,true)) then begin
+        rwcnt = MatRowCnt(CMPr);
+        for (i=0;i<rwcnt;i=i+1) begin
+          MatRowGet(CMPr,i,CMPrw);
+          PrintLeft("Mortgage Address",CMPrw.Address,"Mortgage Value",CMPrw.PledgeVal);
+        end;
+      end;
+    end;
     PrintLeft("","","","");
   end else begin
     PrintLeft(USetStr(17317),CredManr.SerNr,USetStr(200270),StringFromSet(2001,CredManr.InstalmentType));
@@ -234,13 +256,37 @@ begin
     PrintLeft("","","","");
   end;
   
-  PrintRight("Deposit",CredManr.DepositSum,"Deposit Paid",paiddep,"Deposit Due",CredManr.DepositSum - paiddep);
-  PrintRight("Current Balance",curbal,"Next Instal.",cursuginst,"Original Instal.",CredManr.MonthlySum);
-  PrintRight("Amount Now Due",due,"","","","");
-  PrintRight("Arrear Instalments",missednow,"Maximal Days Late",latedays,"Worst Arrear Period",missedworst);
-  PrintRightSettlement(CredManr.SerNr,"Contract Age",contractage,"Settlement Sum",settlesum,"","");
-  PrintRight("Paid to Date",paidinst + paidint + paidfee + paiddep,"Last Paid Amount",lastpaid,"Last Paid Date",lastpaiddate);
-  PrintRight("Fees to Date",addfee,"Interest to Date",addint,"Penalties to Date",latefees);
+  if (!IsOmegaCustomer) then begin
+    PrintRight("Deposit",CredManr.DepositSum,"Deposit Paid",paiddep,"Deposit Due",CredManr.DepositSum - paiddep);
+    PrintRight("Current Balance",curbal,"Next Instal.",cursuginst,"Original Instal.",CredManr.MonthlySum);
+    PrintRight("Amount Now Due",due,"","","","");
+    PrintRight("Arrear Instalments",missednow,"Maximal Days Late",latedays,"Worst Arrear Period",missedworst);
+    PrintRightSettlement(CredManr.SerNr,"Contract Age",contractage,"Settlement Sum",settlesum,"","");
+    PrintRight("Paid to Date",paidinst + paidint + paidfee + paiddep,"Last Paid Amount",lastpaid,"Last Paid Date",lastpaiddate);
+    PrintRight("Fees to Date",addfee,"Interest to Date",addint,"Penalties to Date",latefees);
+  end else begin
+    
+  end;
+  GetCredManLateAmounts2(CredManr,CredManr.startDate,CurrentDate,5,principlelatedays,principlelateamount,notlateprinciple,d);
+  GetCredManLateAmounts2(CredManr,CredManr.startDate,CurrentDate,6,interestlatedays,interestlateamount,notlateinterest,d);
+  GetCredManLateAmounts2(CredManr,CredManr.startDate,CurrentDate,9,overdueslatedays,overdueslateamount,overduesnotlate,d);
+  GetCredManLateAmounts2(CredManr,CredManr.startDate,CurrentDate,-1,overdueslatedays,totoverdue,totnotlate,d);
+  v = totoverdue-principlelateamount-interestlateamount;
+  if(IsOmegaCustomer) then begin
+    PrintLeft("Overdue Principal",principlelateamount,"Overdue Interest",interestlateamount);
+    PrintLeft("Other Overdues",v,"Penalties",overdueslateamount+overduesnotlate);//v??
+    PrintLeft("","","Total Overdues",totoverdue);
+    StartFormat(15);
+    OutString(0,0,"Settlement Sum",false);
+    OutStringID(80,"CredManInfoBuyOutDbl",settlesum,false,CredManr.SerNr);
+    //PrintRightSettlement(CredManr.SerNr,"","","Settlement Sum",settlesum,"","");
+    EndFormat;
+  end;
+  //TODO get prepayments here
+  //GetCredManLateAmounts2(CredManr,CredManr.startDate,CurrentDate,2,principlelatedays,principlelateamount,notlateprinciple,d);
+  //remsum - 
+  //queued - to get rid of updating parent func
+  //queued.GetCustomerLoanAmounts2(IPr,k,CredManr.Addr0,CredManr.CurncyCode,totsum,CredManr.CustCode,true,"","",invused,d,CredManr.SerNr);
   
   StartFormat(15);
   EndFormat;

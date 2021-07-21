@@ -4394,3 +4394,25 @@ date blankd;
   checkIfInvoiceFromAgreement = res;
 return;
 end;
+
+//TODO: this does not return agreement's open prepayments...
+global 
+function val GetCredManOpenPrepaymentsAmount(longint credmannr)
+begin
+  val res;
+  record CredHistVc CredHistr;
+  Boolean TrHs;
+    
+  res = blankval;
+  TrHs = true;
+  CredHistr.CredManNr = credmannr;
+  CredHistr.RecordType = 2;
+  while (LoopKey("CredManRecordType",CredHistr,1,TrHs)) begin
+    if (CredHistr.CredManNr!=credmannr or CredHistr.RecordType!=2) then begin
+        TrHs = false;
+      end;
+    end;
+    if (TrHs) then begin
+      res = res + CredHistr.Sum;
+    end;
+end;
