@@ -274,7 +274,7 @@ begin
       end;  
     end;
   end;
-  LogText(0,"GetLeastWorkLoadManager " & ActType & " " & CredManType & " res=" & res);
+  LogText(0,"GetLeastWorkLoadManager ActType=" & ActType & " CredManType=" & CredManType & " res=" & res);
   if (blank(res)) then begin
     
   end;
@@ -285,6 +285,8 @@ end;
 //based on SendEmailWithStdTextFromUser
 updating function boolean CreateEmailWithStdText(string stdtxt,string fromuser,string emailto,var record MailVc Mailr)
 begin
+  record MailSettingsBlock MailSb;
+  record ConfVc Confr;
   row MailVc Mailrw;
   string 255 tstr;
   LongInt pos,l;
@@ -301,6 +303,19 @@ begin
     RecordNew(Mailr);
     Mailr.Header = LTxtr.Comment;    
     FindUserMailboxName(fromuser,mailboxnr,mailboxname);
+    if (blank(mailboxname)) then begin
+      BlockLoad(MailSb);
+      if (nonblank(MailSb.Postmaster)) then begin
+        Confr.AddrName = MailSb.Postmaster;
+        if (ReadFirstKey("AddrName",Confr,1,true)) then begin
+          mailboxname = Confr.AddrCode;
+        end else begin
+          LogText(0,"Postmaster " & MailSb.Postmaster & " does not have a mailbox");
+        end;
+      end else begin
+        LogText(0,"No Postmaster set");
+      end;
+    end;
     if (nonblank(mailboxname)) then begin
       ClearRow(Mailr,Mailrw,1);
       Mailrw.RowTyp = kMailRowTypeFrom;
@@ -476,31 +491,28 @@ begin
   record CredManVc CredManr;
   record B2BLoanApplicationVc LAr;
   
-  if (nonblank(fromuser)) then begin
-    if (CreateEmailWithStdText(stdtext,fromuser,"",Mailr)) then begin
-      if (AddCredManInvoiceMailRecipients(custcode,Mailr)) then begin
-        RecordCopy(OldMailr,Mailr);
-        Mailr.SendFlag = 1;
-        if (RecordUpdate(OldMailr,Mailr,true)==0) then begin
-          switch linkrecord begin
-            case 0: 
-              LAr.SerNr = linkrecordid;
-              if (ReadFirstMain(LAr,1,true)) then begin
-                CreateRecordLink(Mailr,CurrentCompany,LAr,CurrentCompany);
-                CreateRecordLink(LAr,CurrentCompany,Mailr,CurrentCompany);
-              end;
-            case 1: 
-              CredManr.SerNr = linkrecordid;
-              if (ReadFirstMain(CredManr,1,true)) then begin
-                CreateRecordLink(Mailr,CurrentCompany,CredManr,CurrentCompany);
-                CreateRecordLink(CredManr,CurrentCompany,Mailr,CurrentCompany);
-              end;
-          end;
+  
+  if (CreateEmailWithStdText(stdtext,fromuser,"",Mailr)) then begin
+    if (AddCredManInvoiceMailRecipients(custcode,Mailr)) then begin
+      RecordCopy(OldMailr,Mailr);
+      Mailr.SendFlag = 1;
+      if (RecordUpdate(OldMailr,Mailr,true)==0) then begin
+        switch linkrecord begin
+          case 0: 
+            LAr.SerNr = linkrecordid;
+            if (ReadFirstMain(LAr,1,true)) then begin
+              CreateRecordLink(Mailr,CurrentCompany,LAr,CurrentCompany);
+              CreateRecordLink(LAr,CurrentCompany,Mailr,CurrentCompany);
+            end;
+          case 1: 
+            CredManr.SerNr = linkrecordid;
+            if (ReadFirstMain(CredManr,1,true)) then begin
+              CreateRecordLink(Mailr,CurrentCompany,CredManr,CurrentCompany);
+              CreateRecordLink(CredManr,CurrentCompany,Mailr,CurrentCompany);
+            end;
         end;
       end;
     end;
-  end  else begin
-    LogText(0,"SendAutoEmailWithStdText empty fromuser");
   end;
   return;
 end;
