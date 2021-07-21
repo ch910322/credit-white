@@ -94,7 +94,7 @@ begin
   record CMApplicationSetBlock ASb;
   record UserVc Userr;
   
-  if(blank(vVals['credmansignflag']))then begin
+  if(blank(vVals["F_CMSIGNFLAG"]))then begin
     BlockLoad(ASb);
     Userr.Code = ASb.DocumentSigner;
     if (ReadFIrstMain(Userr,1,true)) then begin
@@ -121,7 +121,7 @@ begin
       vVals["F_CREDMANDOCUMENTSIGNERNAME"] = Userr.Name;
       vVals["F_CREDMANDOCUMENTSIGNERJOB"] = Userr.Job;
       
-      vVals['credmansignflag'] = "used";
+      vVals["F_CMSIGNFLAG"] = "used";
       vVals["F_DOCUMENTSIGNERNAME"] = Userr.Name;
       vVals["F_DOCUMENTSIGNERPOSITION"] = ASb.DocumentSignerPosition;
       vVals["F_DOCUMENTSIGNERCODE"] = Userr.Code;
