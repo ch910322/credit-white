@@ -1726,6 +1726,7 @@ begin
   RecordField(TransDate,M4Date,0,0);
   RecordField(TransTime,M4Time,0,0);
   RecordField(Math,M4Matrix,0,0);
+  RecordField(OfficialSerNr,M4Str,100,0);
   ArrayBegin(Math,-,1);
   ArrayField(Type,M4Set,2027,0);
   ArrayField(InvDate,M4Date,0,0);
@@ -1743,6 +1744,9 @@ begin
   ArrayField(Deposit,M4Val,0,0);
   EndArray;
   MainKeyBegin(CredManNr,0);
+  KeySegment(CredManNr);
+  KeyBegin(OfficialSerNr);
+  KeySegment(OfficialSerNr);
   KeySegment(CredManNr);
   EndRecord;
 

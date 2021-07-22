@@ -3903,6 +3903,9 @@ logtext(0,"GenerateAgreementSchedule1");
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin
     RecordCopy(oldCSr,CSr);
+    if (blank(CSr.OfficialSerNr)) then begin
+      CSr.OfficialSerNr = CredManr.OfficialSerNr;
+    end;
     rwcnt = MatRowCnt(CSr);
     if (fullf) then begin
       for (i=rwcnt-1;i>=0;i=i-1) begin
@@ -3915,6 +3918,7 @@ logtext(0,"GenerateAgreementSchedule1");
     CSr.CredManNr = CredManr.SerNr;
     CSr.CustCode = CredManr.CustCode;
     CSr.CustName = CredManr.Addr0;
+    CSr.OfficialSerNr = CredManr.OfficialSerNr;
   end;
   if (updf and forcef==false) then begin
     goto lout;
