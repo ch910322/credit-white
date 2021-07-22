@@ -3912,6 +3912,7 @@ logtext(0,"GenerateAgreementSchedule1");
     CSr.CredManNr = CredManr.SerNr;
     CSr.CustCode = CredManr.CustCode;
     CSr.CustName = CredManr.Addr0;
+    CSr.OfficialSerNr = CredManr.OfficialSerNr;
   end;
   if (updf and forcef==false) then begin
     goto lout;
