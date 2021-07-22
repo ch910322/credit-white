@@ -821,6 +821,7 @@ begin
   GetWindowRecord(mwn,CredManr);
   RepSpec.f18 = CredManr.LetterOfDemand;
   RepSpec.f19 = CredManr.InsuranceCost;
+  RepSpec.flags[2] = 1;
   PutWindowRecord(wn,RepSpec);
   CalculateBuyOutValue;
 

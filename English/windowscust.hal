@@ -571,6 +571,8 @@ begin
     EditFieldTL(h,v+=vs,120,"Premature Term. Fee",M4Str,ViewOnly,255,f14,true,0);
   end;
   EditFieldTL(h,v+=vs,120,"Not invoiced Overdues",M4Str,ViewOnly,255,f12,true,0);
+  EditFieldTL(h,v+=vs,120,"Prepayments",M4Str,ViewOnly,255,Comment,true,0);
+  CheckBox(h+140,v,0,"Include Prepayments",flags[2]);
   EditFieldTL(h,v+=vs,120,"Total Dept",M4Val,ViewOnly,0,vals2,true,0);
 
 //  EditFieldTL(h,v+=vs,120,"Last Invoice Value",M4Val,ViewOnly,0,vals1,true,0);
