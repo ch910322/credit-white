@@ -194,6 +194,14 @@ begin
   EndMatrix;
   EndWindow;
   
+  WindowBegin("Loan Application Default Values",B2BLoanAppDefaultsTClass,CGSbl,SRType);
+  SetBlid(B2BLoanAppDefaultsBlock);
+  SetWRect(20,80,670,298);
+  Sizeable(-1,-1,0,0);
+  EditField(h=180,v=6,100,"Months",Normal,Months,false,0);
+  EditField(h,v+=vs,100,"Admin Fee",Normal,AdminFee,false,0);
+  EndWindow;
+  
   WindowBegin("Credit Management Settings",CMApplicationSetTClass,CGSbl,SRType);
   SetBlid(CMApplicationSetBlock);
   SetWRect(20,80,670,298);
@@ -4196,3 +4204,5 @@ begin
   
   EndWindow;
 end;
+ 
+  

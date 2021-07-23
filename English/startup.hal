@@ -53,6 +53,7 @@ begin
   Setting("Agreement Type Accounts",CredManAccLClass,modCredMan);
   Setting("Date in Text",CMDateTextTClass,modSY);
   Setting("Printout Constants",CMPrintConstantsTClass,modCredMan);
+  Setting("Loan Application Default Values",B2BLoanAppDefaultsTClass,modCredMan);
   
   Setting("Payment Condition Text",PaymentConditionTextWClass,modCredMan);
   Setting("Other Condition Text",PaymentConditionTextWClass,modCredMan);

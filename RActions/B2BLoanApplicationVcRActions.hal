@@ -13,9 +13,13 @@ begin
   LongInt res;
   record CredManSetBlock CredManSb;
   record CMOrderClassBlock OCb;
+  record B2BLoanAppDefaultsBlock LADefb;
   
   res = 1;  
 
+  BlockLoad(LADefb);
+  LAr.Months = LADefb.Months;
+  LAr.AdminFee = LADefb.AdminFee;
   LAr.TransDate = CurrentDate;
   if (SingleUserMode) then begin
     LAr.SerNr = NextSerNr("B2BLoanApplicationVc",LAr.TransDate,-1,false,"");

@@ -524,7 +524,11 @@ begin
   KeySegment(SerNr);  
   EndRecord; 
   
-  //ak_end
+  BlockBegin(B2BLoanAppDefaultsBlock,-,"");
+  RecordField(Months,M4Int,0,0);
+  RecordField(AdminFee,M4Val,0,0);
+  EndBlock;
+    
   BlockBegin(CMApplicationSetBlock,-,"");
   LoadBlockOnStartup;
   CacheBlockInClient;
