@@ -2136,6 +2136,8 @@ begin
   boolean resrow,totalres,nottrue,isdataformula;
   val vals,firstargval,lastargval,resval;
   date calcdate,bd,checkdatefr,checkdateto;
+  string 40 reason,reasonall;
+  record StandProblemVc SPr;
   
   totalres = false;
   nottrue = true;
@@ -2236,9 +2238,11 @@ begin
                 if(resval>=LAErw.RangeFrom and resval<=LAErw.RangeTo)then begin
                   resrow = true;
                   if(LAEr.Values==0)then begin
+                    reason = LAErw.Reason;
                     goto lCheckEnd;
                   end;
                 end;
+                reasonall = LAErw.Reason;
                 nottrue = resrow;
                 //logtext(0,"resrow " & resrow);
               
@@ -2255,6 +2259,7 @@ begin
                   if(firstargval>=LAErw.RangeFrom and firstargval<=LAErw.RangeTo)then begin
                     resrow = true;
                     if(LAEr.Values==0)then begin
+                      reason = LAErw.Reason;
                       goto lCheckEnd;
                     end;
                   end;
@@ -2271,9 +2276,11 @@ begin
                   if(firstargval>=LAErw.RangeFrom and firstargval<=LAErw.RangeTo)then begin
                     resrow = true;
                     if(LAEr.Values==0)then begin
+                      reason = LAErw.Reason;
                       goto lCheckEnd;
                     end;
                   end;
+                  reasonall = LAErw.Reason;
                   nottrue = resrow;
                   //logtext(0,"resrow " & resrow);
                 end else begin
@@ -2287,6 +2294,12 @@ begin
             calcdate = bd;
             if(left(uppercase(LAErw.Formula),6)=="ADDDAY")then begin
               SplitFormula(right(LAErw.Formula,len(LAErw.Formula)-6),firstarg,sign,lastarg);
+              if(LowerCase(firstarg)=="currentdate")then begin
+                firstarg = currentdate;
+              end;
+              if(LowerCase(lastarg)=="currentdate")then begin
+                lastarg = currentdate;
+              end;
               if(sign=="-")then begin
                 calcdate = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
               end else begin
@@ -2295,6 +2308,12 @@ begin
             end;  
             if(left(uppercase(LAErw.Formula),8)=="ADDMONTH")then begin
               SplitFormula(right(LAErw.Formula,len(LAErw.Formula)-8),firstarg,sign,lastarg);
+              if(LowerCase(firstarg)=="currentdate")then begin
+                firstarg = currentdate;
+              end;
+              if(LowerCase(lastarg)=="currentdate")then begin
+                lastarg = currentdate;
+              end;
               if(sign=="-")then begin
                 calcdate = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
               end else begin
@@ -2303,6 +2322,12 @@ begin
             end;  
             if(left(uppercase(LAErw.Formula),7)=="ADDYEAR")then begin
               SplitFormula(right(LAErw.Formula,len(LAErw.Formula)-7),firstarg,sign,lastarg);
+              if(LowerCase(firstarg)=="currentdate")then begin
+                firstarg = currentdate;
+              end;
+              if(LowerCase(lastarg)=="currentdate")then begin
+                lastarg = currentdate;
+              end;
               if(sign=="-")then begin
                 calcdate = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
               end else begin
@@ -2318,6 +2343,12 @@ begin
               end else begin
                 if(left(LAErw.RangeFromDate,6)=="ADDDAY")then begin
                   SplitFormula(right(LAErw.RangeFromDate,len(LAErw.RangeFromDate)-6),firstarg,sign,lastarg);
+                  if(LowerCase(firstarg)=="currentdate")then begin
+                    firstarg = currentdate;
+                  end;
+                  if(LowerCase(lastarg)=="currentdate")then begin
+                    lastarg = currentdate;
+                  end;
                   if(sign=="-")then begin
                     checkdatefr = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
                   end else begin
@@ -2325,7 +2356,13 @@ begin
                   end;
                 end;  
                 if(left(LAErw.RangeFromDate,8)=="ADDMONTH")then begin
-                  SplitFormula(right(LAErw.RangeFromDate,len(LAErw.RangeFromDate)-8),firstarg,sign,lastarg);
+                  SplitFormula(right(LAErw.RangeFromDate,len(LAErw.RangeFromDate)-8),firstarg,sign,lastarg);  
+                  if(LowerCase(firstarg)=="currentdate")then begin
+                    firstarg = currentdate;
+                  end;
+                  if(LowerCase(lastarg)=="currentdate")then begin
+                    lastarg = currentdate;
+                  end;
                   if(sign=="-")then begin
                     checkdatefr = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
                   end else begin
@@ -2334,6 +2371,12 @@ begin
                 end;  
                 if(left(LAErw.RangeFromDate,7)=="ADDYEAR")then begin
                   SplitFormula(right(LAErw.RangeFromDate,len(LAErw.RangeFromDate)-7),firstarg,sign,lastarg);
+                  if(LowerCase(firstarg)=="currentdate")then begin
+                    firstarg = currentdate;
+                  end;
+                  if(LowerCase(lastarg)=="currentdate")then begin
+                    lastarg = currentdate;
+                  end;
                   if(sign=="-")then begin
                     checkdatefr = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
                   end else begin
@@ -2348,15 +2391,29 @@ begin
                 checkdateto = currentdate;
               end else begin
                 if(left(LAErw.RangeToDate,6)=="ADDDAY")then begin
+                  
                   SplitFormula(right(LAErw.RangeToDate,len(LAErw.RangeToDate)-6),firstarg,sign,lastarg);
+                  if(LowerCase(firstarg)=="currentdate")then begin
+                    firstarg = currentdate;
+                  end;
+                  if(LowerCase(lastarg)=="currentdate")then begin
+                    lastarg = currentdate;
+                  end;
                   if(sign=="-")then begin
                     checkdateto = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
                   end else begin
                     checkdateto = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
                   end;
                 end;  
+                
                 if(left(LAErw.RangeToDate,8)=="ADDMONTH")then begin
                   SplitFormula(right(LAErw.RangeToDate,len(LAErw.RangeToDate)-8),firstarg,sign,lastarg);
+                  if(LowerCase(firstarg)=="currentdate")then begin
+                    firstarg = currentdate;
+                  end;
+                  if(LowerCase(lastarg)=="currentdate")then begin
+                    lastarg = currentdate;
+                  end;
                   if(sign=="-")then begin
                     checkdateto = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
                   end else begin
@@ -2365,6 +2422,12 @@ begin
                 end;  
                 if(left(LAErw.RangeToDate,7)=="ADDYEAR")then begin
                   SplitFormula(right(LAErw.RangeToDate,len(LAErw.RangeToDate)-7),firstarg,sign,lastarg);
+                  if(LowerCase(firstarg)=="currentdate")then begin
+                    firstarg = currentdate;
+                  end;
+                  if(LowerCase(lastarg)=="currentdate")then begin
+                    lastarg = currentdate;
+                  end;
                   if(sign=="-")then begin
                     checkdateto = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
                   end else begin
@@ -2374,35 +2437,33 @@ begin
               end;
             end;
             
-            logtext(0,"calcdate " & calcdate & " checkdateto " & checkdateto);
-            logtext(0,"calcdate " & calcdate & " checkdatefr " & checkdatefr);
             if(nonblankdate(calcdate) and nonblankdate(checkdateto))then begin
+              
               if(calcdate<=checkdateto)then begin
                 resrow = true;
                 if(LAEr.Values==0)then begin
+                  reason = LAErw.Reason;
                   goto lCheckEnd;
                 end;
               end;
+              reasonall = LAErw.Reason;
               nottrue = resrow;
             end;
-            
             
             if(nonblankdate(calcdate) and nonblankdate(checkdatefr))then begin
               if(calcdate>=checkdatefr)then begin
                 resrow = true;
+                
                 if(LAEr.Values==0)then begin
+                  reason = LAErw.Reason;
                   goto lCheckEnd;
                 end;
               end;
+              reasonall = LAErw.Reason;
               nottrue = resrow;
             end;
-            
-            //checkdatefr
-            
           end;
         end;
-        //logtext(0,"firstargval "  & firstargval);
-        //logtext(0,"lastargval "  & lastargval);
       end;
       
 lCheckEnd:;
@@ -2411,6 +2472,23 @@ lCheckEnd:;
           totalres = true;
           LAr.Evaluation = 1;
         end else begin
+          if(nonblank(reason))then begin
+            SPr.Code = reason;
+            if(readfirstmain(SPr,1,true))then begin
+              LAr.RejReason = SPr.ShortDesc;
+            end else begin  
+              LAr.RejReason = reason;
+            end;
+          end else begin
+            if(nonblank(reasonall))then begin
+              SPr.Code = reasonall;
+              if(readfirstmain(SPr,1,true))then begin
+                LAr.RejReason = SPr.ShortDesc;
+              end else begin  
+                LAr.RejReason = reasonall;
+              end;
+            end;
+          end;
           LAr.Evaluation = 2;
         end;
       end else begin
@@ -2418,6 +2496,23 @@ lCheckEnd:;
           totalres = true;
           LAr.Evaluation = 1;
         end else begin
+          if(nonblank(reason))then begin
+            SPr.Code = reason;
+            if(readfirstmain(SPr,1,true))then begin
+              LAr.RejReason = SPr.ShortDesc;
+            end else begin  
+              LAr.RejReason = reason;
+            end;
+          end else begin
+            if(nonblank(reasonall))then begin
+              SPr.Code = reasonall;
+              if(readfirstmain(SPr,1,true))then begin
+                LAr.RejReason = SPr.ShortDesc;
+              end else begin  
+                LAr.RejReason = reasonall;
+              end;
+            end;
+          end;
           LAr.Evaluation = 2;
         end;
       end;

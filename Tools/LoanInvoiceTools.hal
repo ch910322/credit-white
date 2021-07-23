@@ -1260,7 +1260,6 @@ begin
   if (ReadFirstKey("MainKey",ARPayHistr,2,true)) then begin
     IPr.SerNr = ARPayHistr.SerNr;
     if (ReadFirstMain(IPr,1,true)) then begin
-      logtext(0,"PMCodeMatches");
       if (CredManPMCodeMatches2(IPr.PayMode,CredManr,true)) then begin
         res = true;
       end;
@@ -2326,17 +2325,13 @@ begin
   Boolean TrHs;
   val res;
   
-  
-  logtext(0,"GetPrepaymentValue");
   ARPayr.CustCode = CredManr.CustCode;
   TrHs = true;
   while (LoopKey("CustCode",ARPayr,1,TrHs)) begin
     if (ARPayr.CustCode!=CredManr.CustCode) then begin
       TrHs = false;
     end else begin
-      logtext(0,"GetPrepaymentValue 1");
       if (PMCodeMatches(CredManr,ARPayr.CUPNr)) then begin
-        logtext(0,"GetPrepaymentValue 2");
         res = res + ARPayr.RVal;
       end;
     end;
@@ -2821,11 +2816,17 @@ logtext(0,"CheckBuyOutAgreement start");
   end;
   RepSpec.vals1 = IVr.Sum4;
   RepSpec.vals0 = dueamount;//should this be openamount?
-  RepSpec.vals2 = openamount + IVr.Sum4 - prepayval;
-  RepSpec.f14 = buyoutfee;
-  if (prepayval>0 and RepSpec.vals2<0) then begin
-    RepSpec.vals2 = 0;
+  if(RepSpec.flags[2]==1)then begin
+    RepSpec.vals2 = openamount + IVr.Sum4 - prepayval;
+    if (prepayval>0 and RepSpec.vals2<0) then begin
+      RepSpec.vals2 = 0;
+    end;
+  end else begin
+    RepSpec.vals2 = openamount + IVr.Sum4;
   end;
+  
+  RepSpec.f14 = buyoutfee;
+  
   RepSpec.vals4 = dueamount;
   RepSpec.f12 = lateamount;//(RepSpec.vals2-RepSpec.vals3-RepSpec.vals4);
   //BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
@@ -2842,6 +2843,8 @@ logtext(0,"CheckBuyOutAgreement start");
   currperiodinterest = GetLastDuePeriodInterest(CredManr,CredManPayPlanr,RepSpec.d1);//should display interest from the last DUE period till today.
   futurefees = GetBuyOutFutureFees(CredManr.SerNr,CredManPayPlanr,RepSpec.d1);
   otheropenfees = GetOtherOpenFees(CredManr.SerNr,blankd,vItemVals);
+  
+  RepSpec.Comment = prepayval;//ValToString(prepayval,M45Val,"",".",0);//valtostring(prepayval,m45val);//Prepayments
   
   gSilenceIVOpenPrepExists = false;
 
@@ -3915,6 +3918,9 @@ logtext(0,"GenerateAgreementSchedule1");
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin
     RecordCopy(oldCSr,CSr);
+    if (blank(CSr.OfficialSerNr)) then begin
+      CSr.OfficialSerNr = CredManr.OfficialSerNr;
+    end;
     rwcnt = MatRowCnt(CSr);
     if (fullf) then begin
       for (i=rwcnt-1;i>=0;i=i-1) begin
@@ -3927,6 +3933,7 @@ logtext(0,"GenerateAgreementSchedule1");
     CSr.CredManNr = CredManr.SerNr;
     CSr.CustCode = CredManr.CustCode;
     CSr.CustName = CredManr.Addr0;
+    CSr.OfficialSerNr = CredManr.OfficialSerNr;
   end;
   if (updf and forcef==false) then begin
     goto lout;
@@ -4408,4 +4415,26 @@ date blankd;
   
   checkIfInvoiceFromAgreement = res;
 return;
+end;
+
+//TODO: this does not return agreement's open prepayments...
+global 
+function val GetCredManOpenPrepaymentsAmount(longint credmannr)
+begin
+  val res;
+  record CredHistVc CredHistr;
+  Boolean TrHs;
+    
+  res = blankval;
+  TrHs = true;
+  CredHistr.CredManNr = credmannr;
+  CredHistr.RecordType = 2;
+  while (LoopKey("CredManRecordType",CredHistr,1,TrHs)) begin
+    if (CredHistr.CredManNr!=credmannr or CredHistr.RecordType!=2) then begin
+        TrHs = false;
+      end;
+    end;
+    if (TrHs) then begin
+      res = res + CredHistr.Sum;
+    end;
 end;
