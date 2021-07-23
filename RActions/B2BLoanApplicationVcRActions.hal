@@ -5,6 +5,7 @@ external inner function string 50 NextLegalSerNr(string,LongInt,Date,string,stri
 external updating procedure DeleteCredOffSerNr(LongInt,string);
 external updating procedure StoreCredOffSerNrIV(LongInt,string,string);
 external function Boolean GetCredLegalNrLine(string,string,Date,string,string,var row CredLegalInvNrBlock,Integer);
+external procedure CredManAutoToolsAssignB2BLoanManager(var record B2BLoanApplicationVc); 
 
 global
 function LongInt B2BLoanApplicationVcRecordDefaults(var record B2BLoanApplicationVc LAr,record B2BLoanApplicationVc LA2r,LongInt long3,LongInt long4)
@@ -97,7 +98,7 @@ begin
   end;
 
 LB2BLoanApplicationVcRecordCheck:;
-
+LogText(0,"B2BLoanApplicationVcRecordCheck");
   B2BLoanApplicationVcRecordCheck = res;
   return;
 end;
@@ -140,9 +141,8 @@ begin
       LAr.OfficialSerNr = NextLegalSerNr("B2BLoanApplicationVc",LAr.SerNr,LAr.TransDate,LegalInvNrrw.Serie,LegalInvNrrw.TSerStart,LegalInvNrrw.TSerEnd);
     end;
   end;
-
-
-
+  CredManAutoToolsAssignB2BLoanManager(LAr);
+  
   B2BLoanApplicationVcRecordSave = res;
   return;
 end;
@@ -160,8 +160,10 @@ begin
       LAr.OfficialSerNr = NextLegalSerNr("B2BLoanApplicationVc",LAr.SerNr,LAr.TransDate,LegalInvNrrw.Serie,LegalInvNrrw.TSerStart,LegalInvNrrw.TSerEnd);
     end;
   end;
-
-
+  if (LAr.OrderClass!=LA2r.OrderClass) then begin
+    CredManAutoToolsAssignB2BLoanManager(LAr);
+  end;
+  
   B2BLoanApplicationVcRecordUpdate = res;
   return;
 end;

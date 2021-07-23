@@ -20,7 +20,7 @@ begin
   
   updstatef = false;
   if (ReadFirstMain(CredManr,1,true)) then begin
-    if ((changemgr) and (nonblank(person))) then begin
+    if ((changemgr) and (nonblank(person)) and (CredManr.SalesMan != person)) then begin
       RecordCopy(oldCredManr,CredManr);
       CredManr.SalesMan = person;
       RecordUpdate(oldCredManr,CredManr,true);
@@ -64,7 +64,7 @@ begin
 
   updstatef = false;
   if (ReadFirstMain(LAr,1,true)) then begin
-    if ((changemgr) and (nonblank(person))) then begin
+    if ((changemgr) and (nonblank(person)) and (LAr.Manager!=person)) then begin
       RecordCopy(oldLAr,LAr);
       LAr.Manager = person;
       RecordUpdate(oldLAr,LAr,true);
@@ -601,13 +601,16 @@ begin
               TrHs = false;
             end else begin
               person = LAr.Manager;
+              /* manager is assigned on record save now according to autotask rules
               if (ATBrw.PersonType==1) then begin
                 person = ATbrw.Manager;
               end;
               if (ATBrw.PersonType==2) then begin
                 person = GetLeastWorkLoadManager(ATbrw.ActType,CredManr.Type,actdate);
               end;
-              qupdating.CreateTaskActivityLoanApp(LAr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime,ATbrw.AssignRecord==1);
+              */
+              //qupdating.CreateTaskActivityLoanApp(LAr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime,ATbrw.AssignRecord==1);// manager is assigned on record save now
+              qupdating.CreateTaskActivityLoanApp(LAr,person,ATbrw.ActType,ATbrw.ActText,actdate,acttime,false);
               qupdating.SendAutoEmailWithStdText(ATbrw.EmailStdText,person,LAr.CustCode,0,LAr.SerNr);
             end;
           end;
@@ -650,6 +653,35 @@ begin
     end;
   end;
   ResetCompany(oldcomp);
+  return;
+end;
+
+global
+updating procedure CredManAutoToolsAssignB2BLoanManager(var record B2BLoanApplicationVc LAr)
+begin
+  record CredmanAutoTaskBlock ATb;
+  row CredmanAutoTaskBlock ATbrw;
+  Integer i,rwcnt;
+  string 255 person;
+  
+  BlockLoad(ATb);
+  rwcnt = MatRowCnt(ATb);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(ATb,i,ATbrw);
+    if ((ATbrw.Type==1) and (ATbrw.DelayDays==0) and (ATbrw.DelayHours==0) and (ATbrw.AssignRecord==1)
+      and (LAr.OrderClass==ATbrw.OrderClass) and (LAr.StateNotified==0)) then begin
+      person = LAr.Manager;
+      if (ATBrw.PersonType==1) then begin
+        person = ATbrw.Manager;
+      end;
+      if (ATBrw.PersonType==2) then begin
+        person = GetLeastWorkLoadManager(ATbrw.ActType,LAr.Type,CurrentDate);
+      end;
+      if (nonblank(person)) then begin
+        LAr.Manager = person;
+      end;
+    end;
+  end;//for
   return;
 end;
 
