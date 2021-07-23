@@ -984,6 +984,7 @@ begin
   RecordField(Surety6SignManager,M4Str,100,0);
   RecordField(ForcePayDeal,M4Code,5,PDVc);
   RecordField(DocumentSigner,M4Code,20,UserVc);
+  RecordField(LoanPurpose,M4Str,250,0);
   
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
