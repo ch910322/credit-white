@@ -98,7 +98,7 @@ begin
   end;
 
 LB2BLoanApplicationVcRecordCheck:;
-LogText(0,"B2BLoanApplicationVcRecordCheck");
+
   B2BLoanApplicationVcRecordCheck = res;
   return;
 end;
