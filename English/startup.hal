@@ -119,7 +119,9 @@ begin
   Setting("Merchant ID",CCMerchantIDLClass,modInteg);
 
 /* Email modEmail */
-  Setting("Extra Signatures",ConfSignExtLClass,modEmail);
+  if (IsOmegaCustomer) then begin
+    Setting("Extra Signatures",ConfSignExtLClass,modEmail);
+  end;
 
   SString(200000,"Evaluation report");
   SString(200001,"Company");
