@@ -1123,7 +1123,7 @@ begin
     vVals["F_BUYOUTFEEPRCINWORDS"] = USetStr(200275);
   end;
   vVals["F_OTHERCONDITIONS"] = CredManr.OtherConditions;
-
+  vVals["F_LOANPURPOSE"] = CredManr.LoanPurpose;
   surnum = 1;
   sc = GetFieldValueByName(CredManr,"SuretyProvider" & surnum,-1);
   while (nonblank(sc)) begin

@@ -821,6 +821,7 @@ begin
   GetWindowRecord(mwn,CredManr);
   RepSpec.f18 = CredManr.LetterOfDemand;
   RepSpec.f19 = CredManr.InsuranceCost;
+  RepSpec.flags[2] = 1;
   PutWindowRecord(wn,RepSpec);
   CalculateBuyOutValue;
 
@@ -3467,10 +3468,12 @@ begin
     GetWindowRecord(wn,ORr);
     GetPrevWindowRecord(wn,oldORr);
     oldval = StringToVal(WindEFstr(wn),M4Val);
+    
     if (ORr.SumIncCom<oldval) then begin
       ORr.SumIncCom = oldval;
-      PutWindowRecord(wn,ORr);
     end;    
+    ORr.FrBase = ORr.FrBase - oldval + ORr.SumIncCom;
+    PutWindowRecord(wn,ORr);
   end;
   CheckBuyoutValueOmegaWClassSumIncComEFAfter = true;
   return;
@@ -3487,8 +3490,9 @@ begin
     oldval = StringToVal(WindEFstr(wn),M4Val);
     if (ORr.RvrsVAT<oldval) then begin
       ORr.RvrsVAT = oldval;
-      PutWindowRecord(wn,ORr);
     end;    
+    ORr.FrBase = ORr.FrBase - oldval + ORr.RvrsVAT;
+    PutWindowRecord(wn,ORr);
   end;
   CheckBuyoutValueOmegaWClassRvrsVATEFAfter = true;
   return;
@@ -3509,3 +3513,5 @@ begin
   CheckBuyoutValueOmegaWClassAfterEditField = res;
   return;
 end;
+
+

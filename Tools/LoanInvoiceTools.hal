@@ -394,7 +394,7 @@ begin
       IVr.LangCode = reslang;
     end;
     if (nonblank(paydeal)) then begin
-      IVr.PayDeal = CredManr.PayDeal;
+      IVr.PayDeal = paydeal;
       doforcepaydeal = false;
     end else begin
       if (nonblank(CIb.FirstInvPayDeal)) then begin
@@ -1260,7 +1260,6 @@ begin
   if (ReadFirstKey("MainKey",ARPayHistr,2,true)) then begin
     IPr.SerNr = ARPayHistr.SerNr;
     if (ReadFirstMain(IPr,1,true)) then begin
-      logtext(0,"PMCodeMatches");
       if (CredManPMCodeMatches2(IPr.PayMode,CredManr,true)) then begin
         res = true;
       end;
@@ -2056,7 +2055,8 @@ begin
   record CredManVc tCredManr;
   record CMInvoicingBlock CIb;
   Date calcsd;
-
+  string 20 pd;
+  
 /*
 1. Get the last invoice date and the balance
 2. Set up and create an invoice
@@ -2065,7 +2065,11 @@ begin
   GetBuyOutData(CredManr,CredManPayPlanr,CMb,lastinv,balance,issuedinsbal);
   
   if (balance>0) then begin
-    SetupLoanInvoice2(CredManr,CMb,IVr,td,lastinv,td,true,false,"",1,true,CIb.BuyOutPayDeal);
+    pd = CIb.BuyOutPayDeal;
+    if (blank(pd)) then begin
+      pd = CIb.FirstInvPayDeal;
+    end;
+    SetupLoanInvoice2(CredManr,CMb,IVr,td,lastinv,td,true,false,"",1,true,pd);
     AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td,issuedinsbal);
     RecordCopy(tCredManr,CredManr);
     tCredManr.InvSum4 = balance;
@@ -2105,7 +2109,7 @@ begin
   BlockLoad(CIb);
   BlockLoad(CMb);
 
-  SetupLoanInvoice(CredManr,CMb,IVr,CurrentDate,"","",true,false,"",1,true);
+  SetupLoanInvoice2(CredManr,CMb,IVr,CurrentDate,"","",true,false,"",1,true,CIb.FirstInvPayDeal);
   rate = CredManr.StdProlongPrc;
   if (CredManr.AnnualRate==1) then begin
     rate = rate/12;
@@ -2140,7 +2144,7 @@ begin
     BlockLoad(CIb);
     BlockLoad(CMb);
 
-    SetupLoanInvoice(CredManr,CMb,IVr,RepSpec.d1,"","",true,false,"",1,true);
+    SetupLoanInvoice2(CredManr,CMb,IVr,RepSpec.d1,"","",true,false,"",1,true,CIb.FirstInvPayDeal);
     GetItemName(RepSpec.f1,spec);
     SetupInvoiceRowAndAdd(CredManr,IVr,RepSpec.f1,spec,1,RepSpec.vals0,blankval,15,-1);
     CM_AddPrepayments(IVr,CredManr,CIb);
@@ -2326,17 +2330,13 @@ begin
   Boolean TrHs;
   val res;
   
-  
-  logtext(0,"GetPrepaymentValue");
   ARPayr.CustCode = CredManr.CustCode;
   TrHs = true;
   while (LoopKey("CustCode",ARPayr,1,TrHs)) begin
     if (ARPayr.CustCode!=CredManr.CustCode) then begin
       TrHs = false;
     end else begin
-      logtext(0,"GetPrepaymentValue 1");
       if (PMCodeMatches(CredManr,ARPayr.CUPNr)) then begin
-        logtext(0,"GetPrepaymentValue 2");
         res = res + ARPayr.RVal;
       end;
     end;
@@ -2821,11 +2821,17 @@ logtext(0,"CheckBuyOutAgreement start");
   end;
   RepSpec.vals1 = IVr.Sum4;
   RepSpec.vals0 = dueamount;//should this be openamount?
-  RepSpec.vals2 = openamount + IVr.Sum4 - prepayval;
-  RepSpec.f14 = buyoutfee;
-  if (prepayval>0 and RepSpec.vals2<0) then begin
-    RepSpec.vals2 = 0;
+  if(RepSpec.flags[2]==1)then begin
+    RepSpec.vals2 = openamount + IVr.Sum4 - prepayval;
+    if (prepayval>0 and RepSpec.vals2<0) then begin
+      RepSpec.vals2 = 0;
+    end;
+  end else begin
+    RepSpec.vals2 = openamount + IVr.Sum4;
   end;
+  
+  RepSpec.f14 = buyoutfee;
+  
   RepSpec.vals4 = dueamount;
   RepSpec.f12 = lateamount;//(RepSpec.vals2-RepSpec.vals3-RepSpec.vals4);
   //BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,false);
@@ -2842,6 +2848,8 @@ logtext(0,"CheckBuyOutAgreement start");
   currperiodinterest = GetLastDuePeriodInterest(CredManr,CredManPayPlanr,RepSpec.d1);//should display interest from the last DUE period till today.
   futurefees = GetBuyOutFutureFees(CredManr.SerNr,CredManPayPlanr,RepSpec.d1);
   otheropenfees = GetOtherOpenFees(CredManr.SerNr,blankd,vItemVals);
+  
+  RepSpec.Comment = prepayval;//ValToString(prepayval,M45Val,"",".",0);//valtostring(prepayval,m45val);//Prepayments
   
   gSilenceIVOpenPrepExists = false;
 
@@ -2973,8 +2981,13 @@ begin
             x = CSrw.Interest;
             y = (datediff(CSrw.ToDate,CSrw.FromDate) + 1) - (datediff(todate,CSrw.FromDate) + 1);
             z = datediff(CSrw.ToDate,CSrw.FromDate) + 1;
-            vvals1["INVOICEDCURRENTPERIOD"] = x * y / z;
-            vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(vvals1["OPENNOTOVERDUEINT"] * ((datediff(todate,CSrw.FromDate)+1) / (datediff(CSrw.ToDate,CSrw.FromDate)+1)),defaultcurroundoff);
+            logtext(0,"x " & x);
+            logtext(0,"y " & y);
+            logtext(0,"z " & z);
+            vvals1["INVOICEDCURRENTPERIOD"] = round(x * y / z,defaultcurroundoff);
+            vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + x - round((x * y / z),defaultcurroundoff);
+            logtext(0,"--------- " & CSrw.Interest);
+            logtext(0,vvals1["CURRPERIODINTEREST"]);
           end;
         end else begin
           if(CSrw.Invoiced==0)then begin
@@ -3183,8 +3196,17 @@ begin
   ORr.Sum4 = vcalcval["OVDOPENINVOICED:" & princItem];
   logtext(0,"------Balance" & t + vcalcval["OPENINVOICED:" & princItem] - vcalcval["OVDOPENINVOICED:" & princItem]);
   ORr.BaseSum4 = t + vcalcval["OPENINVOICED:" & princItem]- vcalcval["OVDOPENINVOICED:" & princItem];
-  logtext(0,"------Current Period Interest" & interestammount - vcalcval1["INVOICEDCURRENTPERIOD"]  );//???????????
-  ORr.TotGP = interestammount - vcalcval1["INVOICEDCURRENTPERIOD"];
+  logtext(0,"interestammount " & interestammount);
+  logtext(0,"vcalcval1[\"INVOICEDCURRENTPERIOD\"] " & vcalcval1["INVOICEDCURRENTPERIOD"]);
+  
+  //vcalcval1["CURRPERIODINTEREST"];
+  logtext(0,"vcalcval1[\"CURRPERIODINTEREST\"] " & vcalcval1["CURRPERIODINTEREST"]);
+  //logtext(0,"------Current Period Interest" & interestammount - vcalcval1["INVOICEDCURRENTPERIOD"]  );//???????????
+  
+  logtext(0,"------Current Period Interest" & vcalcval1["CURRPERIODINTEREST"]);
+  //ORr.TotGP = interestammount - vcalcval1["INVOICEDCURRENTPERIOD"];
+  ORr.TotGP = vcalcval1["CURRPERIODINTEREST"];
+  
   logtext(0,"------Future Fees" & vcalcval1["FUTUREFEES"]);
   ORr.DiscSum = vcalcval1["FUTUREFEES"];
   
@@ -3207,10 +3229,11 @@ begin
   logtext(0,"------Insurance Cost" & vcalcval["OPENINVOICED:" & insurItem]);
   ORr.RvrsVAT = vcalcval["OPENINVOICED:" & insurItem];
   logtext(0,"------Premature Term. Fee" & vcalcval["OPENINVOICED:" & prematureItem]);
-  ORr.TAX2Sum = vcalcval["OPENINVOICED:" & prematureItem];
+  logtext(0,"------Premature Term. Fee" & buyoutfee);
+  ORr.TAX2Sum = buyoutfee;//vcalcval["OPENINVOICED:" & prematureItem];
     
   //t = GetOpenOverdueFeesValue(CredManr.SerNr,ORr.OrdDate);
-  ORr.FrBase = ORr.Sum2+ORr.BaseSum4+ORr.TotGP+ORr.DiscSum+ORr.TAX1Sum+ORr.FrPrice+ORr.DownPayRedcd;//total debt
+  ORr.FrBase = ORr.TAX2Sum + ORr.Sum2+ORr.BaseSum4+ORr.TotGP+ORr.DiscSum+ORr.TAX1Sum+ORr.FrPrice+ORr.DownPayRedcd;//total debt
 
   
     
@@ -3900,6 +3923,9 @@ logtext(0,"GenerateAgreementSchedule1");
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin
     RecordCopy(oldCSr,CSr);
+    if (blank(CSr.OfficialSerNr)) then begin
+      CSr.OfficialSerNr = CredManr.OfficialSerNr;
+    end;
     rwcnt = MatRowCnt(CSr);
     if (fullf) then begin
       for (i=rwcnt-1;i>=0;i=i-1) begin
@@ -3912,6 +3938,7 @@ logtext(0,"GenerateAgreementSchedule1");
     CSr.CredManNr = CredManr.SerNr;
     CSr.CustCode = CredManr.CustCode;
     CSr.CustName = CredManr.Addr0;
+    CSr.OfficialSerNr = CredManr.OfficialSerNr;
   end;
   if (updf and forcef==false) then begin
     goto lout;
@@ -4393,4 +4420,26 @@ date blankd;
   
   checkIfInvoiceFromAgreement = res;
 return;
+end;
+
+//TODO: this does not return agreement's open prepayments...
+global 
+function val GetCredManOpenPrepaymentsAmount(longint credmannr)
+begin
+  val res;
+  record CredHistVc CredHistr;
+  Boolean TrHs;
+    
+  res = blankval;
+  TrHs = true;
+  CredHistr.CredManNr = credmannr;
+  CredHistr.RecordType = 2;
+  while (LoopKey("CredManRecordType",CredHistr,1,TrHs)) begin
+    if (CredHistr.CredManNr!=credmannr or CredHistr.RecordType!=2) then begin
+        TrHs = false;
+      end;
+    end;
+    if (TrHs) then begin
+      res = res + CredHistr.Sum;
+    end;
 end;

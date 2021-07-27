@@ -35,6 +35,7 @@ external inner function Boolean GetNextCustNr(var string);
 external function Boolean InsertCustomerInB2BApplication(var record B2BLoanApplicationVc,var string);
 external function Boolean InsertB2BLoanApplicationType(var record B2BLoanApplicationVc);
 external function Boolean InsertContactName(var record B2BLoanApplicationVc);
+external updating function LongInt B2BLoanApplicationVcRecordCheck(var record B2BLoanApplicationVc,record B2BLoanApplicationVc,LongInt,LongInt);
 
 enum begin
   kEventTypeNone = 0,
@@ -1240,10 +1241,11 @@ begin
   area a;
   record CUVc CUr,ContCUr;
   record ContactRelVc CRr;
-  record B2BLoanApplicationVc LAr;
+  record B2BLoanApplicationVc LAr,fakeLAr;
   boolean cufoundf,contactfoundf,res2,success;
   string 255 warning;
   boolean paramf;
+  LongInt err;
   
   paramf = false;
   success = false;
@@ -1318,8 +1320,12 @@ begin
     LAr.ContactName = name & " " & surname;
     if (InsertContactName(LAr)) then begin end;
     LAr.Sum = t;
-    if (RecordInsert(LAr,true)) then begin
-      success = true; 
+    err = B2BLoanApplicationVcRecordCheck(LAr,fakeLAr,Rs_Insert,0);
+    if (err==0) then begin //otherwise SerNr=-1
+      //RecordCheckError(1557,"",-1,"SerNr");      
+      if (RecordInsert(LAr,true)) then begin
+        success = true; 
+      end;
     end;
   end;
   LOutput:;
@@ -1332,6 +1338,8 @@ begin
     AddPlainXmlToArea(a,tstr,0);
     AddPlainXmlToArea(a,"<B2BLoanApplicationVc>",0);
     AddXMLTagToArea(a,"SerNr","",LAr.SerNr,1);
+    AddXMLTagToArea(a,"AdminFee","",ValToString(LAr.AdminFee,M4Val,"",".",0),1);
+    AddXMLTagToArea(a,"Months","",LAr.Months,1);
     AddPlainXmlToArea(a,"</B2BLoanApplicationVc>",0);
     AddPlainXmlToArea(a,"</data>",0);
     WebOutArea2(a);
@@ -1339,7 +1347,7 @@ begin
     if (paramf) then begin
       WebOutString("<error>Missing required params</error>");
     end else begin
-      WebOutString("<error>Failed to insert a new Loan application</error>"); 
+      WebOutString("<error>Failed to insert a new Loan application " & err & "</error>"); 
     end;
   end;
   return;

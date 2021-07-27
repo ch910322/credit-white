@@ -194,6 +194,14 @@ begin
   EndMatrix;
   EndWindow;
   
+  WindowBegin("Loan Application Default Values",B2BLoanAppDefaultsTClass,CGSbl,SRType);
+  SetBlid(B2BLoanAppDefaultsBlock);
+  SetWRect(20,80,670,298);
+  Sizeable(-1,-1,0,0);
+  EditField(h=180,v=6,100,"Months",Normal,Months,false,0);
+  EditField(h,v+=vs,100,"Admin Fee",Normal,AdminFee,false,0);
+  EndWindow;
+  
   WindowBegin("Credit Management Settings",CMApplicationSetTClass,CGSbl,SRType);
   SetBlid(CMApplicationSetBlock);
   SetWRect(20,80,670,298);
@@ -571,6 +579,8 @@ begin
     EditFieldTL(h,v+=vs,120,"Premature Term. Fee",M4Str,ViewOnly,255,f14,true,0);
   end;
   EditFieldTL(h,v+=vs,120,"Not invoiced Overdues",M4Str,ViewOnly,255,f12,true,0);
+  EditFieldTL(h,v+=vs,120,"Prepayments",M4Str,ViewOnly,255,Comment,true,0);
+  CheckBox(h+140,v,0,"Include Prepayments",flags[2]);
   EditFieldTL(h,v+=vs,120,"Total Dept",M4Val,ViewOnly,0,vals2,true,0);
 
 //  EditFieldTL(h,v+=vs,120,"Last Invoice Value",M4Val,ViewOnly,0,vals1,true,0);
@@ -2280,14 +2290,17 @@ window CredManSchedLClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
   WindowBegin("Agreement Schedules",CredManSchedLClass,CGmlist,-);
-  SetWRect(20,80,660,298);
+  SetWRect(20,80,790,298);
   Sizeable(-1,-1,0,0);
   SpawnClass(CredManSchedDClass);
   UseView(CredManSchedVc);
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Agreement",CredManNr,false,CredManNr);
   RlCol(106,106,"Customer",CustCode,false);
-  RlCol(176,176,"Name",CustName,false);
+  if (IsOmegaCustomer) then begin
+    RlColKey(206,206,"Legal No.",OfficialSerNr,false,OfficialSerNr);
+  end;
+  RlCol(316,316,"Name",CustName,false);
   RlCol(-200,-200,"Date",TransDate,false);
   RlCol(-80,-80,"Time",TransTime,false);
   SearchField("Search");
@@ -2393,7 +2406,7 @@ begin
     
   EditField(h,v+=vs,100,"Premature Term. Item",Normal,BuyOutItem,false,INSClass);  
   EditField(h,v+=vs,100,"Default Item Priority",Normal,ItemPriorityCode,false,CMItemPrioritySCLass);  
-  EditField(h,v+=vs,100,"First Invoice Paym. Term",Normal,FirstInvPayDeal,false,PDSClass);  
+  EditField(h,v+=vs,100,"Non-monthly invoice Paym. Term",Normal,FirstInvPayDeal,false,PDSClass);  
 
   EditField(h2=400,v,100,"Buyout Paym. Term",Normal,BuyOutPayDeal,false,PDSClass);  
 
@@ -4191,3 +4204,41 @@ begin
   
   EndWindow;
 end;
+ 
+window ConfSignExtDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h2,h4,v,vs;
+  WindowBegin("Extra Signature",ConfSignExtDClass,CGview,ConfSignView);
+  DynamicWindow;
+  UseView(ConfSignExtVc);
+  BrowseButtons(false);
+  SetWRect(20,80,450,280);
+  vs = 20;h = 170;h2 =  330;h4 = 500; v = 6;
+  SetWRect(64,80,470,298);
+  Sizeable(-1,-1,0,0);
+  EditField(40,v=6,50,"No.",Normal,SerNr,false,0);
+  EditField(h,v,50,"Language",Normal,LangCode,false,LangSClass);
+  EditField(h2,v,150,"Mail Box",Normal,MailBoxName,false,ConfOurSClass);//ConfSClass
+  CheckBox(-100,v,0,"HTML",HtmlFlag);
+  TextField(0,v+=vs,-1,-1,Math,0);
+  EndWindow;
+end;
+
+window ConfSignExtLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Extra Conferences Signatures",ConfSignExtLClass,CGmlist,ConfSignExtView);
+  SetWRect(10,80,600,291);
+  SpawnClass(ConfSignExtDClass);
+  Sizeable(-1,-1,0,0);
+  MailBackground;
+  UseView(ConfSignExtVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(6,6,"No.",SerNr,false,SerNr);
+  RlCol(66,66,"Language",LangCode,false);
+  RlColKey(126,126,"Mail Box",MailBoxName,false,MailBoxName);
+  SearchField("Search");
+  EndWindow;
+end;
+  

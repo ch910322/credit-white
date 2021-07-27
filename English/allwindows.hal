@@ -724,6 +724,9 @@ begin
   EditField(h,v+=vs,82,"#Salesman#",Normal,SalesMan,false,UserSClass);
   EditField(h2,v,n,"Attn.",Normal,ClientContact,false,ContactSClass);
 //CUST-BEGIN
+  if (IsNovitiCustomer) then begin
+    EditField(h,v+=vs,n,"Loan Purpose",Normal,LoanPurpose,false,0);
+  end;
   EditField(h,v+=vs,n,"Other Conditions",Normal,OtherConditions,false,0);
 //CUST-END
   if (statusf) then begin

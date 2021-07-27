@@ -524,7 +524,11 @@ begin
   KeySegment(SerNr);  
   EndRecord; 
   
-  //ak_end
+  BlockBegin(B2BLoanAppDefaultsBlock,-,"");
+  RecordField(Months,M4Int,0,0);
+  RecordField(AdminFee,M4Val,0,0);
+  EndBlock;
+    
   BlockBegin(CMApplicationSetBlock,-,"");
   LoadBlockOnStartup;
   CacheBlockInClient;
@@ -984,6 +988,7 @@ begin
   RecordField(Surety6SignManager,M4Str,100,0);
   RecordField(ForcePayDeal,M4Code,5,PDVc);
   RecordField(DocumentSigner,M4Code,20,UserVc);
+  RecordField(LoanPurpose,M4Str,250,0);
   
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -1726,6 +1731,7 @@ begin
   RecordField(TransDate,M4Date,0,0);
   RecordField(TransTime,M4Time,0,0);
   RecordField(Math,M4Matrix,0,0);
+  RecordField(OfficialSerNr,M4Str,100,0);
   ArrayBegin(Math,-,1);
   ArrayField(Type,M4Set,2027,0);
   ArrayField(InvDate,M4Date,0,0);
@@ -1743,6 +1749,9 @@ begin
   ArrayField(Deposit,M4Val,0,0);
   EndArray;
   MainKeyBegin(CredManNr,0);
+  KeySegment(CredManNr);
+  KeyBegin(OfficialSerNr);
+  KeySegment(OfficialSerNr);
   KeySegment(CredManNr);
   EndRecord;
 
@@ -2495,6 +2504,24 @@ begin
   EndArray;
   MainKeyBegin(Code,0);
   KeySegment(Code);
+  EndRecord;
+  
+  RecordBegin(ConfSignExtVc,-,"");
+  RegisterForAllCompanies(false);
+  RecordField(SerNr,M4Long,0,0);
+  RecordField(LangCode,M4Code,5,0);
+  RecordField(MailBoxName,M4Str,60,0);
+  RecordField(Math,M4TextField,0,0);
+  RecordField(HtmlFlag,M4Int,0,0);
+  MainKeyBegin(SerNr,0);
+  KeySegment(SerNr);
+  KeyBegin(MailBoxName);
+  KeySegment(MailBoxName);
+  KeySegment(SerNr);
+  KeyBegin(MailBoxNameLangCode);
+  KeySegment(MailBoxName);
+  KeySegment(LangCode);
+  KeySegment(SerNr);
   EndRecord;
   
   SourceFile("halcust\\LoanApp\\English", 0);

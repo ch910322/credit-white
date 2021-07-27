@@ -94,14 +94,16 @@ begin
   record CMApplicationSetBlock ASb;
   record UserVc Userr;
   
-  BlockLoad(ASb);
-  Userr.Code = ASb.DocumentSigner;
-  if (ReadFIrstMain(Userr,1,true)) then begin
-    vVals["F_DOCUMENTSIGNERNAME"] = Userr.Name;
-    vVals["F_DOCUMENTSIGNERPOSITION"] = ASb.DocumentSignerPosition;
-    vVals["F_DOCUMENTSIGNERCODE"] = Userr.Code;
-    vVals["F_DOCUMENTSIGNEREMAIL"] = Userr.emailAddr;
-    vVals["F_DOCUMENTSIGNERPHONE"] = Userr.Phone1;
+  if(blank(vVals["F_CMSIGNFLAG"]))then begin
+    BlockLoad(ASb);
+    Userr.Code = ASb.DocumentSigner;
+    if (ReadFIrstMain(Userr,1,true)) then begin
+      vVals["F_DOCUMENTSIGNERNAME"] = Userr.Name;
+      vVals["F_DOCUMENTSIGNERPOSITION"] = ASb.DocumentSignerPosition;
+      vVals["F_DOCUMENTSIGNERCODE"] = Userr.Code;
+      vVals["F_DOCUMENTSIGNEREMAIL"] = Userr.emailAddr;
+      vVals["F_DOCUMENTSIGNERPHONE"] = Userr.Phone1;
+    end;
   end;
 
   return;
@@ -111,13 +113,31 @@ global
 procedure Ext_PrintCredManDocumentSigner(string user, var vector string vVals)
 begin
   record UserVc Userr;
+  record CMApplicationSetBlock ASb;
   
   if (nonblank(user)) then begin
     Userr.Code = user;
     if (ReadFirstMain(Userr,1,true)) then begin
       vVals["F_CREDMANDOCUMENTSIGNERNAME"] = Userr.Name;
       vVals["F_CREDMANDOCUMENTSIGNERJOB"] = Userr.Job;
+      
+      vVals["F_CMSIGNFLAG"] = "used";
+      vVals["F_DOCUMENTSIGNERNAME"] = Userr.Name;
+      vVals["F_DOCUMENTSIGNERPOSITION"] = Userr.Job;
+      vVals["F_DOCUMENTSIGNERCODE"] = Userr.Code;
+      vVals["F_DOCUMENTSIGNEREMAIL"] = Userr.emailAddr;
+      vVals["F_DOCUMENTSIGNERPHONE"] = Userr.Phone1;
     end;  
+  end else begin
+    BlockLoad(ASb);
+    Userr.Code = ASb.DocumentSigner;
+    if (ReadFIrstMain(Userr,1,true)) then begin
+      vVals["F_DOCUMENTSIGNERNAME"] = Userr.Name;
+      vVals["F_DOCUMENTSIGNERPOSITION"] = Userr.Job;
+      vVals["F_DOCUMENTSIGNERCODE"] = Userr.Code;
+      vVals["F_DOCUMENTSIGNEREMAIL"] = Userr.emailAddr;
+      vVals["F_DOCUMENTSIGNERPHONE"] = Userr.Phone1;
+    end;
   end;
   return;
 end;
