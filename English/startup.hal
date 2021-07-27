@@ -62,7 +62,7 @@ begin
 	Setting("Overdue calculations text",OverdueCalcTextWClass,modCredMan);
 	Setting("Agreement changes purposes",AgrChangesPurpLClass,modCredMan);
   Setting("Own Actual Address",OwnAddressWClass,modSY);
-
+  
 	Report("Credit Agreements",CreditAgreementsRClass,CreditAgreementsRn,0,modCredMan);
 	Report("Application Overview",LoanApplicationListRClass,LoanApplicationListRn,0,modCredMan);
 	Report("Governmental Fund Report",InvegaFundRClass,InvegaFundRn,0,modCredMan);
@@ -118,6 +118,8 @@ begin
   Setting("Payment Gateways",CCAccountIDLClass,modInteg);
   Setting("Merchant ID",CCMerchantIDLClass,modInteg);
 
+/* Email modEmail */
+  Setting("Extra Signatures",ConfSignExtLClass,modEmail);
 
   SString(200000,"Evaluation report");
   SString(200001,"Company");

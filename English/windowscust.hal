@@ -4205,4 +4205,40 @@ begin
   EndWindow;
 end;
  
+window ConfSignExtDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h2,h4,v,vs;
+  WindowBegin("Extra Signature",ConfSignExtDClass,CGview,ConfSignView);
+  DynamicWindow;
+  UseView(ConfSignExtVc);
+  BrowseButtons(false);
+  SetWRect(20,80,450,280);
+  vs = 20;h = 170;h2 =  330;h4 = 500; v = 6;
+  SetWRect(64,80,470,298);
+  Sizeable(-1,-1,0,0);
+  EditField(40,v=6,50,"No.",Normal,SerNr,false,0);
+  EditField(h,v,50,"Language",Normal,LangCode,false,LangSClass);
+  EditField(h2,v,150,"Mail Box",Normal,MailBoxName,false,ConfOurSClass);//ConfSClass
+  CheckBox(-100,v,0,"HTML",HtmlFlag);
+  TextField(0,v+=vs,-1,-1,Math,0);
+  EndWindow;
+end;
+
+window ConfSignExtLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  WindowBegin("Extra Conferences Signatures",ConfSignExtLClass,CGmlist,ConfSignExtView);
+  SetWRect(10,80,600,291);
+  SpawnClass(ConfSignExtDClass);
+  Sizeable(-1,-1,0,0);
+  MailBackground;
+  UseView(ConfSignExtVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(6,6,"No.",SerNr,false,SerNr);
+  RlCol(66,66,"Language",LangCode,false);
+  RlColKey(126,126,"Mail Box",MailBoxName,false,MailBoxName);
+  SearchField("Search");
+  EndWindow;
+end;
   
