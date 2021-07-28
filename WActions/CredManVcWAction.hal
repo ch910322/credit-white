@@ -73,6 +73,7 @@ remote updating procedure CredManCreditBeforePause(Integer,Integer,record RcVc);
 remote updating function boolean RA_CreateCredManOfferEmail(record RcVc, record CredManVc,var record MailVc);
 external outer function Boolean IsOmegaCustomer;
 remote procedure CheckBuyOutAgreementOmega(record CredManVc,var record ORVc, Boolean);
+external procedure GetItemName(string,var string);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -3514,4 +3515,36 @@ begin
   return;
 end;
 
+global
+procedure ManualExtraFeeWClassOnOpenWindow(Integer wn)
+begin
+  record RcVc RepSpec;
+  record CMInvoicingBlock CMIb;
+  
+  BlockLoad(CMIb);
+  GetWindowRecord(wn,RepSpec);
+  
+  RepSpec.f2 = CMIb.FirstInvPayDeal;
+  RepSpec.f3 = CurrentUser;
+  PutWindowRecord(wn,RepSpec);
+  return;
+end;
 
+global
+procedure ManualExtraFeeWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  record INVc INr;
+  record RcVc RepSpec;
+  
+  if (changed==0) then begin
+    goto LManualExtraFeeWClassAfterEditField;
+  end;
+  GetWindowRecord(wn,RepSpec);
+  if (fieldname=="f1") then begin
+    RepSpec.f4 = "";
+    GetItemName(RepSpec.f1,RepSpec.f4);
+  end;
+  PutWindowRecord(wn,RepSpec);   
+  LManualExtraFeeWClassAfterEditField:;
+  return;
+end;

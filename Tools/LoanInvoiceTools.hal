@@ -341,7 +341,7 @@ begin
 end;
 
 global
-procedure SetupLoanInvoice2(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Date invdate,Date fromdate,Date todate,Boolean sernrf,Boolean forcecustf,string ivno,Integer invtype,Boolean fullf,string paydeal)
+procedure SetupLoanInvoice3(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Date invdate,Date fromdate,Date todate,Boolean sernrf,Boolean forcecustf,string ivno,Integer invtype,Boolean fullf,string paydeal,string salesman)
 begin
   record LocalMachineBlock LMb;
   string 255 warning,errstr,prepstr,invdatewarn,transdatewarn;
@@ -371,7 +371,11 @@ begin
     IVr.PayDeal = CredManr.PayDeal;
   end;
   IVVc_PastePayDeal(IVr,"",LMb.DefReturnLocation);
-  IVr.SalesMan = CredManr.SalesMan;
+  if (nonblank(salesman)) then begin
+    IVr.SalesMan = salesman;
+  end else begin
+    IVr.SalesMan = CredManr.SalesMan;
+  end;
   IVVc_PasteSalesMan(IVr,"");
   IVr.CredFromDate = fromdate;
   IVr.CredToDate = todate; 
@@ -453,9 +457,16 @@ begin
 end;
 
 global
+procedure SetupLoanInvoice2(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Date invdate,Date fromdate,Date todate,Boolean sernrf,Boolean forcecustf,string ivno,Integer invtype,Boolean fullf,string paydeal)
+begin
+  SetupLoanInvoice3(CredManr,CMb,IVr,invdate,fromdate,todate,sernrf,forcecustf,ivno,invtype,fullf,"","");
+  return;
+end;
+
+global
 procedure SetupLoanInvoice(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Date invdate,Date fromdate,Date todate,Boolean sernrf,Boolean forcecustf,string ivno,Integer invtype,Boolean fullf)
 begin
-  SetupLoanInvoice2(CredManr,CMb,IVr,invdate,fromdate,todate,sernrf,forcecustf,ivno,invtype,fullf,"");
+  SetupLoanInvoice3(CredManr,CMb,IVr,invdate,fromdate,todate,sernrf,forcecustf,ivno,invtype,fullf,"","");
   return;
 end;
 
@@ -2138,14 +2149,24 @@ begin
   val rate,sum;
   string 255 spec;
   record CredManVc CredManr;
-
+  string 5 pd;
+  string 20 salesman;
+  
   CredManr.SerNr = RepSpec.long1;
   if (ReadFirstMain(CredManr,1,true)) then begin
     BlockLoad(CIb);
     BlockLoad(CMb);
-
-    SetupLoanInvoice2(CredManr,CMb,IVr,RepSpec.d1,"","",true,false,"",1,true,CIb.FirstInvPayDeal);
-    GetItemName(RepSpec.f1,spec);
+    pd = RepSpec.f2;
+    if (blank(pd)) then begin
+      pd = CIb.FirstInvPayDeal;
+    end;
+    salesman = RepSpec.f3;
+    
+    SetupLoanInvoice3(CredManr,CMb,IVr,RepSpec.d1,"","",true,false,"",1,true,pd,salesman);
+    spec = trim(RepSpec.f4);
+    if (blank(spec)) then begin
+      GetItemName(RepSpec.f1,spec);
+    end;
     SetupInvoiceRowAndAdd(CredManr,IVr,RepSpec.f1,spec,1,RepSpec.vals0,blankval,15,-1);
     CM_AddPrepayments(IVr,CredManr,CIb);
 

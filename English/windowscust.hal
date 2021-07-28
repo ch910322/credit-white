@@ -752,11 +752,14 @@ end;
 
   WindowBegin("Create Extra Fee Invoice",ManualExtraFeeWClass,CGother,RcType);
   UseView(RcVc);
-  SetWRect(20,80,400,200);
+  SetWRect(20,80,400,400);
   AutoSizeWindow(false);  
   h = 150; h2 = 250; v=450;
   EditFieldTL(h,v=6,120,"Invoice Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,50,"Pay Deal",M4Code,Normal,20,f2,false,PDSClass);
+  EditFieldTL(h,v+=vs,50,"Salesman",M4Code,Normal,20,f3,false,UserSClass);
   EditFieldTL(h,v+=vs,120,"Item",M4Code,Normal,20,f1,false,INSClass);
+  EditFieldTL(h,v+=vs,120,"Description",M4Str,Normal,60,f4,false,0);
   EditFieldTL(h,v+=vs,120,"Value",M4Val,Normal,0,vals0,false,0);
   HalPushButton(h,v+=vs,h+120,v+20,"ManualExtraFeeWClassCreate","Create");
   EndWindow;
