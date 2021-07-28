@@ -957,7 +957,8 @@ begin
   record RcVc RepSpec;
   record CredManVc CredManr;
   Date td;
-
+  record CMInvoicingBlock CIb;
+  
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
   if (WindowState(wn)==Rs_Normal) then begin
@@ -968,6 +969,11 @@ begin
       //RepSpec.vals1 = CredManr.ProlongMonths;
       RepSpec.d1 = td;
       RepSpec.flags[1] = 1;
+      BlockLoad(CIb);
+      RepSpec.f2 = CIb.FirstInvPayDeal;
+      RepSpec.f3 = CurrentUser;
+      RepSpec.f4 = "";
+      GetItemName(CIb.ProlongItem,RepSpec.f4);
       OpenWindow("PauseCredManWClass",0,wn,"","",RepSpec);
     end;
   end;
