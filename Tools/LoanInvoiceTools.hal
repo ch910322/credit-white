@@ -49,6 +49,7 @@ external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,B
 external inner function Boolean ItemInItemGroupOrClass(string,string,string);
 external procedure CredManSchedRecalcBalance(var record CredManSchedVc);
 external procedure SumupCredManSched(var record CredManSchedVc,Integer);
+external inner function Boolean FindCustomerRelation(string,string,var record CUVc);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -4471,4 +4472,87 @@ begin
     if (TrHs) then begin
       res = res + CredHistr.Sum;
     end;
+end;
+
+global
+function string 255 AddCredManInvoiceMailRecipients(record CUVc CUr,var string mobile)
+begin
+  record CMInvoicingBlock CIb;
+  record CUVc ContactCUr;
+  string 255 res;
+  vector boolean vmails;
+  array string 100 amails;
+  record ContactRelVc CRr;
+  record EmailRecipVc EmailRecipr;
+  row EmailRecipVc EmailReciprw;
+  Integer i,rwcnt,mailrow;
+  record CUVc CU2r;
+
+  mobile = "";
+  res = "";
+  
+  BlockLoad(CIb);
+  if (CIb.SendToMainContact==1) then begin
+    if (nonblank(CUr.Person)) then begin
+      if (FindCustomerRelation(CUr.Code,CUr.Person,ContactCUr)) then begin
+        if (nonblank(ContactCUr.eMail)) then begin
+          vmails[ContactCUr.eMail] = true;
+        end;
+      end;
+    end;
+  end;
+  if (CIb.SendToCompany==1) then begin
+    if ((CIb.SendToCompNoContact==0) or (blank(CUr.Person))) then begin
+     vmails[CUr.eMail] = true;
+    end;
+  end;
+  if (CIb.SendToAddRecip==1) then begin
+    EmailRecipr.MainContactCode = Cur.Code;
+    if ReadFirstMain(EmailRecipr,1,true) then begin 
+      rwcnt = MatRowCnt(EmailRecipr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(EmailRecipr,i,EmailReciprw);
+        if (nonblank(EmailReciprw.ContactCode) and (EmailReciprw.DocType==kMailInvoice)) then begin 
+          CU2r.Code = EmailReciprw.ContactCode;
+          if (ReadFirstMain(CU2r,1,true)) then begin 
+            if (nonblank(CU2r.eMail)) then begin 
+              vmails[CU2r.eMail] = true;
+            end;   
+          end;
+        end;
+      end;  
+    end;
+  end;
+  if (nonblank(CIb.SendToJobDescr)) then begin
+    while (LoopKey("CustContactCode:" & CUr.Code,CRr,1,true)) begin
+      if (CRr.Invalid==0) then begin
+        ContactCUr.Code = CRr.ContactCode;
+        if (ReadFirstMain(ContactCUr,1,true)) then begin
+          if(nonblank(ContactCUr.Mobile))then begin
+            mobile = ContactCUr.Mobile;
+          end;
+          if(nonblank(ContactCUr.JobDesc))then begin
+            if (SetInSet(ContactCUr.JobDesc,CIb.SendToJobDescr)) then begin
+              vmails[ContactCUr.eMail] = true;
+            end;
+          end;
+        end;
+      end;
+    end;
+  end;
+  
+  if(nonblank(CUr.Mobile))then begin
+    mobile = CUr.Mobile;
+  end;
+  
+  getvectortags(vmails,amails);
+  for(i=0;i<amails.length;i=i+1)begin
+    if(i>0 and nonblank(res) and nonblank(amails[i]))then begin
+      res = res & ",";
+    end;
+    res = res & amails[i];
+  end;
+  
+  AddCredManInvoiceMailRecipients = res;
+  return;
 end;

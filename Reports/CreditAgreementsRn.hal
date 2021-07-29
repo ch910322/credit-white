@@ -4,6 +4,9 @@ external inner function Boolean SetInSet2(string,string);
 external procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 external procedure LoadAgreementRateToDate(record CredManVc,Date,var val,var Date);
 external inner function LongInt MonthDiff(Date,Date);
+external function string 255 AddCredManInvoiceMailRecipients(record CUVc,var string);
+external outer function Boolean IsNovitiCustomer();
+external procedure GetCredManLateAmounts2(record CredManVc,Date,Date,Integer,var Longint,var val,var val,var Date);
 
 function string 10 Checkbocout(boolean in)
 begin
@@ -58,27 +61,33 @@ begin
   Integer i,rwcnt;
   string 255 res;
   record CUVc CU2r;
-
-  res = CUr.eMail;
-  if (blank(res)) then begin
-    EmailRecipr.MainContactCode = CUr.Code;
-    if (ReadFirstMain(EmailRecipr,1,true)) then begin 
-      rwcnt = MatRowCnt(EmailRecipr);
-      for (i=0;i<rwcnt;i=i+1) begin
-        MatRowGet(EmailRecipr,i,EmailReciprw);
-        if (EmailReciprw.DocType==kMailInvoice) then begin
-          CU2r.Code = EmailReciprw.ContactCode;
-          if (ReadFirstMain(CU2r,1,true)) then begin
-            if (nonblank(CU2r.eMail)) then begin
-              res = CU2r.eMail;
-              i = rwcnt;
-            end;        
+  record CMInvoicingBlock CIb;
+  record CUVc ContactCUr;
+  string 255 mobile;
+  
+  if (IsNovitiCustomer) then begin
+    res = AddCredManInvoiceMailRecipients(CUr,mobile);
+  end else begin
+    res = CUr.eMail;
+    if (blank(res)) then begin
+      EmailRecipr.MainContactCode = CUr.Code;
+      if (ReadFirstMain(EmailRecipr,1,true)) then begin 
+        rwcnt = MatRowCnt(EmailRecipr);
+        for (i=0;i<rwcnt;i=i+1) begin
+          MatRowGet(EmailRecipr,i,EmailReciprw);
+          if (EmailReciprw.DocType==kMailInvoice) then begin
+            CU2r.Code = EmailReciprw.ContactCode;
+            if (ReadFirstMain(CU2r,1,true)) then begin
+              if (nonblank(CU2r.eMail)) then begin
+                res = CU2r.eMail;
+                i = rwcnt;
+              end;        
+            end;
           end;
         end;
       end;
     end;
   end;
-
   GetCustomerInvoicingEmails = res;
   return;
 end;
@@ -127,7 +136,10 @@ begin
   val realrate;
   Date ratedate,startdate,enddate;
   record CredManPayPlanVc CredManPayr;
-
+  val principlelateamount,notlateprinciple;
+  Date limitdate;
+  Longint principlelatedays;
+  
 	BlockLoad(CredManSetb);
 	startreportjob(USetStr(200280));
 	
@@ -228,6 +240,10 @@ begin
       RecordClear(CredManPayr);
       BuildCredManPayPlanCust(CredManr,CredManPayr,CredManSetb,true,false);
   		curbal = GetFutureCredManBalance(CredManr,CredManPayr,RepSpec.d1,CredManSetb);
+      if (IsNovitiCustomer) then begin
+        GetCredManLateAmounts2(CredManr,CredManr.startDate,RepSpec.d1,5,principlelatedays,principlelateamount,notlateprinciple,limitdate);
+        curbal = curbal + principlelateamount;
+      end;
 			if(RepSpec.flags[5]==0 and curbal<=0)then begin testf = false; end;
 		end;
 		
