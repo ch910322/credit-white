@@ -701,7 +701,7 @@ begin
   Tile(0,230,false,"",SerNr);
   EditField(h,vm=(v=6), 82,"No.",St_i,SerNr,false,TSerSClass);
 //CUST-BEGIN
-  EditField(h+90,v,50,"",ViewOnly,VersionNo,false,0);
+  EditField(h+90,v,50,"",Normal,VersionNo,false,0);
   EditField(h2,v,150,"Legal No.",Normal,OfficialSerNr,false,CredLegalNrSerNrSClass);
   //if (HasCredManChanges(CredManr)) then begin
   //  ColourPushButton(h3,v+3,h3+100,v+23,"CredManDClassOpenChanges","Agr. Changes",kButtonColourGreen);
