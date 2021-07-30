@@ -1121,6 +1121,7 @@ begin
     StaticText(h+510,v,"Position",false);
     StaticText(h+610,v,"Legal No.",false);
     StaticText(h+690,v,"Signing Manager",false);
+    StaticText(h+780,v,"Signed",false);
     
     v = v + 30;
     
@@ -1277,6 +1278,7 @@ begin
     StaticText(h+360,v,"Due Date",false);
     StaticText(h+440,v,"Signing Pers.",false);
     StaticText(h+550,v,"Position",false);
+    StaticText(h+610,v,"Has Surety",false);
     StaticText(h+700,v,"Bill of Exch. Signed",false);
     v = v + 30;
 
