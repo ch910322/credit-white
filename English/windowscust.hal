@@ -3547,9 +3547,9 @@ begin
   RadioButton(h,v+=16,8,0,"Credit Limit",DefCredManLoanType); 
   
   h2 = h+200;
-  ButtonFrame(h2,v2=40,150,2,"Agreement list column set");
+  ButtonFrame(h2,v2=40,250,2,"Agreement list column set");
   RadioButton(h2,v2,0,0,"Default",AgreeListClassType);
-  RadioButton(h2,v2+=16,1,0,"# 1",AgreeListClassType);
+  RadioButton(h2,v2+=16,1,0,"Show Status in Credit Agreements browse",AgreeListClassType);
   
   CheckBox(h,v+=30,0,"Display Loan",ShowLoanType1);
   CheckBox(h,v+=16,0,"Display Leasing",ShowLoanType2);
