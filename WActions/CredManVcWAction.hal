@@ -728,7 +728,15 @@ begin
   DeselectWindow(wn,true);
   GetWindowRecord(wn,RepSpec);
   mwn = MotherWindow(wn);
-  GetWindowRecord(mwn,CredManr);
+  if (mwn!=0) then begin
+    GetWindowRecord(mwn,CredManr);
+  end else begin
+    if (RepSpec.long1!=-1) then begin
+      CredManr.SerNr = RepSpec.long1;
+      if (ReadFirstMain(CredManr,1,true)) then begin
+      end;
+    end;
+  end;
   CredManr.LetterOfDemand = StringToVal(RepSpec.f18,M4Val);
   CredManr.InsuranceCost = StringToVal(RepSpec.f19,M4Val);//Martins: it should not update agreement from check buy-out value
   PutWindowRecord(mwn,CredManr);
@@ -818,8 +826,14 @@ begin
   GetWindowRecord(wn,RepSpec);
   RepSpec.d1 = CurrentDate;
   RepSpec.flags[1] = 1;
-  mwn = MotherWindow(wn);
-  GetWindowRecord(mwn,CredManr);
+  if (RepSpec.long1==-1) then begin
+    mwn = MotherWindow(wn);
+    GetWindowRecord(mwn,CredManr);
+  end else begin
+    CredManr.SerNr = RepSpec.long1;
+    if (ReadFirstMain(CredManr,1,true)) then begin
+    end;
+  end;
   RepSpec.f18 = CredManr.LetterOfDemand;
   RepSpec.f19 = CredManr.InsuranceCost;
   RepSpec.flags[2] = 1;
@@ -3457,8 +3471,16 @@ begin
   GetWindowRecord(wn,ORr);
   ORr.OrdDate = CurrentDate;
   ORr.InvMark = 1;
-  mwn = MotherWindow(wn);
+  /*mwn = MotherWindow(wn);
   GetWindowRecord(mwn,CredManr);
+  */
+  if (ORr.SerNr!=-1) then begin
+    CredManr.SerNr = ORr.SerNr;
+    if (ReadFirstMain(CredManr,1,true)) then begin end;
+  end else begin
+    StopAlert("CheckBuyoutValueOmega CredManNr=-1");
+  end;
+  ;
   ORr.SumIncCom = CredManr.LetterOfDemand;
   //ORr.RvrsVAT = CredManr.InsuranceCost; open insurance invoices instead
   PutWindowRecord(wn,ORr);
