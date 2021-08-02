@@ -14,9 +14,10 @@ external procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 external procedure TestInvoiceBasedOnSchedule(record CredManVc,record CredManSchedVc,Date,var array record IVVc);
 external function Boolean CMShowVATColumn();
 external function Integer GetInterestPaymentType(record CredManVc);
-external function Boolean IsOmegaCustomer();
 external procedure GetCredManLateAmounts2(record CredManVc,Date,Date,Integer,var Longint,var val,var val,var Date);
 external updating procedure GetCustomerLoanAmounts2(var record IPVc,var integer,string,var string,var val,string,boolean,string,string,var vector Boolean,Date,Longint);
+external outer function Boolean IsOmegaCustomer;
+external procedure CheckBuyOutAgreementOmega(record CredManVc,var record ORVc, Boolean);
 
 procedure PrintLeft(string col1str,string col1val,string col2str,string col2val)
 begin
@@ -128,6 +129,7 @@ begin
   vector Boolean invused;
   integer k;
   string 255 tstr;
+  record ORVc ORr;
   
   rwcnt = MatRowCnt(CredManPayPlanr);
   RecordCopy(CredManPayPlan2r,CredManPayPlanr);
@@ -221,9 +223,17 @@ begin
   missednow = (due / CredManr.MonthlySum);
   
   //BuildCredManPayPlanCust(CredManr,CredManPayPlan2r,CredManSetb,true,false); // This build is ONLY for Next Suggested Instalment......
-  RepSpec2.d1 = CurrentDate;
-  CheckBuyOutAgreement(CredManr,RepSpec2);
-  settlesum = RepSpec2.vals2;
+  if (IsOmegaCustomer) then begin
+  //TODO: if (IsOmegaCustomer) then settlesum=ORr.FrBase from CheckBuyOutAgreementOmega ?
+    RecordClear(ORr);
+    ORr.OrdDate = CurrentDate;
+    CheckBuyOutAgreementOmega(CredManr,ORr,false);
+    settlesum = ORr.FrBase;
+  end else begin;
+    RepSpec2.d1 = CurrentDate;
+    CheckBuyOutAgreement(CredManr,RepSpec2);
+    settlesum = RepSpec2.vals2;
+end;
 
   //CalcCredManSums(CredManr,CredManPayPlanr,CredManSetb,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,d,v,cursuginst,l);
   if(IsOmegaCustomer) then begin
