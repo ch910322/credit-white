@@ -3,6 +3,71 @@ begin
   
   gModFolder = "halcust/LoanApp/Integrations/EZT/EZT_mods";
   
+  SourceFile("halcust\\LoanApp\\English", 0);
+  SourceFile("halcust\\LoanApp\\Lithuanian", 0);
+  SourceFile("halcust\\LoanApp\\Estonian", 0);
+  SourceFile("halcust\\LoanApp\\Latvian", 0);
+  SourceFile("halcust\\LoanApp\\Documents", 3);
+  SourceFile("halcust\\LoanApp\\Maint", 3);
+  SourceFile("halcust\\LoanApp\\RActions", 3);
+  SourceFile("halcust\\LoanApp\\Reports", 3);
+  SourceFile("halcust\\LoanApp\\Tools", 3);
+  SourceFile("halcust\\LoanApp\\WActions", 3);
+  SourceFile("halcust\\LoanApp\\WebNG", 3);
+
+  SourceFile("halcust\\LoanApp\\Level0\\Documents", 0);
+  SourceFile("halcust\\LoanApp\\Level0\\Maint", 0);
+  SourceFile("halcust\\LoanApp\\Level0\\RActions", 0);
+  SourceFile("halcust\\LoanApp\\Level0\\Reports", 0);
+  SourceFile("halcust\\LoanApp\\Level0\\Tools", 0);
+  SourceFile("halcust\\LoanApp\\Level0\\WActions", 0);
+  SourceFile("halcust\\LoanApp\\Level0\\WebNG", 0);
+  SourceFile("halcust\\LoanApp\\Level0\\amainhal\\Tools", 0);
+  SourceFile("halcust\\LoanApp\\Level0\\CustomTools", 0);
+
+/*Mesente SMS*/
+  Exec_file("halcust\\LoanApp\\Integrations\\Mesente\\datadef.hal");
+  SourceFile("halcust\\LoanApp\\Integrations\\Mesente", 0);
+
+/*SmartID*/
+  Exec_file("halcust\\LoanApp\\Integrations\\SmartID\\datadef.hal"); 
+  SourceFile("halcust\\LoanApp\\Integrations\\SmartID", 3);
+
+/*Paysera*/
+  Exec_file("halcust\\LoanApp\\Integrations\\Paysera\\datadef.hal");
+  SourceFile("halcust\\LoanApp\\Integrations\\Paysera", 3);
+
+/*DocScan*/
+  SourceFile("halcust\\LoanApp\\Integrations\\DocScan", 3);
+
+/*Creditinfo*/
+  Exec_file("halcust\\LoanApp\\Integrations\\Creditinfo\\datadef.hal");
+  SourceFile("halcust\\LoanApp\\Integrations\\Creditinfo", 3);
+
+/*Address Lookup*/
+  Exec_file("halcust\\LoanApp\\Integrations\\AddressLookup\\datadef.hal");
+  SourceFile("halcust\\LoanApp\\Integrations\\AddressLookup", 0);
+
+
+/*External docs*/
+/*
+  Exec_file("halcust\\LoanApp\\Integrations\\ExternalDocs\\datadef.hal");
+  SourceFile("halcust\\LoanApp\\Integrations\\ExternalDocs", 3);
+*/
+  SourceFile("halcust\\LoanApp\\Integrations\\EZT", 3);
+  Exec_file("halcust\\LoanApp\\Integrations\\EZT\\datadef.hal");
+/*Bank statement*/
+  SourceFile("halcust\\LoanApp\\Integrations\\BankStatement", 3);
+
+/*Bank import*/
+  Exec_file("halcust\\LoanApp\\BankImport\\datadef.hal");
+  SourceFile("halcust\\LoanApp\\BankImport", 3);
+  SourceFile("halcust\\LoanApp\\BankImport\\english", 3);
+  SourceFile("halcust\\LoanApp\\BankImport\\lithuanian", 3);
+  SourceFile("halcust\\LoanApp\\BankImport\\Tools", 3);
+  SourceFile("halcust\\LoanApp\\BankImport\\Level0", 0);
+  SourceFile("halcust\\LoanApp\\EZTDocs_Cust", 3);
+  
   BlockBegin(B2BLoanAppSerBlock,-,"");
   RecordField(Math,M4Matrix,0,0);
   ArrayBegin(Math,IVSerRowType,1);
@@ -437,6 +502,9 @@ begin
   
   RecordField(LastRepaymentDateChk,M4Int,0,0); 
   
+  RecordField(BankruptcyRatingCode,M4UStr,20,0);
+  RecordField(BuyBankruptcyRatingCode,M4UStr,20,0);
+  
  //ak_end  
   ArrayBegin(Math,-,1);
   ArrayField(Period,M4Str,10,0);
@@ -492,6 +560,7 @@ begin
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
   ArrayField(InvDate,M4Date,0,0);
+  ArrayField(BankruptcyRatingCode,M4UStr,20,0);
   
   EndArray;
   MainKeyBegin(SerNr,0);
@@ -2492,6 +2561,8 @@ begin
   RecordField(Decisions,M4Int,0,0);
   RecordField(Values,M4Int,0,0);
   RecordField(Math,M4Matrix,0,0);
+  RecordField(CreateAgreement,M4Int,0,0);
+  RecordField(CreateAgreementTillValue,M4Val,0,0);
   ArrayBegin(Math,-,1);
   ArrayField(Argument,M4Str,255,0);
   ArrayField(Type,M4Set,2032,0);
@@ -2524,70 +2595,14 @@ begin
   KeySegment(SerNr);
   EndRecord;
   
-  SourceFile("halcust\\LoanApp\\English", 0);
-  SourceFile("halcust\\LoanApp\\Lithuanian", 0);
-  SourceFile("halcust\\LoanApp\\Estonian", 0);
-  SourceFile("halcust\\LoanApp\\Latvian", 0);
-  SourceFile("halcust\\LoanApp\\Documents", 3);
-  SourceFile("halcust\\LoanApp\\Maint", 3);
-  SourceFile("halcust\\LoanApp\\RActions", 3);
-  SourceFile("halcust\\LoanApp\\Reports", 3);
-  SourceFile("halcust\\LoanApp\\Tools", 3);
-  SourceFile("halcust\\LoanApp\\WActions", 3);
-  SourceFile("halcust\\LoanApp\\WebNG", 3);
-
-  SourceFile("halcust\\LoanApp\\Level0\\Documents", 0);
-  SourceFile("halcust\\LoanApp\\Level0\\Maint", 0);
-  SourceFile("halcust\\LoanApp\\Level0\\RActions", 0);
-  SourceFile("halcust\\LoanApp\\Level0\\Reports", 0);
-  SourceFile("halcust\\LoanApp\\Level0\\Tools", 0);
-  SourceFile("halcust\\LoanApp\\Level0\\WActions", 0);
-  SourceFile("halcust\\LoanApp\\Level0\\WebNG", 0);
-  SourceFile("halcust\\LoanApp\\Level0\\amainhal\\Tools", 0);
-  SourceFile("halcust\\LoanApp\\Level0\\CustomTools", 0);
-
-/*Mesente SMS*/
-  Exec_file("halcust\\LoanApp\\Integrations\\Mesente\\datadef.hal");
-  SourceFile("halcust\\LoanApp\\Integrations\\Mesente", 0);
-
-/*SmartID*/
-  Exec_file("halcust\\LoanApp\\Integrations\\SmartID\\datadef.hal"); 
-  SourceFile("halcust\\LoanApp\\Integrations\\SmartID", 3);
-
-/*Paysera*/
-  Exec_file("halcust\\LoanApp\\Integrations\\Paysera\\datadef.hal");
-  SourceFile("halcust\\LoanApp\\Integrations\\Paysera", 3);
-
-/*DocScan*/
-  SourceFile("halcust\\LoanApp\\Integrations\\DocScan", 3);
-
-/*Creditinfo*/
-  Exec_file("halcust\\LoanApp\\Integrations\\Creditinfo\\datadef.hal");
-  SourceFile("halcust\\LoanApp\\Integrations\\Creditinfo", 3);
-
-/*Address Lookup*/
-  Exec_file("halcust\\LoanApp\\Integrations\\AddressLookup\\datadef.hal");
-  SourceFile("halcust\\LoanApp\\Integrations\\AddressLookup", 0);
-
-
-/*External docs*/
-/*
-  Exec_file("halcust\\LoanApp\\Integrations\\ExternalDocs\\datadef.hal");
-  SourceFile("halcust\\LoanApp\\Integrations\\ExternalDocs", 3);
-*/
-  SourceFile("halcust\\LoanApp\\Integrations\\EZT", 3);
-  Exec_file("halcust\\LoanApp\\Integrations\\EZT\\datadef.hal");
-/*Bank statement*/
-  SourceFile("halcust\\LoanApp\\Integrations\\BankStatement", 3);
-
-/*Bank import*/
-  Exec_file("halcust\\LoanApp\\BankImport\\datadef.hal");
-  SourceFile("halcust\\LoanApp\\BankImport", 3);
-  SourceFile("halcust\\LoanApp\\BankImport\\english", 3);
-  SourceFile("halcust\\LoanApp\\BankImport\\lithuanian", 3);
-  SourceFile("halcust\\LoanApp\\BankImport\\Tools", 3);
-  SourceFile("halcust\\LoanApp\\BankImport\\Level0", 0);
-  SourceFile("halcust\\LoanApp\\EZTDocs_Cust", 3);
+  BlockBegin(AppInterestRateBlock,-,"");
+    RecordField(Math,M4Matrix,0,0);
+    ArrayBegin(Math,-,1);
+    ArrayField(BankruptRating,M4UStr,60,0);
+    ArrayField(MonthRateWithoutEDS,M4Val,0,0);
+    ArrayField(MonthRateWithEDS,M4Val,0,0);
+    EndArray;
+  EndBlock;
 
   return;
 end;

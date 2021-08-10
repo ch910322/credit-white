@@ -1337,7 +1337,7 @@ begin
   SoftEditField(h3,v,100,"Curr. Liquidity Ratio",ViewOnly,"currliquidityratio",true,0,M4Val,0);
   
   EditField(h=135,v+=vs,100,"Late Rating",Normal,LateRating,true,0);
-  EditField(h2=365,v,100,"Bankruptcy Rating",Normal,BankruptcyRating,true,0);
+  EditField(h2=365,v,100,"Bankruptcy Rating",Normal,BankruptcyRatingCode,true,0);
   EditField(h3=595,v,100,"Established",Normal,Established,false,PasteCurDate);
   EditField(h,v+=vs,100,"Monthly Loan Payment",Normal,MonthlyLoadPayment,true,0);
   EditField(h2,v,100,"Current Debts",Normal,CurrentDebts,true,0);
@@ -4165,6 +4165,8 @@ begin
 	ButtonFrame(h,v+=35,200,2,"Decisions");
 	RadioButton(h,v,0,0,"Negative decision",Decisions);
 	RadioButton(h,v+=vs,1,0,"Positive decision",Decisions);
+	CheckBox(h+300,v-vs,0,"Automatically create agreement",CreateAgreement);
+	EditField(h+400,v,70,"Create Agreements Till Value",Normal,CreateAgreementTillValue,false,0);
 	
 	ButtonFrame(h,v+=35,200,2,"Values");
 	RadioButton(h,v,0,0,"One of the values",Values);
@@ -4250,3 +4252,23 @@ begin
   EndWindow;
 end;
   
+  
+window AppInterestRateTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,v2,vs2,hm;
+  WindowBegin("Automatic Tasks",AppInterestRateTClass,CGHbl,HBlRecType);
+  SetBlid(AppInterestRateBlock);
+  SetWRect(20,80,660,351);
+  Sizeable(-1,-1,0,0);
+  if (GuiType==kGuiCocoa) then begin
+    MatrixBegin(h,v,-31,-20,-,199);
+  end else begin
+    MatrixBegin(h,v+16,-18,-20,-,199);    
+  end;
+  MatCol(1,24,"Bankruptcy Rating",0,BankruptRating,false,0);
+  MatCol(1,140,"Monthly Rate Without EDS",0,MonthRateWithoutEDS,false,0);
+  MatCol(1,300,"Monthly Rate With EDS",0,MonthRateWithEDS,false,0);
+  EndMatrix;
+  EndWindow;
+end;

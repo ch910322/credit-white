@@ -838,7 +838,7 @@ begin
 
   Tile(tilenr,600,true,tilenr,LateRating); tilenr = tilenr + 1;
   EditField(h,v=6,100,"Late Rating",Normal,LateRating,true,0);
-  EditField(h2=365,v,100,"Bankruptcy Rating",Normal,BankruptcyRating,true,0);
+  EditField(h2=365,v,100,"Bankruptcy Rating",Normal,BankruptcyRatingCode,true,0);
   EditField(h3,v,100,"Established",Normal,Established,false,PasteCurDate);
   EditField(h,v+=vs,100,"Monthly Loan Payment",Normal,MonthlyLoadPayment,true,0);
   EditField(h2,v,100,"Current Debts",Normal,CurrentDebts,true,0);
@@ -881,7 +881,7 @@ begin
   Flip(1);
   MatCol(1,20,"Period",0,Period,false,0);
   MatCol(1,80,"Late Rating",0,LateRating,true,0);
-  MatCol(1,180,"Bankruptcy Rating",0,BankruptcyRating,true,0);
+  MatCol(1,180,"Bankruptcy Rating",0,BankruptcyRatingCode,true,0);
   MatCol(1,280,"Turnover",0,Turnover,true,0);
   MatCol(1,380,"Gross Profit",0,GrossProfit,true,0);
   Flip(2);
@@ -933,8 +933,8 @@ begin
   VTab(-40,v,-6,v+=vs,ToolFlip,6,"F");
   VTab(-40,v,-6,v+=vs,ToolFlip,7,"G");
 
-  Tile(tilenr,600,true,tilenr,BuyBankruptcyRating); tilenr = tilenr + 1;
-  EditField(h,v=6,100,"Buyer's Bankrup. Rating",Normal,BuyBankruptcyRating,true,0);
+  Tile(tilenr,600,true,tilenr,BuyBankruptcyRatingCode); tilenr = tilenr + 1;
+  EditField(h,v=6,100,"Buyer's Bankrup. Rating",Normal,BuyBankruptcyRatingCode,true,0);
   EditField(h2=365,v,100,"Buyer Established ",Normal,BuyerEstablished,false,PasteCurDate);
   EditField(h,v+=vs,100,"Buyer's Turnover",Normal,BuyerTurnover,true,0);
  
