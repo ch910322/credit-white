@@ -1,4 +1,5 @@
 external outer function Boolean IsOmegaCustomer;
+external outer function Boolean HasLoanApplicationDefValues;
 
 event startup
 begin
@@ -15,12 +16,12 @@ begin
   Register("Agreement Tests","Agreement Tests",CredManTestVc,modCredMan);
   Register("Agreement Changes","Agreement Changes",CredManChangeVc,modCredMan);
  
-  Setting("LoanApp Evaluation",LoanAppEvaluationLClass,modCredMan);
+  Setting("Loan Application Evaluation",LoanAppEvaluationLClass,modCredMan);
   Setting("Number Series - Loan Applications",B2BLoanAppSerTClass,modCredMan);
   Setting("Credit Management Settings",CMApplicationSetTClass,modCredMan);
   Setting("Invoicing Settings",CMInvoicingTClass,modCredMan);
   Setting("Company Status",LACompStatusLClass,modCredMan);
-    
+  Setting("Application Interest Rates",AppInterestRateTClass,modCredMan);
   Setting("Scoring Support",ScoringSupLClass,modCredMan);
   Setting("Agreement Properties",CredManPropertiesLClass,modCredMan);
   Setting("Order Classes",OrderClassLClass,modCredMan);
@@ -53,8 +54,9 @@ begin
   Setting("Agreement Type Accounts",CredManAccLClass,modCredMan);
   Setting("Date in Text",CMDateTextTClass,modSY);
   Setting("Printout Constants",CMPrintConstantsTClass,modCredMan);
-  Setting("Loan Application Default Values",B2BLoanAppDefaultsTClass,modCredMan);
-  
+  if (HasLoanApplicationDefValues) then begin
+    Setting("Loan Application Default Values",B2BLoanAppDefaultsTClass,modCredMan);
+  end;
   Setting("Payment Condition Text",PaymentConditionTextWClass,modCredMan);
   Setting("Other Condition Text",PaymentConditionTextWClass,modCredMan);
   Setting("Managers Workload",ManagerWorkloadLClass,modCredMan);
@@ -348,6 +350,7 @@ begin
   StrSetText(CredManChangeInvoicedMonths,"Allow changing Credit Agreement Months when invoiced");
   StrSetText(AllowDifferentCredManSched,"Allow OKing Credit Agreement with different Agreement Schedule");
   StrSetText(AllowMarkNoOverduesFees,"Allow marking No overdue fees");
+  StrSetText(AllowChangeAgreePrefix,"Allow changing agreement prefix");
   EndStrSet;
 
   SetBegin(2000);

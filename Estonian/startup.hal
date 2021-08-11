@@ -266,6 +266,7 @@ begin
   StrSetText(CredManChangeTransferDate,"Allow changing Money Transfer Date");
   StrSetText(CredManChangeInvoicedMonths,"Allow changing Credit Agreement Months when invoiced");
   StrSetText(AllowMarkNoOverduesFees,"Allow marking No overdue fees");
+  StrSetText(AllowChangeAgreePrefix,"Allow changing agreement prefix");
   EndStrSet;
 
   SetBegin(2000);

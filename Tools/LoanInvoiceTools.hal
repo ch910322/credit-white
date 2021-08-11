@@ -49,6 +49,7 @@ external function val GetRateAmount(record CredManVc,val,Integer,Date,Date,val,B
 external inner function Boolean ItemInItemGroupOrClass(string,string,string);
 external procedure CredManSchedRecalcBalance(var record CredManSchedVc);
 external procedure SumupCredManSched(var record CredManSchedVc,Integer);
+external inner function Boolean FindCustomerRelation(string,string,var record CUVc);
 
 enum begin
   kCredHistRecTypeInvoice = 0,
@@ -341,7 +342,7 @@ begin
 end;
 
 global
-procedure SetupLoanInvoice2(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Date invdate,Date fromdate,Date todate,Boolean sernrf,Boolean forcecustf,string ivno,Integer invtype,Boolean fullf,string paydeal)
+procedure SetupLoanInvoice3(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Date invdate,Date fromdate,Date todate,Boolean sernrf,Boolean forcecustf,string ivno,Integer invtype,Boolean fullf,string paydeal,string salesman)
 begin
   record LocalMachineBlock LMb;
   string 255 warning,errstr,prepstr,invdatewarn,transdatewarn;
@@ -371,7 +372,11 @@ begin
     IVr.PayDeal = CredManr.PayDeal;
   end;
   IVVc_PastePayDeal(IVr,"",LMb.DefReturnLocation);
-  IVr.SalesMan = CredManr.SalesMan;
+  if (nonblank(salesman)) then begin
+    IVr.SalesMan = salesman;
+  end else begin
+    IVr.SalesMan = CredManr.SalesMan;
+  end;
   IVVc_PasteSalesMan(IVr,"");
   IVr.CredFromDate = fromdate;
   IVr.CredToDate = todate; 
@@ -453,9 +458,16 @@ begin
 end;
 
 global
+procedure SetupLoanInvoice2(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Date invdate,Date fromdate,Date todate,Boolean sernrf,Boolean forcecustf,string ivno,Integer invtype,Boolean fullf,string paydeal)
+begin
+  SetupLoanInvoice3(CredManr,CMb,IVr,invdate,fromdate,todate,sernrf,forcecustf,ivno,invtype,fullf,"","");
+  return;
+end;
+
+global
 procedure SetupLoanInvoice(record CredManVc CredManr,record CredManSetBlock CMb,var record IVVc IVr,Date invdate,Date fromdate,Date todate,Boolean sernrf,Boolean forcecustf,string ivno,Integer invtype,Boolean fullf)
 begin
-  SetupLoanInvoice2(CredManr,CMb,IVr,invdate,fromdate,todate,sernrf,forcecustf,ivno,invtype,fullf,"");
+  SetupLoanInvoice3(CredManr,CMb,IVr,invdate,fromdate,todate,sernrf,forcecustf,ivno,invtype,fullf,"","");
   return;
 end;
 
@@ -2098,25 +2110,33 @@ begin
 end;
 
 global
-updating procedure CreateProlongInvoice(record CredManVc CredManr,var record IVVc nIVr)
+updating procedure CreateProlongInvoice(record CredManVc CredManr,string paydeal,string salesman,string itemspec,var record IVVc nIVr)
 begin
   record CMInvoicingBlock CIb;
   record CredManSetBlock CMb;
   record IVVc IVr,oldIVr;
   val rate,sum;
   string 255 spec;
-
+  string 20 pd;
+  
   BlockLoad(CIb);
   BlockLoad(CMb);
-
-  SetupLoanInvoice2(CredManr,CMb,IVr,CurrentDate,"","",true,false,"",1,true,CIb.FirstInvPayDeal);
+  
+  pd = paydeal;
+  if (blank(pd)) then begin
+    pd = CIb.FirstInvPayDeal;
+  end;
+  SetupLoanInvoice3(CredManr,CMb,IVr,CurrentDate,"","",true,false,"",1,true,pd,salesman);
   rate = CredManr.StdProlongPrc;
   if (CredManr.AnnualRate==1) then begin
     rate = rate/12;
   end;
   sum = (CredManr.InvSum4 - CredManr.DepositSum) *(rate/100);
   sum = sum + CredManr.StdProlongFee;
-  GetItemName(CIb.ProlongItem,spec);
+  spec = itemspec;
+  if (blank(spec)) then begin
+    GetItemName(CIb.ProlongItem,spec);
+  end;
   SetupInvoiceRowAndAdd(CredManr,IVr,CIb.ProlongItem,spec,1,sum,blankval,14,-1);
   CM_AddPrepayments(IVr,CredManr,CIb);
 
@@ -2138,14 +2158,24 @@ begin
   val rate,sum;
   string 255 spec;
   record CredManVc CredManr;
-
+  string 5 pd;
+  string 20 salesman;
+  
   CredManr.SerNr = RepSpec.long1;
   if (ReadFirstMain(CredManr,1,true)) then begin
     BlockLoad(CIb);
     BlockLoad(CMb);
-
-    SetupLoanInvoice2(CredManr,CMb,IVr,RepSpec.d1,"","",true,false,"",1,true,CIb.FirstInvPayDeal);
-    GetItemName(RepSpec.f1,spec);
+    pd = RepSpec.f2;
+    if (blank(pd)) then begin
+      pd = CIb.FirstInvPayDeal;
+    end;
+    salesman = RepSpec.f3;
+    
+    SetupLoanInvoice3(CredManr,CMb,IVr,RepSpec.d1,"","",true,false,"",1,true,pd,salesman);
+    spec = trim(RepSpec.f4);
+    if (blank(spec)) then begin
+      GetItemName(RepSpec.f1,spec);
+    end;
     SetupInvoiceRowAndAdd(CredManr,IVr,RepSpec.f1,spec,1,RepSpec.vals0,blankval,15,-1);
     CM_AddPrepayments(IVr,CredManr,CIb);
 
@@ -4442,4 +4472,87 @@ begin
     if (TrHs) then begin
       res = res + CredHistr.Sum;
     end;
+end;
+
+global
+function string 255 AddCredManInvoiceMailRecipients(record CUVc CUr,var string mobile)
+begin
+  record CMInvoicingBlock CIb;
+  record CUVc ContactCUr;
+  string 255 res;
+  vector boolean vmails;
+  array string 100 amails;
+  record ContactRelVc CRr;
+  record EmailRecipVc EmailRecipr;
+  row EmailRecipVc EmailReciprw;
+  Integer i,rwcnt,mailrow;
+  record CUVc CU2r;
+
+  mobile = "";
+  res = "";
+  
+  BlockLoad(CIb);
+  if (CIb.SendToMainContact==1) then begin
+    if (nonblank(CUr.Person)) then begin
+      if (FindCustomerRelation(CUr.Code,CUr.Person,ContactCUr)) then begin
+        if (nonblank(ContactCUr.eMail)) then begin
+          vmails[ContactCUr.eMail] = true;
+        end;
+      end;
+    end;
+  end;
+  if (CIb.SendToCompany==1) then begin
+    if ((CIb.SendToCompNoContact==0) or (blank(CUr.Person))) then begin
+     vmails[CUr.eMail] = true;
+    end;
+  end;
+  if (CIb.SendToAddRecip==1) then begin
+    EmailRecipr.MainContactCode = Cur.Code;
+    if ReadFirstMain(EmailRecipr,1,true) then begin 
+      rwcnt = MatRowCnt(EmailRecipr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(EmailRecipr,i,EmailReciprw);
+        if (nonblank(EmailReciprw.ContactCode) and (EmailReciprw.DocType==kMailInvoice)) then begin 
+          CU2r.Code = EmailReciprw.ContactCode;
+          if (ReadFirstMain(CU2r,1,true)) then begin 
+            if (nonblank(CU2r.eMail)) then begin 
+              vmails[CU2r.eMail] = true;
+            end;   
+          end;
+        end;
+      end;  
+    end;
+  end;
+  if (nonblank(CIb.SendToJobDescr)) then begin
+    while (LoopKey("CustContactCode:" & CUr.Code,CRr,1,true)) begin
+      if (CRr.Invalid==0) then begin
+        ContactCUr.Code = CRr.ContactCode;
+        if (ReadFirstMain(ContactCUr,1,true)) then begin
+          if(nonblank(ContactCUr.Mobile))then begin
+            mobile = ContactCUr.Mobile;
+          end;
+          if(nonblank(ContactCUr.JobDesc))then begin
+            if (SetInSet(ContactCUr.JobDesc,CIb.SendToJobDescr)) then begin
+              vmails[ContactCUr.eMail] = true;
+            end;
+          end;
+        end;
+      end;
+    end;
+  end;
+  
+  if(nonblank(CUr.Mobile))then begin
+    mobile = CUr.Mobile;
+  end;
+  
+  getvectortags(vmails,amails);
+  for(i=0;i<amails.length;i=i+1)begin
+    if(i>0 and nonblank(res) and nonblank(amails[i]))then begin
+      res = res & ",";
+    end;
+    res = res & amails[i];
+  end;
+  
+  AddCredManInvoiceMailRecipients = res;
+  return;
 end;

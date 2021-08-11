@@ -73,6 +73,7 @@ remote updating procedure CredManCreditBeforePause(Integer,Integer,record RcVc);
 remote updating function boolean RA_CreateCredManOfferEmail(record RcVc, record CredManVc,var record MailVc);
 external outer function Boolean IsOmegaCustomer;
 remote procedure CheckBuyOutAgreementOmega(record CredManVc,var record ORVc, Boolean);
+external procedure GetItemName(string,var string);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -727,11 +728,20 @@ begin
   DeselectWindow(wn,true);
   GetWindowRecord(wn,RepSpec);
   mwn = MotherWindow(wn);
-  GetWindowRecord(mwn,CredManr);
-  CredManr.LetterOfDemand = StringToVal(RepSpec.f18,M4Val);
-  CredManr.InsuranceCost = StringToVal(RepSpec.f19,M4Val);//Martins: it should not update agreement from check buy-out value
-  PutWindowRecord(mwn,CredManr);
-  if (WindowDoOK(mwn,0)) then begin
+  if (mwn!=0) then begin
+    GetWindowRecord(mwn,CredManr);
+  end else begin
+    if (RepSpec.long1!=-1) then begin
+      CredManr.SerNr = RepSpec.long1;
+      if (ReadFirstMain(CredManr,1,true)) then begin
+      end;
+    end;
+  end;
+  //CredManr.LetterOfDemand = StringToVal(RepSpec.f18,M4Val);
+  //CredManr.InsuranceCost = StringToVal(RepSpec.f19,M4Val);//Martins: it should not update agreement from check buy-out value
+  //PutWindowRecord(mwn,CredManr);
+  //if (WindowDoOK(mwn,0)) then begin
+  if (true) then begin
     threadremote.CheckBuyOutAgreement(CredManr,RepSpec);
     PutWindowRecord(wn,RepSpec);
   end;
@@ -751,7 +761,15 @@ begin
   DeselectWindow(wn,true);
   GetWindowRecord(wn,ORr);
   mwn = MotherWindow(wn);
-  GetWindowRecord(mwn,CredManr);
+  if (mwn!=0) then begin
+    GetWindowRecord(mwn,CredManr);
+  end else begin
+    if (ORr.SerNr!=-1) then begin
+      CredManr.SerNr = ORr.SerNr;
+      if (ReadFirstMain(CredManr,1,true)) then begin
+      end;
+    end;
+  end;
   //CredManr.LetterOfDemand = ORr.SumIncCom;
   //CredManr.InsuranceCost = ORr.RvrsVAT;//Martins: it should not update agreement from check buy-out value
   //PutWindowRecord(mwn,CredManr);
@@ -817,8 +835,14 @@ begin
   GetWindowRecord(wn,RepSpec);
   RepSpec.d1 = CurrentDate;
   RepSpec.flags[1] = 1;
-  mwn = MotherWindow(wn);
-  GetWindowRecord(mwn,CredManr);
+  if (RepSpec.long1==-1) then begin
+    mwn = MotherWindow(wn);
+    GetWindowRecord(mwn,CredManr);
+  end else begin
+    CredManr.SerNr = RepSpec.long1;
+    if (ReadFirstMain(CredManr,1,true)) then begin
+    end;
+  end;
   RepSpec.f18 = CredManr.LetterOfDemand;
   RepSpec.f19 = CredManr.InsuranceCost;
   RepSpec.flags[2] = 1;
@@ -956,7 +980,8 @@ begin
   record RcVc RepSpec;
   record CredManVc CredManr;
   Date td;
-
+  record CMInvoicingBlock CIb;
+  
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
   if (WindowState(wn)==Rs_Normal) then begin
@@ -967,6 +992,11 @@ begin
       //RepSpec.vals1 = CredManr.ProlongMonths;
       RepSpec.d1 = td;
       RepSpec.flags[1] = 1;
+      BlockLoad(CIb);
+      RepSpec.f2 = CIb.FirstInvPayDeal;
+      RepSpec.f3 = CurrentUser;
+      RepSpec.f4 = "";
+      GetItemName(CIb.ProlongItem,RepSpec.f4);
       OpenWindow("PauseCredManWClass",0,wn,"","",RepSpec);
     end;
   end;
@@ -1430,9 +1460,15 @@ procedure CredManInfoBuyOutDbl(string dblstr,string l,Integer currepwn)
 begin
   Integer wn;
   record RCVc RepSpec;
-
-  RepSpec.long1 = StringToLongint(l);
-  OpenWindow("CheckBuyoutValueWClass",0,0,"","",RepSpec);
+  record ORVc ORr;
+  
+  if (IsOmegaCustomer) then begin
+    ORr.SerNr = StringToLongint(l);
+    OpenWindow("CheckBuyoutValueOmegaWClass",0,0,"","",ORr);
+  end else begin
+    RepSpec.long1 = StringToLongint(l);
+    OpenWindow("CheckBuyoutValueWClass",0,0,"","",RepSpec);
+  end;
 
   return;
 end;
@@ -2488,7 +2524,8 @@ begin
   if (!res) then begin
     res = inner.CredManDClassActiveEditField(wn,fieldname,fn,wnst,rownr,changed);
   end;
-
+  
+  
   if (res) then begin
     switch (fieldname) begin
       case "InstalmentMonths": 
@@ -2498,6 +2535,7 @@ begin
             res = false;
           end;
         end;
+      case "VersionNo":res = usercanaction("AllowChangeAgreePrefix",false);
     end;
   end;
 
@@ -3444,12 +3482,20 @@ begin
   record ORVc ORr;
   record CredManVc CredManr;
   Integer mwn;
-
+  
   GetWindowRecord(wn,ORr);
   ORr.OrdDate = CurrentDate;
   ORr.InvMark = 1;
-  mwn = MotherWindow(wn);
+  /*mwn = MotherWindow(wn);
   GetWindowRecord(mwn,CredManr);
+  */
+  if (ORr.SerNr!=-1) then begin
+    CredManr.SerNr = ORr.SerNr;
+    if (ReadFirstMain(CredManr,1,true)) then begin end;
+  end else begin
+    StopAlert("CheckBuyoutValueOmega CredManNr=-1");
+  end;
+  ;
   ORr.SumIncCom = CredManr.LetterOfDemand;
   //ORr.RvrsVAT = CredManr.InsuranceCost; open insurance invoices instead
   PutWindowRecord(wn,ORr);
@@ -3514,4 +3560,36 @@ begin
   return;
 end;
 
+global
+procedure ManualExtraFeeWClassOnOpenWindow(Integer wn)
+begin
+  record RcVc RepSpec;
+  record CMInvoicingBlock CMIb;
+  
+  BlockLoad(CMIb);
+  GetWindowRecord(wn,RepSpec);
+  
+  RepSpec.f2 = CMIb.FirstInvPayDeal;
+  RepSpec.f3 = CurrentUser;
+  PutWindowRecord(wn,RepSpec);
+  return;
+end;
 
+global
+procedure ManualExtraFeeWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  record INVc INr;
+  record RcVc RepSpec;
+  
+  if (changed==0) then begin
+    goto LManualExtraFeeWClassAfterEditField;
+  end;
+  GetWindowRecord(wn,RepSpec);
+  if (fieldname=="f1") then begin
+    RepSpec.f4 = "";
+    GetItemName(RepSpec.f1,RepSpec.f4);
+  end;
+  PutWindowRecord(wn,RepSpec);   
+  LManualExtraFeeWClassAfterEditField:;
+  return;
+end;
