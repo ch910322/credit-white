@@ -829,16 +829,18 @@ procedure AddInstalmentFixed(record CredManVc CredManr,record CredManPayPlanVc C
 begin
   val newcalcbal;
   record CMInvoicingBlock CMIb;
+  record CMBuyOutBlock CMBOb;
   
   if(issuedinsbal>0)then begin
     blockload(CMIb);
-    if(nonblank(CMIb.PremTermPrincpl))then begin
+    blockload(CMBOb);
+    if(nonblank(CMBOb.PremTermPrincpl))then begin
       newcalcbal = amount - issuedinsbal;
       if(issuedinsbal>0)then begin
         AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,issuedinsbal,0,acumint,calcbal,frdate,todate,-1,-1,0);
       end;  
       if(newcalcbal>0)then begin
-        AddCredPayPlanLine(CredManPayPlanr,invdate,CMIb.PremTermPrincpl,"",kEventTypeCalcInstalment,newcalcbal,0,acumint,calcbal,frdate,todate,-1,-1,0);
+        AddCredPayPlanLine(CredManPayPlanr,invdate,CMBOb.PremTermPrincpl,"",kEventTypeCalcInstalment,newcalcbal,0,acumint,calcbal,frdate,todate,-1,-1,0);
       end;
     end else begin
       AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,amount,0,acumint,calcbal,frdate,todate,-1,-1,0);

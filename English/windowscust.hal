@@ -4250,3 +4250,24 @@ begin
   EndWindow;
 end;
   
+window CMBuyOutTClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,vs2,hm,h2,vm;
+  Integer tilenr;
+  vs = 20;
+  WindowBegin("Buy-out Settings",CMBuyOutTClass,CGSbl,SRType);
+  SetBlid(CMBuyOutBlock);
+  SetWRect(20,80,670,298);
+  Sizeable(-1,-1,0,0);
+  
+  EditField(h=180,v=6,100,"Buyout Paym. Term",Normal,BuyOutPayDeal,false,PDSClass); 
+  EditField(h,v+=vs,100,"Premature Term. Item",Normal,BuyOutItem,false,INSClass);   
+  EditField(h,v+=vs,100,"Premature Term. Principle",Normal,PremTermPrincpl,false,INSClass);
+  CheckBox(h,v+=20,0,"Calculate Interest for Buy-Out Day",CalcIntBOday);
+  CheckBox(h,v+=20,0,"Calculate Overdues for Buy-Out Day",CalcOvdBOday);  
+  
+
+  EndWindow;
+  return;
+end;

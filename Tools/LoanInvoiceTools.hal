@@ -1919,6 +1919,7 @@ begin
   record CredManPayPlanVc CredManPayPlanr;
   record SMVc SMr;
   row SMVc SMrw;
+  date lastinvdate;
 
   rate = CredManr.BuyoutFeePrc;
   res = (balance) *(rate/100);
@@ -1965,18 +1966,79 @@ begin
   return;
 end;
 
+function val GetBuyOutFeeChBO(record CredManVc CredManr,Date td,val balance)
+begin
+  val res;
+  val rate;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  Integer i,rwcnt,cnt;
+  record CredManSetBlock CMb;
+  record CredManPayPlanVc CredManPayPlanr;
+  record SMVc SMr;
+  row SMVc SMrw;
+  date lastinvdate;
+
+  rate = CredManr.BuyoutFeePrc;
+  res = (balance) *(rate/100);
+  res = res + CredManr.BuyoutFeeFixed;
+
+  if (CredManr.BuyoutFeeMonths>0) then begin
+    CSr.CredManNr = CredManr.SerNr;
+    if (ReadFirstMain(CSr,1,true)) then begin
+      rwcnt = MatRowCnt(CSr);
+      cnt = CredManr.BuyoutFeeMonths;
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(CSr,i,CSrw);
+        if (CSrw.FromDate>td and cnt>0) then begin
+          res = res + CSrw.Interest;
+          cnt = cnt - 1;
+        end;
+        if (cnt<=0) then begin
+          i = rwcnt;
+        end;
+      end;
+
+    end else begin
+      BlockLoad(CMb);
+      if (BuildCredManInfoMatrixOnSchedule(CredManr,CMb,SMr)==false) then begin
+        BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
+        BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CMb,SMr);
+      end;
+      rwcnt = MatRowCnt(SMr);
+      cnt = CredManr.BuyoutFeeMonths;
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(SMr,i,SMrw);
+        if (SMrw.TransDate>td and cnt>0) then begin
+          res = res + SMrw.CredVal;
+          cnt = cnt - 1;
+        end;
+        if (cnt<=0) then begin
+          i = rwcnt;
+        end;
+      end;
+    end;
+  end;
+
+  GetBuyOutFeeChBO = res;
+  return;
+end;
+
 global
 procedure AddBuyOutFee(record CredManVc CredManr,var record IVVc IVr,val balance)
 begin
-  record CMInvoicingBlock CIb;
+  //record CMInvoicingBlock CIb;
+  record CMBuyOutBlock CMBOb;
   string 255 spec;
   val buyoutfee;
   
-  BlockLoad(CIb);
+  //BlockLoad(CIb);
+  BlockLoad(CMBOb);
+  
   buyoutfee = GetBuyOutFee(CredManr,IVr.InvDate,balance);
-  GetItemName(CIb.BuyOutItem,spec);
-  if (nonblank(CIb.BuyOutItem) and buyoutfee>0) then begin
-    SetupInvoiceRowAndAdd(CredManr,IVr,CIb.BuyOutItem,spec,1,buyoutfee,blankval,15,-1);
+  GetItemName(CMBOb.BuyOutItem,spec);
+  if (nonblank(CMBOb.BuyOutItem) and buyoutfee>0) then begin
+    SetupInvoiceRowAndAdd(CredManr,IVr,CMBOb.BuyOutItem,spec,1,buyoutfee,blankval,15,-1);
   end;
 
   return;
@@ -2068,12 +2130,14 @@ begin
   record CMInvoicingBlock CIb;
   Date calcsd;
   string 20 pd;
+  record CMBuyOutBlock CMBOb;
   
 /*
 1. Get the last invoice date and the balance
 2. Set up and create an invoice
 */ 
   BlockLoad(CIb);
+  BlockLoad(CMBOb);
   GetBuyOutData(CredManr,CredManPayPlanr,CMb,lastinv,balance,issuedinsbal);
   
   if (balance>0) then begin
@@ -2983,7 +3047,15 @@ begin
   record CredManSchedVc CSr;
   row CredManSchedVc CSrw;
   val x,y,z;
+  integer intday;
+  record CMBuyOutBlock CMBOb;
+
+  blockload(CMBOb);
   
+  intday = 1;
+  if(CMBOb.CalcIntBOday==1)then begin
+    intday = 2;
+  end;
   CSr.CredManNr = CredManr.SerNr;
   if(readfirstmain(CSr,1,true))then begin
     rwcnt = matrowcnt(CSr);
@@ -3052,7 +3124,7 @@ begin
   Boolean schedf;
   Date calcsd;
   val creditedint;
-  Date limitdate;
+  Date limitdate,invdateday;
   Longint principlelatedays,interestlatedays,overdueslatedays;
   val principlelateamount,interestlateamount;
   val t,t2,totallate,totalnotlate;
@@ -3070,10 +3142,13 @@ begin
   array string 30 acalcval;
   val interestammount;
   boolean testf;
-  
+  record CMBuyOutBlock CMBOb;
+  record CMApplicationSetBlock CMAb;
   
   blockload(CIb);
   BlockLoad(CMb);
+  BlockLoad(CMBOb);
+  blockload(CMAb);
   
   
   logtext(0,"CheckBuyOutAgreementOmega start");
@@ -3094,6 +3169,14 @@ begin
   CheckUnpaidInvoices(CredManr,dueamount,openamount);
   sd = GetLastInvoiceDate(CredManr,ORr.OrdDate);
   //lateamount=not invoiced overdues??? ->
+  
+  invdateday = ORr.OrdDate;
+  if(CMBOb.CalcOvdBOday==1)then begin
+    invdateday = addday(invdateday,1);
+  end;  
+  if(CMAb.BuyOutInclPaymDay==1)then begin
+    invdateday = addday(invdateday,-1);
+  end;
   GetCredManOverdueInvoices2(CredManr,CMb,ORr.OrdDate,sd,latedays,lateamount,principlelateamount,interestlateamount,lateformula,false,false,calcsd);
   
   GetCredManLateAmounts2(CredManr,CredManr.startDate,ORr.OrdDate,-1,principlelatedays,totallate,totalnotlate,limitdate);
@@ -3109,7 +3192,7 @@ begin
   prepayval = GetPrepaymentValue(CredManr);
   ORr.PrepaidAmount = prepayval;
   if (balancef==false) then begin
-    buyoutfee = GetBuyOutFee(CredManr,ORr.OrdDate,actualbalance);
+    buyoutfee = GetBuyOutFeeChBO(CredManr,ORr.OrdDate,actualbalance);
   end;
   //TODO RepSpec.vals1 = IVr.Sum4;//"Last Invoice Value"
   //TODO RepSpec.vals0 = dueamount;//should this be openamount? "Expected Payment"?
@@ -3189,7 +3272,7 @@ begin
   
   demandItem = CIb.LetterOfDemand;
   insurItem = CIb.InsuranceCost;
-  prematureItem = CIb.BuyOutItem;
+  prematureItem = CMBOb.BuyOutItem;
   intItem = CMb.RateItem;
   feesItem = CMb.LateRateItem;
   princItem = CMb.InstalmentItem;

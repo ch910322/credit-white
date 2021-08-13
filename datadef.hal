@@ -2524,6 +2524,14 @@ begin
   KeySegment(SerNr);
   EndRecord;
   
+  BlockBegin(CMBuyOutBlock,-,"");
+  RecordField(BuyOutPayDeal,M4Code,5,PDVc);
+  RecordField(BuyOutItem,M4Code,20,INVc);
+  RecordField(PremTermPrincpl,M4Code,20,0);
+  RecordField(CalcIntBOday,M4Int,0,0);
+  RecordField(CalcOvdBOday,M4Int,0,0);
+  EndBlock;
+  
   SourceFile("halcust\\LoanApp\\English", 0);
   SourceFile("halcust\\LoanApp\\Lithuanian", 0);
   SourceFile("halcust\\LoanApp\\Estonian", 0);
