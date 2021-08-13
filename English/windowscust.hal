@@ -4272,6 +4272,7 @@ begin
 
   EndWindow;
   return;
+end;
   
 window AppInterestRateTClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
