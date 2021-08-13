@@ -36,6 +36,8 @@ external function Boolean InsertCustomerInB2BApplication(var record B2BLoanAppli
 external function Boolean InsertB2BLoanApplicationType(var record B2BLoanApplicationVc);
 external function Boolean InsertContactName(var record B2BLoanApplicationVc);
 external updating function LongInt B2BLoanApplicationVcRecordCheck(var record B2BLoanApplicationVc,record B2BLoanApplicationVc,LongInt,LongInt);
+external procedure GetCreditInfo(var record B2BLoanApplicationVc,var Integer,var string,var array Date,var array val,var array Integer,var array Longint,Boolean);
+external procedure RA_B2BLoanAppEvaluateBuSettings(var record B2BLoanApplicationVc,boolean);
 
 enum begin
   kEventTypeNone = 0,
@@ -1241,11 +1243,17 @@ begin
   area a;
   record CUVc CUr,ContCUr;
   record ContactRelVc CRr;
-  record B2BLoanApplicationVc LAr,fakeLAr;
+  record B2BLoanApplicationVc LAr,fakeLAr,oldLAr;
   boolean cufoundf,contactfoundf,res2,success;
   string 255 warning;
   boolean paramf;
   LongInt err;
+  Integer res;
+  string 255 errstr;
+  array Date arrDate;
+  array val arrAmount;
+  array Integer arrSource;
+  array Longint arrID;
   
   paramf = false;
   success = false;
@@ -1325,6 +1333,11 @@ begin
       //RecordCheckError(1557,"",-1,"SerNr");      
       if (RecordInsert(LAr,true)) then begin
         success = true; 
+        recordcopy(oldLAr,LAr);
+        GetCreditInfo(LAr,res,errstr,arrDate,arrAmount,arrSource,arrID,false);
+        if(recordupdate(oldLAr,LAr,true)==0)then begin
+          RA_B2BLoanAppEvaluateBuSettings(LAr,false);
+        end;
       end;
     end;
   end;
