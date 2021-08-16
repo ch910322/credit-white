@@ -1415,7 +1415,9 @@ begin
     end;
   end;
   if (compset) then begin
+    logtext(0,currentcompany & " " & oldcomp & " resetcompany 31 before " & currentdate);
     ResetCompany(oldcomp);
+    logtext(0,currentcompany & " " & oldcomp & " resetcompany 31 after " & currentdate);
   end;
   LWebFinAPI:;
   return;

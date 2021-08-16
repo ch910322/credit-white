@@ -1047,7 +1047,9 @@ begin
       CheckSMSRemindersCompany;
     end;
   end;
+  logtext(0,currentcompany & " " & oldcomp & " resetcompany 30 before " & currentdate);
   ResetCompany(oldcomp);
+  logtext(0,currentcompany & " " & oldcomp & " resetcompany 30 after " & currentdate);
 
   return;
 end;
