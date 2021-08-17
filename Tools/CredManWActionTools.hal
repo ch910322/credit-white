@@ -1849,6 +1849,7 @@ begin
   record CredManPayPlanVc CredManPayPlanr;
   val balance;
   Date calcsd;
+  record CMBuyOutBlock CMBOb;
 
   CredManr.SerNr = sernr;
   if (ReadFirstMain(CredManr,1,true)) then begin
@@ -1912,7 +1913,8 @@ begin
 
     //create a new invoice and creata receipt
     BlockLoad(CMb);
-    SetupLoanInvoice2(CredManr,CMb,IVr,td,"","",true,false,"",1,true,CIb.BuyOutPayDeal);
+    BlockLoad(CMBOb);
+    SetupLoanInvoice2(CredManr,CMb,IVr,td,"","",true,false,"",1,true,CMBOb.BuyOutPayDeal);
     if (fullf==false) then begin
       IVr.OfficialSerNr = "";
       IVr.NoEmailFlag = 1;
@@ -1930,7 +1932,7 @@ begin
     end;
 
 //    if (fullf==false) then begin
-      SetupLoanInvoice2(CredManr,CMb,IVr,td,"","",true,false,"",1,true,CIb.BuyOutPayDeal);
+      SetupLoanInvoice2(CredManr,CMb,IVr,td,"","",true,false,"",1,true,CMBOb.BuyOutPayDeal);
       GetItemName(CMb.InstalmentItem,spec);
       AddBuyoutFee(CredManr,IVr,buyoutval-tval);
       StoreLoanInvoice(IVr,CredManr);
