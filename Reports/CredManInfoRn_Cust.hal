@@ -556,6 +556,7 @@ begin
   TestCredManInvoicesFromPlan(CredManr,CMb,CredManPayPlanr,CredManr.endDate,aIVr);
   for (i=0;i<aIVr.length;i=i+1) begin
     IVr = aIVr[i];
+    IVr.SerNr = -1;
     AddInvoiceToList(CredManr,IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate,CMb);
   end;
 

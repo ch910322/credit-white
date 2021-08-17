@@ -2412,15 +2412,15 @@ begin
   EditField(h,v+=vs,100,"Bad Debt Sales A/C",Normal,SellingSalesAccount,false,AccSClass);
   
     
-  EditField(h,v+=vs,100,"Premature Term. Item",Normal,BuyOutItem,false,INSClass);  
+  //EditField(h,v+=vs,100,"Premature Term. Item",Normal,BuyOutItem,false,INSClass);  //Moved to new setting
   EditField(h,v+=vs,100,"Default Item Priority",Normal,ItemPriorityCode,false,CMItemPrioritySCLass);  
   EditField(h,v+=vs,100,"Non-monthly invoice Paym. Term",Normal,FirstInvPayDeal,false,PDSClass);  
 
-  EditField(h2=400,v,100,"Buyout Paym. Term",Normal,BuyOutPayDeal,false,PDSClass);  
+  //EditField(h2=400,v,100,"Buyout Paym. Term",Normal,BuyOutPayDeal,false,PDSClass);   Moved to new setting
 
   EditField(h,v+=vs,100,"Period Delimiter",Normal,PeriodDelimiter,false,0);  
   EditField(h,v+=vs,100,"Max overpaid Amount %",Normal,MaxOverpaidPrc,false,0);
-  EditField(h,v+=vs,100,"Premature Term. Principle",Normal,PremTermPrincpl,false,INSClass);
+  //EditField(h,v+=vs,100,"Premature Term. Principle",Normal,PremTermPrincpl,false,INSClass);//Moved to new setting
   
   ButtonFrame(h,v+=40,400,4,"Interest Invoicing");
   RadioButton(h,v,0,0,"With Principle, same Invoice",InterestIVType);
