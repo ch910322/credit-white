@@ -39,7 +39,9 @@ begin
   UpdateBrowses("PipelineWClass");
   
 LColumnGridDraggedCell:;
+  logtext(0,currentcompany & " " & oldcomp & " resetcompany 26 before " & currentdate);
   ResetCompany(oldcomp);
+  logtext(0,currentcompany & " " & oldcomp & " resetcompany 26 after " & currentdate);
 end;
 
 global
@@ -71,7 +73,9 @@ begin
   UpdateBrowses("PipelineWClass");
   
 LColumnGridDraggedCell:;
+  logtext(0,currentcompany & " " & oldcomp & " resetcompany 27 before " & currentdate);
   ResetCompany(oldcomp);
+  logtext(0,currentcompany & " " & oldcomp & " resetcompany 27 after " & currentdate);
 end;
 
 
@@ -447,13 +451,17 @@ begin
     curcomp = CurrentCompany;
     SetCompany(oldcomp,false);
     FillPipeline_CredManVc(CTb,RepSpec,PObrw.RegisterFilter,acol,col_cnt,vcurnr,vcurv,acur,acnt,tempORr);
+    logtext(0,currentcompany & " " & curcomp & " resetcompany 28 before " & currentdate);
     ResetCompany(curcomp);
+    logtext(0,currentcompany & " " & curcomp & " resetcompany 28 after " & currentdate);
   end;
   if (PObrw.Register=="B2BLoanApplicationVc") then begin
     curcomp = CurrentCompany;
     SetCompany(oldcomp,false);
     FillPipeline_B2BLoanApplicationVc(CTb,RepSpec,PObrw.RegisterFilter,acol,col_cnt,vcurnr,vcurv,acur,acnt,tempORr);
+    logtext(0,currentcompany & " " & curcomp & " resetcompany 29 before " & currentdate);
     ResetCompany(curcomp);
+    logtext(0,currentcompany & " " & curcomp & " resetcompany 29 after " & currentdate);
   end;
 
   return;

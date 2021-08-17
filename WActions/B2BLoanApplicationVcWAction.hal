@@ -2256,11 +2256,12 @@ begin
                 resrow = true;
                 if(LAEr.Values==0)then begin
                   reason = LAErw.Reason;
+                  logtext(0,i);
                   goto lCheckEnd;
                 end;
+                reasonall = LAErw.Reason;
               end;
-              reasonall = LAErw.Reason;
-              nottrue = resrow;
+              nottrue = nottrue and resrow;
               //logtext(0,"resrow " & resrow);
           
             end;
@@ -2277,10 +2278,11 @@ begin
                   resrow = true;
                   if(LAEr.Values==0)then begin
                     reason = LAErw.Reason;
+                    logtext(0,i);
                     goto lCheckEnd;
                   end;
                 end;
-                nottrue = resrow;
+                nottrue = nottrue and resrow;
                 //logtext(0,"resrow " & resrow);
               end else begin
                 if(nonblank(LAErw.Argument))then begin
@@ -2294,11 +2296,12 @@ begin
                   resrow = true;
                   if(LAEr.Values==0)then begin
                     reason = LAErw.Reason;
+                    logtext(0,i);
                     goto lCheckEnd;
                   end;
+                  reasonall = LAErw.Reason;
                 end;
-                reasonall = LAErw.Reason;
-                nottrue = resrow;
+                nottrue = nottrue and resrow;
                 //logtext(0,"resrow " & resrow);
               end else begin
                 if(nonblank(LAErw.Argument))then begin
@@ -2460,11 +2463,12 @@ begin
               resrow = true;
               if(LAEr.Values==0)then begin
                 reason = LAErw.Reason;
+                logtext(0,i);
                 goto lCheckEnd;
               end;
+              reasonall = LAErw.Reason;
             end;
-            reasonall = LAErw.Reason;
-            nottrue = resrow;
+            nottrue = nottrue and resrow;
           end;
         
           if(nonblankdate(calcdate) and nonblankdate(checkdatefr))then begin
@@ -2473,17 +2477,84 @@ begin
             
               if(LAEr.Values==0)then begin
                 reason = LAErw.Reason;
+                logtext(0,i);
                 goto lCheckEnd;
               end;
+              reasonall = LAErw.Reason;
             end;
-            reasonall = LAErw.Reason;
-            nottrue = resrow;
+            nottrue = nottrue and resrow;
           end;
         end;
       end;
     end;
   
   lCheckEnd:;
+    
+    if(LAEr.Values==0)then begin
+      if(resrow)then begin
+        if(nonblank(reason))then begin
+          SPr.Code = reason;
+          if(readfirstmain(SPr,1,true))then begin
+            LAr.RejReason = SPr.ShortDesc;
+          end else begin  
+            LAr.RejReason = reason;
+          end;
+        end else begin
+          if(nonblank(reasonall))then begin
+            SPr.Code = reasonall;
+            if(readfirstmain(SPr,1,true))then begin
+              LAr.RejReason = SPr.ShortDesc;
+            end else begin  
+              LAr.RejReason = reasonall;
+            end;
+          end;
+        end;
+        if(LAEr.Decisions==0)then begin
+          LAr.Evaluation = 2;
+        end else begin
+          LAr.Evaluation = 1;
+        end;
+      end else begin
+        if(LAEr.Decisions==0)then begin
+          LAr.Evaluation = 1;
+        end else begin
+          LAr.Evaluation = 2;
+        end;
+      end;
+    end else begin
+      if(nottrue)then begin
+        if(LAEr.Decisions==0)then begin
+          LAr.Evaluation = 2;
+          if(nonblank(reason))then begin
+            SPr.Code = reason;
+            if(readfirstmain(SPr,1,true))then begin
+              LAr.RejReason = SPr.ShortDesc;
+            end else begin  
+              LAr.RejReason = reason;
+            end;
+          end else begin
+            if(nonblank(reasonall))then begin
+              SPr.Code = reasonall;
+              if(readfirstmain(SPr,1,true))then begin
+                LAr.RejReason = SPr.ShortDesc;
+              end else begin  
+                LAr.RejReason = reasonall;
+              end;
+            end;
+          end;
+        end else begin
+          LAr.Evaluation = 1;
+        end;
+      end else begin
+        if(LAEr.Decisions==0)then begin
+          LAr.Evaluation = 1;
+        end else begin
+          LAr.Evaluation = 2;
+        end;
+      end;
+    end;
+    
+    /*
     if(LAEr.Decisions==0)then begin
       if(nottrue==false)then begin
         totalres = true;
@@ -2532,7 +2603,7 @@ begin
         end;
         LAr.Evaluation = 2;
       end;
-    end;
+    end;*/
     recordupdate(oldLAr,LAr,true);
     if(oldLAr.Evaluation==0 and LAr.Evaluation==1)then begin
       if(LAEr.CreateAgreement==1)then begin

@@ -652,7 +652,9 @@ begin
       end;
     end;
   end;
+  logtext(0,currentcompany & " " & oldcomp & " resetcompany 23 before " & currentdate);
   ResetCompany(oldcomp);
+  logtext(0,currentcompany & " " & oldcomp & " resetcompany 22 after " & currentdate);
   return;
 end;
 
@@ -831,7 +833,9 @@ begin
     NewTimedTask2("CredManAutoInvoiceTask_" & GetCurTick & "_comp" & CurrentCompany,"CredManAutoInvoiceTask","CredManAutoInvoiceTask",CurrentCompany,td,tt,"","");
   end;
   if (CurrentCompany!=oldcomp) then begin
+    logtext(0,currentcompany & " " & oldcomp & " resetcompany 24 before " & currentdate);
     ResetCompany(oldcomp);
+    logtext(0,currentcompany & " " & oldcomp & " resetcompany 24 after " & currentdate);
   end;
 
   return;
@@ -863,7 +867,9 @@ begin
       NewTimedTask2("CredManAutoInvoiceTask_comp" & comp,"CredManAutoInvoiceTask","CredManAutoInvoiceTask",comp,td,tt,"","");
     end;
   end;
+  logtext(0,currentcompany & " " & oldcomp & " resetcompany 25 before " & currentdate);
   ResetCompany(oldcomp);
+  logtext(0,currentcompany & " " & oldcomp & " resetcompany 25 after " & currentdate);
 
   return;
 end;
