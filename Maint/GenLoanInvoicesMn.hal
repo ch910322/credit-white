@@ -10,6 +10,8 @@ begin
   record CredManVc CredManr;
   record IVVc IVr;
   
+  setcompany(currentcompany,false);
+  
   TrHs = true;
   CredManr.Approved = 1;
   SetLoopPosition(CredManr,RepSpec.long1);
@@ -39,7 +41,7 @@ begin
     end;
   end;
   
-  logtext(0,RepSpec.long1 & " LoopAndGenLoanAgreementInvoice RES " & res);
+  logtext(0,RepSpec.long1 & " LoopAndGenLoanAgreementInvoice RES " & res & " date " & currentdate);
   LoopAndGenLoanAgreementInvoice = res;
   return;
 end;
