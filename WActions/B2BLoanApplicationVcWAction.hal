@@ -2306,7 +2306,7 @@ begin
                 end else begin
                   firstarg = GetFieldValueByName(LAr,firstarg,-1);
                   if(nonblank(LAErw.StrValFrom) and nonblank(LAErw.StrValTo))then begin
-                    if(firstargval>=LAErw.RangeFrom and firstargval<=LAErw.RangeTo)then begin
+                    if(firstarg>=LAErw.StrValFrom and firstarg<=LAErw.StrValTo)then begin
                       resrow = true;
                       if(LAEr.Values==0)then begin
                         reason = LAErw.Reason;
