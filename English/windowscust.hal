@@ -4186,6 +4186,8 @@ begin
 	MatCol(1,-160,"Date To",0,RangeToDate,false,0);
 	MatCol(1,-80,"Type",0,Type,false,SetSClass);
 	Flip(3);
+	MatCol(1,-280,"String Value From",0,StrValFrom,false,0);
+	MatCol(1,-180,"String Value To",0,StrValTo,false,0);
 	MatCol(1,-80,"Reason",0,Reason,false,StandProblemsSClass);
 	EndMatrix;
 	vs = 22;
