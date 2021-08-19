@@ -2500,8 +2500,8 @@ begin
   
   lCheckEnd:;
     
-    if(LAEr.Values==0 and checked)then begin
-      if(resrow)then begin
+    if(LAEr.Values==0)then begin
+      if(checked)then begin
         if(reason.length>0)then begin
           for(i=0;i<reason.length;i=i+1)begin
             SPr.Code = reason[i];
