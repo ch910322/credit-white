@@ -53,6 +53,8 @@ external inner function Boolean FindCustomerRelation(string,string,var record CU
 external inner function Integer CreateCreditNoteIV(record IVVc,Integer,var record IVVc,string,Boolean);
 external inner procedure IVSumup(var record IVVc,Boolean);
 external procedure AddInterestBO(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,Integer,Date,var val,var val,Date,Date,Longint,Boolean);
+external inner function Boolean IVVc_PasteArtCode(var record IVVc,Integer,var string,var string,Boolean,var Integer);
+external inner function Boolean IVVc_PasteQuantity(var record IVVc,Integer);
 
 
 enum begin
@@ -2173,17 +2175,24 @@ begin
   record CredManPayPlanVc CredManPayPlan2r;
   val balance,tval;
   Date lastinv;
-  Integer i,rwcnt;
-  Integer latedays;
-  val lateamount,issuedinsbal;
+  Integer i,rwcnt,lastusedrow,sernrf;
+  Integer latedays,rwcnt2,j;
+  val lateamount,issuedinsbal,buyoutfee;
   val cumint,calcbal,principlelateamount,interestlateamount;
-  array string 255 lateformula;
+  array string 255 lateformula,afuturefee;
+  vector val vfuturefee;
   record CredManVc tCredManr;
   record CMInvoicingBlock CIb;
   Date calcsd;
-  string 20 pd;
+  string 20 pd,warning;
   record CMBuyOutBlock CMBOb;
   record CredManSetBlock CredManSetb;
+  row IVVc IVrw;
+  string 255 spec;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  record CredFeesMatrixVc FMr;
+  row CredFeesMatrixVc FMrw;
   
 /*
 1. Get the last invoice date and the balance
@@ -2232,6 +2241,49 @@ begin
     logtext(0,"lateamount " & lateamount);
     //SetupLoanInvoice(CredManr,CMb,IVr,td,calcsd,td,true,false,"",2,true);
     
+    buyoutfee = ORr.TAX2Sum;
+    GetItemName(CIb.BuyOutItem,spec);
+    if (nonblank(CIb.BuyOutItem) and buyoutfee>0) then begin
+      SetupInvoiceRowAndAdd(CredManr,IVr,CIb.BuyOutItem,spec,1,buyoutfee,blankval,15,-1);
+    end;
+    
+    
+    if (nonblank(CIb.LetterOfDemand) and ORr.SumIncCom>0) then begin
+      GetItemName(CIb.LetterOfDemand,spec);
+      SetupInvoiceRowAndAdd(CredManr,IVr,CIb.LetterOfDemand,spec,1,ORr.SumIncCom,blankval,15,-1);
+    end;
+    if (nonblank(CIb.InsuranceCost) and ORr.RvrsVAT>0) then begin
+      GetItemName(CIb.InsuranceCost,spec);
+      SetupInvoiceRowAndAdd(CredManr,IVr,CIb.InsuranceCost,spec,1,ORr.RvrsVAT,blankval,15,-1);
+    end;
+    
+    if(ORr.DiscSum>0)then begin
+      CSr.CredManNr = CredManr.SerNr;
+      if (ReadFirstMain(CSr,1,true)) then begin
+        rwcnt = MatRowCnt(CSr);
+        for (i=0;i<rwcnt;i=i+1) begin
+         MatRowGet(CSr,i,CSrw);
+          if (CSrw.Invoiced==0) then begin
+            if (CSrw.Fees>0 and CSrw.FromDate>ORr.OrdDate) then begin
+              UnpackRowFieldMatrix(CSrw,"FeesMatrix",FMr);
+              rwcnt2 = MatRowCnt(FMr);
+              for (j=0;j<rwcnt2;j=j+1) begin
+                MatRowGet(FMr,j,FMrw);
+                vfuturefee[FMrw.ArtCode] = vfuturefee[FMrw.ArtCode] + FMrw.Sum;
+                logtext(0,"vfuturefee " & FMrw.Sum);
+              end;
+            end;
+          end;
+        end;
+      end;
+      
+      getvectortags(vfuturefee,afuturefee);
+      for(i=0;i<afuturefee.length;i=i+1)begin
+        GetItemName(afuturefee[i],spec);
+        SetupInvoiceRowAndAdd(CredManr,IVr,afuturefee[i],spec,1,vfuturefee[afuturefee[i]],blankval,kEventTypeCalcFees,-1);
+      end;
+    
+    end;   
     
 //    AddPlannedFees(CredManr,CredManPayPlan2r,CMb,kPlannedFeesMonthly,kMonthTypeFirst,td,cumint,tval,lastinv,td,-1,false);
     rwcnt = MatRowCnt(CredManPayPlan2r);
@@ -2239,6 +2291,34 @@ begin
       MatRowGet(CredManPayPlan2r,i,CredManPayPlanrw);
       SetupInvoiceRowAndAdd(CredManr,IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
     end;
+    
+    for(i=0;i<matrowcnt(IVr);i=i+1)begin
+      matrowget(IVr,i,IVrw);
+      if(IVrw.stp==1 and nonblank(IVrw.ArtCode))then begin
+        lastusedrow = i;
+      end;
+    end;
+    
+    
+    
+   /* if(nonblank(CIb.BuyOutItem))then begin
+      if(ORr.TAX2Sum>0)then begin
+        clearrow(IVr,IVrw,1);
+        IVrw.ArtCode = CIb.BuyOutItem;
+        MatRowinsert(IVr,lastusedrow+1,IVrw);
+        lastusedrow = lastusedrow + 1;
+        IVVc_PasteArtCode(IVr,lastusedrow,warning,warning,false,sernrf);
+        MatRowGet(IVr,lastusedrow,IVrw);
+        IVrw.Quant = 1;
+        MatRowPut(IVr,lastusedrow,IVrw);
+        IVVc_PasteQuantity(IVr,lastusedrow);
+        MatRowGet(IVr,lastusedrow,IVrw);
+        IVrw.Price = ORr.TAX2Sum;
+        MatRowPut(IVr,lastusedrow,IVrw);
+        IVVc_PasteQuantity(IVr,lastusedrow);
+      end;
+    end;*/
+    
     AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
     AddBuyOutFee(CredManr,IVr,balance);
     AddInsuranceCost(CredManr,IVr,CIb);
