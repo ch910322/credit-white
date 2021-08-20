@@ -363,6 +363,23 @@ begin
 end;
 
 global
+procedure AddInterestBO(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Integer monthtypef,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,Longint factinv,Boolean overridef)
+begin
+  Integer sendmonthtypef;
+  
+  sendmonthtypef = monthtypef;
+  if ((CredManr.ChargeMethod==1) and overridef==false and sendmonthtypef!=kMonthTypeFirst) then begin
+    sendmonthtypef = kMonthTypeLast;
+  end;
+  if (nonblank(CredManr.CancelDate) and invdate==CredManr.CancelDate) then begin
+    sendmonthtypef = kMonthTypeFirst;
+  end;
+  AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,calcbal,0,acumint,calcbal,frdate,todate,-1,factinv,0);
+
+  return;
+end;
+
+global
 procedure AddExtraInterest(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Integer monthtypef,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,Longint factinv,Boolean overridef,Integer int_type)
 begin
   Integer sendmonthtypef;
