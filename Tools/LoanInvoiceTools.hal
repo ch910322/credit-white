@@ -2044,7 +2044,7 @@ begin
       cnt = CredManr.BuyoutFeeMonths;
       for (i=0;i<rwcnt;i=i+1) begin
         MatRowGet(CSr,i,CSrw);
-        if (CSrw.FromDate>td and cnt>0) then begin
+        if (CSrw.ToDate>=td and cnt>0) then begin
           res = res + CSrw.Interest;
           cnt = cnt - 1;
         end;
@@ -3418,7 +3418,8 @@ begin
           end else begin
             x = CSrw.Interest;
             y = (datediff(CSrw.ToDate,CSrw.FromDate) + 1) - (datediff(todate,CSrw.FromDate) + 1);
-            z = datediff(CSrw.ToDate,CSrw.FromDate) + 1;
+            //z = datediff(CSrw.ToDate,CSrw.FromDate) + 1;
+            z = 30;
             logtext(0,"x " & x);
             logtext(0,"y " & y);
             logtext(0,"z " & z);
