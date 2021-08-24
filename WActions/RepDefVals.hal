@@ -80,3 +80,54 @@ BEGIN
   SelectWindow(wn);
   RETURN;
 END;
+
+
+global
+function Boolean MailTextRegisterSClassOnOpenWindow(Integer wn)
+begin
+  Array string 255 astr;
+  Integer i,acnt;
+  Boolean res;
+  
+  SetListString(wn,len("Credit Note"),"Credit Note",false);
+  SetListString(wn,len("Loan Application"),"Loan Application",false);
+  res = inner.MailTextRegisterSClassOnOpenWindow(wn);   
+  MailTextRegisterSClassOnOpenWindow = false;
+  return;
+end;
+
+function Boolean MailTextDClassRegisterEFAfter(Integer wn,Boolean changedf)
+begin
+  Boolean res;
+  record MailTextVc MailTextr;
+  
+  res = true;
+  if (changedf) then begin
+    DeselectWindow(wn,false);
+    GetWindowRecord(wn,MailTextr);
+    switch(MailTextr.Register)begin
+      case "Credit Note": MailTextr.FileName = "IVCreditVc";
+      case "Loan Application": MailTextr.FileName = "B2BLoanApplicationVc";
+      otherwise
+      MailTextr.FileName = StringSetFromString(-3,MailTextr.Register);
+    end;
+    PutWindowRecord(wn,MailTextr);
+  end;
+  MailTextDClassRegisterEFAfter = res;
+  return;
+end;
+
+global
+function Boolean MailTextDClassAfterEditField(Integer wn,string fieldname,Integer fn,Integer rownr,Integer changed)
+begin
+  Boolean res;
+  
+  res = true;
+  switch (fieldname) begin
+    case "Register": res = MailTextDClassRegisterEFAfter(wn,changed!=0);
+    otherwise
+      res = inner.MailTextDClassAfterEditField(wn,fieldname,fn,rownr,changed);
+  end;
+  MailTextDClassAfterEditField = res;
+  return;
+end;

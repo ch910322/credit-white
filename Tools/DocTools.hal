@@ -1,4 +1,5 @@
 external procedure FillInvoiceData(record IVVc,var record RcVc);
+external inner procedure MailTextRow(string,string,string,var row MailTextVc,var Integer);
 
 global
 updating procedure PrintCredManDocument(string docname,string fn,record CredManVc CredManr,Integer type,Boolean maxmonthlyf,string langcode)
@@ -118,5 +119,20 @@ begin
   end;
 
   OuterGetExternalDocMatrix = res;
+  return;
+end;
+
+
+global
+function Boolean Ext_MailTextRow(record IVVc IVr,string filename,string registername,string language,var row MailTextVc resMTrw,var Integer IgnoreRecordDetails)
+begin
+  Boolean res;
+
+  if (IVr.InvType==kInvoiceTypeCredit) then begin
+    MailTextRow("IVCreditVc","",language,resMTrw,IgnoreRecordDetails);
+    res = true;
+  end;
+
+  Ext_MailTextRow = res;
   return;
 end;
