@@ -53,6 +53,10 @@ begin
   ButtonFrame(h,v=v+40,100,2,"Spider WEB Mode");
   RadioButton(h,v,0,0,"Test",SPWMode);
   RadioButton(h,v+=16,1,0,"Live",SPWMode);
+  EditField(h,v+=25,200,"Asociation Type",Normal,SPWAsociationType,false,0);
+  CheckBox(h,v+=vs,0,"Check Jar",SPWCheckJar);
+  CheckBox(h,v+=vs,0,"Fill Negative Info",SPWFillNegativeInfo);
+  CheckBox(h,v+=vs,0,"With History",SPWWithHistory);
   
   EndWindow;
 

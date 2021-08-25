@@ -7,6 +7,10 @@ begin
   RecordField(SPWAPIUser,M4Str,50,0);
   RecordField(SPWAPIPassword,M4Str,50,0);
   RecordField(SPWMode,M4Int,0,0);
+  RecordField(SPWAsociationType,M4Str,255,0);
+  RecordField(SPWCheckJar,M4Int,0,0);
+  RecordField(SPWFillNegativeInfo,M4Int,0,0);
+  RecordField(SPWWithHistory,M4Int,0,0);
   EndBlock;
 
   BlockBegin(CompanyInfoBlock,-,"");
