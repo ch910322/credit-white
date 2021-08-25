@@ -22,6 +22,11 @@ begin
   SetText(0,"First");
   SetText(1,"Last");
   EndSet;
+  
+  SetBegin(30903);
+  SetText(0,"Basic");
+  SetText(1,"Spider WEB");
+  EndSet;
 
 end;
 
@@ -42,6 +47,12 @@ begin
   ButtonFrame(h,v=v+40,100,2,"Mode");
   RadioButton(h,v,0,0,"Test",Mode);
   RadioButton(h,v+=16,1,0,"Live",Mode);
+  
+  EditField(h=150,v+=vs,200,"Spider WEB User",Normal,SPWAPIUser,false,0);
+  EditField(h,v+=vs,200,"Spider WEB Password",Normal,SPWAPIPassword,false,0);
+  ButtonFrame(h,v=v+40,100,2,"Spider WEB Mode");
+  RadioButton(h,v,0,0,"Test",SPWMode);
+  RadioButton(h,v+=16,1,0,"Live",SPWMode);
   
   EndWindow;
 
@@ -116,6 +127,7 @@ begin
   Flip(3);
     MatCol(1,-400,"Exclude XML Attribute",0,ExcludeXMLAtribute,false,0);
   Flip(4);
+    MatCol(1,-350,"Source",0,Source,false,SetSClass);
     MatCol(1,-260,"Separator for attributes",0,Separator,false,0);
     MatCol(1,-80,"Get Order",0,GetOrder,false,SetSClass);
   Flip(5);

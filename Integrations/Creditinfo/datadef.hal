@@ -4,6 +4,9 @@ begin
   RecordField(APIUser,M4Str,50,0);
   RecordField(APIPassword,M4Str,50,0);
   RecordField(Mode,M4Int,0,0);
+  RecordField(SPWAPIUser,M4Str,50,0);
+  RecordField(SPWAPIPassword,M4Str,50,0);
+  RecordField(SPWMode,M4Int,0,0);
   EndBlock;
 
   BlockBegin(CompanyInfoBlock,-,"");
@@ -30,6 +33,7 @@ begin
 		ArrayField(ExcludeXMLAtributeTo,M4Str,255,0);
 		ArrayField(ExcludeXMLAtributeToVal,M4Val,0,0);
 		ArrayField(Separator,M4Str,255,0);
+		ArrayField(Source,M4Set,30903,0);
 		
 		endarray;
   EndBlock;

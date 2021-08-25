@@ -6,8 +6,8 @@ external inner updating function LongInt CUVcRecordUpdate(var record CUVc,record
 external function Boolean CheckIfCompanyInfoAvailable(string,string,var array Date,var array val,var array Integer,var array Longint);
 external function Boolean GetExistingCompanyInfo(string,string,Longint,var area);
 external procedure SendCompanyInfo(string,string,Integer,var area);
-external procedure CreditInfoFileAsignB2BLoanApplicationVc(var record B2BLoanApplicationVc,xml);
-external procedure CreditInfoFileAsignCUVc(var record CUVc,xml);
+external procedure CreditInfoFileAsignB2BLoanApplicationVc(var record B2BLoanApplicationVc,xml,xml);
+external procedure CreditInfoFileAsignCUVc(var record CUVc,xml,xml);
 
 function Integer YearDiff(Date d1,Date d2)
 begin
@@ -79,7 +79,7 @@ begin
 end;
 
 global
-updating procedure TreatCreditInfoReply(var record B2BLoanApplicationVc LAr,var record CUVc CUr,area reply,var Integer res)
+updating procedure TreatCreditInfoReply(var record B2BLoanApplicationVc LAr,var record CUVc CUr,area reply,area replyspdr,var Integer res)
 begin
   Boolean debugf;
   string 255 lang,params,url,path,root,tstr,fn,name,surname,datestr,datestr1,datestr2;
@@ -91,7 +91,7 @@ begin
   record ContactRelVc CRr;
   record CMApplicationSetBlock ASb;
   string 255 lastcode,lastname;
-  xml axml;
+  xml axml,axmlspdr;
   record CreditinfoFieldAssignBlock CIAb;
   boolean newCIsettig;
 
@@ -105,6 +105,7 @@ begin
     
   res = 1;
   axml = ParseXmlArea(reply);
+  axmlspdr = ParseXmlArea(replyspdr);
   if(newCIsettig==false)then begin 
     root = "root/BasicInfo";
     if (nonblank(XmlGet(axml,root & "/Registered"))) then begin
@@ -292,8 +293,8 @@ begin
       LAr.PrevTotal = LAr.PrevReceivables-LAr.PrevPayables;
     end;
   end else begin
-    CreditInfoFileAsignB2BLoanApplicationVc(LAr,axml);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 15 06 2021 y. at 11:55:04 AM
-    CreditInfoFileAsignCUVc(CUr,axml);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 15 06 2021 y. at 11:55:04 AM
+    CreditInfoFileAsignB2BLoanApplicationVc(LAr,axml,axmlspdr);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 15 06 2021 y. at 11:55:04 AM
+    CreditInfoFileAsignCUVc(CUr,axml,axmlspdr);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 15 06 2021 y. at 11:55:04 AM
   end;
   RecordUpdate(oldCUr,CUr,false);
   CUVcRecordUpdate(CUr,oldCUr,Rs_Update,1);
@@ -360,12 +361,13 @@ procedure DoGetCreditInfo(var record B2BLoanApplicationVc LAr,var Integer res,va
 begin
   record CreditinfoBlock CIb;
   Boolean debugf;
-  area reply,request;
+  area reply,request,requestspdr,replyspdr;
   string 255 lang,params,url,path,root,tstr,fn,name,surname,datestr,datestr1,datestr2;
   record CUVc CUr,oldCUr,tCUr;
   Boolean sslf;
   Longint port,pos;
   xml axml;
+  boolean reqf;
 
   res = 0;
   BlockLoad(CIb);
@@ -399,13 +401,54 @@ begin
       if (XmlNodeExists(axml,root)==false) then begin
         goto LGetCreditInfo;
       end;
+      
+      reqf = true;
+    end;
+    
+    lang = "0";
+    if (debugf) then begin
+      lang = "1";
+    end;
+    params = "username=" & CIb.SPWAPIUser & "&password=" & CIb.SPWAPIPassword & "&idnum=" & CUr.RegNr1 & "&lang=" & lang & "&productNumber=6202";
+    logtext(0,params);
+    if (CIb.SPWMode==0) then begin//test
+      url = "ds.infobankas.lt";
+      port = 80;
+      sslf = false;
+    end else begin
+      url = "new.infobankas.lt";
+      port = 443;
+      sslf = true;
+    end;
+    //https://new.infobankas.lt/CreditInfoGroup_lt/SaisWs/SpiderWeb/Spider.svc?wsdl
+    //https://new.infobankas.lt/creditinfogroup_lt/SaisWs/SpiderWeb/Spider.svc 
+    path = "/creditinfogroup_lt/SaisWs/SpiderWeb/Spider.svc/GetSpiderData";
 
-      qupdating.TreatCreditInfoReply(LAr,CUr,reply,res);
+    if (SendWebRequest(url,port,-1,sslf,"GET",path & "?" & params,"text/xml; charset=utf-8","",false,requestspdr,replyspdr,10)) then begin
+      writeareatofile(replyspdr,"SPWcreditinfo.xlm",0);
+      axml = ParseXmlArea(replyspdr);
+      root = "root/BasicInfo";
+      if (XmlNodeExists(axml,"KLAIDA")) then begin
+        errstr = XmlGet(axml,"KLAIDA");
+      end;
+      if (XmlNodeExists(axml,root)==false) then begin
+        goto LGetCreditInfo;
+      end;
+      
+      reqf = true;
+    end;
+    
+    
+    LGetCreditInfo:;
+    
+    if(reqf)then begin
+      qupdating.TreatCreditInfoReply(LAr,CUr,reply,replyspdr,res);
       threadasync.SendCompanyInfo(CUr.RegNr1,CUr.CountryCode,1,reply);
     end;
+    
   end;
 
-LGetCreditInfo:;
+
   return;
 end;
 
@@ -442,14 +485,14 @@ global
 procedure GetCreditInfoHistory(var record B2BLoanApplicationVc LAr,var Integer res,var string errstr,Integer source,Longint id)
 begin
   record CUVc CUr;
-  area comparea;
+  area comparea,compareaspdr;
   
   CUr.Code = LAr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
     if (GetExistingCompanyInfo(CUr.RegNr1,CUr.CountryCode,id,comparea)) then begin
       switch (source) begin
         case 1:
-          qupdating.TreatCreditInfoReply(LAr,CUr,comparea,res);
+          qupdating.TreatCreditInfoReply(LAr,CUr,comparea,compareaspdr,res);
       end;
     end;
   end;
