@@ -106,6 +106,8 @@ begin
   res = 1;
   axml = ParseXmlArea(reply);
   axmlspdr = ParseXmlArea(replyspdr);
+  axmlFS = ParseXmlArea(replyfs);
+  
   if(newCIsettig==false)then begin 
     root = "root/BasicInfo";
     if (nonblank(XmlGet(axml,root & "/Registered"))) then begin
@@ -375,13 +377,14 @@ procedure DoGetCreditInfo(var record B2BLoanApplicationVc LAr,var Integer res,va
 begin
   record CreditinfoBlock CIb;
   Boolean debugf;
-  area reply,request,requestspdr,replyspdr,temparea,replyfs;
-  string 255 lang,params,url,path,root,tstr,fn,name,surname,datestr,datestr1,datestr2;
+  area reply,request,requestspdr,replyspdr,temparea,replyfs,requestfs,replyfs2;
+  string 255 lang,params,url,path,root,tstr,fn,name,surname,datestr,datestr1,datestr2,repid;
   record CUVc CUr,oldCUr,tCUr;
   Boolean sslf;
-  Longint port,pos;
-  xml axml;
+  Longint port,pos,counch;
+  xml axml,axml2;
   boolean reqf;
+  integer i;
 
   res = 0;
   BlockLoad(CIb);
@@ -419,7 +422,7 @@ begin
       
       reqf = true;
     end;
-    
+LGetCreditInfo:;    
     
     //==============================================  SPIDERWEB
     
@@ -483,22 +486,22 @@ begin
           errstr = XmlGet(axml,"KLAIDA");
         end;
         if (XmlNodeExists(axml,root)==false) then begin
-          goto LGetCreditInfo;
+          goto LGetCreditInfo1;
         end;
       
         reqf = true;
       end else begin
-        goto LGetCreditInfo;
+        goto LGetCreditInfo1;
       end;
     end;
-    
+LGetCreditInfo1:;    
     //==============================================  FinancialReports Financial statements
     
     lang = "0";
     if (debugf) then begin
       lang = "1";
     end;
-    params = "username=" & CIb.FSAPIUser & "&password=" & CIb.FSAPIPassword & "&idnum=" & CUr.RegNr1;
+    params = "username=" & CIb.FSAPIUser & "&password=" & CIb.FSAPIPassword & "&companyCode=" & CUr.RegNr1;
     logtext(0,params);
     if (CIb.Mode==0) then begin//test
       url = "ds.infobankas.lt";
@@ -509,26 +512,61 @@ begin
       port = 443;
       sslf = true;
     end;
-    path = "/CreditInfoGroup_lt/SaisWs/FinancialReports.asmx/GetReport";
+    path = "/CreditInfoGroup_lt/SaisWs/FinancialReports.asmx/GetReportList";
 
-    if (SendWebRequest(url,port,-1,sslf,"GET",path & "?" & params,"text/xml; charset=utf-8","",false,request,reply,10)) then begin
-      writeareatofile(reply,"creditinfo.xlm",0);
-      axml = ParseXmlArea(reply);
-      root = "root/BasicInfo";
-      if (XmlNodeExists(axml,"KLAIDA")) then begin
-        errstr = XmlGet(axml,"KLAIDA");
-      end;
-      if (XmlNodeExists(axml,root)==false) then begin
-        goto LGetCreditInfo;
-      end;
+    if (SendWebRequest(url,port,-1,sslf,"GET",path & "?" & params,"text/xml; charset=utf-8","",false,requestfs,replyfs,10)) then begin
+      writeareatofile(reply,"FBGetReportList.xlm",0);
+      axml = ParseXmlArea(replyfs);
+      root = "FsiListWsReturnType/Data/PAIESKA/FA_SARASAS";
       
-      reqf = true;
+      if (XmlNodeExists(axml,root)==false) then begin
+        goto LGetCreditInfo2;
+      end else begin
+        counch = XmlCountChildren(axml,root);
+        if(counch>0)then begin
+          for(i=counch-1;i>0;i=i-1)begin
+            repid = XmlGetAttribute(axml,root & "/FA[" & i & "]","FS_NUMBER");
+            logtext(0,"repid " & repid);
+            
+            lang = "0";
+            if (debugf) then begin
+              lang = "1";
+            end;
+            params = "username=" & CIb.FSAPIUser & "&password=" & CIb.FSAPIPassword & "&fsNumber=" & repid;
+            logtext(0,params);
+            if (CIb.Mode==0) then begin//test
+              url = "ds.infobankas.lt";
+              port = 80;
+              sslf = false;
+            end else begin
+              url = "new.infobankas.lt";
+              port = 443;
+              sslf = true;
+            end;
+            path = "/CreditInfoGroup_lt/SaisWs/FinancialReports.asmx/GetReport";
+
+            if (SendWebRequest(url,port,-1,sslf,"GET",path & "?" & params,"text/xml; charset=utf-8","",false,requestfs,replyfs2,10)) then begin
+              writeareatofile(replyfs2,"FBGetReport" & repid & ".xlm",0);
+              axml2 = ParseXmlArea(replyfs2);
+              root = "FsiWsReturnType/Data/FA/BALANSAS";
+              if (XmlNodeExists(axml2,root)==false) then begin
+                setareazerosize(replyfs2);
+                goto LGetCreditInfo2;
+              end else begin
+                reqf = true;
+                goto LGetCreditInfo2;
+              end;
+            end;
+            
+          end;
+        end;
+      end;      
     end;
     
-    LGetCreditInfo:;
+LGetCreditInfo2:;
     
     if(reqf)then begin
-      qupdating.TreatCreditInfoReply(LAr,CUr,reply,replyspdr,replyfs,res);
+      qupdating.TreatCreditInfoReply(LAr,CUr,reply,replyspdr,replyfs2,res);
       threadasync.SendCompanyInfo(CUr.RegNr1,CUr.CountryCode,1,reply);
     end;
     

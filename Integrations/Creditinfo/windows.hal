@@ -43,7 +43,7 @@ begin
   SetBlid(CreditinfoBlock);
   SetWRect(20,80,570,298);
   Sizeable(-1,-1,0,0);
-  EditField(h=150,v=6,200,"User",Normal,APIUser,false,0);
+  EditField(h=190,v=6,200,"User",Normal,APIUser,false,0);
   EditField(h,v+=vs,200,"Password",Normal,APIPassword,false,0);
   ButtonFrame(h,v=v+40,100,2,"Mode");
   RadioButton(h,v,0,0,"Test",Mode);
