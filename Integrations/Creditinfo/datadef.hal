@@ -11,6 +11,9 @@ begin
   RecordField(SPWCheckJar,M4Int,0,0);
   RecordField(SPWFillNegativeInfo,M4Int,0,0);
   RecordField(SPWWithHistory,M4Int,0,0);
+  RecordField(FSAPIUser,M4Str,50,0);
+  RecordField(FSAPIPassword,M4Str,50,0);
+  RecordField(FSMode,M4Int,0,0);
   EndBlock;
 
   BlockBegin(CompanyInfoBlock,-,"");

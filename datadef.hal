@@ -505,6 +505,10 @@ begin
   RecordField(BankruptcyRatingCode,M4UStr,20,0);
   RecordField(BuyBankruptcyRatingCode,M4UStr,20,0);
   
+  RecordField(HasArrests,M4Int,0,0);
+  RecordField(HasClaims,M4Int,0,0);
+  RecordField(HasLawsuits,M4Int,0,0);
+  
  //ak_end  
   ArrayBegin(Math,-,1);
   ArrayField(Period,M4Str,10,0);

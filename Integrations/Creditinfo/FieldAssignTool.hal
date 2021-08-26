@@ -351,7 +351,7 @@ end;
 
 
 
-global procedure CreditInfoFileAsignB2BLoanApplicationVc(var record B2BLoanApplicationVc LAr,xml axml,xml axmlspdr)
+global procedure CreditInfoFileAsignB2BLoanApplicationVc(var record B2BLoanApplicationVc LAr,xml axml,xml axmlspdr,xml axmlFS)
 begin
 record CreditinfoFieldAssignBlock CABb;
 row CreditinfoFieldAssignBlock CABrw;
@@ -448,11 +448,53 @@ boolean attribfill;
       end;
     end;
   end;
+  
+  for(i=0;i<rwcnt;i=i+1)begin
+    matrowget(CABb,i,CABrw);
+    if(nonblank(CABrw.FieldName) and CABrw.Source==2)then begin//FinancialReports
+      if(CABrw.Register=="B2BLoanApplicationVc")then begin
+      if(nonblank(CABrw.ImportNode))then begin
+          cleararray(steresult);
+          index = 0;
+          parsecreditinfoxml(CABrw,axmlFS,steresult); 
+          pos1 = 0;
+          
+          step = 1;
+          if(steresult.length>1)then begin
+            if(CABrw.GetOrder==1)then begin
+              index = steresult.length - 1;
+              step = -1;
+            end;
+          end;
+          
+          ExtractObj(CABrw.FieldName,pos1,fieldtopaste);  
+          while(nonblank(fieldtopaste))begin  
+            logtext(0,"LA fieldtopaste " & fieldtopaste); 
+            if(nonblank(fieldtopaste))then begin
+              switch(CABrw.DataType)begin
+                case M4Str:  SetFieldValueByName(LAr,fieldtopaste,steresult[index],-1);
+                case M4Date: SetFieldValueByName(LAr,fieldtopaste,steresult[index],-1);
+                case M4Chk:  SetFieldValueByName(LAr,fieldtopaste,stringtoint(steresult[index]),-1);
+                case M4Val:  SetFieldValueByName(LAr,fieldtopaste,ValFromString(steresult[index],","," "),-1);
+                case M4Long:  SetFieldValueByName(LAr,fieldtopaste,stringtolongint(steresult[index]),-1);
+                case M4Int:  SetFieldValueByName(LAr,fieldtopaste,stringtoint(steresult[index]),-1);
+              end;
+              index = index + step;
+              if(index<0)then begin
+                index = 9999;
+              end;
+            end;
+            ExtractObj(CABrw.FieldName,pos1,fieldtopaste);  
+          end;
+        end;
+      end;
+    end;
+  end;
 
 return;
 end;
 
-global procedure CreditInfoFileAsignCUVc(var record CUVc CUr,xml axml,xml axmlspdr)
+global procedure CreditInfoFileAsignCUVc(var record CUVc CUr,xml axml,xml axmlspdr,xml axmlFS)
 begin
 record CreditinfoFieldAssignBlock CABb;
 row CreditinfoFieldAssignBlock CABrw;
@@ -510,7 +552,49 @@ boolean attribfill;
   
   for(i=0;i<rwcnt;i=i+1)begin
     matrowget(CABb,i,CABrw);
-    if(nonblank(CABrw.FieldName) and CABrw.Source==2)then begin
+    if(nonblank(CABrw.FieldName) and CABrw.Source==1)then begin//SpiderWeb
+      if(CABrw.Register=="CUVc")then begin
+      if(nonblank(CABrw.ImportNode))then begin
+          cleararray(steresult);
+          index = 0;
+          parsecreditinfoxml(CABrw,axmlspdr,steresult); 
+          pos1 = 0;
+          
+          step = 1;
+          if(steresult.length>1)then begin
+            if(CABrw.GetOrder==1)then begin
+              index = steresult.length - 1;
+              step = -1;
+            end;
+          end;
+          
+          ExtractObj(CABrw.FieldName,pos1,fieldtopaste);  
+          while(nonblank(fieldtopaste))begin   
+            logtext(0,"CU fieldtopaste " & fieldtopaste); 
+            if(nonblank(fieldtopaste))then begin
+              switch(CABrw.DataType)begin
+                case M4Str:  SetFieldValueByName(CUr,fieldtopaste,steresult[index],-1);
+                case M4Date: SetFieldValueByName(CUr,fieldtopaste,steresult[index],-1);
+                case M4Chk:  SetFieldValueByName(CUr,fieldtopaste,stringtoint(steresult[index]),-1);
+                case M4Val:  SetFieldValueByName(CUr,fieldtopaste,ValFromString(steresult[index],","," "),-1);
+                case M4Long:  SetFieldValueByName(CUr,fieldtopaste,stringtolongint(steresult[index]),-1);
+                case M4Int:  SetFieldValueByName(CUr,fieldtopaste,stringtoint(steresult[index]),-1);
+              end;
+              index = index + step;
+              if(index<0)then begin
+                index = 9999;
+              end;
+            end;
+            ExtractObj(CABrw.FieldName,pos1,fieldtopaste);  
+          end;
+        end;
+      end;
+    end;
+  end;
+  
+  for(i=0;i<rwcnt;i=i+1)begin
+    matrowget(CABb,i,CABrw);
+    if(nonblank(CABrw.FieldName) and CABrw.Source==2)then begin//FinancialReports
       if(CABrw.Register=="CUVc")then begin
       if(nonblank(CABrw.ImportNode))then begin
           cleararray(steresult);
