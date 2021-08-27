@@ -6,7 +6,7 @@ external inner updating function LongInt CUVcRecordUpdate(var record CUVc,record
 external function Boolean CheckIfCompanyInfoAvailable(string,string,var array Date,var array val,var array Integer,var array Longint);
 external function Boolean GetExistingCompanyInfo(string,string,Longint,var area);
 external procedure SendCompanyInfo(string,string,Integer,var area);
-external procedure CreditInfoFileAsignB2BLoanApplicationVc(var record B2BLoanApplicationVc,xml,xml,xml);
+external procedure CreditInfoFileAsignB2BLoanApplicationVc(var record B2BLoanApplicationVc,xml,xml,xml,xml);
 external procedure CreditInfoFileAsignCUVc(var record CUVc,xml,xml,xml);
 
 function Integer YearDiff(Date d1,Date d2)
@@ -79,7 +79,7 @@ begin
 end;
 
 global
-updating procedure TreatCreditInfoReply(var record B2BLoanApplicationVc LAr,var record CUVc CUr,area reply,area replyspdr,area replyfs,var Integer res)
+updating procedure TreatCreditInfoReply(var record B2BLoanApplicationVc LAr,var record CUVc CUr,area reply,area replyspdr,area replyfs2,area replyfs,var Integer res)
 begin
   Boolean debugf;
   string 255 lang,params,url,path,root,tstr,fn,name,surname,datestr,datestr1,datestr2;
@@ -91,7 +91,7 @@ begin
   record ContactRelVc CRr;
   record CMApplicationSetBlock ASb;
   string 255 lastcode,lastname;
-  xml axml,axmlspdr,axmlFS;
+  xml axml,axmlspdr,axmlFS,axmlFSlist;
   record CreditinfoFieldAssignBlock CIAb;
   boolean newCIsettig;
 
@@ -106,7 +106,8 @@ begin
   res = 1;
   axml = ParseXmlArea(reply);
   axmlspdr = ParseXmlArea(replyspdr);
-  axmlFS = ParseXmlArea(replyfs);
+  axmlFS = ParseXmlArea(replyfs2);
+  axmlFSlist = ParseXmlArea(replyfs);
   
   if(newCIsettig==false)then begin 
     root = "root/BasicInfo";
@@ -295,7 +296,7 @@ begin
       LAr.PrevTotal = LAr.PrevReceivables-LAr.PrevPayables;
     end;
   end else begin
-    CreditInfoFileAsignB2BLoanApplicationVc(LAr,axml,axmlspdr,axmlFS);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 15 06 2021 y. at 11:55:04 AM
+    CreditInfoFileAsignB2BLoanApplicationVc(LAr,axml,axmlspdr,axmlFS,axmlFSlist);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 15 06 2021 y. at 11:55:04 AM
     CreditInfoFileAsignCUVc(CUr,axml,axmlspdr,axmlFS);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 15 06 2021 y. at 11:55:04 AM
   end;
   RecordUpdate(oldCUr,CUr,false);
@@ -515,7 +516,7 @@ LGetCreditInfo1:;
     path = "/CreditInfoGroup_lt/SaisWs/FinancialReports.asmx/GetReportList";
 
     if (SendWebRequest(url,port,-1,sslf,"GET",path & "?" & params,"text/xml; charset=utf-8","",false,requestfs,replyfs,10)) then begin
-      writeareatofile(reply,"FBGetReportList.xlm",0);
+      writeareatofile(replyfs,"FBGetReportList.xlm",0);
       axml = ParseXmlArea(replyfs);
       root = "FsiListWsReturnType/Data/PAIESKA/FA_SARASAS";
       
@@ -566,7 +567,7 @@ LGetCreditInfo1:;
 LGetCreditInfo2:;
     
     if(reqf)then begin
-      qupdating.TreatCreditInfoReply(LAr,CUr,reply,replyspdr,replyfs2,res);
+      qupdating.TreatCreditInfoReply(LAr,CUr,reply,replyspdr,replyfs2,replyfs,res);
       threadasync.SendCompanyInfo(CUr.RegNr1,CUr.CountryCode,1,reply);
     end;
     
@@ -616,7 +617,7 @@ begin
     if (GetExistingCompanyInfo(CUr.RegNr1,CUr.CountryCode,id,comparea)) then begin
       switch (source) begin
         case 1:
-          qupdating.TreatCreditInfoReply(LAr,CUr,comparea,compareaspdr,replyfs,res);
+          qupdating.TreatCreditInfoReply(LAr,CUr,comparea,compareaspdr,replyfs,replyfs,res);
       end;
     end;
   end;

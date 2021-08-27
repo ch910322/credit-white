@@ -27,6 +27,7 @@ begin
   SetText(0,"Basic");
   SetText(1,"Spider WEB");
   SetText(2,"Financial Statements");
+  SetText(3,"Financial Statements List");
   EndSet;
 
 end;
