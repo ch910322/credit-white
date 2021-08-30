@@ -2121,6 +2121,33 @@ begin
   return;
 end;
 
+
+function string 255 CutToStr(string input,string cutsigns)
+begin
+  string 255 res;
+  integer i;
+  vector boolean vcutsign;
+  
+  if(nonblank(cutsigns))then begin
+    for(i=0;i<len(cutsigns);i=i+1)begin
+      vcutsign[mid(cutsigns,i,1)] = true;
+    end;
+    for(i=0;i<len(input);i=i+1)begin
+      if(vcutsign[mid(input,i,1)]==false)then begin
+        res = res & mid(input,i,1);
+      end else begin
+        i = len(input);
+      end;
+    end;
+  end else begin
+    res = input;
+  end;
+  
+  
+  CutToStr = res;
+return;
+end;
+
 global updating procedure RA_B2BLoanAppEvaluateBuSettings(var record B2BLoanApplicationVc LAr,boolean openwcredman)
 begin
   record B2BLoanApplicationVc oldLAr;
@@ -2230,7 +2257,7 @@ begin
               firstargval = vals;
             end else begin
               //logtext(0,"firstarg " & firstarg);
-              firstargval = stringtoval(GetFieldValueByName(LAr,firstarg,-1),m4val);
+              firstargval = stringtoval(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol),m4val);
             end;
           end else begin
             firstargval = stringtoval(varguments[firstarg],m4val);
@@ -2241,7 +2268,7 @@ begin
                 lastargval = vals;
               end else begin
                 //logtext(0,"lastarg " & lastarg);
-                lastargval = stringtoval(GetFieldValueByName(LAr,lastarg,-1),m4val);
+                lastargval = stringtoval(CutToStr(GetFieldValueByName(LAr,lastarg,-1),LAErw.CutAfterSymbol),m4val);
               end;
             end else begin
               lastargval = stringtoval(varguments[lastarg],m4val);
@@ -2290,7 +2317,7 @@ begin
                 end;
               end;
             end else begin
-              firstargval = stringtoval(GetFieldValueByName(LAr,firstarg,-1),m4val);
+              firstargval = stringtoval(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol),m4val);
               if(LAErw.Type==0)then begin
                 if(blank(LAErw.StrValFrom) and blank(LAErw.StrValTo))then begin
                   if(firstargval>=LAErw.RangeFrom and firstargval<=LAErw.RangeTo)then begin
@@ -2303,7 +2330,7 @@ begin
                 end;
                 nottrue = nottrue and resrow;
                 end else begin
-                  firstarg = GetFieldValueByName(LAr,firstarg,-1);
+                  firstarg = CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol);
                   if(nonblank(LAErw.StrValFrom) and nonblank(LAErw.StrValTo))then begin
                     if(firstarg>=LAErw.StrValFrom and firstarg<=LAErw.StrValTo)then begin
                       resrow = true;
@@ -2334,9 +2361,9 @@ begin
               lastarg = currentdate;
             end;
             if(sign=="-")then begin
-              calcdate = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+              calcdate = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
             end else begin
-              calcdate = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+              calcdate = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
             end;
           end;  
           if(left(uppercase(LAErw.Formula),8)=="ADDMONTH")then begin
@@ -2348,9 +2375,9 @@ begin
               lastarg = currentdate;
             end;
             if(sign=="-")then begin
-              calcdate = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+              calcdate = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
             end else begin
-              calcdate = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+              calcdate = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
             end;
           end;  
           if(left(uppercase(LAErw.Formula),7)=="ADDYEAR")then begin
@@ -2362,9 +2389,9 @@ begin
               lastarg = currentdate;
             end;
             if(sign=="-")then begin
-              calcdate = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+              calcdate = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
             end else begin
-              calcdate = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+              calcdate = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
             end;
           end; 
         
@@ -2383,9 +2410,9 @@ begin
                   lastarg = currentdate;
                 end;
                 if(sign=="-")then begin
-                  checkdatefr = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  checkdatefr = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
-                  checkdatefr = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  checkdatefr = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;  
               if(left(LAErw.RangeFromDate,8)=="ADDMONTH")then begin
@@ -2397,9 +2424,9 @@ begin
                   lastarg = currentdate;
                 end;
                 if(sign=="-")then begin
-                  checkdatefr = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  checkdatefr = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
-                  checkdatefr = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  checkdatefr = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;  
               if(left(LAErw.RangeFromDate,7)=="ADDYEAR")then begin
@@ -2411,9 +2438,9 @@ begin
                   lastarg = currentdate;
                 end;
                 if(sign=="-")then begin
-                  checkdatefr = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  checkdatefr = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
-                  checkdatefr = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  checkdatefr = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;
             end;
@@ -2433,9 +2460,9 @@ begin
                   lastarg = currentdate;
                 end;
                 if(sign=="-")then begin
-                  checkdateto = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  checkdateto = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
-                  checkdateto = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  checkdateto = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;  
             
@@ -2448,9 +2475,9 @@ begin
                   lastarg = currentdate;
                 end;
                 if(sign=="-")then begin
-                  checkdateto = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  checkdateto = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
-                  checkdateto = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  checkdateto = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;  
               if(left(LAErw.RangeToDate,7)=="ADDYEAR")then begin
@@ -2462,9 +2489,9 @@ begin
                   lastarg = currentdate;
                 end;
                 if(sign=="-")then begin
-                  checkdateto = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  checkdateto = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
-                  checkdateto = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  checkdateto = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;
             end;
