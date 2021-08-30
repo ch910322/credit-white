@@ -4295,6 +4295,7 @@ begin
   MatCol(1,24,"Bankruptcy Rating",0,BankruptRating,false,0);
   MatCol(1,140,"Monthly Rate Without EDS",0,MonthRateWithoutEDS,false,0);
   MatCol(1,300,"Monthly Rate With EDS",0,MonthRateWithEDS,false,0);
+  MatCol(1,-120,"Cut After",0,CutAfterSymbol,false,0);
   EndMatrix;
   EndWindow;
 end;

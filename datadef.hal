@@ -2641,6 +2641,7 @@ begin
     ArrayField(BankruptRating,M4UStr,60,0);
     ArrayField(MonthRateWithoutEDS,M4Val,0,0);
     ArrayField(MonthRateWithEDS,M4Val,0,0);
+    ArrayField(CutAfterSymbol,M4Str,20,0);
     EndArray;
   EndBlock;
   

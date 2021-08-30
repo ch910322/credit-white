@@ -2194,7 +2194,7 @@ begin
       rwcnt = matrowcnt(AppIb);
       for(i=0;i<rwcnt;i=i+1)begin
         matrowget(AppIb,i,AppIrw);
-        if(nonblank(AppIrw.BankruptRating) and AppIrw.BankruptRating==LAr.BankruptcyRatingCode)then begin
+        if(nonblank(AppIrw.BankruptRating) and AppIrw.BankruptRating==CutToStr(LAr.BankruptcyRatingCode,AppIrw.CutAfterSymbol))then begin
           if(LAr.EDSGuarant==1)then begin
             LAr.InterestRate = AppIrw.MonthRateWithEDS;
           end else begin
