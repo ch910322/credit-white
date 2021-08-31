@@ -998,7 +998,7 @@ begin
           end;
           if ((lastamount!=amounts[i] and lastamount>0) or (ratetype==1 and lastdaycnt!=daycnt[i])) then begin
             if (ratetype==0) then begin //as default
-              rowsum = lastamount*(overdueprc/100) * odays;
+              rowsum = round(lastamount*(overdueprc/100) * odays,defaultcurroundoff);
               rate = ValToString((overdueprc/100),M45Val,"",",",0);
               tstr = odays & " Days " &  " - " & item & " - " & lastamount & " * " & rate & "=" & rowsum;
               if(OCTr.UseNewCalc==1)then begin
@@ -1015,7 +1015,7 @@ begin
                     end;
                   end;
                 end;
-                rowsum = lastamount*(overdueprc/100) * odays;
+                rowsum = round(lastamount*(overdueprc/100) * odays,defaultcurroundoff);
                 tstr = replaceOverdueStr(invoicenr,lastamount,lastperiod,odays,rate,rowsum);
               end;
               lateformula[lateformula.length] = tstr;
@@ -1032,7 +1032,7 @@ begin
                   end;
                 end;
               end;
-              rowsum = lastamount * odays*(overdueprc/100)/lastdaycnt;
+              rowsum = round(lastamount * odays*(overdueprc/100)/lastdaycnt,defaultcurroundoff);
               rate = ValToString((overdueprc/100),M45Val,"",",",0);
               tstr = odays & " Days " &  " - " & item & " - " & lastamount & " * " & rate & "/" & lastdaycnt & "=" & rowsum;
               if(OCTr.UseNewCalc==1)then begin
@@ -1061,7 +1061,7 @@ begin
                 end;
               end;
             end;
-            rowsum = (lastamount*(overdueprc/100) * odays);
+            rowsum = round((lastamount*(overdueprc/100) * odays),defaultcurroundoff);
             rate = ValToString((overdueprc/100),M45Val,"",",",0);
             tstr = odays & " Days " &  " - " & item & " - " & lastamount & " * " & rate & "=" & rowsum;
             if(OCTr.UseNewCalc==1)then begin
@@ -1081,7 +1081,7 @@ begin
                 end;
               end;
             end;
-            rowsum = (lastamount * odays*(overdueprc/100)/lastdaycnt);
+            rowsum = round((lastamount * odays*(overdueprc/100)/lastdaycnt),defaultcurroundoff);
             rate = ValToString((overdueprc/100),M45Val,"",",",0);
             tstr = odays & " Days " &  " - " & item & " - " & lastamount & " * " & rate & "/" & lastdaycnt & "=" & rowsum;
             if(OCTr.UseNewCalc==1)then begin
