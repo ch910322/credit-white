@@ -1172,7 +1172,7 @@ begin
     res = AddDay(res,1);
   end;
   if (nonblank(intres)) then begin
-    //intres = AddDay(intres,1);??//For testing // Edit ************************** BPI Ukraine - KramarAlexandr - 02, 31 08 2021 y. at 1:49:31 PM
+    intres = AddDay(intres,1);
   end;
 
   //GetLastOverdueInvoiceDate = res;
@@ -1220,13 +1220,15 @@ begin
   array string 255 notusedlateformula;
   date invdate;
   record CMApplicationSetBlock CMAb;
+  transaction Boolean gPDRAfterReciept;
   
   invdate = originvdate;
-  
-  //blockload(CMAb);//Off CM -> Settings -> Credit Management settings -> checkbox "Include payment day in overdue calculation" performance
-  //if(CMAb.BuyOutInclPaymDay==1)then begin
-  //  invdate = addday(invdate,1);
-  //end;
+  if(gPDRAfterReciept)then begin
+    blockload(CMAb);//Off CM -> Settings -> Credit Management settings -> checkbox "Include payment day in overdue calculation" performance
+    if(CMAb.BuyOutInclPaymDay==1)then begin
+      invdate = addday(invdate,1);
+    end;
+  end;
   
   ClearStringArray(lateformula);
   latedays = 0;
