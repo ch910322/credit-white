@@ -425,7 +425,7 @@ begin
 
   GetHiddenInvoiceValues(IVr,abovehiddenbase,abovehiddenvat);
   openamount = GetCustomerOpenAmount(IVr.CustCode,IVr);
-  td = AddDay(IVr.InvDate,-1);
+  td = AddDay(IVr.InvDate,0);
   //CustAged(CUr,td,bd,td,ARSSumod,ARSsactod,ARSs0od,ARSs1od,ARSs16od,ARSs31od,ARSs61od,ARSs91od,ARSs121od,ARSs151od,0);
   //GetOnAccBalance(RepSpec,CUr.Code,CUr.CurncyCode,false,0,ARSOnAccBalB1,rval2,ARSOnAccBal,sumbooked,sumnow,sumcurncy,sumdiff,CurTotalsr,debaccs,debbal,debcnt);//ObjStr
   RepSpec.d1 = td;
@@ -448,10 +448,20 @@ begin
   if(readfirstmain(ARr,1,true))then begin
     if(ARr.BookRVal!=IVr.Sum4)then begin
       topay2 = (topay2 - (IVr.Sum4-ARr.BookRVal));
+      topay3 = (topay3 - (IVr.Sum4-ARr.BookRVal));
+      openamount2 = openamount2 - (IVr.Sum4-ARr.BookRVal);
+    end else begin
+      openamount2 = openamount2 - ARr.BookRVal;
+      topay2 = topay2 - ARr.BookRVal;
+      topay3 = topay3 - ARr.BookRVal;
     end;
   end else begin
-      topay2 = topay2 - IVr.Sum4;
+    topay2 = topay2 - IVr.Sum4;
+    topay3 = topay3 - IVr.Sum4;
+    openamount2 = openamount2 - IVr.Sum4;
   end;
+  
+  
   topay3 = topay3 + abovehiddenbase + abovehiddenvat;
   topay4 = topay3;
   if (hiddenf) then begin

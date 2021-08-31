@@ -2121,6 +2121,33 @@ begin
   return;
 end;
 
+
+function string 255 CutToStr(string input,string cutsigns)
+begin
+  string 255 res;
+  integer i;
+  vector boolean vcutsign;
+  
+  if(nonblank(cutsigns))then begin
+    for(i=0;i<len(cutsigns);i=i+1)begin
+      vcutsign[mid(cutsigns,i,1)] = true;
+    end;
+    for(i=0;i<len(input);i=i+1)begin
+      if(vcutsign[mid(input,i,1)]==false)then begin
+        res = res & mid(input,i,1);
+      end else begin
+        i = len(input);
+      end;
+    end;
+  end else begin
+    res = input;
+  end;
+  
+  
+  CutToStr = res;
+return;
+end;
+
 global updating procedure RA_B2BLoanAppEvaluateBuSettings(var record B2BLoanApplicationVc LAr,boolean openwcredman)
 begin
   record B2BLoanApplicationVc oldLAr;
@@ -2135,14 +2162,18 @@ begin
   boolean resrow,totalres,nottrue,isdataformula;
   val vals,firstargval,lastargval,resval;
   date calcdate,bd,checkdatefr,checkdateto;
-  string 40 reason,reasonall;
+  array string 50 reason;
   record StandProblemVc SPr;
   record AppInterestRateBlock AppIb;
   row AppInterestRateBlock AppIrw;
   record CredManVc CredManr;
+  boolean checked;
+  
+  
   
   recordcopy(oldLAr,LAr);
-  
+
+  checked = false;
   totalres = false;
   nottrue = true;
   
@@ -2163,7 +2194,7 @@ begin
       rwcnt = matrowcnt(AppIb);
       for(i=0;i<rwcnt;i=i+1)begin
         matrowget(AppIb,i,AppIrw);
-        if(nonblank(AppIrw.BankruptRating) and AppIrw.BankruptRating==LAr.BankruptcyRatingCode)then begin
+        if(nonblank(AppIrw.BankruptRating) and AppIrw.BankruptRating==CutToStr(LAr.BankruptcyRatingCode,AppIrw.CutAfterSymbol))then begin
           if(LAr.EDSGuarant==1)then begin
             LAr.InterestRate = AppIrw.MonthRateWithEDS;
           end else begin
@@ -2226,7 +2257,7 @@ begin
               firstargval = vals;
             end else begin
               //logtext(0,"firstarg " & firstarg);
-              firstargval = stringtoval(GetFieldValueByName(LAr,firstarg,-1),m4val);
+              firstargval = stringtoval(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol),m4val);
             end;
           end else begin
             firstargval = stringtoval(varguments[firstarg],m4val);
@@ -2237,7 +2268,7 @@ begin
                 lastargval = vals;
               end else begin
                 //logtext(0,"lastarg " & lastarg);
-                lastargval = stringtoval(GetFieldValueByName(LAr,lastarg,-1),m4val);
+                lastargval = stringtoval(CutToStr(GetFieldValueByName(LAr,lastarg,-1),LAErw.CutAfterSymbol),m4val);
               end;
             end else begin
               lastargval = stringtoval(varguments[lastarg],m4val);
@@ -2255,15 +2286,12 @@ begin
               if(resval>=LAErw.RangeFrom and resval<=LAErw.RangeTo)then begin
                 resrow = true;
                 if(LAEr.Values==0)then begin
-                  reason = LAErw.Reason;
-                  logtext(0,i);
-                  goto lCheckEnd;
+                  checked = true;
+                  //goto lCheckEnd;
                 end;
-                reasonall = LAErw.Reason;
+                reason[reason.length] = LAErw.Reason;
               end;
-              nottrue = nottrue and resrow;
-              //logtext(0,"resrow " & resrow);
-          
+              nottrue = nottrue and resrow;          
             end;
             if(nonblank(LAErw.Argument))then begin 
               varguments[LAErw.Argument] = resval; 
@@ -2277,32 +2305,44 @@ begin
                 if(firstargval>=LAErw.RangeFrom and firstargval<=LAErw.RangeTo)then begin
                   resrow = true;
                   if(LAEr.Values==0)then begin
-                    reason = LAErw.Reason;
-                    logtext(0,i);
-                    goto lCheckEnd;
+                    //goto lCheckEnd;
+                    checked = true;
                   end;
+                  reason[reason.length] = LAErw.Reason;
                 end;
                 nottrue = nottrue and resrow;
-                //logtext(0,"resrow " & resrow);
               end else begin
                 if(nonblank(LAErw.Argument))then begin
                   varguments[LAErw.Argument] = firstargval;
                 end;
               end;
             end else begin
-              firstargval = stringtoval(GetFieldValueByName(LAr,firstarg,-1),m4val);
+              firstargval = stringtoval(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol),m4val);
               if(LAErw.Type==0)then begin
-                if(firstargval>=LAErw.RangeFrom and firstargval<=LAErw.RangeTo)then begin
+                if(blank(LAErw.StrValFrom) and blank(LAErw.StrValTo))then begin
+                  if(firstargval>=LAErw.RangeFrom and firstargval<=LAErw.RangeTo)then begin
                   resrow = true;
                   if(LAEr.Values==0)then begin
-                    reason = LAErw.Reason;
-                    logtext(0,i);
-                    goto lCheckEnd;
+                    //goto lCheckEnd;
+                    checked = true;
                   end;
-                  reasonall = LAErw.Reason;
+                  reason[reason.length] = LAErw.Reason;
                 end;
                 nottrue = nottrue and resrow;
-                //logtext(0,"resrow " & resrow);
+                end else begin
+                  firstarg = CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol);
+                  if(nonblank(LAErw.StrValFrom) and nonblank(LAErw.StrValTo))then begin
+                    if(firstarg>=LAErw.StrValFrom and firstarg<=LAErw.StrValTo)then begin
+                      resrow = true;
+                      if(LAEr.Values==0)then begin
+                        //goto lCheckEnd;
+                        checked = true;
+                      end;
+                      reason[reason.length] = LAErw.Reason;
+                    end;
+                    nottrue = nottrue and resrow;
+                  end;
+                end;
               end else begin
                 if(nonblank(LAErw.Argument))then begin
                   varguments[LAErw.Argument] = firstargval; 
@@ -2321,9 +2361,9 @@ begin
               lastarg = currentdate;
             end;
             if(sign=="-")then begin
-              calcdate = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+              calcdate = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
             end else begin
-              calcdate = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+              calcdate = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
             end;
           end;  
           if(left(uppercase(LAErw.Formula),8)=="ADDMONTH")then begin
@@ -2335,9 +2375,9 @@ begin
               lastarg = currentdate;
             end;
             if(sign=="-")then begin
-              calcdate = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+              calcdate = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
             end else begin
-              calcdate = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+              calcdate = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
             end;
           end;  
           if(left(uppercase(LAErw.Formula),7)=="ADDYEAR")then begin
@@ -2349,9 +2389,9 @@ begin
               lastarg = currentdate;
             end;
             if(sign=="-")then begin
-              calcdate = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+              calcdate = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
             end else begin
-              calcdate = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+              calcdate = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
             end;
           end; 
         
@@ -2370,9 +2410,9 @@ begin
                   lastarg = currentdate;
                 end;
                 if(sign=="-")then begin
-                  checkdatefr = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  checkdatefr = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
-                  checkdatefr = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  checkdatefr = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;  
               if(left(LAErw.RangeFromDate,8)=="ADDMONTH")then begin
@@ -2384,9 +2424,9 @@ begin
                   lastarg = currentdate;
                 end;
                 if(sign=="-")then begin
-                  checkdatefr = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  checkdatefr = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
-                  checkdatefr = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  checkdatefr = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;  
               if(left(LAErw.RangeFromDate,7)=="ADDYEAR")then begin
@@ -2398,9 +2438,9 @@ begin
                   lastarg = currentdate;
                 end;
                 if(sign=="-")then begin
-                  checkdatefr = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  checkdatefr = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
-                  checkdatefr = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  checkdatefr = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;
             end;
@@ -2420,9 +2460,9 @@ begin
                   lastarg = currentdate;
                 end;
                 if(sign=="-")then begin
-                  checkdateto = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  checkdateto = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
-                  checkdateto = addday(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  checkdateto = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;  
             
@@ -2435,9 +2475,9 @@ begin
                   lastarg = currentdate;
                 end;
                 if(sign=="-")then begin
-                  checkdateto = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  checkdateto = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
-                  checkdateto = addmonth(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  checkdateto = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;  
               if(left(LAErw.RangeToDate,7)=="ADDYEAR")then begin
@@ -2449,9 +2489,9 @@ begin
                   lastarg = currentdate;
                 end;
                 if(sign=="-")then begin
-                  checkdateto = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),-stringtoint(lastarg));
+                  checkdateto = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
-                  checkdateto = addyear(stringtodate(GetFieldValueByName(LAr,firstarg,-1)),stringtoint(lastarg));
+                  checkdateto = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;
             end;
@@ -2462,25 +2502,22 @@ begin
             if(calcdate<=checkdateto)then begin
               resrow = true;
               if(LAEr.Values==0)then begin
-                reason = LAErw.Reason;
-                logtext(0,i);
-                goto lCheckEnd;
+                //goto lCheckEnd;
+                checked = true;
               end;
-              reasonall = LAErw.Reason;
+              reason[reason.length] = LAErw.Reason;
             end;
             nottrue = nottrue and resrow;
           end;
         
           if(nonblankdate(calcdate) and nonblankdate(checkdatefr))then begin
             if(calcdate>=checkdatefr)then begin
-              resrow = true;
-            
+              resrow = true;            
               if(LAEr.Values==0)then begin
-                reason = LAErw.Reason;
-                logtext(0,i);
-                goto lCheckEnd;
+                //goto lCheckEnd;
+                checked = true;
               end;
-              reasonall = LAErw.Reason;
+              reason[reason.length] = LAErw.Reason;
             end;
             nottrue = nottrue and resrow;
           end;
@@ -2491,21 +2528,14 @@ begin
   lCheckEnd:;
     
     if(LAEr.Values==0)then begin
-      if(resrow)then begin
-        if(nonblank(reason))then begin
-          SPr.Code = reason;
-          if(readfirstmain(SPr,1,true))then begin
-            LAr.RejReason = SPr.ShortDesc;
-          end else begin  
-            LAr.RejReason = reason;
-          end;
-        end else begin
-          if(nonblank(reasonall))then begin
-            SPr.Code = reasonall;
+      if(checked)then begin
+        if(reason.length>0)then begin
+          for(i=0;i<reason.length;i=i+1)begin
+            SPr.Code = reason[i];
             if(readfirstmain(SPr,1,true))then begin
-              LAr.RejReason = SPr.ShortDesc;
+              LAr.RejReason = LAr.RejReason & ";" & SPr.ShortDesc;
             end else begin  
-              LAr.RejReason = reasonall;
+              LAr.RejReason = LAr.RejReason & ";" & reason[i];
             end;
           end;
         end;
@@ -2525,20 +2555,13 @@ begin
       if(nottrue)then begin
         if(LAEr.Decisions==0)then begin
           LAr.Evaluation = 2;
-          if(nonblank(reason))then begin
-            SPr.Code = reason;
-            if(readfirstmain(SPr,1,true))then begin
-              LAr.RejReason = SPr.ShortDesc;
-            end else begin  
-              LAr.RejReason = reason;
-            end;
-          end else begin
-            if(nonblank(reasonall))then begin
-              SPr.Code = reasonall;
+          if(reason.length>0)then begin
+            for(i=0;i<reason.length;i=i+1)begin
+              SPr.Code = reason[i];
               if(readfirstmain(SPr,1,true))then begin
-                LAr.RejReason = SPr.ShortDesc;
+                LAr.RejReason = LAr.RejReason & ";" & SPr.ShortDesc;
               end else begin  
-                LAr.RejReason = reasonall;
+                LAr.RejReason = LAr.RejReason & ";" & reason[i];
               end;
             end;
           end;
@@ -2554,56 +2577,10 @@ begin
       end;
     end;
     
-    /*
-    if(LAEr.Decisions==0)then begin
-      if(nottrue==false)then begin
-        totalres = true;
-        LAr.Evaluation = 1;
-      end else begin
-        if(nonblank(reason))then begin
-          SPr.Code = reason;
-          if(readfirstmain(SPr,1,true))then begin
-            LAr.RejReason = SPr.ShortDesc;
-          end else begin  
-            LAr.RejReason = reason;
-          end;
-        end else begin
-          if(nonblank(reasonall))then begin
-            SPr.Code = reasonall;
-            if(readfirstmain(SPr,1,true))then begin
-              LAr.RejReason = SPr.ShortDesc;
-            end else begin  
-              LAr.RejReason = reasonall;
-            end;
-          end;
-        end;
-        LAr.Evaluation = 2;
-      end;
-    end else begin
-      if(nottrue==true)then begin
-        totalres = true;
-        LAr.Evaluation = 1;
-      end else begin
-        if(nonblank(reason))then begin
-          SPr.Code = reason;
-          if(readfirstmain(SPr,1,true))then begin
-            LAr.RejReason = SPr.ShortDesc;
-          end else begin  
-            LAr.RejReason = reason;
-          end;
-        end else begin
-          if(nonblank(reasonall))then begin
-            SPr.Code = reasonall;
-            if(readfirstmain(SPr,1,true))then begin
-              LAr.RejReason = SPr.ShortDesc;
-            end else begin  
-              LAr.RejReason = reasonall;
-            end;
-          end;
-        end;
-        LAr.Evaluation = 2;
-      end;
-    end;*/
+    if(left(LAr.RejReason,1)==";")then begin
+      LAr.RejReason = right(LAr.RejReason,len(LAr.RejReason)-1);
+    end;
+    
     recordupdate(oldLAr,LAr,true);
     if(oldLAr.Evaluation==0 and LAr.Evaluation==1)then begin
       if(LAEr.CreateAgreement==1)then begin

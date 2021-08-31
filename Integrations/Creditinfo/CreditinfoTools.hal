@@ -6,8 +6,8 @@ external inner updating function LongInt CUVcRecordUpdate(var record CUVc,record
 external function Boolean CheckIfCompanyInfoAvailable(string,string,var array Date,var array val,var array Integer,var array Longint);
 external function Boolean GetExistingCompanyInfo(string,string,Longint,var area);
 external procedure SendCompanyInfo(string,string,Integer,var area);
-external procedure CreditInfoFileAsignB2BLoanApplicationVc(var record B2BLoanApplicationVc,xml);
-external procedure CreditInfoFileAsignCUVc(var record CUVc,xml);
+external procedure CreditInfoFileAsignB2BLoanApplicationVc(var record B2BLoanApplicationVc,xml,xml,xml,xml);
+external procedure CreditInfoFileAsignCUVc(var record CUVc,xml,xml,xml);
 
 function Integer YearDiff(Date d1,Date d2)
 begin
@@ -79,7 +79,7 @@ begin
 end;
 
 global
-updating procedure TreatCreditInfoReply(var record B2BLoanApplicationVc LAr,var record CUVc CUr,area reply,var Integer res)
+updating procedure TreatCreditInfoReply(var record B2BLoanApplicationVc LAr,var record CUVc CUr,area reply,area replyspdr,area replyfs2,area replyfs,var Integer res)
 begin
   Boolean debugf;
   string 255 lang,params,url,path,root,tstr,fn,name,surname,datestr,datestr1,datestr2;
@@ -91,7 +91,7 @@ begin
   record ContactRelVc CRr;
   record CMApplicationSetBlock ASb;
   string 255 lastcode,lastname;
-  xml axml;
+  xml axml,axmlspdr,axmlFS,axmlFSlist;
   record CreditinfoFieldAssignBlock CIAb;
   boolean newCIsettig;
 
@@ -105,6 +105,10 @@ begin
     
   res = 1;
   axml = ParseXmlArea(reply);
+  axmlspdr = ParseXmlArea(replyspdr);
+  axmlFS = ParseXmlArea(replyfs2);
+  axmlFSlist = ParseXmlArea(replyfs);
+  
   if(newCIsettig==false)then begin 
     root = "root/BasicInfo";
     if (nonblank(XmlGet(axml,root & "/Registered"))) then begin
@@ -292,15 +296,33 @@ begin
       LAr.PrevTotal = LAr.PrevReceivables-LAr.PrevPayables;
     end;
   end else begin
-    CreditInfoFileAsignB2BLoanApplicationVc(LAr,axml);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 15 06 2021 y. at 11:55:04 AM
-    CreditInfoFileAsignCUVc(CUr,axml);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 15 06 2021 y. at 11:55:04 AM
+    CreditInfoFileAsignB2BLoanApplicationVc(LAr,axml,axmlspdr,axmlFS,axmlFSlist);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 15 06 2021 y. at 11:55:04 AM
+    CreditInfoFileAsignCUVc(CUr,axml,axmlspdr,axmlFS);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 15 06 2021 y. at 11:55:04 AM
   end;
   RecordUpdate(oldCUr,CUr,false);
   CUVcRecordUpdate(CUr,oldCUr,Rs_Update,1);
-  fn = CUr.RegNr1  & "_creditinfo.txt";
+  fn = CUr.RegNr1  & "_creditinfo.xml";
   WriteAreaToFile(reply,fn,0);
   RecordLinkFile(fn,0,LAr,CurrentCompany);
   Delete_File(fn);
+  
+  fn = CUr.RegNr1  & "_SpiderWeb.xml";
+  WriteAreaToFile(replyspdr,fn,0);
+  RecordLinkFile(fn,0,LAr,CurrentCompany);
+  Delete_File(fn);
+  
+  fn = CUr.RegNr1  & "FS_List.xml";
+  WriteAreaToFile(replyfs,fn,0);
+  RecordLinkFile(fn,0,LAr,CurrentCompany);
+  Delete_File(fn);
+  
+  fn = CUr.RegNr1  & "FS_Report.xml";
+  WriteAreaToFile(replyfs2,fn,0);
+  RecordLinkFile(fn,0,LAr,CurrentCompany);
+  Delete_File(fn);
+  
+  
+  
 /*
   "/BasicInfo";
   //ManagersPersonalCodeValue,Registered,Atstovavimas,Region
@@ -356,22 +378,39 @@ begin
   return;
 end;
 
+function string 10 truefalsestring(integer parametr)
+begin
+  string 10 res;
+  
+  if(parametr==0)then begin
+    res = "false";
+  end else begin
+    res = "true";
+  end;
+
+  truefalsestring = res;
+return;
+end;
+
 procedure DoGetCreditInfo(var record B2BLoanApplicationVc LAr,var Integer res,var string errstr)
 begin
   record CreditinfoBlock CIb;
   Boolean debugf;
-  area reply,request;
-  string 255 lang,params,url,path,root,tstr,fn,name,surname,datestr,datestr1,datestr2;
+  area reply,request,requestspdr,replyspdr,temparea,replyfs,requestfs,replyfs2;
+  string 255 lang,params,url,path,root,tstr,fn,name,surname,datestr,datestr1,datestr2,repid;
   record CUVc CUr,oldCUr,tCUr;
   Boolean sslf;
-  Longint port,pos;
-  xml axml;
+  Longint port,pos,counch;
+  xml axml,axml2;
+  boolean reqf;
+  integer i;
 
   res = 0;
   BlockLoad(CIb);
   CUr.Code = LAr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
   
+    //==============================================  CREDITINFO
     lang = "0";
     if (debugf) then begin
       lang = "1";
@@ -399,13 +438,160 @@ begin
       if (XmlNodeExists(axml,root)==false) then begin
         goto LGetCreditInfo;
       end;
+      
+      reqf = true;
+    end;
+LGetCreditInfo:;    
+    
+    //==============================================  SPIDERWEB
+    
+    lang = "0";
+    if (debugf) then begin
+      lang = "1";
+    end;
+    //params = "username=" & CIb.SPWAPIUser & "&password=" & CIb.SPWAPIPassword & "&idnum=" & CUr.RegNr1 & "&lang=" & lang & "&productNumber=6202";
+    params = "";
+    logtext(0,params);
+    if (CIb.SPWMode==0) then begin//test
+      url = "ds.infobankas.lt";
+      port = 80;
+      sslf = false;
+    end else begin
+      url = "new.infobankas.lt";
+      port = 443;
+      sslf = true;
+    end;
+    path = "/CreditInfoGroup_lt/SaisWs/SpiderWeb/Spider.svc";
+    
+    addtexttoarea("SOAPAction: http://creditinfo.lt/2010/05/ISpiderService/GetSpiderData",requestspdr);
+    addtexttoarea(chr(13) & chr(10),requestspdr);
+    addtexttoarea(chr(13) & chr(10),requestspdr);
+    
+    addtexttoarea("<x:Envelope xmlns:x=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://creditinfo.lt/2010/05\" ",requestspdr);
+    addtexttoarea("xmlns:sai=\"http://schemas.datacontract.org/2004/07/SaisInternalWs.SpiderWeb\">",requestspdr);
+    addtexttoarea("<x:Header/>",requestspdr);
+    addtexttoarea("<x:Body>",requestspdr);
+    addtexttoarea("<ns:GetSpiderData>",requestspdr);
+    addtexttoarea("<ns:request>",requestspdr);
+    addtexttoarea("<sai:AsociationType>" & CIb.SPWAsociationType & "</sai:AsociationType>",requestspdr);
+    addtexttoarea("<sai:CheckJar>" & truefalsestring(CIb.SPWCheckJar) & "</sai:CheckJar>",requestspdr);
+    addtexttoarea("<sai:FillNegativeInfo>" & truefalsestring(CIb.SPWFillNegativeInfo) & "</sai:FillNegativeInfo>",requestspdr);
+    addtexttoarea("<sai:IdentityNumber>" & CUr.RegNr1 & "</sai:IdentityNumber>",requestspdr);
+    addtexttoarea("<sai:Password>" & CIb.SPWAPIPassword & "</sai:Password>",requestspdr);
+    addtexttoarea("<sai:UserName>" & CIb.SPWAPIUser & "</sai:UserName>",requestspdr);
+    addtexttoarea("<sai:WithHistory>" & truefalsestring(CIb.SPWWithHistory) & "</sai:WithHistory>",requestspdr);
+    addtexttoarea("</ns:request>",requestspdr);
+    addtexttoarea("</ns:GetSpiderData>",requestspdr);
+    addtexttoarea("</x:Body>",requestspdr);
+    addtexttoarea("</x:Envelope>",requestspdr);
+    addtexttoarea(chr(13) & chr(10),requestspdr);
+//addtexttoarea(chr(13) & chr(10),requestspdr);
+    
+    writeareatofile(requestspdr,"SPDRWEBREQUEST.txt",0);
 
-      qupdating.TreatCreditInfoReply(LAr,CUr,reply,res);
+    if (SendRawWebRequest(url,port,sslf,"POST",path & "?" & params,"text/xml; charset=utf-8","",false,requestspdr,replyspdr,10)) then begin
+      if(getarealength(replyspdr)>200)then begin
+        for(pos=0;pos<getarealength(replyspdr)-11;pos=pos+1)begin
+          if(getstringfromarea(replyspdr,pos,11)=="<s:Envelope")then begin
+            GetAreaFromArea(replyspdr,pos,getarealength(replyspdr)-pos,temparea);
+            setareazerosize(replyspdr);
+            GetAreaFromArea(temparea,0,getarealength(temparea),replyspdr);
+          end;
+        end;
+        writeareatofile(replyspdr,"SPWcreditinfo.xlm",0);
+        axml = ParseXmlArea(replyspdr);
+        root = "root/BasicInfo";
+        if (XmlNodeExists(axml,"KLAIDA")) then begin
+          errstr = XmlGet(axml,"KLAIDA");
+        end;
+        if (XmlNodeExists(axml,root)==false) then begin
+          goto LGetCreditInfo1;
+        end;
+      
+        reqf = true;
+      end else begin
+        goto LGetCreditInfo1;
+      end;
+    end;
+LGetCreditInfo1:;    
+    //==============================================  FinancialReports Financial statements
+    
+    lang = "0";
+    if (debugf) then begin
+      lang = "1";
+    end;
+    params = "username=" & CIb.FSAPIUser & "&password=" & CIb.FSAPIPassword & "&companyCode=" & CUr.RegNr1;
+    logtext(0,params);
+    if (CIb.Mode==0) then begin//test
+      url = "ds.infobankas.lt";
+      port = 80;
+      sslf = false;
+    end else begin
+      url = "new.infobankas.lt";
+      port = 443;
+      sslf = true;
+    end;
+    path = "/CreditInfoGroup_lt/SaisWs/FinancialReports.asmx/GetReportList";
+
+    if (SendWebRequest(url,port,-1,sslf,"GET",path & "?" & params,"text/xml; charset=utf-8","",false,requestfs,replyfs,10)) then begin
+      writeareatofile(replyfs,"FBGetReportList.xlm",0);
+      axml = ParseXmlArea(replyfs);
+      root = "FsiListWsReturnType/Data/PAIESKA/FA_SARASAS";
+      
+      if (XmlNodeExists(axml,root)==false) then begin
+        goto LGetCreditInfo2;
+      end else begin
+        counch = XmlCountChildren(axml,root);
+        if(counch>0)then begin
+          for(i=counch-1;i>0;i=i-1)begin
+            repid = XmlGetAttribute(axml,root & "/FA[" & i & "]","FS_NUMBER");
+            logtext(0,"repid " & repid);
+            
+            lang = "0";
+            if (debugf) then begin
+              lang = "1";
+            end;
+            params = "username=" & CIb.FSAPIUser & "&password=" & CIb.FSAPIPassword & "&fsNumber=" & repid;
+            logtext(0,params);
+            if (CIb.Mode==0) then begin//test
+              url = "ds.infobankas.lt";
+              port = 80;
+              sslf = false;
+            end else begin
+              url = "new.infobankas.lt";
+              port = 443;
+              sslf = true;
+            end;
+            path = "/CreditInfoGroup_lt/SaisWs/FinancialReports.asmx/GetReport";
+
+            if (SendWebRequest(url,port,-1,sslf,"GET",path & "?" & params,"text/xml; charset=utf-8","",false,requestfs,replyfs2,10)) then begin
+              writeareatofile(replyfs2,"FBGetReport" & repid & ".xlm",0);
+              axml2 = ParseXmlArea(replyfs2);
+              root = "FsiWsReturnType/Data/FA/BALANSAS";
+              if (XmlNodeExists(axml2,root)==false) then begin
+                setareazerosize(replyfs2);
+                goto LGetCreditInfo2;
+              end else begin
+                reqf = true;
+                goto LGetCreditInfo2;
+              end;
+            end;
+            
+          end;
+        end;
+      end;      
+    end;
+    
+LGetCreditInfo2:;
+    
+    if(reqf)then begin
+      qupdating.TreatCreditInfoReply(LAr,CUr,reply,replyspdr,replyfs2,replyfs,res);
       threadasync.SendCompanyInfo(CUr.RegNr1,CUr.CountryCode,1,reply);
     end;
+    
   end;
 
-LGetCreditInfo:;
+
   return;
 end;
 
@@ -442,14 +628,14 @@ global
 procedure GetCreditInfoHistory(var record B2BLoanApplicationVc LAr,var Integer res,var string errstr,Integer source,Longint id)
 begin
   record CUVc CUr;
-  area comparea;
+  area comparea,compareaspdr,replyfs;
   
   CUr.Code = LAr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
     if (GetExistingCompanyInfo(CUr.RegNr1,CUr.CountryCode,id,comparea)) then begin
       switch (source) begin
         case 1:
-          qupdating.TreatCreditInfoReply(LAr,CUr,comparea,res);
+          qupdating.TreatCreditInfoReply(LAr,CUr,comparea,compareaspdr,replyfs,replyfs,res);
       end;
     end;
   end;

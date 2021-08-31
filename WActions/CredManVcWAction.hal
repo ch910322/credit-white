@@ -3,7 +3,7 @@ remote procedure PasteCustInAgreementRemote(var record CredManVc,var string);
 remote updating procedure TerminateCredMan(var record CredManVc,val,string,Date,Boolean);
 remote procedure TerminateCredManFinish(var record CredManVc);
 //remote updating procedure TerminateCredMan(var record CredManVc,var record IVVc);//old implementation
-remote updating procedure DoBuyOutAgreement(record CredManVc,Date,Boolean,var record IVVc);
+remote updating procedure DoBuyOutAgreement(record CredManVc,Date,Boolean,var record IVVc,record ORVc);
 remote procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 remote inner procedure SetupCustPS2Rn(string,var record RcVc);
 remote procedure CredManSetDatesCust(var record CredManVc,Boolean);
@@ -696,6 +696,7 @@ begin
   record CredManVc CredManr;
   Integer wn,mwn;
   record IVVc IVr;
+  record ORVc ORr;
 
   wn = CurWindow;
   DeselectWindow(wn,true);
@@ -704,7 +705,7 @@ begin
   if (mwn>0) then begin
     GetWindowRecord(mwn,CredManr);
     if (CanTerminateWithDate(CredManr,RepSpec.d1)) then begin
-      DoBuyOutAgreement(CredManr,RepSpec.d1,RepSpec.flags[1]==1,IVr);
+      DoBuyOutAgreement(CredManr,RepSpec.d1,RepSpec.flags[1]==1,IVr,ORr);
       if (IVr.SerNr>0) then begin
         OpenWindow("IVDClass",1,0,"","",IVr);
       end;
@@ -887,7 +888,7 @@ begin
   CredManr.SerNr = ORr.SerNr;
   if (ReadFirstMain(CredManr,1,true)) then begin
     if (CanTerminateWithDate(CredManr,ORr.OrdDate)) then begin
-      DoBuyOutAgreement(CredManr,ORr.OrdDate,ORr.InvMark==1,IVr);
+      DoBuyOutAgreement(CredManr,ORr.OrdDate,false,IVr,ORr);
       if (IVr.SerNr>0) then begin
         OpenWindow("IVDClass",1,0,"","",IVr);
       end;
