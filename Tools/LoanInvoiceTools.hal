@@ -998,6 +998,7 @@ begin
           end;
           if ((lastamount!=amounts[i] and lastamount>0) or (ratetype==1 and lastdaycnt!=daycnt[i])) then begin
             if (ratetype==0) then begin //as default
+              latefee = round(latefee,defaultcurroundoff);
               rowsum = round(lastamount*(overdueprc/100) * odays,defaultcurroundoff);
               rate = ValToString((overdueprc/100),M45Val,"",",",0);
               tstr = odays & " Days " &  " - " & item & " - " & lastamount & " * " & rate & "=" & rowsum;
@@ -1015,6 +1016,7 @@ begin
                     end;
                   end;
                 end;
+                latefee = round(latefee,defaultcurroundoff);
                 rowsum = round(lastamount*(overdueprc/100) * odays,defaultcurroundoff);
                 tstr = replaceOverdueStr(invoicenr,lastamount,lastperiod,odays,rate,rowsum);
               end;
@@ -1032,6 +1034,7 @@ begin
                   end;
                 end;
               end;
+              latefee = round(latefee,defaultcurroundoff);
               rowsum = round(lastamount * odays*(overdueprc/100)/lastdaycnt,defaultcurroundoff);
               rate = ValToString((overdueprc/100),M45Val,"",",",0);
               tstr = odays & " Days " &  " - " & item & " - " & lastamount & " * " & rate & "/" & lastdaycnt & "=" & rowsum;
@@ -1061,6 +1064,7 @@ begin
                 end;
               end;
             end;
+            latefee = round(latefee,defaultcurroundoff);
             rowsum = round((lastamount*(overdueprc/100) * odays),defaultcurroundoff);
             rate = ValToString((overdueprc/100),M45Val,"",",",0);
             tstr = odays & " Days " &  " - " & item & " - " & lastamount & " * " & rate & "=" & rowsum;
@@ -1081,6 +1085,7 @@ begin
                 end;
               end;
             end;
+            latefee = round(latefee,defaultcurroundoff);
             rowsum = round((lastamount * odays*(overdueprc/100)/lastdaycnt),defaultcurroundoff);
             rate = ValToString((overdueprc/100),M45Val,"",",",0);
             tstr = odays & " Days " &  " - " & item & " - " & lastamount & " * " & rate & "/" & lastdaycnt & "=" & rowsum;
