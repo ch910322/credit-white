@@ -1144,7 +1144,7 @@ begin
     res = AddDay(res,1);
   end;
   if (nonblank(intres)) then begin
-    intres = AddDay(intres,1);
+    //intres = AddDay(intres,1);??//For testing // Edit ************************** BPI Ukraine - KramarAlexandr - 02, 31 08 2021 y. at 1:49:31 PM
   end;
 
   //GetLastOverdueInvoiceDate = res;
