@@ -301,10 +301,28 @@ begin
   end;
   RecordUpdate(oldCUr,CUr,false);
   CUVcRecordUpdate(CUr,oldCUr,Rs_Update,1);
-  fn = CUr.RegNr1  & "_creditinfo.txt";
+  fn = CUr.RegNr1  & "_creditinfo.xml";
   WriteAreaToFile(reply,fn,0);
   RecordLinkFile(fn,0,LAr,CurrentCompany);
   Delete_File(fn);
+  
+  fn = CUr.RegNr1  & "_SpiderWeb.xml";
+  WriteAreaToFile(replyspdr,fn,0);
+  RecordLinkFile(fn,0,LAr,CurrentCompany);
+  Delete_File(fn);
+  
+  fn = CUr.RegNr1  & "FS_List.xml";
+  WriteAreaToFile(replyfs,fn,0);
+  RecordLinkFile(fn,0,LAr,CurrentCompany);
+  Delete_File(fn);
+  
+  fn = CUr.RegNr1  & "FS_Report.xml";
+  WriteAreaToFile(replyfs2,fn,0);
+  RecordLinkFile(fn,0,LAr,CurrentCompany);
+  Delete_File(fn);
+  
+  
+  
 /*
   "/BasicInfo";
   //ManagersPersonalCodeValue,Registered,Atstovavimas,Region
