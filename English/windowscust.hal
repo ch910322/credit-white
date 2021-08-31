@@ -2463,6 +2463,9 @@ begin
   RadioButton(h,v+=16,1,0,"Monthly",OverdueRateType);  
   CheckBox(h,v+=20,0,"Invoice PDF after Receipt",PDFAfterReceipt);
   CheckBox(h,v+=20,0,"Automatically send invoice generated from Receipt Entry",AutoSendOverdueInvoice);
+  ButtonFrame(h,v+=40,200,2,"Rounding");
+  RadioButton(h,v,0,0,"First count rows, then round",OvdRoundOptions);
+  RadioButton(h,v+=16,1,0,"First round rows, then count",OvdRoundOptions); 
   
   Tile(3,95,false,"3",FBuyerPayDeal);
   vs=20; h=160; vs2=16; hm=-100;
