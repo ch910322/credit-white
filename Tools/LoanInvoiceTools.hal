@@ -805,15 +805,23 @@ begin
   date ed,df;
   string 100 newperiod;
   record IVVc IVr;
+   record CMApplicationSetBlock CMAb
   
   blockload(CMIb);
+  blockload(CMAb);
   
   ed = temped;
-  if(CMIb.NewCalcForGrace==1)then begin
+  /*if(CMIb.NewCalcForGrace==1)then begin
     if(ed>=currentdate)then begin
       ed = addday(ed,-1);
     end;
+  end;*/
+  
+  if(CMAb.BuyOutInclPaymDay==0)then begin
+    ed = addday(ed,-1);
   end;
+  
+  
   paysum = CredHistr.Sum;
   tempsd = sd;//this is the start date when this item should have been paid since
   if (nonblank(overduetd)) then begin
@@ -1150,6 +1158,9 @@ begin
   record CredHistVc CredHistr;
   Boolean TrHs;
   Date td,td1;
+  record CMApplicationSetBlock CMAb;
+  
+  blockload(CMAb);
 
   TrHs = true;
   CredHistr.CredManNr = sernr;
@@ -1167,12 +1178,14 @@ begin
       end;
     end;
   end;
-
-  if (nonblank(res)) then begin
-    res = AddDay(res,1);
-  end;
-  if (nonblank(intres)) then begin
-    intres = AddDay(intres,1);
+  
+  if(CMAb.BuyOutInclPaymDay==1)then begin
+    if (nonblank(res)) then begin
+      res = AddDay(res,1);
+    end;
+    if (nonblank(intres)) then begin
+      intres = AddDay(intres,1);
+    end;
   end;
 
   //GetLastOverdueInvoiceDate = res;
@@ -1223,12 +1236,12 @@ begin
   transaction Boolean gPDRAfterReciept;
   
   invdate = originvdate;
-  if(gPDRAfterReciept and invdate>=currentdate)then begin
+  /*if(gPDRAfterReciept and invdate>=currentdate)then begin
     blockload(CMAb);//Off CM -> Settings -> Credit Management settings -> checkbox "Include payment day in overdue calculation" performance
     if(CMAb.BuyOutInclPaymDay==1)then begin
       invdate = addday(invdate,1);
     end;
-  end;
+  end;*/
   
   ClearStringArray(lateformula);
   latedays = 0;
