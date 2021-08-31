@@ -1223,7 +1223,7 @@ begin
   transaction Boolean gPDRAfterReciept;
   
   invdate = originvdate;
-  if(gPDRAfterReciept)then begin
+  if(gPDRAfterReciept and invdate>=currentdate)then begin
     blockload(CMAb);//Off CM -> Settings -> Credit Management settings -> checkbox "Include payment day in overdue calculation" performance
     if(CMAb.BuyOutInclPaymDay==1)then begin
       invdate = addday(invdate,1);
