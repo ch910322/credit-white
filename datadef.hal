@@ -334,7 +334,7 @@ begin
   RecordField(OngoingDebts,M4Int,0,0);
   RecordField(ActDefSodra,M4Int,0,0);
   RecordField(ShCredHist,M4Int,0,0);
-  RecordField(SpiderwebNeg,M4Int,0,0);
+  RecordField(SpiderwebNeg,M4Int,0,0);//Surety1
   RecordField(CESanctions,M4Int,0,0);
   RecordField(AvailableFinStatementsText,M4Str,255,0);
   
@@ -504,6 +504,35 @@ begin
   
   RecordField(BankruptcyRatingCode,M4UStr,20,0);
   RecordField(BuyBankruptcyRatingCode,M4UStr,20,0);
+  
+  RecordField(HasArrests,M4Int,0,0);//Surety1
+  RecordField(HasClaims,M4Int,0,0);//Surety1
+  RecordField(HasLawsuits,M4Int,0,0);//Surety1
+  
+  RecordField(Surety2SpiderwebNeg,M4Int,0,0);
+  RecordField(Surety2HasArrests,M4Int,0,0);
+  RecordField(Surety2HasClaims,M4Int,0,0);
+  RecordField(Surety2HasLawsuits,M4Int,0,0);
+  
+  RecordField(Surety3SpiderwebNeg,M4Int,0,0);
+  RecordField(Surety3HasArrests,M4Int,0,0);
+  RecordField(Surety3HasClaims,M4Int,0,0);
+  RecordField(Surety3HasLawsuits,M4Int,0,0);
+  
+  RecordField(Surety4SpiderwebNeg,M4Int,0,0);
+  RecordField(Surety4HasArrests,M4Int,0,0);
+  RecordField(Surety4HasClaims,M4Int,0,0);
+  RecordField(Surety4HasLawsuits,M4Int,0,0);
+  
+  RecordField(Surety5SpiderwebNeg,M4Int,0,0);
+  RecordField(Surety5HasArrests,M4Int,0,0);
+  RecordField(Surety5HasClaims,M4Int,0,0);
+  RecordField(Surety5HasLawsuits,M4Int,0,0);
+  
+  RecordField(Surety6SpiderwebNeg,M4Int,0,0);
+  RecordField(Surety6HasArrests,M4Int,0,0);
+  RecordField(Surety6HasClaims,M4Int,0,0);
+  RecordField(Surety6HasLawsuits,M4Int,0,0);
   
  //ak_end  
   ArrayBegin(Math,-,1);
@@ -2574,6 +2603,7 @@ begin
   ArrayField(Reason,M4Str,255,0);
   ArrayField(StrValFrom,M4Str,50,0);
   ArrayField(StrValTo,M4Str,50,0);
+  ArrayField(CutAfterSymbol,M4Str,50,0);
   EndArray;
   MainKeyBegin(Code,0);
   KeySegment(Code);
@@ -2611,6 +2641,7 @@ begin
     ArrayField(BankruptRating,M4UStr,60,0);
     ArrayField(MonthRateWithoutEDS,M4Val,0,0);
     ArrayField(MonthRateWithEDS,M4Val,0,0);
+    ArrayField(CutAfterSymbol,M4Str,20,0);
     EndArray;
   EndBlock;
   

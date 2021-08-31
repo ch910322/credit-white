@@ -26,6 +26,8 @@ begin
   SetBegin(30903);
   SetText(0,"Basic");
   SetText(1,"Spider WEB");
+  SetText(2,"Financial Statements");
+  SetText(3,"Financial Statements List");
   EndSet;
 
 end;
@@ -42,7 +44,7 @@ begin
   SetBlid(CreditinfoBlock);
   SetWRect(20,80,570,298);
   Sizeable(-1,-1,0,0);
-  EditField(h=150,v=6,200,"User",Normal,APIUser,false,0);
+  EditField(h=190,v=6,200,"User",Normal,APIUser,false,0);
   EditField(h,v+=vs,200,"Password",Normal,APIPassword,false,0);
   ButtonFrame(h,v=v+40,100,2,"Mode");
   RadioButton(h,v,0,0,"Test",Mode);
@@ -57,6 +59,12 @@ begin
   CheckBox(h,v+=vs,0,"Check Jar",SPWCheckJar);
   CheckBox(h,v+=vs,0,"Fill Negative Info",SPWFillNegativeInfo);
   CheckBox(h,v+=vs,0,"With History",SPWWithHistory);
+  
+  EditField(h=150,v+=vs,200,"Financial Statements User",Normal,FSAPIUser,false,0);
+  EditField(h,v+=vs,200,"Financial Statements Password",Normal,FSAPIPassword,false,0);
+  ButtonFrame(h,v=v+40,100,2,"Financial Statements Mode");
+  RadioButton(h,v,0,0,"Test",FSMode);
+  RadioButton(h,v+=16,1,0,"Live",FSMode);
   
   EndWindow;
 
