@@ -20,7 +20,7 @@ begin
     vitems[IPrw.ArtCode] = true;
   end;
   
-  startreportnoheaderjob("Found wrong payments by invoices");
+  startreportnoheaderjob("Search wrong payments by invoices");
     
     startformat(15);
       outstring(0,0,"Invoice",false);
