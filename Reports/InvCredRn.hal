@@ -1,0 +1,88 @@
+external function val GetCredHistOpenValueOnDate(Longint,Date);
+
+global procedure InvCredRn(record RcVc RepSpec)
+begin
+  record IVVc IVr;
+  record ARVc ARr;
+  boolean TrHs,testf,printf;
+  record CredHistVc CredHistr,CredHist2r;
+  val t;
+  date blankd;
+  record ItemPriorityBlock IPb;
+  row ItemPriorityBlock IPrw;
+  integer i;
+  vector boolean vitems;  
+  
+  
+  blockload(IPb);
+  for(i=0;i<matrowcnt(IPb);i=i+1)begin
+    matrowget(IPb,i,IPrw);
+    vitems[IPrw.ArtCode] = true;
+  end;
+  
+  startreportnoheaderjob("Found wrong payments by invoices");
+    
+    startformat(15);
+      outstring(0,0,"Invoice",false);
+      outstring(50,0,"Date",false);
+      outstring(100,0,"SL Bal",false);
+      outstring(200,0,"CM Bal",false);
+    endformat;
+    
+    while(loopmain(IVr,1,true))begin
+      printf = false;
+      testf = true;
+      
+      if(IVr.CustCredManNr==-1)then begin
+        testf = false;
+      end;
+      
+      if(testf)then begin
+      
+        ARr.InvoiceNr = IVr.SerNr;
+        if(readfirstmain(ARr,1,true))then begin
+          if(ARr.BookRVal<0)then begin
+            printf = true;
+          end;
+        end;
+      
+        CredHistr.RecordNr = IVr.SerNr;
+        CredHistr.RecordType = 0;
+        TrHs = true;
+        t = blankval;
+        while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+          if ((CredHistr.RecordNr!=IVr.SerNr) or (CredHistr.RecordType!=0)) then begin
+            TrHs = false;
+          end;
+
+          if (TrHs) then begin
+            if(vitems[CredHistr.ArtCode])then begin
+              t = t + GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
+            end;
+          end;
+        end;
+        resetloop(CredHistr);
+      
+        if(t!=ARr.BookRVal)then begin
+          printf = true;
+        end;
+      
+        if(t<0)then begin
+          printf = true;
+        end;
+      
+        if(printf)then begin
+          startformat(15);
+            outstring(0,"DblIVVc",IVr.SerNr,false);
+            outstring(50,0,IVr.InvDate,false);
+            outstring(100,0,ARr.BookRVal,false);
+            outstring(200,0,t,false);
+          endformat;
+        end;
+      end;
+    end;
+  
+  endjob;
+  
+return;
+end;
