@@ -75,7 +75,7 @@ begin
 	Report("Check Schedule Periods",CheckCMSchedRClass,CheckCMSchedRn,0,modCredMan);
 	Report("Test Credit Agreements",CredManTestRClass,CredManTestRn,0,modCredMan);
 	Report("Late to be invoiced Contracts",CMInvoiceableContractsRClass,CMInvoiceableContractsRn,0,modCredMan);
-	Report("Found wrong payments by invoices",InvCredRClass,InvCredRn,0,modCredMan);
+	Report("Search wrong payments by invoices",InvCredRClass,InvCredRn,0,modCredMan);
   
   
   Maintenance("Connect Prepayments To Invoices",CnnctPrpaymentsToInvVClass,CnnctPrpaymentsToInvMn,modCredMan);
