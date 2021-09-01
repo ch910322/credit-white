@@ -460,7 +460,7 @@ begin
       InsertCredHistInArray(CredHistr,arrORr,0,IPr.TransDate);
     end;
   end else begin
-    if (IPrw.RecVal>0) then begin
+    if (IPrw.RecVal>0 and IPrw.stp==1) then begin
       TrHs = true;
       CredHistr.RecordNr = IPrw.InvoiceNr;
       CredHistr.RecordType = 0;
