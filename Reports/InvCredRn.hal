@@ -4,7 +4,7 @@ global procedure InvCredRn(record RcVc RepSpec)
 begin
   record IVVc IVr;
   record ARVc ARr;
-  boolean TrHs,testf,printf;
+  boolean TrHs,testf,printf,testitem;
   record CredHistVc CredHistr,CredHist2r;
   val t;
   date blankd;
@@ -50,6 +50,7 @@ begin
         CredHistr.RecordType = 0;
         TrHs = true;
         t = blankval;
+        testitem = false;
         while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
           if ((CredHistr.RecordNr!=IVr.SerNr) or (CredHistr.RecordType!=0)) then begin
             TrHs = false;
@@ -57,13 +58,14 @@ begin
 
           if (TrHs) then begin
             if(vitems[CredHistr.ArtCode])then begin
+              testitem = true;
               t = t + GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
             end;
           end;
         end;
         resetloop(CredHistr);
       
-        if(t!=ARr.BookRVal)then begin
+        if(t!=ARr.BookRVal and testitem)then begin
           printf = true;
         end;
       
