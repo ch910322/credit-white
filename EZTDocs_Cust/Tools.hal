@@ -481,7 +481,8 @@ begin
   vVals["F_TOPAY2"] = topay2;
   ValToText(topay2,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
   vVals["F_TOPAY2_TEXT"] = tstr;
-
+  
+  td = addday(td,1);//Add one day to printout// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 01 09 2021 y. at 12:55:50 PM
   GetMonthText(IVr.LangCode,td,tstr);
   vVals["F_LASTDAY"] = tstr & " " & GetDay(td);
   vVals["F_LASTDAY2"] = DateToString(td,"DD.MM.YYYY");
