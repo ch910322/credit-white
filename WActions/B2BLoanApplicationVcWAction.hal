@@ -25,6 +25,7 @@ remote updating procedure GetB2BLoanApplicationDebtRecord(record B2BLoanApplicat
 external inner function roundmode SetRoundModeD(Integer);
 external function Boolean InsertB2BLoanApplicationType(var record B2BLoanApplicationVc);
 remote updating function Integer RA_CreateMailFromB2BLoanApplication(record B2BLoanApplicationVc,var record MailVc,var string,Boolean,string);
+remote updating procedure EvaluateSpiderWebExecutorData(record B2BLoanApplicationVc, string,var boolean, var boolean, var boolean, var boolean, var boolean);
 
 global 
 updating procedure CreateMailFromB2BLoanApplicationDsm()
@@ -2167,7 +2168,11 @@ begin
   record AppInterestRateBlock AppIb;
   row AppInterestRateBlock AppIrw;
   record CredManVc CredManr;
-  boolean checked;
+  boolean checked,DebtsCount,hasArrests,hasClaims,hasLawsuits,hasBankruptcy;
+  record CUVc CUr;
+  
+  CUr.Code = LAr.CustCode;
+  readfirstmain(CUr,1,true);
   
   
   
@@ -2579,6 +2584,12 @@ begin
     
     if(left(LAr.RejReason,1)==";")then begin
       LAr.RejReason = right(LAr.RejReason,len(LAr.RejReason)-1);
+    end;
+    
+    logtext(0,"EvaluateSpiderWebExecutorData");
+    EvaluateSpiderWebExecutorData(LAr,CUr.RegNr1,DebtsCount,hasArrests,hasClaims,hasLawsuits,hasBankruptcy);
+    if(DebtsCount or hasArrests or hasClaims or hasLawsuits or hasBankruptcy)then begin
+      LAr.Evaluation = 2;
     end;
     
     recordupdate(oldLAr,LAr,true);

@@ -165,7 +165,6 @@ begin
         if(blank(CABrw.XMLAtribute))then begin
           while(XmlNodeExists(axml,CABrw.ImportNode & "["& index & "]"))begin
             importnode = CABrw.ImportNode & "["& index & "]";
-            logtext(0,"1 importnode " & importnode);
             if(nonblank(XmlGetFrom(axml,importnode,"",issoap)))then begin
               switch(CABrw.DataType)begin
                 case M4Str:   tstr = XmlGetFrom(axml,importnode,"",issoap);
@@ -202,7 +201,6 @@ begin
           index = 0;
           while(XmlNodeExists(axml,CABrw.ImportNode & "["& index & "]"))begin
             importnode = CABrw.ImportNode & "["& index & "]";
-            logtext(0,"2 importnode " & importnode);
             k = steresult.length;
             if(CountObjects(CABrw.XMLAtribute)>1)then begin
               testf = true;
@@ -221,34 +219,29 @@ begin
               if(testf)then begin
                 if(nonblank(CABrw.XMLAtributeFrom))then begin
                   testval = stringtoval(XmlGetFrom(axml,importnode,CABrw.XMLAtributeFrom,issoap),m4val);
-                  logtext(0,"testval 1 " & testval);
                   if(testval<CABrw.XMLAtributeFromVal)then begin
                     testf = false;
                   end;
                 end;
                 if(nonblank(CABrw.XMLAtributeTo))then begin
                   testval = stringtoval(XmlGetFrom(axml,importnode,CABrw.XMLAtributeTo,issoap),m4val);
-                  logtext(0,"testval 2 " & testval);
                   if(testval>CABrw.XMLAtributeToVal)then begin
                     testf = false;
                   end;
                 end;
                 if(nonblank(CABrw.ExcludeXMLAtributeFrom))then begin
                   testval = stringtoval(XmlGetFrom(axml,importnode,CABrw.ExcludeXMLAtributeFrom,issoap),m4val);
-                  logtext(0,"testval 3 " & testval);
                   if(testval>CABrw.ExcludeXMLAtributeFromVal)then begin
                     testf = false;
                   end;
                 end;
                 if(nonblank(CABrw.ExcludeXMLAtributeTo))then begin
                   testval = stringtoval(XmlGetFrom(axml,importnode,CABrw.ExcludeXMLAtributeTo,issoap),m4val);
-                  logtext(0,"testval 4 " & testval);
                   if(testval<CABrw.ExcludeXMLAtributeToVal)then begin
                     testf = false;
                   end;
                 end;
               end;
-              logtext(0,testf & " testf " & index);
               if(testf)then begin
                 pos = 0;
                 ExtractObj(CABrw.XMLAtribute,pos,attr);
@@ -350,17 +343,167 @@ begin
 return;
 end;
 
+function string 10 truefalsestring(integer parametr)
+begin
+  string 10 res;
+  
+  if(parametr==0)then begin
+    res = "false";
+  end else begin
+    res = "true";
+  end;
+
+  truefalsestring = res;
+return;
+end;
+
+global updating procedure GetDataForExecutor(record SWExecListVc SWExecListr,record B2BLoanApplicationVc LAr)
+begin
+  record SWExecPersonDataVc SWExecPersonDatar;
+  row SWExecPersonDataVc SWExecPersonDatarw;
+  boolean udneed;
+  record CreditinfoBlock CIb;
+  Boolean debugf;
+  area reply,request,requestspdr,replyspdr,temparea,replyfs,requestfs,replyfs2;
+  string 255 lang,params,url,path,root,tstr,fn,name,surname,datestr,datestr1,datestr2,repid;
+  record CUVc CUr,oldCUr,tCUr;
+  Boolean sslf;
+  Longint port,pos,counch;
+  xml axml,axml2;
+  boolean reqf;
+  integer i,child;
+
+  blockload(CIb);
+  
+  logtext(0,"GetDataForExecutor " & SWExecListr.ExecId);
+  
+  SWExecPersonDatar.ExecId = SWExecListr.ExecId;
+  if(readfirstmain(SWExecPersonDatar,1,true))then begin
+    if(blankdate(SWExecPersonDatar.ImpDate) or SWExecPersonDatar.ImpDate<currentdate)then begin
+      udneed = true;
+    end;
+  end else begin
+    udneed = true;
+  end;
+  
+  if(udneed)then begin
+    params = "";
+    logtext(0,params);
+    if (CIb.SPWMode==0) then begin//test
+      url = "ds.infobankas.lt";
+      port = 80;
+      sslf = false;
+    end else begin
+      url = "new.infobankas.lt";
+      port = 443;
+      sslf = true;
+    end;
+    path = "/CreditInfoGroup_lt/SaisWs/SpiderWeb/Spider.svc";
+
+    addtexttoarea("SOAPAction: http://creditinfo.lt/2010/05/ISpiderService/GetSpiderData",requestspdr);
+    addtexttoarea(chr(13) & chr(10),requestspdr);
+    addtexttoarea(chr(13) & chr(10),requestspdr);
+
+    addtexttoarea("<x:Envelope xmlns:x=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://creditinfo.lt/2010/05\" ",requestspdr);
+    addtexttoarea("xmlns:sai=\"http://schemas.datacontract.org/2004/07/SaisInternalWs.SpiderWeb\">",requestspdr);
+    addtexttoarea("<x:Header/>",requestspdr);
+    addtexttoarea("<x:Body>",requestspdr);
+    addtexttoarea("<ns:GetSpiderData>",requestspdr);
+    addtexttoarea("<ns:request>",requestspdr);
+    addtexttoarea("<sai:AsociationType>" & CIb.SPWAsociationType & "</sai:AsociationType>",requestspdr);
+    addtexttoarea("<sai:CheckJar>" & truefalsestring(CIb.SPWCheckJar) & "</sai:CheckJar>",requestspdr);
+    addtexttoarea("<sai:FillNegativeInfo>" & truefalsestring(CIb.SPWFillNegativeInfo) & "</sai:FillNegativeInfo>",requestspdr);
+    addtexttoarea("<sai:IdentityNumber>" & SWExecListr.ExecId & "</sai:IdentityNumber>",requestspdr);
+    addtexttoarea("<sai:Password>" & CIb.SPWAPIPassword & "</sai:Password>",requestspdr);
+    addtexttoarea("<sai:UserName>" & CIb.SPWAPIUser & "</sai:UserName>",requestspdr);
+    addtexttoarea("<sai:WithHistory>" & truefalsestring(CIb.SPWWithHistory) & "</sai:WithHistory>",requestspdr);
+    addtexttoarea("</ns:request>",requestspdr);
+    addtexttoarea("</ns:GetSpiderData>",requestspdr);
+    addtexttoarea("</x:Body>",requestspdr);
+    addtexttoarea("</x:Envelope>",requestspdr);
+    addtexttoarea(chr(13) & chr(10),requestspdr);
+    //addtexttoarea(chr(13) & chr(10),requestspdr);
+
+    writeareatofile(requestspdr,"SPDRWEBREQUEST.txt",0);
+
+    if (SendRawWebRequest(url,port,sslf,"POST",path & "?" & params,"text/xml; charset=utf-8","",false,requestspdr,replyspdr,10)) then begin
+      if(getarealength(replyspdr)>200)then begin
+        for(pos=0;pos<getarealength(replyspdr)-11;pos=pos+1)begin
+          if(getstringfromarea(replyspdr,pos,11)=="<s:Envelope")then begin
+            GetAreaFromArea(replyspdr,pos,getarealength(replyspdr)-pos,temparea);
+            setareazerosize(replyspdr);
+            GetAreaFromArea(temparea,0,getarealength(temparea),replyspdr);
+          end;
+        end;
+        fn = "Executive" & SWExecListr.ExecId & ".xml";
+        WriteAreaToFile(replyspdr,fn,0);
+        RecordLinkFile(fn,0,LAr,CurrentCompany);
+        Delete_File(fn);
+    
+        axml = ParseXmlArea(replyspdr);
+        root = "s:Envelope/s:Body/GetSpiderDataResponse/GetSpiderDataResult/a:Person";
+
+        if (XmlNodeExists(axml,root)==false) then begin
+          goto LGetCreditInfo1;
+        end;
+    
+        root = "s:Envelope/s:Body/GetSpiderDataResponse/GetSpiderDataResult/a:Person";
+    
+    
+    
+        SWExecPersonDatar.ExecId = SWExecListr.ExecId;
+        SWExecPersonDatar.Name = XmlGet(axml,root & "/b:FullName");
+        SWExecPersonDatar.ImpDate = currentdate;
+        SWExecPersonDatar.ImpTime = currenttime;
+        for(i=0;i<matrowcnt(SWExecPersonDatar);i=i+1)begin
+          matrowdelete(SWExecPersonDatar,0);
+        end;
+        child = XMLCountChildren(axml,root & "/b:Relations");
+        for(i=0;i<child;i=i+1)begin
+          SWExecPersonDatarw.CompanyID = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:IdentityNumber");
+          SWExecPersonDatarw.CompanyName = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:FullName");
+          SWExecPersonDatarw.UnpaidDebtsCount = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:UnpaidDebtsCount");
+          SWExecPersonDatarw.PaidDebtsCount = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:PaidDebtsCount");
+          SWExecPersonDatarw.HasArrests = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:HasArrests");
+          SWExecPersonDatarw.HasClaims = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:HasClaims");
+          SWExecPersonDatarw.HasLawsuits = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:HasLawsuits");
+          SWExecPersonDatarw.Status = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:Status");
+          matrowput(SWExecPersonDatar,i,SWExecPersonDatarw);      
+        end;
+        recordstore(SWExecPersonDatar,true);
+    
+    
+  
+        reqf = true;
+      end else begin
+        goto LGetCreditInfo1;
+      end;
+    end;
+  end;
+  
+LGetCreditInfo1:;
+return;
+end;
 
 
-global procedure CreditInfoFileAsignB2BLoanApplicationVc(var record B2BLoanApplicationVc LAr,xml axml,xml axmlspdr,xml axmlFS,xml axmlFSlist)
+global updating procedure CreditInfoFileAsignB2BLoanApplicationVc(var record B2BLoanApplicationVc LAr,xml axml,xml axmlspdr,xml axmlFS,xml axmlFSlist)
 begin
 record CreditinfoFieldAssignBlock CABb;
 row CreditinfoFieldAssignBlock CABrw;
-integer i,rwcnt,pos,pos1;
-string 255 lang,params,url,path,fieldtopaste;
+integer i,rwcnt,pos,pos1,sh,ex;
+string 255 lang,params,url,path,fieldtopaste,xmlkey,reltyp,todate,tstr,custid;
 array string 255 steresult;
 integer ckbox,countfields,countattributes,index,step;
 boolean attribfill;
+array string 100 aShareHoldersName,aShareHoldersID,aExecutive;
+array val aShares;
+array date aShareHoldersSince;
+integer relations;
+date frdate;
+record ORVc ORr,OR2r;
+row ORVc ORrw;
+record SWExecListVc SWExecListr;
+boolean TrHs;
 
   //root = "root/BasicInfo";
   
@@ -386,7 +529,6 @@ boolean attribfill;
           
           ExtractObj(CABrw.FieldName,pos1,fieldtopaste);  
           while(nonblank(fieldtopaste))begin  
-            logtext(0,"LA fieldtopaste " & fieldtopaste); 
             if(nonblank(fieldtopaste))then begin
               switch(CABrw.DataType)begin
                 case M4Str:  SetFieldValueByName(LAr,fieldtopaste,steresult[index],-1);
@@ -428,7 +570,6 @@ boolean attribfill;
           
           ExtractObj(CABrw.FieldName,pos1,fieldtopaste);  
           while(nonblank(fieldtopaste))begin  
-            logtext(0,"LA fieldtopaste " & fieldtopaste); 
             if(nonblank(fieldtopaste))then begin
               switch(CABrw.DataType)begin
                 case M4Str:  SetFieldValueByName(LAr,fieldtopaste,steresult[index],-1);
@@ -447,6 +588,85 @@ boolean attribfill;
           end;
         end;
       end;
+    end;
+  end;
+  
+  //spiderweb hardcode parsing
+  xmlkey = "s:Envelope/s:Body/GetSpiderDataResponse/GetSpiderDataResult/a:Person/b:Relations";
+  relations = XmlCountChildren(axmlspdr,xmlkey);
+  custid = XmlGet(axmlspdr,"s:Envelope/s:Body/GetSpiderDataResponse/GetSpiderDataResult/a:Person/b:IdentityNumber");
+  SWExecListr.MainID = custid;
+  TrHs = true;
+  while(loopmain(SWExecListr,1,TrHs))begin
+    if(SWExecListr.MainID!=custid)then begin TrHs = false; end;
+    if(TrHs)then begin
+      recorddelete(SWExecListr);
+      stepback(SWExecListr);
+    end;
+  end;
+  
+  for(i=0;i<relations;i=i+1)begin
+    reltyp = XmlGetAttribute(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]","i:type");
+    logtext(0,"reltyp " & reltyp);
+    if(reltyp=="b:Shareholder")then begin
+      todate = "";
+      todate = XmlGetAttribute(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:ToDate","i:nil");
+      logtext(0,"todate " & todate);
+      if(todate=="true")then begin
+        logtext(0,"Active");
+        aShareHoldersName[sh] = XmlGet(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:Person/b:FullName");
+        aShareHoldersID[sh] = XmlGet(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:Person/b:IdentityNumber");
+        tstr = left(XmlGet(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:FromDate"),10);
+        frdate.year = stringtoint(left(tstr,4));
+        frdate.month = stringtoint(mid(tstr,5,2));
+        frdate.day = stringtoint(right(tstr,2));
+        aShareHoldersSince[sh] = frdate;
+        aShares[sh] = stringtoval(XmlGet(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:Share"),m4val);
+        
+        ORrw.Spec = aShareHoldersName[sh];
+        ORrw.SerialNr = aShareHoldersID[sh];
+        ORrw.InloadingDate = aShareHoldersSince[sh];
+        ORrw.Quant = aShares[sh];
+        matrowput(ORr,matrowcnt(ORr),ORrw);
+        
+        logtext(0,aShares[sh] & "  " & aShareHoldersName[sh] & "   " & aShareHoldersID[sh] & "   " & aShareHoldersSince[sh]);
+        
+        sh = sh + 1;
+      end;
+    end;
+    ex = 0;
+    if(reltyp=="b:Executive")then begin
+      todate = "";
+      todate = XmlGetAttribute(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:ToDate","i:nil");
+      if(todate=="true")then begin
+        aExecutive[ex] = XmlGet(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:Person/b:IdentityNumber");
+        ORrw.SerialNr = aExecutive[ex];
+        matrowput(OR2r,matrowcnt(OR2r),ORrw);        
+        sh = sh + 1;
+      end;
+    end;
+  end;
+  
+  for(i=0;i<matrowcnt(OR2r);i=i+1)begin
+    matrowget(OR2r,i,ORrw);
+    logtext(0,"Executive " & ORrw.SerialNr);
+    SWExecListr.MainID = custid;
+    SWExecListr.ExecId = ORrw.SerialNr;
+    SWExecListr.ImpDate = currentdate;
+    SWExecListr.ImpTime = currenttime;
+    recordstore(SWExecListr,true);
+    GetDataForExecutor(SWExecListr,LAr);
+  end;
+  
+  SortRows(ORr,"Quant",false);
+  for(i=0;i<matrowcnt(ORr);i=i+1)begin
+    matrowget(ORr,i,ORrw);
+    logtext(0,ORrw.Spec & "  " & ORrw.SerialNr & "  " & ORrw.InloadingDate & " " & ORrw.Quant);
+    if(i<6)then begin
+      SetFieldValueByName(LAr,"ShareHolder" & i+1 & "Name",ORrw.Spec,-1);
+      SetFieldValueByName(LAr,"ShareHolder" & i+1 & "ID",ORrw.SerialNr,-1);
+      SetFieldValueByName(LAr,"ShareHolder" & i+1 & "Shares",ORrw.Quant,-1);
+      SetFieldValueByName(LAr,"ShareHolder" & i+1 & "Since",ORrw.InloadingDate,-1);
     end;
   end;
   
@@ -470,7 +690,6 @@ boolean attribfill;
           
           ExtractObj(CABrw.FieldName,pos1,fieldtopaste);  
           while(nonblank(fieldtopaste))begin  
-            logtext(0,"LA fieldtopaste " & fieldtopaste); 
             if(nonblank(fieldtopaste))then begin
               switch(CABrw.DataType)begin
                 case M4Str:  SetFieldValueByName(LAr,fieldtopaste,steresult[index],-1);
@@ -513,7 +732,6 @@ boolean attribfill;
           
           ExtractObj(CABrw.FieldName,pos1,fieldtopaste);  
           while(nonblank(fieldtopaste))begin  
-            logtext(0,"LA fieldtopaste " & fieldtopaste); 
             if(nonblank(fieldtopaste))then begin
               switch(CABrw.DataType)begin
                 case M4Str:  SetFieldValueByName(LAr,fieldtopaste,steresult[index],-1);
@@ -573,7 +791,6 @@ boolean attribfill;
           
           ExtractObj(CABrw.FieldName,pos1,fieldtopaste);  
           while(nonblank(fieldtopaste))begin   
-            logtext(0,"CU fieldtopaste " & fieldtopaste); 
             if(nonblank(fieldtopaste))then begin
               switch(CABrw.DataType)begin
                 case M4Str:  SetFieldValueByName(CUr,fieldtopaste,steresult[index],-1);
@@ -615,7 +832,6 @@ boolean attribfill;
           
           ExtractObj(CABrw.FieldName,pos1,fieldtopaste);  
           while(nonblank(fieldtopaste))begin   
-            logtext(0,"CU fieldtopaste " & fieldtopaste); 
             if(nonblank(fieldtopaste))then begin
               switch(CABrw.DataType)begin
                 case M4Str:  SetFieldValueByName(CUr,fieldtopaste,steresult[index],-1);
@@ -657,7 +873,6 @@ boolean attribfill;
           
           ExtractObj(CABrw.FieldName,pos1,fieldtopaste);  
           while(nonblank(fieldtopaste))begin   
-            logtext(0,"CU fieldtopaste " & fieldtopaste); 
             if(nonblank(fieldtopaste))then begin
               switch(CABrw.DataType)begin
                 case M4Str:  SetFieldValueByName(CUr,fieldtopaste,steresult[index],-1);

@@ -44,6 +44,54 @@ begin
 		
 		endarray;
   EndBlock;
+  
+  RecordBegin(SWExecListVc,-,"");
+    RecordField(MainID,M4Str,50,0);
+    RecordField(ExecId,M4Str,50,0);
+    RecordField(ImpDate,M4Date,0,0);
+    RecordField(ImpTime,M4Time,0,0);
+    
+    MainKeyBegin(Main,0);
+    KeySegment(MainID);
+    KeySegment(ExecId);
+    KeyBegin(ExecId);
+    KeySegment(ExecId);
+    KeySegment(MainID);
+  EndRecord;
+  
+  RecordBegin(SWExecPersonDataVc,-,"");
+    RecordField(ExecId,M4Str,50,0);
+    RecordField(Name,M4Str,250,0);
+    RecordField(ImpDate,M4Date,0,0);
+    RecordField(ImpTime,M4Time,0,0);
+    RecordField(Math,M4Matrix,0,0);
+    ArrayBegin(Math,-,1);
+    ArrayField(CompanyID,M4Str,255,0);
+    ArrayField(CompanyName,M4Str,255,0);
+    ArrayField(UnpaidDebtsCount,M4Str,50,0);
+    ArrayField(PaidDebtsCount,M4Str,50,0);
+    ArrayField(HasArrests,M4Str,50,0);
+    ArrayField(HasClaims,M4Str,50,0);
+    ArrayField(HasLawsuits,M4Str,50,0);
+    ArrayField(Status,M4Str,50,0);
+    endarray;
+    MainKeyBegin(Main,0);
+    KeySegment(ExecId);
+    KeyBegin(Name);
+    KeySegment(Name);
+    KeySegment(ExecId);
 
+  EndRecord;
+  
+  
+  BlockBegin(SWBankruptcyStatusesBlock,-,"");
+    RecordField(Matrix,M4Matrix,0,0);
+    ArrayBegin(Matrix,-,1);
+		ArrayField(Status,M4Str,100,0);
+		endarray;
+  EndBlock;
+  
+  
+  
   return;
 end;
