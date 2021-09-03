@@ -449,16 +449,16 @@ begin
     if(ARr.BookRVal!=IVr.Sum4)then begin
       topay2 = topay2 - ARr.BookRVal;
       topay3 = topay3 - ARr.BookRVal;
-      openamount2 = openamount2 - ARr.BookRVal;
+      //openamount2 = openamount2 - ARr.BookRVal;
     end else begin
-      openamount2 = openamount2 - ARr.BookRVal;
+      //openamount2 = openamount2 - ARr.BookRVal;
       topay2 = topay2 - ARr.BookRVal;
       topay3 = topay3 - ARr.BookRVal;
     end;
   end else begin
     topay2 = topay2 - IVr.Sum4;
     topay3 = topay3 - IVr.Sum4;
-    openamount2 = openamount2 - IVr.Sum4;
+    //openamount2 = openamount2 - IVr.Sum4;
   end;
   
   
@@ -476,6 +476,8 @@ begin
   if (topay4<0) then begin
     topay4 = 0;
   end;
+  
+  topay4 = openamount2 + IVr.Sum4;
   
   vVals["F_OPENAMOUNT"] = openamount;
   vVals["F_TOPAY2"] = topay2;
