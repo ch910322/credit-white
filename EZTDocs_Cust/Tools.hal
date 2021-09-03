@@ -447,9 +447,9 @@ begin
   ARr.InvoiceNr = IVr.SerNr;
   if(readfirstmain(ARr,1,true))then begin
     if(ARr.BookRVal!=IVr.Sum4)then begin
-      topay2 = (topay2 - (IVr.Sum4-ARr.BookRVal));
-      topay3 = (topay3 - (IVr.Sum4-ARr.BookRVal));
-      openamount2 = openamount2 - (IVr.Sum4-ARr.BookRVal);
+      topay2 = topay2 - ARr.BookRVal;
+      topay3 = topay3 - ARr.BookRVal;
+      openamount2 = openamount2 - ARr.BookRVal;
     end else begin
       openamount2 = openamount2 - ARr.BookRVal;
       topay2 = topay2 - ARr.BookRVal;
