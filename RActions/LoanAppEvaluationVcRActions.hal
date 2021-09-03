@@ -1,4 +1,68 @@
 //<halrule>server-only</halrule>
+
+global updating procedure EvaluateSpiderWebExecutorData(record B2BLoanApplicationVc LAr, string id,var boolean DebtsCount, var boolean hasArrests, var boolean hasClaims, var boolean hasLawsuits, var boolean hasBankruptcy)
+begin
+  record SWExecListVc SWExecListr;
+  record SWExecPersonDataVc SWExecPersonDatar;
+  row SWExecPersonDataVc SWExecPersonDatarw;
+  boolean TrHs,TrHs2,hasnote;
+  integer i,pos;
+  record SWBankruptcyStatusesBlock SWBankruptcyStatusesb;
+  row SWBankruptcyStatusesBlock SWBankruptcyStatusesrw;
+  vector boolean vbankruptcystr;
+  record NotepadVc Noter;
+  record RLinkVc RLr;
+  
+  blockload(SWBankruptcyStatusesb);
+  
+  RecordNew(Noter);
+  Noter.SerNr = NextSerNr("NotePadVc",CurrentDate,-1,false,"");
+  
+  for(i=0;i<matrowcnt(SWBankruptcyStatusesb);i=i+1)begin
+    matrowget(SWBankruptcyStatusesb,i,SWBankruptcyStatusesrw);
+    vbankruptcystr[SWBankruptcyStatusesrw.Status] = true;
+  end;
+  
+  SWExecListr.MainID = id;
+  TrHs = true;
+  while(loopmain(SWExecListr,1,TrHs))begin
+    if(SWExecListr.MainID!=id)then begin
+      TrHs = false;
+    end;
+    
+    if(TrHs)then begin
+      SWExecPersonDatar.ExecId = SWExecListr.ExecId;
+      if(readfirstmain(SWExecPersonDatar,1,true))then begin
+        for(i=0;i<matrowcnt(SWExecPersonDatar);i=i+1)begin
+          matrowget(SWExecPersonDatar,i,SWExecPersonDatarw);
+          if(vbankruptcystr[SWExecPersonDatarw.Status])then begin hasBankruptcy = true; LineTextPut(Noter,0,SWExecListr.ExecId & " has bankruptcy on " & SWExecPersonDatarw.CompanyID & "  " & SWExecPersonDatarw.CompanyName); hasnote = true; end;
+          if(stringtoval(SWExecPersonDatarw.UnpaidDebtsCount,m4val)>0)then begin DebtsCount = true; LineTextPut(Noter,0,SWExecListr.ExecId & " has unpaid debts on " & SWExecPersonDatarw.CompanyID & "  " & SWExecPersonDatarw.CompanyName); hasnote = true; end;
+          if(SWExecPersonDatarw.HasArrests=="true")then begin hasArrests = true; LineTextPut(Noter,0,SWExecListr.ExecId & " has arests on " & SWExecPersonDatarw.CompanyID & "  " & SWExecPersonDatarw.CompanyName); hasnote = true; end;
+          if(SWExecPersonDatarw.HasClaims=="true")then begin hasClaims = true; LineTextPut(Noter,0,SWExecListr.ExecId & " has claims on " & SWExecPersonDatarw.CompanyID & "  " & SWExecPersonDatarw.CompanyName); hasnote = true; end;
+          if(SWExecPersonDatarw.HasLawsuits=="true")then begin hasLawsuits = true; LineTextPut(Noter,0,SWExecListr.ExecId & " has lawsuits on " & SWExecPersonDatarw.CompanyID & "  " & SWExecPersonDatarw.CompanyName); hasnote = true; end;
+        end;
+      end;
+    end;
+  
+  end;
+  
+  if (hasnote)then begin
+    if (RecordStore(Noter,true)) then begin
+      CreateRecordLink(LAr,CurrentCompany,Noter,CurrentCompany);
+      CreateRecordLink(Noter,CurrentCompany,LAr,CurrentCompany);
+      pos = 1;
+      while(ReadRecordLink(LAr,pos,Noter,RLr)) begin
+        pos = pos + 1;
+      end;
+      RLr.Comment = "Spider Web Executives Check List";
+      RecordStore(RLr,true);
+    end;
+    
+  end;
+  
+return;
+end;
+
 global
 updating function LongInt LoanAppEvaluationVcRecordCheck(var record LoanAppEvaluationVc LAEr,record LoanAppEvaluationVc LAE2r,LongInt stat,LongInt long4)
 BEGIN

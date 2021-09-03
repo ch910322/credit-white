@@ -441,7 +441,7 @@ begin
   if (IVr.PayDate>=CurrentDate) then begin
     topay2 = topay2 + abovehiddenbase + abovehiddenvat;
     if (hiddenf) then begin
-      topay2 = topay2 + GetCredManItemValue(IVr,CMb.InstalmentItem,true);;
+      topay2 = topay2 + GetCredManItemValue(IVr,CMb.InstalmentItem,true);
     end; 
   end;
   ARr.InvoiceNr = IVr.SerNr;

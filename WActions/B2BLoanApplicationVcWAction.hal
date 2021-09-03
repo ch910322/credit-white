@@ -2167,7 +2167,11 @@ begin
   record AppInterestRateBlock AppIb;
   row AppInterestRateBlock AppIrw;
   record CredManVc CredManr;
-  boolean checked;
+  boolean checked,DebtsCount,hasArrests,hasClaims,hasLawsuits,hasBankruptcy;
+  record CUVc CUr;
+  
+  CUr.Code = LAr.CustCode;
+  readfirstmain(CUr,1,true);
   
   
   

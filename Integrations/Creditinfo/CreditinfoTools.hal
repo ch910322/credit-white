@@ -8,6 +8,7 @@ external function Boolean GetExistingCompanyInfo(string,string,Longint,var area)
 external procedure SendCompanyInfo(string,string,Integer,var area);
 external procedure CreditInfoFileAsignB2BLoanApplicationVc(var record B2BLoanApplicationVc,xml,xml,xml,xml);
 external procedure CreditInfoFileAsignCUVc(var record CUVc,xml,xml,xml);
+external updating procedure EvaluateSpiderWebExecutorData(record B2BLoanApplicationVc, string,var boolean, var boolean, var boolean, var boolean, var boolean);
 
 function Integer YearDiff(Date d1,Date d2)
 begin
@@ -93,7 +94,7 @@ begin
   string 255 lastcode,lastname;
   xml axml,axmlspdr,axmlFS,axmlFSlist;
   record CreditinfoFieldAssignBlock CIAb;
-  boolean newCIsettig;
+  boolean newCIsettig,DebtsCount,hasArrests,hasClaims,hasLawsuits,hasBankruptcy;
 
 
   BlockLoad(ASb);
@@ -321,7 +322,11 @@ begin
   RecordLinkFile(fn,0,LAr,CurrentCompany);
   Delete_File(fn);
   
-  
+  logtext(0,"EvaluateSpiderWebExecutorData");
+  EvaluateSpiderWebExecutorData(LAr,CUr.RegNr1,DebtsCount,hasArrests,hasClaims,hasLawsuits,hasBankruptcy);
+  if(DebtsCount or hasArrests or hasClaims or hasLawsuits or hasBankruptcy)then begin
+    LAr.SpiderwebNeg = 1;
+  end;
   
 /*
   "/BasicInfo";
