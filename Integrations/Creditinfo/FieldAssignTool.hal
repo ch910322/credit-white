@@ -379,7 +379,7 @@ begin
   
   SWExecPersonDatar.ExecId = SWExecListr.ExecId;
   if(readfirstmain(SWExecPersonDatar,1,true))then begin
-    if(blankdate(SWExecPersonDatar.ImpDate) or SWExecPersonDatar.ImpDate<currentdate)then begin
+    if(blankdate(SWExecPersonDatar.ImpDate) or SWExecPersonDatar.ImpDate<addday(currentdate,-CIb.ExecutiveDaysUpdate))then begin
       udneed = true;
     end;
   end else begin
@@ -638,7 +638,7 @@ boolean TrHs;
     if(reltyp=="b:Executive")then begin
       todate = "";
       todate = XmlGetAttribute(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:ToDate","i:nil");
-      if(todate=="true")then begin
+      if(todate=="true" or custid=="111111113"/*111111113 for testing*/)then begin
         aExecutive[ex] = XmlGet(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:Person/b:IdentityNumber");
         ORrw.SerialNr = aExecutive[ex];
         matrowput(OR2r,matrowcnt(OR2r),ORrw);        

@@ -14,6 +14,7 @@ begin
   RecordField(FSAPIUser,M4Str,50,0);
   RecordField(FSAPIPassword,M4Str,50,0);
   RecordField(FSMode,M4Int,0,0);
+  RecordField(ExecutiveDaysUpdate,M4Int,0,0);
   EndBlock;
 
   BlockBegin(CompanyInfoBlock,-,"");

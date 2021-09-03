@@ -533,6 +533,7 @@ begin
   RecordField(Surety6HasArrests,M4Int,0,0);
   RecordField(Surety6HasClaims,M4Int,0,0);
   RecordField(Surety6HasLawsuits,M4Int,0,0);
+  RecordField(Surety1SpiderwebNeg,M4Int,0,0);
   
  //ak_end  
   ArrayBegin(Math,-,1);
