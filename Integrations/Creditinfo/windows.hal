@@ -179,6 +179,7 @@ begin
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Main ID",MainID,false,Main);
   RlColKey(164,164,"Exec ID",ExecId,false,ExecId);
+  RlCol(-364,-364,"Type",Type,false);
   RlCol(-164,-164,"Import Date",ImpDate,false);
   RlCol(-80,-80,"Import Time",ImpTime,false);
   SearchField("Search");
@@ -197,6 +198,7 @@ begin
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Comp ID",ExecId,false,Main);
   RlColKey(164,164,"Name",Name,false,Name);
+  RlColKey(-200,-200,"Type",Type,false,Type);
   SearchField("Search");
   EndWindow;
 end;

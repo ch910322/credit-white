@@ -535,6 +535,24 @@ begin
   RecordField(Surety6HasLawsuits,M4Int,0,0);
   RecordField(Surety1SpiderwebNeg,M4Int,0,0);
   
+  RecordField(BoardMember11,M4Code,20,CUVc);
+  RecordField(BoardMember11Name,M4Str,200,0);
+  RecordField(BMID11,M4Str,100,0);  
+  RecordField(BMDOB11,M4Date,0,0);  
+  RecordField(BMSince11,M4Date,0,0); 
+  RecordField(BMBankr11,M4Int,0,0); 
+  RecordField(BMPEP11,M4Int,0,0);  
+  RecordField(BMSanctions11,M4Int,0,0);  
+  
+  RecordField(BoardMember12,M4Code,20,CUVc);
+  RecordField(BoardMember12Name,M4Str,200,0);
+  RecordField(BMID12,M4Str,100,0);  
+  RecordField(BMDOB12,M4Date,0,0);  
+  RecordField(BMSince12,M4Date,0,0);  
+  RecordField(BMBankr12,M4Int,0,0); 
+  RecordField(BMPEP12,M4Int,0,0);  
+  RecordField(BMSanctions12,M4Int,0,0);   
+  
  //ak_end  
   ArrayBegin(Math,-,1);
   ArrayField(Period,M4Str,10,0);

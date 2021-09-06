@@ -4176,7 +4176,7 @@ begin
 	RadioButton(h,v+=vs,1,0,"All of the values",Values);
 	
 	Sizeable(-1,-1,0,0);
-	MatrixBegin(10,v=v+40,-40,-20,-,99);
+	MatrixBegin(10,v=v+40,-40,-20,-,500);
 	Flip(0);
 	MatCol(1,24,"Argument",0,Argument,false,0)
 	MatCol(1,124,"Formula",0,Formula,false,0);

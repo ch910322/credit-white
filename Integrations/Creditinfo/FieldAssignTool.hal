@@ -1,5 +1,7 @@
 external inner function Date DateFromString(string,string);
 external inner function val ValFromString(string,string,string);
+external inner function string 60 AddObjectToObjectList(string,string);
+external inner procedure NormalizeObjstr(var string);
 
 
 procedure ExtractObj(string ostr,var Integer pos,var string rstr)
@@ -629,6 +631,22 @@ boolean TrHs;
         ORrw.Quant = aShares[sh];
         matrowput(ORr,matrowcnt(ORr),ORrw);
         
+        SWExecListr.MainID = custid;
+        SWExecListr.ExecId = ORrw.SerialNr;
+        if(readfirstmain(SWExecListr,2,true))then begin
+          if(!setinset("SHAREHOLDER",SWExecListr.Type))then begin
+            SWExecListr.Type = AddObjectToObjectList("SHAREHOLDER",SWExecListr.Type);
+            recordstore(SWExecListr,true);
+          end;
+        end else begin
+          SWExecListr.MainID = custid;
+          SWExecListr.ExecId = ORrw.SerialNr;
+          SWExecListr.ImpDate = currentdate;
+          SWExecListr.ImpTime = currenttime;
+          SWExecListr.Type = AddObjectToObjectList("SHAREHOLDER",SWExecListr.Type);
+          recordstore(SWExecListr,true);
+        end;
+        
         logtext(0,aShares[sh] & "  " & aShareHoldersName[sh] & "   " & aShareHoldersID[sh] & "   " & aShareHoldersSince[sh]);
         
         sh = sh + 1;
@@ -645,6 +663,30 @@ boolean TrHs;
         sh = sh + 1;
       end;
     end;
+    
+    
+    ex = 0;
+    if(reltyp=="b:Board")then begin
+      todate = "";
+      todate = XmlGetAttribute(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:ToDate","i:nil");
+      if(todate=="true" or custid=="111111113"/*111111113 for testing*/)then begin
+        SWExecListr.MainID = custid;
+        SWExecListr.ExecId = XmlGet(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:Person/b:IdentityNumber");
+        if(readfirstmain(SWExecListr,2,true))then begin
+          if(!setinset("BOARD",SWExecListr.Type))then begin
+            SWExecListr.Type = AddObjectToObjectList("BOARD",SWExecListr.Type);
+            recordstore(SWExecListr,true);
+          end;
+        end else begin
+          SWExecListr.MainID = custid;
+          SWExecListr.ExecId = XmlGet(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:Person/b:IdentityNumber");
+          SWExecListr.ImpDate = currentdate;
+          SWExecListr.ImpTime = currenttime;
+          SWExecListr.Type = AddObjectToObjectList("SHAREHOLDER",SWExecListr.Type);
+          recordstore(SWExecListr,true);
+        end;
+      end;
+    end;
   end;
   
   for(i=0;i<matrowcnt(OR2r);i=i+1)begin
@@ -652,9 +694,20 @@ boolean TrHs;
     logtext(0,"Executive " & ORrw.SerialNr);
     SWExecListr.MainID = custid;
     SWExecListr.ExecId = ORrw.SerialNr;
-    SWExecListr.ImpDate = currentdate;
-    SWExecListr.ImpTime = currenttime;
-    recordstore(SWExecListr,true);
+    if(readfirstmain(SWExecListr,2,true))then begin
+      if(!setinset("EXECUTIVE",SWExecListr.Type))then begin
+        SWExecListr.Type = AddObjectToObjectList("EXECUTIVE",SWExecListr.Type);
+        recordstore(SWExecListr,true);
+      end;
+    end else begin
+      SWExecListr.MainID = custid;
+      SWExecListr.ExecId = ORrw.SerialNr;
+      SWExecListr.ImpDate = currentdate;
+      SWExecListr.ImpTime = currenttime;
+      SWExecListr.Type = AddObjectToObjectList("EXECUTIVE",SWExecListr.Type);
+      recordstore(SWExecListr,true);
+    end;
+    
     GetDataForExecutor(SWExecListr,LAr);
   end;
   
