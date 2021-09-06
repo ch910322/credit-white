@@ -359,7 +359,7 @@ begin
 return;
 end;
 
-global updating procedure GetDataForExecutor(record SWExecListVc SWExecListr,record B2BLoanApplicationVc LAr)
+global updating procedure GetDataForExecutor(record SWExecListVc SWExecListr,var record B2BLoanApplicationVc LAr)
 begin
   record SWExecPersonDataVc SWExecPersonDatar;
   row SWExecPersonDataVc SWExecPersonDatarw;
@@ -374,6 +374,11 @@ begin
   xml axml,axml2;
   boolean reqf,run;
   integer i,child;
+  boolean bankruptyf,debsf;
+  vector boolean vbankruptcystr;
+  record SWBankruptcyStatusesBlock SWBankruptcyStatusesb;
+  row SWBankruptcyStatusesBlock SWBankruptcyStatusesrw;
+
 
   blockload(CIb);
   
@@ -381,6 +386,10 @@ begin
   
   run = false;
   
+  for(i=0;i<matrowcnt(SWBankruptcyStatusesb);i=i+1)begin
+    matrowget(SWBankruptcyStatusesb,i,SWBankruptcyStatusesrw);
+    vbankruptcystr[SWBankruptcyStatusesrw.Status] = true;
+  end;
 
   if(CIb.EvalExecutives==1)then begin
     if(!setinset("EXECUTIVE",SWExecListr.Type))then begin
@@ -458,7 +467,7 @@ begin
               GetAreaFromArea(temparea,0,getarealength(temparea),replyspdr);
             end;
           end;
-          fn = "Executive" & SWExecListr.ExecId & ".xml";
+          fn = SWExecListr.Type & "_" & SWExecListr.ExecId & ".xml";
           WriteAreaToFile(replyspdr,fn,0);
           RecordLinkFile(fn,0,LAr,CurrentCompany);
           Delete_File(fn);
@@ -487,11 +496,16 @@ begin
             SWExecPersonDatarw.CompanyID = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:IdentityNumber");
             SWExecPersonDatarw.CompanyName = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:FullName");
             SWExecPersonDatarw.UnpaidDebtsCount = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:UnpaidDebtsCount");
+            if(stringtoval(SWExecPersonDatarw.UnpaidDebtsCount,m4val)>0)then begin
+              debsf = true;
+            end;
+            
             SWExecPersonDatarw.PaidDebtsCount = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:PaidDebtsCount");
             SWExecPersonDatarw.HasArrests = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:HasArrests");
             SWExecPersonDatarw.HasClaims = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:HasClaims");
             SWExecPersonDatarw.HasLawsuits = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:HasLawsuits");
             SWExecPersonDatarw.Status = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:Status");
+            if(vbankruptcystr[SWExecPersonDatarw.Status])then begin bankruptyf = true; end;            
             matrowput(SWExecPersonDatar,i,SWExecPersonDatarw);      
           end;
           recordstore(SWExecPersonDatar,true);
@@ -507,6 +521,36 @@ begin
   end;
   
 LGetCreditInfo1:;
+
+  if(bankruptyf)then begin
+    if(LAr.ShareHolder1ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder1Bankr = 1;  end;
+    if(LAr.ShareHolder2ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder2Bankr = 1;  end;
+    if(LAr.ShareHolder3ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder3Bankr = 1;  end;
+    if(LAr.ShareHolder4ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder4Bankr = 1;  end;
+    if(LAr.ShareHolder5ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder5Bankr = 1;  end;
+    if(LAr.ShareHolder6ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder6Bankr = 1;  end;
+  end;
+  if(debsf)then begin
+    if(LAr.ShareHolder1ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder1ActDeb = 1;  end;
+    if(LAr.ShareHolder2ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder2ActDeb = 1;  end;
+    if(LAr.ShareHolder3ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder3ActDeb = 1;  end;
+    if(LAr.ShareHolder4ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder4ActDeb = 1;  end;
+    if(LAr.ShareHolder5ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder5ActDeb = 1;  end;
+    if(LAr.ShareHolder6ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder6ActDeb = 1;  end;
+  end;
+  
+  if(bankruptyf)then begin
+    if(LAr.BMID1==SWExecPersonDatar.ExecId)then begin LAr.BMBankr1 = 1;  end;
+    if(LAr.BMID11==SWExecPersonDatar.ExecId)then begin LAr.BMBankr11 = 1;  end;
+    if(LAr.BMID12==SWExecPersonDatar.ExecId)then begin LAr.BMBankr12 = 1;  end;
+    if(LAr.BMID2==SWExecPersonDatar.ExecId)then begin LAr.BMBankr2 = 1;  end;
+    if(LAr.BMID3==SWExecPersonDatar.ExecId)then begin LAr.BMBankr3 = 1;  end;
+    if(LAr.BMID4==SWExecPersonDatar.ExecId)then begin LAr.BMBankr4 = 1;  end;
+    if(LAr.BMID5==SWExecPersonDatar.ExecId)then begin LAr.BMBankr5 = 1;  end;
+    if(LAr.BMID6==SWExecPersonDatar.ExecId)then begin LAr.BMBankr6 = 1;  end;
+  end;
+ 
+
 return;
 end;
 
