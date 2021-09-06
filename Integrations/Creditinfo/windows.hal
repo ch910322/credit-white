@@ -37,7 +37,7 @@ end;
 
 event DefineWindows
 begin
-  real h,v,vs;
+  real h,v,vs,h2;
 
   vs = 20;
 
@@ -63,6 +63,10 @@ begin
   CheckBox(h,v+=vs,0,"Check Jar",SPWCheckJar);
   CheckBox(h,v+=vs,0,"Fill Negative Info",SPWFillNegativeInfo);
   CheckBox(h,v+=vs,0,"With History",SPWWithHistory);
+  v = v - 3*vs;
+  CheckBox(h2=300,v+=vs,0,"Evaluate Executives",EvalExecutives);
+  CheckBox(h2,v+=vs,0,"Evaluate Shareholder",EvalShareholders);
+  CheckBox(h2,v+=vs,0,"Evaluate Boards",EvalBoards);
   
   EditField(h=150,v+=vs,200,"Financial Statements User",Normal,FSAPIUser,false,0);
   EditField(h,v+=vs,200,"Financial Statements Password",Normal,FSAPIPassword,false,0);

@@ -21,6 +21,7 @@ external inner procedure PrintEBSDocument(string,string,record RcVc,string,strin
 external inner function Boolean FindCustomerRelation(string,string,var record CUVc);
 external inner procedure MailTextRow(string,string,string,var row MailTextVc,var Integer);
 external inner updating function LongInt MailVcRecordCheck(var record MailVc,record MailVc,LongInt,LongInt);
+external inner procedure AddLineToCredMan(var record CredManVc,string,val,string,val,val,val,Integer,Integer,val,val);
 
 //copy-paste
 procedure RemoveDuplicateRecipients(var record MailVc Mailr)
@@ -640,10 +641,13 @@ begin
   Boolean res;
   record CMOrderClassBlock OCb;
   record CredManTypeVc CMTr;
+  row CredManTypeVc CMTrw;
   string 255 warning;
   row B2BLoanApplicationVc LArw;
   integer rwcnt,i;
-  row CredManVc CredManrw;
+  row CredManVc CredManTyperw;
+  
+  
 
   CUr.Code = LAr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin
@@ -662,6 +666,7 @@ begin
     CredManr.startDate = CurrentDate;//LAr.StartDate;
     CredManr.InstalmentMonths = LAr.Months;
     CMTr.Code = LAr.Type;
+    /*
     rwcnt = matrowcnt(LAr);
     for(i=0;i<rwcnt;i=i+1)begin
       matrowget(LAr,i,LArw);
@@ -684,6 +689,9 @@ begin
         CredManSumup(CredManr);
       end;
     end;
+    */
+    
+    
     if (ReadFirstMain(CMTr,1,true)) then begin
       CredManr.AnnualRate = CMTr.AnnualRate;
       CredManr.UseCompensationInvoices = CMTr.UseCompensationInvoices;
@@ -697,6 +705,16 @@ begin
       CredManr.BuyoutFeePrc = CMTr.BuyoutFeePrc;
       CredManr.BuyoutFeeMonths = CMTr.BuyoutFeeMonths;
       CredManr.DaysInMonth = CMTr.DaysInMonth;
+      
+      if(LAr.AdminFee>0)then begin
+        clearrow(LAr,LArw,1);
+        if(matrowcnt(CMTr)>0)then begin
+          matrowget(CMTr,0,CredManTyperw);
+          AddLineToCredMan(CredManr,CredManTyperw.ArtCode,1,CredManTyperw.Comment,LAr.AdminFee,blankval,LAr.AdminFee,CredManTyperw.ChargeType,0,CredManTyperw.MinSum,CredManTyperw.MaxSum);//CUST added min sum, max sum
+        end;
+      end;
+      
+      
     end else begin  
       CredManr.PayDeal = CUr.PayDeal;
     end;

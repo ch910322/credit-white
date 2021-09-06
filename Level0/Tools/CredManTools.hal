@@ -167,6 +167,7 @@ BEGIN
   RETURN;
 END;
 
+global
 procedure AddLineToCredMan(var record CredManVc CredManr,string artcode,val qty,string comment,val price,val vreb,val sum,Integer typ,Integer rw,val minsum,val maxsum)
 begin
   row CredManVc CredManrw;

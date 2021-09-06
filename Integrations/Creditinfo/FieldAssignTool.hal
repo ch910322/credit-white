@@ -372,113 +372,136 @@ begin
   Boolean sslf;
   Longint port,pos,counch;
   xml axml,axml2;
-  boolean reqf;
+  boolean reqf,run;
   integer i,child;
 
   blockload(CIb);
   
   logtext(0,"GetDataForExecutor " & SWExecListr.ExecId);
   
-  SWExecPersonDatar.ExecId = SWExecListr.ExecId;
-  if(readfirstmain(SWExecPersonDatar,1,true))then begin
-    if(blankdate(SWExecPersonDatar.ImpDate) or SWExecPersonDatar.ImpDate<addday(currentdate,-CIb.ExecutiveDaysUpdate))then begin
-      udneed = true;
+  run = false;
+  
+
+  if(CIb.EvalExecutives==1)then begin
+    if(!setinset("EXECUTIVE",SWExecListr.Type))then begin
+      run = true;
     end;
-  end else begin
-    udneed = true;
+  end;
+  if(CIb.EvalShareholders==1)then begin
+    if(!setinset("SHAREHOLDER",SWExecListr.Type))then begin
+      run = true;
+    end;
+  end;
+  if(CIb.EvalBoards==1)then begin
+    if(!setinset("BOARD",SWExecListr.Type))then begin
+      run = true;
+    end;
   end;
   
-  if(udneed)then begin
-    params = "";
-    logtext(0,params);
-    if (CIb.SPWMode==0) then begin//test
-      url = "ds.infobankas.lt";
-      port = 80;
-      sslf = false;
+  if(run)then begin
+  
+    SWExecPersonDatar.ExecId = SWExecListr.ExecId;
+    if(readfirstmain(SWExecPersonDatar,1,true))then begin
+      if(blankdate(SWExecPersonDatar.ImpDate) or SWExecPersonDatar.ImpDate<addday(currentdate,-CIb.ExecutiveDaysUpdate))then begin
+        udneed = true;
+      end;
     end else begin
-      url = "new.infobankas.lt";
-      port = 443;
-      sslf = true;
+      udneed = true;
     end;
-    path = "/CreditInfoGroup_lt/SaisWs/SpiderWeb/Spider.svc";
+  
+    if(udneed)then begin
+      params = "";
+      logtext(0,params);
+      if (CIb.SPWMode==0) then begin//test
+        url = "ds.infobankas.lt";
+        port = 80;
+        sslf = false;
+      end else begin
+        url = "new.infobankas.lt";
+        port = 443;
+        sslf = true;
+      end;
+      path = "/CreditInfoGroup_lt/SaisWs/SpiderWeb/Spider.svc";
 
-    addtexttoarea("SOAPAction: http://creditinfo.lt/2010/05/ISpiderService/GetSpiderData",requestspdr);
-    addtexttoarea(chr(13) & chr(10),requestspdr);
-    addtexttoarea(chr(13) & chr(10),requestspdr);
+      addtexttoarea("SOAPAction: http://creditinfo.lt/2010/05/ISpiderService/GetSpiderData",requestspdr);
+      addtexttoarea(chr(13) & chr(10),requestspdr);
+      addtexttoarea(chr(13) & chr(10),requestspdr);
 
-    addtexttoarea("<x:Envelope xmlns:x=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://creditinfo.lt/2010/05\" ",requestspdr);
-    addtexttoarea("xmlns:sai=\"http://schemas.datacontract.org/2004/07/SaisInternalWs.SpiderWeb\">",requestspdr);
-    addtexttoarea("<x:Header/>",requestspdr);
-    addtexttoarea("<x:Body>",requestspdr);
-    addtexttoarea("<ns:GetSpiderData>",requestspdr);
-    addtexttoarea("<ns:request>",requestspdr);
-    addtexttoarea("<sai:AsociationType>" & CIb.SPWAsociationType & "</sai:AsociationType>",requestspdr);
-    addtexttoarea("<sai:CheckJar>" & truefalsestring(CIb.SPWCheckJar) & "</sai:CheckJar>",requestspdr);
-    addtexttoarea("<sai:FillNegativeInfo>" & truefalsestring(CIb.SPWFillNegativeInfo) & "</sai:FillNegativeInfo>",requestspdr);
-    addtexttoarea("<sai:IdentityNumber>" & SWExecListr.ExecId & "</sai:IdentityNumber>",requestspdr);
-    addtexttoarea("<sai:Password>" & CIb.SPWAPIPassword & "</sai:Password>",requestspdr);
-    addtexttoarea("<sai:UserName>" & CIb.SPWAPIUser & "</sai:UserName>",requestspdr);
-    addtexttoarea("<sai:WithHistory>" & truefalsestring(CIb.SPWWithHistory) & "</sai:WithHistory>",requestspdr);
-    addtexttoarea("</ns:request>",requestspdr);
-    addtexttoarea("</ns:GetSpiderData>",requestspdr);
-    addtexttoarea("</x:Body>",requestspdr);
-    addtexttoarea("</x:Envelope>",requestspdr);
-    addtexttoarea(chr(13) & chr(10),requestspdr);
-    //addtexttoarea(chr(13) & chr(10),requestspdr);
+      addtexttoarea("<x:Envelope xmlns:x=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns=\"http://creditinfo.lt/2010/05\" ",requestspdr);
+      addtexttoarea("xmlns:sai=\"http://schemas.datacontract.org/2004/07/SaisInternalWs.SpiderWeb\">",requestspdr);
+      addtexttoarea("<x:Header/>",requestspdr);
+      addtexttoarea("<x:Body>",requestspdr);
+      addtexttoarea("<ns:GetSpiderData>",requestspdr);
+      addtexttoarea("<ns:request>",requestspdr);
+      addtexttoarea("<sai:AsociationType>" & CIb.SPWAsociationType & "</sai:AsociationType>",requestspdr);
+      addtexttoarea("<sai:CheckJar>" & truefalsestring(CIb.SPWCheckJar) & "</sai:CheckJar>",requestspdr);
+      addtexttoarea("<sai:FillNegativeInfo>" & truefalsestring(CIb.SPWFillNegativeInfo) & "</sai:FillNegativeInfo>",requestspdr);
+      addtexttoarea("<sai:IdentityNumber>" & SWExecListr.ExecId & "</sai:IdentityNumber>",requestspdr);
+      addtexttoarea("<sai:Password>" & CIb.SPWAPIPassword & "</sai:Password>",requestspdr);
+      addtexttoarea("<sai:UserName>" & CIb.SPWAPIUser & "</sai:UserName>",requestspdr);
+      addtexttoarea("<sai:WithHistory>" & truefalsestring(CIb.SPWWithHistory) & "</sai:WithHistory>",requestspdr);
+      addtexttoarea("</ns:request>",requestspdr);
+      addtexttoarea("</ns:GetSpiderData>",requestspdr);
+      addtexttoarea("</x:Body>",requestspdr);
+      addtexttoarea("</x:Envelope>",requestspdr);
+      addtexttoarea(chr(13) & chr(10),requestspdr);
+      //addtexttoarea(chr(13) & chr(10),requestspdr);
 
-    writeareatofile(requestspdr,"SPDRWEBREQUEST.txt",0);
+      writeareatofile(requestspdr,"SPDRWEBREQUEST.txt",0);
 
-    if (SendRawWebRequest(url,port,sslf,"POST",path & "?" & params,"text/xml; charset=utf-8","",false,requestspdr,replyspdr,10)) then begin
-      if(getarealength(replyspdr)>200)then begin
-        for(pos=0;pos<getarealength(replyspdr)-11;pos=pos+1)begin
-          if(getstringfromarea(replyspdr,pos,11)=="<s:Envelope")then begin
-            GetAreaFromArea(replyspdr,pos,getarealength(replyspdr)-pos,temparea);
-            setareazerosize(replyspdr);
-            GetAreaFromArea(temparea,0,getarealength(temparea),replyspdr);
+      if (SendRawWebRequest(url,port,sslf,"POST",path & "?" & params,"text/xml; charset=utf-8","",false,requestspdr,replyspdr,10)) then begin
+        if(getarealength(replyspdr)>200)then begin
+          for(pos=0;pos<getarealength(replyspdr)-11;pos=pos+1)begin
+            if(getstringfromarea(replyspdr,pos,11)=="<s:Envelope")then begin
+              GetAreaFromArea(replyspdr,pos,getarealength(replyspdr)-pos,temparea);
+              setareazerosize(replyspdr);
+              GetAreaFromArea(temparea,0,getarealength(temparea),replyspdr);
+            end;
           end;
-        end;
-        fn = "Executive" & SWExecListr.ExecId & ".xml";
-        WriteAreaToFile(replyspdr,fn,0);
-        RecordLinkFile(fn,0,LAr,CurrentCompany);
-        Delete_File(fn);
+          fn = "Executive" & SWExecListr.ExecId & ".xml";
+          WriteAreaToFile(replyspdr,fn,0);
+          RecordLinkFile(fn,0,LAr,CurrentCompany);
+          Delete_File(fn);
     
-        axml = ParseXmlArea(replyspdr);
-        root = "s:Envelope/s:Body/GetSpiderDataResponse/GetSpiderDataResult/a:Person";
+          axml = ParseXmlArea(replyspdr);
+          root = "s:Envelope/s:Body/GetSpiderDataResponse/GetSpiderDataResult/a:Person";
 
-        if (XmlNodeExists(axml,root)==false) then begin
-          goto LGetCreditInfo1;
-        end;
+          if (XmlNodeExists(axml,root)==false) then begin
+            goto LGetCreditInfo1;
+          end;
     
-        root = "s:Envelope/s:Body/GetSpiderDataResponse/GetSpiderDataResult/a:Person";
+          root = "s:Envelope/s:Body/GetSpiderDataResponse/GetSpiderDataResult/a:Person";
     
     
     
-        SWExecPersonDatar.ExecId = SWExecListr.ExecId;
-        SWExecPersonDatar.Name = XmlGet(axml,root & "/b:FullName");
-        SWExecPersonDatar.ImpDate = currentdate;
-        SWExecPersonDatar.ImpTime = currenttime;
-        for(i=0;i<matrowcnt(SWExecPersonDatar);i=i+1)begin
-          matrowdelete(SWExecPersonDatar,0);
-        end;
-        child = XMLCountChildren(axml,root & "/b:Relations");
-        for(i=0;i<child;i=i+1)begin
-          SWExecPersonDatarw.CompanyID = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:IdentityNumber");
-          SWExecPersonDatarw.CompanyName = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:FullName");
-          SWExecPersonDatarw.UnpaidDebtsCount = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:UnpaidDebtsCount");
-          SWExecPersonDatarw.PaidDebtsCount = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:PaidDebtsCount");
-          SWExecPersonDatarw.HasArrests = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:HasArrests");
-          SWExecPersonDatarw.HasClaims = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:HasClaims");
-          SWExecPersonDatarw.HasLawsuits = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:HasLawsuits");
-          SWExecPersonDatarw.Status = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:Status");
-          matrowput(SWExecPersonDatar,i,SWExecPersonDatarw);      
-        end;
-        recordstore(SWExecPersonDatar,true);
+          SWExecPersonDatar.ExecId = SWExecListr.ExecId;
+          SWExecPersonDatar.Name = XmlGet(axml,root & "/b:FullName");
+          SWExecPersonDatar.ImpDate = currentdate;
+          SWExecPersonDatar.ImpTime = currenttime;
+          SWExecPersonDatar.Type = SWExecListr.Type;
+          for(i=0;i<matrowcnt(SWExecPersonDatar);i=i+1)begin
+            matrowdelete(SWExecPersonDatar,0);
+          end;
+          child = XMLCountChildren(axml,root & "/b:Relations");
+          for(i=0;i<child;i=i+1)begin
+            SWExecPersonDatarw.CompanyID = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:IdentityNumber");
+            SWExecPersonDatarw.CompanyName = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:FullName");
+            SWExecPersonDatarw.UnpaidDebtsCount = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:UnpaidDebtsCount");
+            SWExecPersonDatarw.PaidDebtsCount = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:PaidDebtsCount");
+            SWExecPersonDatarw.HasArrests = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:HasArrests");
+            SWExecPersonDatarw.HasClaims = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:HasClaims");
+            SWExecPersonDatarw.HasLawsuits = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:HasLawsuits");
+            SWExecPersonDatarw.Status = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:Status");
+            matrowput(SWExecPersonDatar,i,SWExecPersonDatarw);      
+          end;
+          recordstore(SWExecPersonDatar,true);
     
     
   
-        reqf = true;
-      end else begin
-        goto LGetCreditInfo1;
+          reqf = true;
+        end else begin
+          goto LGetCreditInfo1;
+        end;
       end;
     end;
   end;
@@ -502,7 +525,7 @@ array val aShares;
 array date aShareHoldersSince;
 integer relations;
 date frdate;
-record ORVc ORr,OR2r;
+record ORVc ORr,OR2r,OR3r;
 row ORVc ORrw;
 record SWExecListVc SWExecListr;
 boolean TrHs;
@@ -646,6 +669,7 @@ boolean TrHs;
           SWExecListr.Type = AddObjectToObjectList("SHAREHOLDER",SWExecListr.Type);
           recordstore(SWExecListr,true);
         end;
+        GetDataForExecutor(SWExecListr,LAr);
         
         logtext(0,aShares[sh] & "  " & aShareHoldersName[sh] & "   " & aShareHoldersID[sh] & "   " & aShareHoldersSince[sh]);
         
@@ -669,7 +693,16 @@ boolean TrHs;
     if(reltyp=="b:Board")then begin
       todate = "";
       todate = XmlGetAttribute(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:ToDate","i:nil");
-      if(todate=="true" or custid=="111111113"/*111111113 for testing*/)then begin
+      if(todate=="true" or custid=="111111113"/*111111113 for testing*/)then begin        
+        tstr = left(XmlGet(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:FromDate"),10);
+        frdate.year = stringtoint(left(tstr,4));
+        frdate.month = stringtoint(mid(tstr,5,2));
+        frdate.day = stringtoint(right(tstr,2));        
+        ORrw.Spec = XmlGet(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:Person/b:FullName");
+        ORrw.SerialNr = XmlGet(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:Person/b:IdentityNumber");
+        ORrw.InloadingDate = frdate;
+        matrowput(OR3r,matrowcnt(OR3r),ORrw);
+        
         SWExecListr.MainID = custid;
         SWExecListr.ExecId = XmlGet(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:Person/b:IdentityNumber");
         if(readfirstmain(SWExecListr,2,true))then begin
@@ -682,9 +715,10 @@ boolean TrHs;
           SWExecListr.ExecId = XmlGet(axmlspdr,xmlkey & "/b:InterPersonRelation[" & i & "]/b:Person/b:IdentityNumber");
           SWExecListr.ImpDate = currentdate;
           SWExecListr.ImpTime = currenttime;
-          SWExecListr.Type = AddObjectToObjectList("SHAREHOLDER",SWExecListr.Type);
+          SWExecListr.Type = AddObjectToObjectList("BOARD",SWExecListr.Type);
           recordstore(SWExecListr,true);
         end;
+        GetDataForExecutor(SWExecListr,LAr);
       end;
     end;
   end;
@@ -720,6 +754,26 @@ boolean TrHs;
       SetFieldValueByName(LAr,"ShareHolder" & i+1 & "ID",ORrw.SerialNr,-1);
       SetFieldValueByName(LAr,"ShareHolder" & i+1 & "Shares",ORrw.Quant,-1);
       SetFieldValueByName(LAr,"ShareHolder" & i+1 & "Since",ORrw.InloadingDate,-1);
+    end;
+  end;
+  
+  for(i=0;i<matrowcnt(ORr);i=i+1)begin
+    matrowget(OR3r,i,ORrw);
+    logtext(0,ORrw.Spec & "  " & ORrw.SerialNr & "  " & ORrw.InloadingDate & " " & ORrw.Quant);
+    if(i==0)then begin
+      SetFieldValueByName(LAr,"BoardMember1Name",ORrw.Spec,-1);
+      SetFieldValueByName(LAr,"BMID1",ORrw.SerialNr,-1);
+      SetFieldValueByName(LAr,"BMSince1",ORrw.InloadingDate,-1);
+    end;
+    if(i==1)then begin
+      SetFieldValueByName(LAr,"BoardMember11Name",ORrw.Spec,-1);
+      SetFieldValueByName(LAr,"BMID11",ORrw.SerialNr,-1);
+      SetFieldValueByName(LAr,"BMSince11",ORrw.InloadingDate,-1);
+    end;
+    if(i==2)then begin
+      SetFieldValueByName(LAr,"BoardMember12Name",ORrw.Spec,-1);
+      SetFieldValueByName(LAr,"BMID12",ORrw.SerialNr,-1);
+      SetFieldValueByName(LAr,"BMSince12",ORrw.InloadingDate,-1);
     end;
   end;
   
