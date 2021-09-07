@@ -374,7 +374,7 @@ begin
   xml axml,axml2;
   boolean reqf,run;
   integer i,child;
-  boolean bankruptyf,debsf;
+  boolean bankruptyf,debsf,hasarest,hasclaims,haslawsuits;
   vector boolean vbankruptcystr;
   record SWBankruptcyStatusesBlock SWBankruptcyStatusesb;
   row SWBankruptcyStatusesBlock SWBankruptcyStatusesrw;
@@ -504,6 +504,17 @@ begin
             SWExecPersonDatarw.HasArrests = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:HasArrests");
             SWExecPersonDatarw.HasClaims = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:HasClaims");
             SWExecPersonDatarw.HasLawsuits = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:NegativeInfo/b:HasLawsuits");
+            
+            if(SWExecPersonDatarw.HasArrests=="true")then begin
+              hasarest = true;
+            end;
+            if(SWExecPersonDatarw.HasClaims=="true")then begin
+              hasclaims = true;
+            end;
+            if(SWExecPersonDatarw.HasLawsuits=="true")then begin
+              haslawsuits = true;
+            end;
+            
             SWExecPersonDatarw.Status = XMLGet(axml,root & "/b:Relations/b:InterPersonRelation[" & i & "]/b:Company/b:Status");
             if(vbankruptcystr[SWExecPersonDatarw.Status])then begin bankruptyf = true; end;            
             matrowput(SWExecPersonDatar,i,SWExecPersonDatarw);      
@@ -529,17 +540,7 @@ LGetCreditInfo1:;
     if(LAr.ShareHolder4ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder4Bankr = 1;  end;
     if(LAr.ShareHolder5ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder5Bankr = 1;  end;
     if(LAr.ShareHolder6ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder6Bankr = 1;  end;
-  end;
-  if(debsf)then begin
-    if(LAr.ShareHolder1ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder1ActDeb = 1;  end;
-    if(LAr.ShareHolder2ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder2ActDeb = 1;  end;
-    if(LAr.ShareHolder3ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder3ActDeb = 1;  end;
-    if(LAr.ShareHolder4ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder4ActDeb = 1;  end;
-    if(LAr.ShareHolder5ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder5ActDeb = 1;  end;
-    if(LAr.ShareHolder6ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder6ActDeb = 1;  end;
-  end;
-  
-  if(bankruptyf)then begin
+    
     if(LAr.BMID1==SWExecPersonDatar.ExecId)then begin LAr.BMBankr1 = 1;  end;
     if(LAr.BMID11==SWExecPersonDatar.ExecId)then begin LAr.BMBankr11 = 1;  end;
     if(LAr.BMID12==SWExecPersonDatar.ExecId)then begin LAr.BMBankr12 = 1;  end;
@@ -549,6 +550,80 @@ LGetCreditInfo1:;
     if(LAr.BMID5==SWExecPersonDatar.ExecId)then begin LAr.BMBankr5 = 1;  end;
     if(LAr.BMID6==SWExecPersonDatar.ExecId)then begin LAr.BMBankr6 = 1;  end;
   end;
+  if(debsf)then begin
+    if(LAr.ShareHolder1ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder1ActDeb = 1;  end;
+    if(LAr.ShareHolder2ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder2ActDeb = 1;  end;
+    if(LAr.ShareHolder3ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder3ActDeb = 1;  end;
+    if(LAr.ShareHolder4ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder4ActDeb = 1;  end;
+    if(LAr.ShareHolder5ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder5ActDeb = 1;  end;
+    if(LAr.ShareHolder6ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolder6ActDeb = 1;  end;
+    
+    if(LAr.BMID1==SWExecPersonDatar.ExecId)then begin LAr.BMActDebts1 = 1;  end;
+    if(LAr.BMID11==SWExecPersonDatar.ExecId)then begin LAr.BMActDebts11 = 1;  end;
+    if(LAr.BMID12==SWExecPersonDatar.ExecId)then begin LAr.BMActDebts12 = 1;  end;
+    if(LAr.BMID2==SWExecPersonDatar.ExecId)then begin LAr.BMActDebts2 = 1;  end;
+    if(LAr.BMID3==SWExecPersonDatar.ExecId)then begin LAr.BMActDebts3 = 1;  end;
+    if(LAr.BMID4==SWExecPersonDatar.ExecId)then begin LAr.BMActDebts4 = 1;  end;
+    if(LAr.BMID5==SWExecPersonDatar.ExecId)then begin LAr.BMActDebts5 = 1;  end;
+    if(LAr.BMID6==SWExecPersonDatar.ExecId)then begin LAr.BMActDebts6 = 1;  end;
+    
+  end;
+  
+  if(hasarest)then begin
+    if(LAr.ShareHolder1ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasArrest1 = 1;  end;
+    if(LAr.ShareHolder2ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasArrest2 = 1;  end;
+    if(LAr.ShareHolder3ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasArrest3 = 1;  end;
+    if(LAr.ShareHolder4ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasArrest4 = 1;  end;
+    if(LAr.ShareHolder5ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasArrest5 = 1;  end;
+    if(LAr.ShareHolder6ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasArrest6 = 1;  end;
+    
+    if(LAr.BMID1==SWExecPersonDatar.ExecId)then begin LAr.BMHasArrest1 = 1;  end;
+    if(LAr.BMID11==SWExecPersonDatar.ExecId)then begin LAr.BMHasArrest11 = 1;  end;
+    if(LAr.BMID12==SWExecPersonDatar.ExecId)then begin LAr.BMHasArrest12 = 1;  end;
+    if(LAr.BMID2==SWExecPersonDatar.ExecId)then begin LAr.BMHasArrest2 = 1;  end;
+    if(LAr.BMID3==SWExecPersonDatar.ExecId)then begin LAr.BMHasArrest3 = 1;  end;
+    if(LAr.BMID4==SWExecPersonDatar.ExecId)then begin LAr.BMHasArrest4 = 1;  end;
+    if(LAr.BMID5==SWExecPersonDatar.ExecId)then begin LAr.BMHasArrest5 = 1;  end;
+    if(LAr.BMID6==SWExecPersonDatar.ExecId)then begin LAr.BMHasArrest6 = 1;  end;
+  end;
+  
+  if(hasclaims)then begin
+    if(LAr.ShareHolder1ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasClaims1 = 1;  end;
+    if(LAr.ShareHolder2ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasClaims2 = 1;  end;
+    if(LAr.ShareHolder3ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasClaims3 = 1;  end;
+    if(LAr.ShareHolder4ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasClaims4 = 1;  end;
+    if(LAr.ShareHolder5ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasClaims5 = 1;  end;
+    if(LAr.ShareHolder6ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasClaims6 = 1;  end;
+    
+    if(LAr.BMID1==SWExecPersonDatar.ExecId)then begin LAr.BMHasClaims1 = 1;  end;
+    if(LAr.BMID11==SWExecPersonDatar.ExecId)then begin LAr.BMHasClaims11 = 1;  end;
+    if(LAr.BMID12==SWExecPersonDatar.ExecId)then begin LAr.BMHasClaims12 = 1;  end;
+    if(LAr.BMID2==SWExecPersonDatar.ExecId)then begin LAr.BMHasClaims2 = 1;  end;
+    if(LAr.BMID3==SWExecPersonDatar.ExecId)then begin LAr.BMHasClaims3 = 1;  end;
+    if(LAr.BMID4==SWExecPersonDatar.ExecId)then begin LAr.BMHasClaims4 = 1;  end;
+    if(LAr.BMID5==SWExecPersonDatar.ExecId)then begin LAr.BMHasClaims5 = 1;  end;
+    if(LAr.BMID6==SWExecPersonDatar.ExecId)then begin LAr.BMHasClaims6 = 1;  end;
+  end;
+  
+  if(haslawsuits)then begin
+    if(LAr.ShareHolder1ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasLawsuits1 = 1;  end;
+    if(LAr.ShareHolder2ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasLawsuits2 = 1;  end;
+    if(LAr.ShareHolder3ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasLawsuits3 = 1;  end;
+    if(LAr.ShareHolder4ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasLawsuits4 = 1;  end;
+    if(LAr.ShareHolder5ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasLawsuits5 = 1;  end;
+    if(LAr.ShareHolder6ID==SWExecPersonDatar.ExecId)then begin LAr.ShareHolderHasLawsuits6 = 1;  end;
+    
+    if(LAr.BMID1==SWExecPersonDatar.ExecId)then begin LAr.BMHasLawsuits1 = 1;  end;
+    if(LAr.BMID11==SWExecPersonDatar.ExecId)then begin LAr.BMHasLawsuits11 = 1;  end;
+    if(LAr.BMID12==SWExecPersonDatar.ExecId)then begin LAr.BMHasLawsuits12 = 1;  end;
+    if(LAr.BMID2==SWExecPersonDatar.ExecId)then begin LAr.BMHasLawsuits2 = 1;  end;
+    if(LAr.BMID3==SWExecPersonDatar.ExecId)then begin LAr.BMHasLawsuits3 = 1;  end;
+    if(LAr.BMID4==SWExecPersonDatar.ExecId)then begin LAr.BMHasLawsuits4 = 1;  end;
+    if(LAr.BMID5==SWExecPersonDatar.ExecId)then begin LAr.BMHasLawsuits5 = 1;  end;
+    if(LAr.BMID6==SWExecPersonDatar.ExecId)then begin LAr.BMHasLawsuits6 = 1;  end;
+  end;
+  
+  
  
 
 return;
