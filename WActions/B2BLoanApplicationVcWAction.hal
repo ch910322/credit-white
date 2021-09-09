@@ -2262,7 +2262,9 @@ begin
             end else begin
               //logtext(0,"firstarg " & firstarg);
               if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
-                goto lSkipRow;
+                if(LAErw.IgnoreIfBlank==1)then begin
+                  goto lSkipRow;
+                end;
               end;
               firstargval = stringtoval(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol),m4val);
             end;
@@ -2276,7 +2278,9 @@ begin
               end else begin
                 //logtext(0,"lastarg " & lastarg);
                 if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
-                  goto lSkipRow;
+                  if(LAErw.IgnoreIfBlank==1)then begin
+                    goto lSkipRow;
+                  end;
                 end;
                 lastargval = stringtoval(CutToStr(GetFieldValueByName(LAr,lastarg,-1),LAErw.CutAfterSymbol),m4val);
               end;
@@ -2328,7 +2332,9 @@ begin
               end;
             end else begin
               if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
-                goto lSkipRow;
+                if(LAErw.IgnoreIfBlank==1)then begin
+                  goto lSkipRow;
+                end;
               end;
               firstargval = stringtoval(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol),m4val);
               if(LAErw.Type==0)then begin
@@ -2374,7 +2380,9 @@ begin
               lastarg = currentdate;
             end;
             if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
-              goto lSkipRow;
+              if(LAErw.IgnoreIfBlank==1)then begin
+                goto lSkipRow;
+              end;
             end;
             if(sign=="-")then begin
               calcdate = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
@@ -2391,7 +2399,9 @@ begin
               lastarg = currentdate;
             end;
             if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
-              goto lSkipRow;
+              if(LAErw.IgnoreIfBlank==1)then begin
+                goto lSkipRow;
+              end;
             end;
             if(sign=="-")then begin
               calcdate = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
@@ -2408,7 +2418,9 @@ begin
               lastarg = currentdate;
             end;
             if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
-              goto lSkipRow;
+              if(LAErw.IgnoreIfBlank==1)then begin
+                goto lSkipRow;
+              end;
             end;
             if(sign=="-")then begin
               calcdate = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
@@ -2432,7 +2444,9 @@ begin
                   lastarg = currentdate;
                 end;
                 if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
-                  goto lSkipRow;
+                  if(LAErw.IgnoreIfBlank==1)then begin
+                    goto lSkipRow;
+                  end;
                 end;
                 if(sign=="-")then begin
                   checkdatefr = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
@@ -2449,7 +2463,9 @@ begin
                   lastarg = currentdate;
                 end;
                 if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
-                  goto lSkipRow;
+                  if(LAErw.IgnoreIfBlank==1)then begin
+                    goto lSkipRow;
+                  end;
                 end;
                 if(sign=="-")then begin
                   checkdatefr = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
@@ -2466,7 +2482,9 @@ begin
                   lastarg = currentdate;
                 end;
                 if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
-                  goto lSkipRow;
+                  if(LAErw.IgnoreIfBlank==1)then begin
+                    goto lSkipRow;
+                  end;
                 end;
                 if(sign=="-")then begin
                   checkdatefr = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
@@ -2493,13 +2511,17 @@ begin
                 if(sign=="-")then begin
                   if(LAErw.IgnoreIfBlank==1)then begin
                     if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
-                      goto lSkipRow;
+                      if(LAErw.IgnoreIfBlank==1)then begin
+                        goto lSkipRow;
+                      end;
                     end;
                   end;
                   checkdateto = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
                   if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
-                    goto lSkipRow;
+                    if(LAErw.IgnoreIfBlank==1)then begin
+                      goto lSkipRow;
+                    end;
                   end;
                   checkdateto = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
