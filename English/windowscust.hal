@@ -4194,6 +4194,8 @@ begin
 	MatCol(1,-80,"Reason",0,Reason,false,StandProblemsSClass);
 	Flip(4);
 	MatCol(1,-180,"Cut After Symbols",0,CutAfterSymbol,false,0);
+	MatCol(1,-80,"Ignore if blank",0,IgnoreIfBlank,false,SetSClass);
+
 	EndMatrix;
 	vs = 22;
   v = 24; VTab(-35,v,-16,v+vs,ToolFlip,1,"A");

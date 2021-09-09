@@ -2688,6 +2688,7 @@ begin
   ArrayField(StrValFrom,M4Str,50,0);
   ArrayField(StrValTo,M4Str,50,0);
   ArrayField(CutAfterSymbol,M4Str,50,0);
+  ArrayField(IgnoreIfBlank,M4Set,432,0);
   EndArray;
   MainKeyBegin(Code,0);
   KeySegment(Code);
