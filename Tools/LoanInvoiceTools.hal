@@ -10,6 +10,7 @@ external inner function LongInt DateDiff(Date,Date);
 external procedure AddPlannedFees(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,Integer,Integer,Date,var val,var val,Date,Date,Longint,Boolean);
 external procedure AddInterest(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,Integer,Date,var val,var val,Date,Date,Longint,Boolean);
 external procedure AddInstalmentFixed(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,val,Date,var val,var val,Date,Date,val);
+external procedure AddInstalmentFixedBO(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,val,Date,var val,var val,Date,Date);
 forward procedure GetCredManEventList2(Longint,var record ORVc);
 external inner procedure PasteARPayInIV(record IVVc,row IVVc,Integer);
 external updating procedure FindUnpaidCredHist(record IPVc,row IPVc,var array val,Integer);
@@ -2260,7 +2261,19 @@ begin
       pd = CIb.FirstInvPayDeal;
     end;
     SetupLoanInvoice2(CredManr,CMb,IVr,td,lastinv,td,true,false,"",1,true,pd);
-    AddInstalmentFixed(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td,issuedinsbal);
+    
+    for(i=0;i<matrowcnt(IVr);i=i+1)begin
+      matrowget(IVr,i,IVrw);
+      logtext(0,i & " --A-- " & IVrw.ArtCode);
+    end;
+    
+    AddInstalmentFixedBO(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td);
+    
+    for(i=0;i<matrowcnt(IVr);i=i+1)begin
+      matrowget(IVr,i,IVrw);
+      logtext(0,i & " --B-- " & IVrw.ArtCode);
+    end;
+    
     RecordCopy(tCredManr,CredManr);
     tCredManr.InvSum4 = balance;
     tCredManr.DepositSum = 0;
@@ -2290,14 +2303,26 @@ begin
       SetupInvoiceRowAndAdd(CredManr,IVr,CIb.BuyOutItem,spec,1,buyoutfee,blankval,15,-1);
     end;
     
+    for(i=0;i<matrowcnt(IVr);i=i+1)begin
+      matrowget(IVr,i,IVrw);
+      logtext(0,i & " --C-- " & IVrw.ArtCode);
+    end;
     
     if (nonblank(CIb.LetterOfDemand) and ORr.SumIncCom>0) then begin
       GetItemName(CIb.LetterOfDemand,spec);
       SetupInvoiceRowAndAdd(CredManr,IVr,CIb.LetterOfDemand,spec,1,ORr.SumIncCom,blankval,15,-1);
     end;
+    for(i=0;i<matrowcnt(IVr);i=i+1)begin
+      matrowget(IVr,i,IVrw);
+      logtext(0,i & " --D-- " & IVrw.ArtCode);
+    end;
     if (nonblank(CIb.InsuranceCost) and ORr.RvrsVAT>0) then begin
       GetItemName(CIb.InsuranceCost,spec);
       SetupInvoiceRowAndAdd(CredManr,IVr,CIb.InsuranceCost,spec,1,ORr.RvrsVAT,blankval,15,-1);
+    end;
+    for(i=0;i<matrowcnt(IVr);i=i+1)begin
+      matrowget(IVr,i,IVrw);
+      logtext(0,i & " --E-- " & IVrw.ArtCode);
     end;
     
     if(ORr.DiscSum>0)then begin
@@ -2326,7 +2351,11 @@ begin
         SetupInvoiceRowAndAdd(CredManr,IVr,afuturefee[i],spec,1,vfuturefee[afuturefee[i]],blankval,kEventTypeCalcFees,-1);
       end;
     
-    end;   
+    end;  
+    for(i=0;i<matrowcnt(IVr);i=i+1)begin
+      matrowget(IVr,i,IVrw);
+      logtext(0,i & " --F-- " & IVrw.ArtCode);
+    end; 
     
 //    AddPlannedFees(CredManr,CredManPayPlan2r,CMb,kPlannedFeesMonthly,kMonthTypeFirst,td,cumint,tval,lastinv,td,-1,false);
     rwcnt = MatRowCnt(CredManPayPlan2r);
@@ -2337,9 +2366,19 @@ begin
     
     for(i=0;i<matrowcnt(IVr);i=i+1)begin
       matrowget(IVr,i,IVrw);
+      logtext(0,i & " --G-- " & IVrw.ArtCode);
+    end;
+    
+    for(i=0;i<matrowcnt(IVr);i=i+1)begin
+      matrowget(IVr,i,IVrw);
       if(IVrw.stp==1 and nonblank(IVrw.ArtCode))then begin
         lastusedrow = i;
       end;
+    end;
+    
+    for(i=0;i<matrowcnt(IVr);i=i+1)begin
+      matrowget(IVr,i,IVrw);
+      logtext(0,i & " --H-- " & IVrw.ArtCode);
     end;
     
     
@@ -2363,7 +2402,13 @@ begin
     end;*/
     
     AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
-    AddBuyOutFee(CredManr,IVr,balance);
+    
+    for(i=0;i<matrowcnt(IVr);i=i+1)begin
+      matrowget(IVr,i,IVrw);
+      logtext(0,i & " --J-- " & IVrw.ArtCode);
+    end;
+    
+    //AddBuyOutFee(CredManr,IVr,balance);
     AddInsuranceCost(CredManr,IVr,CIb);
     //AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
   end;

@@ -848,6 +848,10 @@ begin
   record CMInvoicingBlock CMIb;
   record CMBuyOutBlock CMBOb;
   
+  logtext(0,"amount " & amount);
+  logtext(0,"issuedinsbal " & issuedinsbal);
+  logtext(0,"newcalcbal " & newcalcbal);
+  
   if(issuedinsbal>0)then begin
     blockload(CMIb);
     blockload(CMBOb);
@@ -864,6 +868,24 @@ begin
     end;
   end else begin
     AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,amount,0,acumint,calcbal,frdate,todate,-1,-1,0);
+  end;
+  
+  return;
+end;
+
+global
+procedure AddInstalmentFixedBO(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,val amount,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate)
+begin
+  val newcalcbal;
+  record CMInvoicingBlock CMIb;
+  record CMBuyOutBlock CMBOb;
+  
+  if(amount>0)then begin
+    blockload(CMIb);
+    blockload(CMBOb);
+    if(nonblank(CMBOb.PremTermPrincpl))then begin
+      AddCredPayPlanLine(CredManPayPlanr,invdate,CMBOb.PremTermPrincpl,"",kEventTypeCalcInstalment,amount,0,acumint,calcbal,frdate,todate,-1,-1,0);
+    end;
   end;
   
   return;
