@@ -15,6 +15,9 @@ begin
   RecordField(FSAPIPassword,M4Str,50,0);
   RecordField(FSMode,M4Int,0,0);
   RecordField(ExecutiveDaysUpdate,M4Int,0,0);
+  RecordField(EvalExecutives,M4Int,0,0);
+  RecordField(EvalShareholders,M4Int,0,0);
+  RecordField(EvalBoards,M4Int,0,0);
   EndBlock;
 
   BlockBegin(CompanyInfoBlock,-,"");
@@ -51,7 +54,7 @@ begin
     RecordField(ExecId,M4Str,50,0);
     RecordField(ImpDate,M4Date,0,0);
     RecordField(ImpTime,M4Time,0,0);
-    
+    RecordField(Type,M4Str,50,0);
     MainKeyBegin(Main,0);
     KeySegment(MainID);
     KeySegment(ExecId);
@@ -66,6 +69,7 @@ begin
     RecordField(ImpDate,M4Date,0,0);
     RecordField(ImpTime,M4Time,0,0);
     RecordField(Math,M4Matrix,0,0);
+    RecordField(Type,M4Str,50,0);
     ArrayBegin(Math,-,1);
     ArrayField(CompanyID,M4Str,255,0);
     ArrayField(CompanyName,M4Str,255,0);

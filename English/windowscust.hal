@@ -4176,7 +4176,7 @@ begin
 	RadioButton(h,v+=vs,1,0,"All of the values",Values);
 	
 	Sizeable(-1,-1,0,0);
-	MatrixBegin(10,v=v+40,-40,-20,-,99);
+	MatrixBegin(10,v=v+40,-40,-20,-,500);
 	Flip(0);
 	MatCol(1,24,"Argument",0,Argument,false,0)
 	MatCol(1,124,"Formula",0,Formula,false,0);
@@ -4194,6 +4194,8 @@ begin
 	MatCol(1,-80,"Reason",0,Reason,false,StandProblemsSClass);
 	Flip(4);
 	MatCol(1,-180,"Cut After Symbols",0,CutAfterSymbol,false,0);
+	MatCol(1,-80,"Ignore if blank",0,IgnoreIfBlank,false,SetSClass);
+
 	EndMatrix;
 	vs = 22;
   v = 24; VTab(-35,v,-16,v+vs,ToolFlip,1,"A");

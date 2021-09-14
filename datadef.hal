@@ -535,6 +535,88 @@ begin
   RecordField(Surety6HasLawsuits,M4Int,0,0);
   RecordField(Surety1SpiderwebNeg,M4Int,0,0);
   
+  RecordField(BoardMember11,M4Code,20,CUVc);
+  RecordField(BoardMember11Name,M4Str,200,0);
+  RecordField(BMID11,M4Str,100,0);  
+  RecordField(BMDOB11,M4Date,0,0);  
+  RecordField(BMSince11,M4Date,0,0); 
+  RecordField(BMBankr11,M4Int,0,0); 
+  RecordField(BMPEP11,M4Int,0,0);  
+  RecordField(BMSanctions11,M4Int,0,0);  
+  
+  RecordField(BoardMember12,M4Code,20,CUVc);
+  RecordField(BoardMember12Name,M4Str,200,0);
+  RecordField(BMID12,M4Str,100,0);  
+  RecordField(BMDOB12,M4Date,0,0);  
+  RecordField(BMSince12,M4Date,0,0);  
+  RecordField(BMBankr12,M4Int,0,0); 
+  RecordField(BMPEP12,M4Int,0,0);  
+  RecordField(BMSanctions12,M4Int,0,0);   
+  
+  RecordField(BMActDebts1,M4Int,0,0);   
+  RecordField(BMHasArrest1,M4Int,0,0);   
+  RecordField(BMHasClaims1,M4Int,0,0);   
+  RecordField(BMHasLawsuits1,M4Int,0,0); 
+  
+  RecordField(BMActDebts11,M4Int,0,0);   
+  RecordField(BMHasArrest11,M4Int,0,0);   
+  RecordField(BMHasClaims11,M4Int,0,0);   
+  RecordField(BMHasLawsuits11,M4Int,0,0); 
+  
+  RecordField(BMActDebts12,M4Int,0,0);   
+  RecordField(BMHasArrest12,M4Int,0,0);   
+  RecordField(BMHasClaims12,M4Int,0,0);   
+  RecordField(BMHasLawsuits12,M4Int,0,0);  
+  
+  RecordField(BMActDebts2,M4Int,0,0);   
+  RecordField(BMHasArrest2,M4Int,0,0);   
+  RecordField(BMHasClaims2,M4Int,0,0);   
+  RecordField(BMHasLawsuits2,M4Int,0,0);  
+  
+  RecordField(BMActDebts3,M4Int,0,0);   
+  RecordField(BMHasArrest3,M4Int,0,0);   
+  RecordField(BMHasClaims3,M4Int,0,0);   
+  RecordField(BMHasLawsuits3,M4Int,0,0);  
+  
+  RecordField(BMActDebts4,M4Int,0,0);   
+  RecordField(BMHasArrest4,M4Int,0,0);   
+  RecordField(BMHasClaims4,M4Int,0,0);   
+  RecordField(BMHasLawsuits4,M4Int,0,0); 
+  
+  RecordField(BMActDebts5,M4Int,0,0);   
+  RecordField(BMHasArrest5,M4Int,0,0);   
+  RecordField(BMHasClaims5,M4Int,0,0);   
+  RecordField(BMHasLawsuits5,M4Int,0,0); 
+  
+  RecordField(BMActDebts6,M4Int,0,0);   
+  RecordField(BMHasArrest6,M4Int,0,0);   
+  RecordField(BMHasClaims6,M4Int,0,0);   
+  RecordField(BMHasLawsuits6,M4Int,0,0); 
+    
+  RecordField(ShareHolderHasArrest1,M4Int,0,0);   
+  RecordField(ShareHolderHasClaims1,M4Int,0,0);   
+  RecordField(ShareHolderHasLawsuits1,M4Int,0,0);
+  
+  RecordField(ShareHolderHasArrest2,M4Int,0,0);   
+  RecordField(ShareHolderHasClaims2,M4Int,0,0);   
+  RecordField(ShareHolderHasLawsuits2,M4Int,0,0);
+  
+  RecordField(ShareHolderHasArrest3,M4Int,0,0);   
+  RecordField(ShareHolderHasClaims3,M4Int,0,0);   
+  RecordField(ShareHolderHasLawsuits3,M4Int,0,0);
+  
+  RecordField(ShareHolderHasArrest4,M4Int,0,0);   
+  RecordField(ShareHolderHasClaims4,M4Int,0,0);   
+  RecordField(ShareHolderHasLawsuits4,M4Int,0,0);
+  
+  RecordField(ShareHolderHasArrest5,M4Int,0,0);   
+  RecordField(ShareHolderHasClaims5,M4Int,0,0);   
+  RecordField(ShareHolderHasLawsuits5,M4Int,0,0);
+  
+  RecordField(ShareHolderHasArrest6,M4Int,0,0);   
+  RecordField(ShareHolderHasClaims6,M4Int,0,0);   
+  RecordField(ShareHolderHasLawsuits6,M4Int,0,0);
+  
  //ak_end  
   ArrayBegin(Math,-,1);
   ArrayField(Period,M4Str,10,0);
@@ -2606,6 +2688,7 @@ begin
   ArrayField(StrValFrom,M4Str,50,0);
   ArrayField(StrValTo,M4Str,50,0);
   ArrayField(CutAfterSymbol,M4Str,50,0);
+  ArrayField(IgnoreIfBlank,M4Set,432,0);
   EndArray;
   MainKeyBegin(Code,0);
   KeySegment(Code);

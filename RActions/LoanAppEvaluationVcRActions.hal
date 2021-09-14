@@ -5,15 +5,17 @@ begin
   record SWExecListVc SWExecListr;
   record SWExecPersonDataVc SWExecPersonDatar;
   row SWExecPersonDataVc SWExecPersonDatarw;
-  boolean TrHs,TrHs2,hasnote;
+  boolean TrHs,TrHs2,hasnote,testf;
   integer i,pos;
   record SWBankruptcyStatusesBlock SWBankruptcyStatusesb;
   row SWBankruptcyStatusesBlock SWBankruptcyStatusesrw;
   vector boolean vbankruptcystr;
   record NotepadVc Noter;
   record RLinkVc RLr;
+  record CreditinfoBlock CIb;
   
   blockload(SWBankruptcyStatusesb);
+  blockload(CIb);
   
   RecordNew(Noter);
   Noter.SerNr = NextSerNr("NotePadVc",CurrentDate,-1,false,"");
@@ -26,11 +28,29 @@ begin
   SWExecListr.MainID = id;
   TrHs = true;
   while(loopmain(SWExecListr,1,TrHs))begin
+    testf = true;
     if(SWExecListr.MainID!=id)then begin
       TrHs = false;
+      testf = false;
+    end;
+    if(CIb.EvalExecutives==1)then begin
+      if(!setinset("EXECUTIVE",SWExecListr.Type))then begin
+        testf = false;
+      end;
+    end;
+    if(CIb.EvalShareholders==1)then begin
+      if(!setinset("SHAREHOLDER",SWExecListr.Type))then begin
+        testf = false;
+      end;
+    end;
+    if(CIb.EvalBoards==1)then begin
+      if(!setinset("BOARD",SWExecListr.Type))then begin
+        testf = false;
+      end;
     end;
     
-    if(TrHs)then begin
+    
+    if(testf)then begin
       SWExecPersonDatar.ExecId = SWExecListr.ExecId;
       if(readfirstmain(SWExecPersonDatar,1,true))then begin
         for(i=0;i<matrowcnt(SWExecPersonDatar);i=i+1)begin
