@@ -3736,7 +3736,18 @@ begin
   ORr.TAX2Sum = buyoutfee;//vcalcval["OPENINVOICED:" & prematureItem];
     
   //t = GetOpenOverdueFeesValue(CredManr.SerNr,ORr.OrdDate);
-  ORr.FrBase = ORr.TAX2Sum + ORr.Sum2+ORr.BaseSum4+ORr.TotGP+ORr.DiscSum+ORr.TAX1Sum+ORr.FrPrice+ORr.DownPayRedcd;//total debt
+  
+  logtext(0,"TOTAL==================");
+  logtext(0,"Premature Term. Fee ORr.TAX2Sum " & ORr.TAX2Sum);
+  logtext(0,"Overdue Invoices ORr.Sum2 " & ORr.Sum2);
+  logtext(0,"Balance ORr.BaseSum4 " & ORr.BaseSum4);
+  logtext(0,"Current Period Interest ORr.TotGP " & ORr.TotGP);
+  logtext(0,"Future Fees ORr.DiscSum " & ORr.DiscSum);
+  logtext(0,"Other Open Fees ORr.TAX1Sum " & ORr.TAX1Sum);//-----Disabled becouse include already
+  logtext(0,"Not invoiced Overdues ORr.FrPrice " & ORr.FrPrice);
+  logtext(0,"Open Overdue Fee Invoices ORr.DownPayRedcd " & ORr.DownPayRedcd);//-----Disabled becouse include already
+    
+  ORr.FrBase = ORr.TAX2Sum + ORr.Sum2 + ORr.BaseSum4 + ORr.TotGP + ORr.DiscSum /*+ ORr.TAX1Sum*/ + ORr.FrPrice/* + ORr.DownPayRedcd*/;//total debt
 
   
     
