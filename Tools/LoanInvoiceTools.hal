@@ -3482,7 +3482,7 @@ begin
             fullperiod = datediff(CSrw.ToDate,CSrw.FromDate)+1;
             dayval = CSrw.Interest / 30;
             
-            if(CMBOb.CalcIntBOday==1)then begin
+            if(CMBOb.CalcIntBOday==0)then begin
               spenddays = datediff(inputtodate,CSrw.FromDate);
               leftdays = fullperiod - spenddays;
             end else begin
