@@ -3431,57 +3431,84 @@ global
 function val GetOpenPrinciples(record CredManVc CredManr,var vector val vvals1,date inputtodate)
 begin
   val res,curbal;
-  Integer rwcnt,i;
+  Integer rwcnt,i,spenddays,leftdays;
   val openamount;
   record CredManSchedVc CSr;
   row CredManSchedVc CSrw;
-  val x,y,z;
-  integer intday;
+  val x,y,z,dayval;
+  integer intday,fullperiod;
   record CMBuyOutBlock CMBOb;
   date todate;
-  
-  todate = inputtodate;
 
   blockload(CMBOb);
   
-  intday = 1;
-  if(CMBOb.CalcIntBOday==1)then begin
-    intday = 2;
-    todate = addday(inputtodate,1);
-  end;
   CSr.CredManNr = CredManr.SerNr;
   if(readfirstmain(CSr,1,true))then begin
     rwcnt = matrowcnt(CSr);
     for(i=0;i<rwcnt;i=i+1)begin
       matrowget(CSr,i,CSrw);
-      //logtext(0,"todate " & todate);
-      //logtext(0,"CSrw.FromDate " & CSrw.FromDate);
-      //logtext(0,"CSrw.ToDate " & CSrw.ToDate);
       if(CSrw.Invoiced==0)then begin
         curbal = curbal + CSrw.Principle;
       end;
       if(nonblankdate(CSrw.FromDate) and nonblankdate(CSrw.ToDate))then begin
         
         if(CSrw.Invoiced==0)then begin
-          if(todate<=CSrw.FromDate)then begin
+          if(inputtodate<=CSrw.FromDate)then begin
             vvals1["FUTUREFEES"] = vvals1["FUTUREFEES"] + CSrw.Fees;
           end;
         end;
         
-        if(dateinrange(todate,CSrw.FromDate,CSrw.ToDate))then begin
+        if(dateinrange(inputtodate,CSrw.FromDate,CSrw.ToDate))then begin
+          todate = inputtodate;
+          if(CMBOb.CalcIntBOday==0)then begin
+            todate = addday(inputtodate,-1);
+          end else begin
+
+          end;
+        
           if(CSrw.Invoiced==0)then begin
-            vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(CSrw.Interest * (datediff(todate,CSrw.FromDate)+1) / (datediff(CSrw.ToDate,CSrw.FromDate)+1),defaultcurroundoff);
+            vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(CSrw.Interest * (datediff(todate,CSrw.FromDate)+1) / 30,defaultcurroundoff);
             //logtext(0,CSrw.Interest & " vvals1[\"CURRPERIODINTEREST\"] " & vvals1["CURRPERIODINTEREST"]);
           end else begin
+            todate = inputtodate;
+            if(CMBOb.CalcIntBOday==1)then begin
+              todate = addday(todate,1);
+              y = datediff(todate,CSrw.FromDate);
+            end else begin
+              y = datediff(todate,CSrw.FromDate)-1;
+            end;
             x = CSrw.Interest;
-            y = (datediff(CSrw.ToDate,CSrw.FromDate) + 1) - (datediff(todate,CSrw.FromDate) + 1);
-            //z = datediff(CSrw.ToDate,CSrw.FromDate) + 1;
+            
+            fullperiod = datediff(CSrw.ToDate,CSrw.FromDate)+1;
+            dayval = CSrw.Interest / 30;
+            
+            if(CMBOb.CalcIntBOday==0)then begin
+              spenddays = datediff(inputtodate,CSrw.FromDate);
+              leftdays = fullperiod - spenddays;
+            end else begin
+              spenddays = datediff(inputtodate,CSrw.FromDate) + 1;
+              leftdays = fullperiod - spenddays;
+            end;
+            if(spenddays>30)then begin
+              spenddays = 30;
+            end;
+            
+            logtext(0,"fullperiod " & fullperiod);
+            logtext(0,"dayval " & dayval);
+            logtext(0,"spenddays " & spenddays);
+            logtext(0,"leftdays " & leftdays);
+            
+            if(y>30)then begin
+              y = 30;
+            end;
             z = 30;
             logtext(0,"x " & x);
             logtext(0,"y " & y);
             logtext(0,"z " & z);
-            vvals1["INVOICEDCURRENTPERIOD"] = round(x * y / z,defaultcurroundoff);
-            vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + x - round((x * y / z),defaultcurroundoff);
+            
+            
+            vvals1["INVOICEDCURRENTPERIOD"] = x - round(spenddays * dayval,defaultcurroundoff);
+            vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(spenddays * dayval,defaultcurroundoff);
             logtext(0,"--------- " & CSrw.Interest);
             logtext(0,vvals1["CURRPERIODINTEREST"]);
           end;
