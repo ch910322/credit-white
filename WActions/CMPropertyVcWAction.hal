@@ -122,19 +122,19 @@ begin
       CMPrw.EvalVal = Propr.EvalVal;
       CMPrw.OfficialSerNr = Propr.OfficialSerNr;
       CMPrw.SerialNo = Propr.SerialNo;
-      if(nonblank(Propr.Addr1))then begin
-      	address = Propr.Addr1 & ", ";
+      
+      if(nonblank(Propr.Addr3))then begin
+      	address = address & Propr.Addr3 & ", ";
       end;
       if(nonblank(Propr.Addr2))then begin
       	address = address & Propr.Addr2 & ", ";
       end;
-      if(nonblank(Propr.Addr3))then begin
-      	address = address & Propr.Addr3 & ", ";
-      end;
       if(nonblank(Propr.District))then begin
       	address = address & Propr.District & ", ";
       end;
-      
+      if(nonblank(Propr.Addr1))then begin
+      	address = Propr.Addr1 & ", ";
+      end;
       address = trim(address);
       if(right(address,1)==",")then begin
       	address = left(address,len(address)-1);

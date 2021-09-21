@@ -2788,10 +2788,10 @@ begin
     CheckBox(h2+120,v,0,"Usage Permission",UsagePermit);
   end;
   if (type==2) then begin
-    EditField(h,v+=vs,150,"Country",Normal,Addr1,false,CountrySClass);
-    EditField(h,v+=vs,150,"City",Normal,Addr2,false,0);
     EditField(h,v+=vs,150,"Address",Normal,Addr3,false,0);
+    EditField(h,v+=vs,150,"City",Normal,Addr2,false,0);
     EditField(h,v+=vs,150,"District",Normal,District,false,0);
+    EditField(h,v+=vs,150,"Country",Normal,Addr1,false,CountrySClass);
     EditField(h,v+=vs,150,"ZIP",Normal,Addr4,false,0);
     EditField(h,v+=vs,100,"Reported Value",Normal,RepVal,false,0);
   end else begin
