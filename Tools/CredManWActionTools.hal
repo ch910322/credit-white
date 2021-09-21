@@ -798,6 +798,12 @@ begin
     BlockLoad(OCb);
     RecordCopy(oldCredManr,CredManr);
     CredManr.OrderClass = OCb.RefinClass;
+    if(RepSpec.ArtMode==2)then begin
+      if (CredManr.VersionNo<0) then begin
+        CredManr.VersionNo = 0;
+      end;
+      CredManr.VersionNo = CredManr.VersionNo + 1;
+    end;
     if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
       CreateRefinCredMan(RepSpec,nCredManr,CredManr);
       DoBuyOutAgreement(CredManr,CurrentDate,false,IVr,ORr);
@@ -1895,14 +1901,16 @@ begin
       err = USetStr(200111);
       goto LCredManPartialBuyoutDo;
     end;
-    RecordCopy(oldCredManr,CredManr);
-    if (CredManr.VersionNo<0) then begin
-      CredManr.VersionNo = 0;
-    end;
-    CredManr.VersionNo = CredManr.VersionNo + 1;
-    if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
-      updf = true;
-    end;
+    /*RecordCopy(oldCredManr,CredManr);//Only in Transfer To Surety Provider  CM>Registers>Credit agreement all types>Record>Agreement prefixes
+    if(RepSpec.ArtMode==2)then begin
+      if (CredManr.VersionNo<0) then begin
+        CredManr.VersionNo = 0;
+      end;
+      CredManr.VersionNo = CredManr.VersionNo + 1;
+      if (RecordUpdate(oldCredManr,CredManr,true)==0) then begin
+        updf = true;
+      end;
+    end;*/
 
     if (MatRowCnt(IPr)>0) then begin
       if (RecordStore(IPr,true)) then begin
