@@ -1170,6 +1170,7 @@ begin
   RecordField(ForcePayDeal,M4Code,5,PDVc);
   RecordField(DocumentSigner,M4Code,20,UserVc);
   RecordField(LoanPurpose,M4Str,250,0);
+  RecordField(FinishDate,M4Date,0,0);
   
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);

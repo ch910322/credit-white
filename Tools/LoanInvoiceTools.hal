@@ -4686,6 +4686,8 @@ begin
         RecordCopy(oldCredManr,CredManr);
         CredManr.OrderClass = OCb.FinishCredOrderClass;
         CredManr.Status = 7;
+        CredManr.FinishDate = currentdate;
+        
         RecordUpdate(oldCredManr,CredManr,true);
       end;
     end;

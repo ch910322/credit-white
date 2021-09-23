@@ -428,6 +428,9 @@ BEGIN
   if ((CredManr.Approved==1) and ((CredManr.Status==2) or (CredManr.Status==3))) then begin
     CreateCredManObject(CredManr,true,true);
   end;
+  if(CredManr.Status==7 and CredMan2r.Status!=7)then begin
+    CredManr.FinishDate = currentdate;
+  end;
   res = inner.CredManVcRecordUpdate(CredManr,CredMan2r,stat,long4);
   
   CredManVcRecordUpdate = res;
