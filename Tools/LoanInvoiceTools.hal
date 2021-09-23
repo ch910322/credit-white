@@ -56,6 +56,7 @@ external inner procedure IVSumup(var record IVVc,Boolean);
 external procedure AddInterestBO(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,Integer,Date,var val,var val,Date,Date,Longint,Boolean);
 external inner function Boolean IVVc_PasteArtCode(var record IVVc,Integer,var string,var string,Boolean,var Integer);
 external inner function Boolean IVVc_PasteQuantity(var record IVVc,Integer);
+external function Boolean IsOmegaCustomer;
 
 
 enum begin
@@ -2265,13 +2266,11 @@ begin
   BlockLoad(CIb);
   BlockLoad(CMBOb);
   blockload(CredManSetb);
-  logtext(0,"03 lastinv " & lastinv);
   GetBuyOutData(CredManr,CredManPayPlanr,CMb,lastinv,balance,issuedinsbal);
   
   if(lastinv>td)then begin
     lastinv = addmonth(td,-1);
   end;
-  logtext(0,"02 lastinv " & lastinv);
   if(nonblankdate(ORr.OrdDate))then begin
     balance = ORr.BaseSum4;
   end;
@@ -2281,45 +2280,27 @@ begin
     if (blank(pd)) then begin
       pd = CIb.FirstInvPayDeal;
     end;
-    logtext(0,"sdyfgasdglsdfjb;kfjglkjdsfhgkjsdhfgkjsdfhg      " & matrowcnt(IVr));
-    logtext(0,"01 lastinv " & lastinv);
     SetupLoanInvoice2(CredManr,CMb,IVr,td,lastinv,td,true,false,"",1,true,pd);
-    logtext(0,"sdyfgasdglsdfjb;kfjglkjdsfhgkjsdhfgkjsdfhg      " & matrowcnt(IVr));
-        
     AddInstalmentFixedBO(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td);
-    
     RecordCopy(tCredManr,CredManr);
     tCredManr.InvSum4 = balance;
     tCredManr.DepositSum = 0;
     tval = GetAgreementAmount(CredManr);
-    logtext(0,"cumint" & cumint);
     if(nonblankdate(ORr.OrdDate))then begin
       cumint = ORr.TotGP;
       balance = ORr.TotGP;
     end;
-    logtext(0,"cumint" & cumint);
-    logtext(0,"lastinv " & lastinv);
-    logtext(0,"td " & td);
-    //lateamount = ORr.FrPrice;
     AddInterestBO(tCredManr,CredManPayPlan2r,CMb,kMonthTypeFirst,td,ORr.TotGP,balance,lastinv,td,-1,true);
     
     sd = GetLastInvoiceDate(CredManr,ORr.OrdDate);
     GetCredManOverdueInvoices2(CredManr,CMb,ORr.OrdDate,sd,latedays,lateamount,principlelateamount,interestlateamount,lateformula,false,false,calcsd);
-    logtext(0,"lateformula " & lateformula[0]);
     GetCredManOverdueInvoices(CredManr,CMb,ORr.OrdDate,sd,latedays,lateamount,lateformula,true,false,calcsd);
-    logtext(0,"lateformula " & lateformula[0]);
-    logtext(0,"lateamount " & lateamount);
     //SetupLoanInvoice(CredManr,CMb,IVr,td,calcsd,td,true,false,"",2,true);
     
     buyoutfee = ORr.TAX2Sum;
     GetItemName(CIb.BuyOutItem,spec);
     if (nonblank(CIb.BuyOutItem) and buyoutfee>0) then begin
       SetupInvoiceRowAndAdd(CredManr,IVr,CIb.BuyOutItem,spec,1,buyoutfee,blankval,15,-1);
-    end;
-    
-    for(i=0;i<matrowcnt(IVr);i=i+1)begin
-      matrowget(IVr,i,IVrw);
-      logtext(0,i & " --C-- " & IVrw.ArtCode);
     end;
     
     if (nonblank(CIb.LetterOfDemand) and ORr.SumIncCom>0) then begin
@@ -2345,7 +2326,6 @@ begin
               for (j=0;j<rwcnt2;j=j+1) begin
                 MatRowGet(FMr,j,FMrw);
                 vfuturefee[FMrw.ArtCode] = vfuturefee[FMrw.ArtCode] + FMrw.Sum;
-                logtext(0,"vfuturefee " & FMrw.Sum);
               end;
             end;
           end;
@@ -3859,9 +3839,26 @@ global
 procedure CheckBuyOutAgreementAsync(record CredManVc CredManr,Date td,Integer wn)
 begin
   record RcVc RepSpec;
+  record ORVc ORr;
 
-  RepSpec.d1 = CurrentDate;
-  CheckBuyOutAgreement(CredManr,RepSpec);
+  //CheckBuyOutAgreement(CredManr,RepSpec);
+  if (IsOmegaCustomer) then begin
+    RecordClear(ORr);
+    ORr.OrdDate = CurrentDate;
+    CheckBuyOutAgreementOmega(CredManr,ORr,false);
+    
+    RepSpec.vals2 = ORr.FrBase;//buyoutvalue
+    RepSpec.f13 = ORr.Sum0;//remainingprinciple
+    RepSpec.vals4 = ORr.Sum2;//totaldue
+    RepSpec.f12 = ORr.DownPayRedcd;//acumpenalty
+    RepSpec.f10 = ORr.Sum3;//lateprincipal
+    RepSpec.f11 = ORr.Sum4;//lateinterest
+    
+  end else begin;
+    RepSpec.d1 = CurrentDate;
+    CheckBuyOutAgreement(CredManr,RepSpec);
+  end;
+  //CheckBuyOutAgreement(CredManr,RepSpec);
   clientremoteasync.CheckBuyOutAgreementCallBack(RepSpec,wn);
 
   return;
