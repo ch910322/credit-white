@@ -133,7 +133,7 @@ begin
       	address = address & Propr.District & ", ";
       end;
       if(nonblank(Propr.Addr1))then begin
-      	address = Propr.Addr1 & ", ";
+      	address = address & Propr.Addr1 & ", ";
       end;
       address = trim(address);
       if(right(address,1)==",")then begin
