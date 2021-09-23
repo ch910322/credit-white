@@ -392,6 +392,26 @@ begin
   record CredManAccVc CMAr;
   string 255 del,reslang;
   boolean doforcepaydeal,periodflag;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  integer i,rwcnt; 
+  date fromdaterow;
+  
+  
+  CSr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CSr,1,true)) then begin
+    rwcnt = MatRowCnt(CSr);
+    for (i=0;i<rwcnt;i=i+1) begin
+     MatRowGet(CSr,i,CSrw);
+      if (CSrw.Invoiced==1 and nonblankdate(CSrw.FromDate)) then begin
+        if(dateinrange(invdate,CSrw.FromDate,CSrw.ToDate))then begin
+          fromdaterow = CSrw.FromDate;
+        end else begin
+          fromdaterow = addday(CSrw.ToDate,1);
+        end;
+      end;
+    end;
+  end;
   
   doforcepaydeal = true;
   BlockLoad(LMb);
@@ -476,7 +496,7 @@ begin
     if(periodflag)then begin
       if (nonblank(fromdate)) then begin
         ClearRow(IVr,IVrw,1);
-        IVrw.Spec = GetInvoicePeriodString(CIb,fromdate,todate);
+        IVrw.Spec = GetInvoicePeriodString(CIb,fromdaterow,todate);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 23 09 2021 y. at 3:39:30 PM
         MatRowPut(IVr,1,IVrw);
       end else begin
         ClearRow(IVr,IVrw,1);
@@ -2245,12 +2265,13 @@ begin
   BlockLoad(CIb);
   BlockLoad(CMBOb);
   blockload(CredManSetb);
+  logtext(0,"03 lastinv " & lastinv);
   GetBuyOutData(CredManr,CredManPayPlanr,CMb,lastinv,balance,issuedinsbal);
   
   if(lastinv>td)then begin
     lastinv = addmonth(td,-1);
   end;
-  
+  logtext(0,"02 lastinv " & lastinv);
   if(nonblankdate(ORr.OrdDate))then begin
     balance = ORr.BaseSum4;
   end;
@@ -2260,7 +2281,10 @@ begin
     if (blank(pd)) then begin
       pd = CIb.FirstInvPayDeal;
     end;
+    logtext(0,"sdyfgasdglsdfjb;kfjglkjdsfhgkjsdhfgkjsdfhg      " & matrowcnt(IVr));
+    logtext(0,"01 lastinv " & lastinv);
     SetupLoanInvoice2(CredManr,CMb,IVr,td,lastinv,td,true,false,"",1,true,pd);
+    logtext(0,"sdyfgasdglsdfjb;kfjglkjdsfhgkjsdhfgkjsdfhg      " & matrowcnt(IVr));
         
     AddInstalmentFixedBO(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td);
     
