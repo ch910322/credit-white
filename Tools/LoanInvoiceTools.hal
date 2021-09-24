@@ -2290,8 +2290,9 @@ begin
       cumint = ORr.TotGP;
       balance = ORr.TotGP;
     end;
-    AddInterestBO(tCredManr,CredManPayPlan2r,CMb,kMonthTypeFirst,td,ORr.TotGP,balance,lastinv,td,-1,true);
-    
+    if(ORr.InvMark==1)then begin
+      AddInterestBO(tCredManr,CredManPayPlan2r,CMb,kMonthTypeFirst,td,ORr.TotGP,balance,lastinv,td,-1,true);
+    end;
     sd = GetLastInvoiceDate(CredManr,ORr.OrdDate);
     GetCredManOverdueInvoices2(CredManr,CMb,ORr.OrdDate,sd,latedays,lateamount,principlelateamount,interestlateamount,lateformula,false,false,calcsd);
     GetCredManOverdueInvoices(CredManr,CMb,ORr.OrdDate,sd,latedays,lateamount,lateformula,true,false,calcsd);
@@ -2521,7 +2522,7 @@ begin
   itemtocredit = princItem;
   if(ORr.InvMark==1)then begin
     itemtocredit = itemtocredit & "," & intItem;
-    intcredsum = ORr.DownPaySent;
+    //intcredsum = ORr.DownPaySent; //creditet full interest always
   end;
   
   logtext(0,"CreditOpenInvoices");
