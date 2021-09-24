@@ -3847,10 +3847,10 @@ begin
     ORr.OrdDate = CurrentDate;
     CheckBuyOutAgreementOmega(CredManr,ORr,false);
     
-    RepSpec.vals2 = ORr.FrBase;//buyoutvalue
-    RepSpec.f13 = ORr.Sum0;//remainingprinciple
-    RepSpec.vals4 = ORr.Sum2;//totaldue
-    RepSpec.f12 = ORr.DownPayRedcd;//acumpenalty
+    RepSpec.vals2 = ORr.FrBase;//buyoutvalue//ok
+    RepSpec.f13 = ORr.Sum0;//remainingprinciple//ok
+    RepSpec.vals4 = ORr.Sum2;//totaldue//ok
+    RepSpec.f12 = ORr.FrPrice;//acumpenalty
     RepSpec.f10 = ORr.Sum3;//lateprincipal
     RepSpec.f11 = ORr.Sum4;//lateinterest
     
