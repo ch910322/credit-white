@@ -2618,10 +2618,13 @@ begin
         end;
         
         recordnew(IVCreditr);
+        logtext(0,"todate " & todate);
+        
         logtext(0,"foundf " & foundf);
         if (foundf) then begin
           if ((IVr.OKFlag!=0) and (IVr.InvType!=kInvoiceTypeCredit and IVr.InvType!=kInvoiceTypeCreditSpecialSales)) then begin
             res = CreateCreditNoteIV(IVr,kInvoiceTypeCredit,IVCreditr,"",false);
+            IVCreditr.InvDate = todate;
             logtext(0,"res " & res & " cred SerNr " & IVCreditr.SerNr);
             if (res==0) then begin
               IVCreditr.SerNr = NextSerNr("IVVc",IVCreditr.InvDate,-1,false,"");
@@ -3782,8 +3785,10 @@ begin
   logtext(0,"Other Open Fees ORr.TAX1Sum " & ORr.TAX1Sum);//-----Disabled becouse include already
   logtext(0,"Not invoiced Overdues ORr.FrPrice " & ORr.FrPrice);
   logtext(0,"Open Overdue Fee Invoices ORr.DownPayRedcd " & ORr.DownPayRedcd);//-----Disabled becouse include already
-    
+  
   ORr.FrBase = ORr.TAX2Sum + ORr.Sum2 + ORr.BaseSum4 + ORr.TotGP + ORr.DiscSum /*+ ORr.TAX1Sum*/ + ORr.FrPrice/* + ORr.DownPayRedcd*/;//total debt
+  ORr.OYDescription = ORr.FrBase;
+  ORr.FrBase = ORr.FrBase + ORr.TAX1Sum + ORr.DownPayRedcd;
 
   
     
