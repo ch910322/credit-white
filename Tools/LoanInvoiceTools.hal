@@ -2290,7 +2290,7 @@ begin
       cumint = ORr.TotGP;
       balance = ORr.TotGP;
     end;
-    if(ORr.InvMark==1)then begin
+    if(ORr.InvMark==1 or ORr.DownPaySent==0)then begin
       AddInterestBO(tCredManr,CredManPayPlan2r,CMb,kMonthTypeFirst,td,ORr.TotGP,balance,lastinv,td,-1,true);
     end;
     sd = GetLastInvoiceDate(CredManr,ORr.OrdDate);
