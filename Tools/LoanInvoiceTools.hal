@@ -3786,11 +3786,8 @@ begin
   logtext(0,"Not invoiced Overdues ORr.FrPrice " & ORr.FrPrice);
   logtext(0,"Open Overdue Fee Invoices ORr.DownPayRedcd " & ORr.DownPayRedcd);//-----Disabled becouse include already
   
-  ORr.FrBase = ORr.TAX2Sum + ORr.Sum2 + ORr.BaseSum4 + ORr.TotGP + ORr.DiscSum /*+ ORr.TAX1Sum*/ + ORr.FrPrice/* + ORr.DownPayRedcd*/;//total debt
-  ORr.OYDescription = ORr.FrBase;
-  ORr.FrBase = ORr.FrBase + ORr.TAX1Sum + ORr.DownPayRedcd;
-
-  
+  ORr.FrBase = ORr.TAX2Sum + ORr.BaseSum4 + ORr.TotGP + ORr.DiscSum /*+ ORr.TAX1Sum*/ + ORr.FrPrice/* + ORr.DownPayRedcd*/;//total debt
+  ORr.OYDescription = ORr.FrBase + ORr.Sum2;
     
   getvectortags(vcalcval,acalcval);
   

@@ -627,9 +627,8 @@ begin
   end;
   EditFieldTL(h,v+=vs,120,"Not invoiced Overdues",M4Val,ViewOnly,255,FrPrice,true,0);
   EditFieldTL(h,v+=vs,120,"Prepayments",M4Val,ViewOnly,255,PrepaidAmount,true,0);
-  EditField(h,v+=vs,120,"Last Invoice Value",ViewOnly,OYDescription,true,0);
-  EditFieldTL(h,v+=vs,120,"Total Debt",M4Val,ViewOnly,0,FrBase,true,0);
-
+  EditFieldTL(h,v+=vs,120,"Last Invoice Value",M4Val,ViewOnly,0,FrBase,true,0);
+  EditField(h,v+=vs,120,"Total Debt",ViewOnly,OYDescription,true,0);
 //  EditFieldTL(h,v+=vs,120,"Last Invoice Value",M4Val,ViewOnly,0,vals1,true,0);
 //  EditFieldTL(h,v+=vs,120,"Expected Payment",M4Val,ViewOnly,0,vals2,true,0);
   StaticText(20,v+=40,"Other Open Fees Details",false);
