@@ -2628,7 +2628,6 @@ begin
             logtext(0,"res " & res & " cred SerNr " & IVCreditr.SerNr);
             if (res==0) then begin
               IVCreditr.SerNr = NextSerNr("IVVc",IVCreditr.InvDate,-1,false,"");
-              IVCreditr.OKFlag = 1;
               RecordInsert(IVCreditr,true);
               if(IVCreditr.SerNr>-1)then begin
                 recordcopy(oldIVCreditr,IVCreditr);
@@ -2665,6 +2664,7 @@ begin
                 end;
               end;
               IVSumup(IVCreditr,true);   
+              IVCreditr.OKFlag = 1;
               if(IVCreditr.SerNr>-1)then begin
                 recordupdate(oldIVCreditr,IVCreditr,true);
               end;
