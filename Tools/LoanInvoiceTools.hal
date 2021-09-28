@@ -744,6 +744,7 @@ begin
   Boolean addf;
   record CredManTypeVc CMTr;
   string 255 item;
+  transaction Boolean gIsBuyOutInvoice; 
   
   if (lateamount>0) then begin
     addf = true;
@@ -753,7 +754,7 @@ begin
         addf = false;
       end;
     end;
-    if (addf) then begin
+    if (addf or gIsBuyOutInvoice) then begin
       BlockLoad(CIb);
       item = CMb.LateRateItem;
       if (CredManr.UseCompensationInvoices==1) then begin
@@ -1314,6 +1315,10 @@ begin
       end;
     end;
   end;
+  
+  
+  logtext(0,"lateamount " & lateamount);
+  
   return;
 end;
 
@@ -2695,6 +2700,9 @@ begin
   val credval,ncredval;
   Longint ivnr;
   vector val vCredVal;
+  transaction Boolean gIsBuyOutInvoice; 
+  
+  gIsBuyOutInvoice = true;
 
   if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
     BlockLoad(CMb);
@@ -3076,11 +3084,8 @@ begin
       case kEventTypeIssueInterest: 
         if ((CredManPayPlanrw.FromDate<=untildate) and (untildate<=CredManPayPlanrw.ToDate)) then begin
           lastduedate = CredManPayPlanrw.FromDate;
-                    LogText(0,"CredManPayPlanrw.FromDate=" & CredManPayPlanrw.FromDate & " CredManPayPlanrw.ToDate=" & CredManPayPlanrw.ToDate &  " CredManPayPlanrw.Sum=" & CredManPayPlanrw.Sum & " CredManPayPlanrw.IssuedNr=" & CredManPayPlanrw.IssuedNr);
           t = CredManPayPlanrw.Sum/((DateDiff(CredManPayPlanrw.ToDate,CredManPayPlanrw.FromDate)+1));
-           LogText(0,"tperday=" & t & " " & lastduedate & " - " & CredManPayPlanrw.FromDate & "=" & DateDiff(untildate,CredManPayPlanrw.FromDate));
           t = t * (DateDiff(untildate,CredManPayPlanrw.FromDate)+1);
-          LogText(0,"t=" & t);
           i = rwcnt;
           foundf = true;
         end;
@@ -3787,7 +3792,18 @@ begin
   logtext(0,"Open Overdue Fee Invoices ORr.DownPayRedcd " & ORr.DownPayRedcd);//-----Disabled becouse include already
   
   ORr.FrBase = ORr.TAX2Sum + ORr.BaseSum4 + ORr.TotGP + ORr.DiscSum /*+ ORr.TAX1Sum*/ + ORr.FrPrice/* + ORr.DownPayRedcd*/;//total debt
-  ORr.OYDescription = ORr.FrBase + ORr.Sum2;
+  if(ORr.InvMark==0 and ORr.DownPaySent>0)then begin
+    ORr.FrBase = ORr.FrBase - ORr.TotGP;
+    //ORr.FrBase = ORr.FrBase - ORr.TotGP;
+    ORr.OYDescription = ORr.FrBase + ORr.Sum2 + ORr.DownPayRedcd + ORr.Sum1;
+
+  end else begin
+    if(ORr.TotGP>0)then begin
+      ORr.OYDescription = ORr.FrBase + ORr.Sum2 + ORr.DownPayRedcd;
+    end else begin
+      ORr.OYDescription = ORr.FrBase + ORr.Sum2;
+    end;
+  end;
     
   getvectortags(vcalcval,acalcval);
   
