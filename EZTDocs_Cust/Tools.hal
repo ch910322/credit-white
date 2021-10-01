@@ -390,7 +390,7 @@ begin
   string 255 vatnr,del,regnr;
   record CUVc CUr;
   record CredManVc CredManr;
-  val topay2,topay3,openamount,openamount2,topay4;
+  val topay2,topay3,openamount,openamount2,topay4,topay1;
   string 255 credivno;
   record IVVc IVCreditr;
   record UserVc Userr;
@@ -438,8 +438,10 @@ begin
   topay3 = openamount2;
   hiddenf = InvoiceHasHiddenLine(IVr);
   topay2 = openamount;
+  topay1 = topay2;
   if (IVr.PayDate>=CurrentDate) then begin
     topay2 = topay2 + abovehiddenbase + abovehiddenvat;
+    topay1 = topay2;
     if (hiddenf) then begin
       topay2 = topay2 + GetCredManItemValue(IVr,CMb.InstalmentItem,true);
     end; 
@@ -480,6 +482,12 @@ begin
   topay4 = openamount2 + IVr.Sum4;
   
   vVals["F_OPENAMOUNT"] = openamount2;
+  
+  vVals["F_OPENAMOUNT1"] = openamount;
+  vVals["F_TOPAY1"] = topay1;
+  ValToText(topay1,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
+  vVals["F_TOPAY1_TEXT"] = tstr;
+  
   vVals["F_TOPAY2"] = topay2;
   ValToText(topay2,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
   vVals["F_TOPAY2_TEXT"] = tstr;
