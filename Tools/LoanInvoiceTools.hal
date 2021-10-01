@@ -489,7 +489,7 @@ begin
     end;
     MatRowPut(IVr,0,IVrw);
     periodflag = true;
-    if(CIb.OverdueIVType!=0)then begin
+    if(CIb.OverdueIVType!=0 and CIb.HidePeriodInSepOVD==1)then begin
       if(invtype==2)then begin
         periodflag = false;
       end;
