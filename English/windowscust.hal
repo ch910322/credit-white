@@ -2458,7 +2458,7 @@ begin
   RadioButton(h,v+=16,1,0,"With Principle, separate Invoice",OverdueIVType);  
   RadioButton(h,v+=16,2,0,"Separately for previous Calendar Month, on Day",OverdueIVType);  
   EditField(h+360,v,30,"Day of Month",Normal,OverdueIVDay,false,0);
-  CheckBox(h,v+=20,0,"Hide period string in separate Overdue Invoice",CIb.HidePeriodInSepOVD);
+  CheckBox(h,v+=20,0,"Hide period string in separate Overdue Invoice",HidePeriodInSepOVD);
 
   ButtonFrame(h,v+=40,150,2,"Overdue Rate");
   RadioButton(h,v,0,0,"Daily",OverdueRateType);
