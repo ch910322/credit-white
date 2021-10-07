@@ -4112,15 +4112,15 @@ begin
   Longint histnr;
   Integer firstf;
   record IVVc credIVr;
-
+  date blankd;
+  val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
+    
   firstf = 1;
   if (IVr.InvType==kInvoiceTypeCredit) then begin
-    //Currently remove only whole invoice. it's too much work now for checking each row separately
     if (IVr.OKFlag==1 and IV2r.OKFlag!=1) then begin
       if (IVr.CredInv>0) then begin
         credIVr.SerNr = IVr.CredInv;
         if (ReadFirstMain(credIVr,1,true)) then begin
-          //RemoveCredHist(IVr.CredInv,kCredHistRecTypeInvoice);
           rwcnt = MatRowCnt(IVr);
           for (i=0;i<rwcnt;i=i+1) begin
             MatRowGet(IVr,i,IVrw);
@@ -4173,10 +4173,29 @@ begin
             MakeFakeReceiptHist(IVr,IVrw);
           end;
         end;
+        for (i=0;i<rwcnt;i=i+1) begin
+          MatRowGet(IVr,i,IVrw);
+          logtext(0,"i " & i & " IVrw.CredHistNr " & IVrw.CredHistNr);
+          if (IVrw.stp==kInvoiceRowTypeNormal and nonblank(IVrw.ArtCode) and IVrw.CredHistNr>0) then begin
+            IVrw.SumAfterPrepayment = GetCredHistOpenValueOnDate(IVrw.CredHistNr,blankd);
+            MatRowPut(IVr,i,IVrw);
+          end;
+        end;
+        
       end;
     end;
   end;
-
+  
+  rwcnt = MatRowCnt(IVr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(IVr,i,IVrw);
+    if (IVrw.stp==kInvoiceRowTypeNormal and nonblank(IVrw.ArtCode))then begin
+      InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+      IVrw.SumWithVAT = IVrw.Sum + vatval;
+      MatRowPut(IVr,i,IVrw);
+    end;
+  end;
+  
   UpdateCredHistBalance(IVr.CustCredManNr,IVr.SerNr,0);
 
   return;

@@ -1464,6 +1464,8 @@ begin
   ArrayField(CredHistNr,M4Long,0,CredHistVc);
   ArrayField(FactoringInvoice,M4Long,0,CredManFactInvoiceVc);  
   ArrayField(CustCredManNrRow,M4Long,0,0);
+  ArrayField(SumWithVAT,M45Val,0,0);
+  ArrayField(SumAfterPrepayment,M45Val,0,0);
   EndRecordAdd;
 
   BlockBegin(ItemPriorityBlock,-,"");
