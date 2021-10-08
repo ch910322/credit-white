@@ -829,19 +829,24 @@ begin
   v = vm-vs;
 //CUST-BEGIN
   EditField(h3,v+=vs,72,"Order Class",Normal,OrderClass,false,OrderClassSClass);
-  EditField(h4,v,70,"Finished",ViewOnly,FinishDate,false,0);
+  if(IsNovitiCustomer)then begin
+    EditField(h4,v,70,"Finished",ViewOnly,FinishDate,false,0);
+  end;
   EditField(h3,v+=vs,72,"Overdue percentage",Normal,OverduePercentage,false,0);
+  if(!IsNovitiCustomer)then begin
+    EditField(h3+150,v,70,"Finished",ViewOnly,FinishDate,false,0);
+  end;
   if (UseBuyOutMonths) then begin
     EditField(h3,v+=vs,72,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
   end else begin
     if (type==7 or type==8) then begin
       if (!ShowBuyOutFeePrcAllTypes) then begin
-      EditField(h3,v+=vs,72,"Not Used Amount Fee %",Normal,BuyoutFeePrc,true,0);
+        EditField(h3,v+=vs,72,"Not Used Amount Fee %",Normal,BuyoutFeePrc,true,0);
       end;  
     end else begin
       if (!ShowBuyOutFeePrcAllTypes) then begin
-      EditField(h3,v+=vs,72,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
-    end;
+        EditField(h3,v+=vs,72,"Premature Term. Fee %",Normal,BuyoutFeePrc,true,0);
+      end;
     end;
     EditField(h3,v+=vs,72,"Premature Term. Fee",Normal,BuyoutFeeFixed,true,0);
   end;
