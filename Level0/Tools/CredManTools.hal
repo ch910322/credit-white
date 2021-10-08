@@ -272,6 +272,7 @@ begin
   record CUVc CUr;
   record UserVc USr;
   Boolean res;
+  record ContactRelVc ContactRelr;
   
   GetCurUser(USr);
   CUr.Code = CredManr.CustCode;
@@ -284,7 +285,16 @@ begin
     CredManr.PriceList = CUr.PLCode;
     CredManr.RebCode = CUr.RebCode;
     CredManr.Objects = CUr.Objects;
-    CredManr.SalesMan = USr.Code;
+    if(blank(CredManr.SalesMan))then begin
+      CredManr.SalesMan = USr.Code;
+    end;
+    
+    if(blank(CredManr.OfficialSerNr))then begin
+      ContactRelr.CustCode = CUr.Code;
+      if(readfirstmain(ContactRelr,1,true))then begin
+          CredManr.OfficialSerNr = ContactRelr.ContactCode;
+      end;
+    end;
   //CUST-BEGIN
     if (nonblank(CUr.LangCode)) then begin
     CredManr.LangCode = CUr.LangCode;
