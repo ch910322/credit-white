@@ -4139,6 +4139,18 @@ begin
   EndWindow;
 end;
 
+
+window FillNewDataToIVRowsVClass:1
+  wtag("language","ENG,EST"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,v2,v3,vm,vs;
+    
+  WindowBegin("Fill new data to IV Rows",FillNewDataToIVRowsVClass,CGMnt,RcType);
+  SetWRect(64,80,445,150);
+  h = 160; v = 6; vs = 20;
+  EndWindow;
+end;
+
 window LoanAppEvaluationLClass:1
 	wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin

@@ -95,6 +95,8 @@ begin
   Maintenance("Create Agreement Test from Agreement",CredManCreateTestVClass,CredManCreateTestMn,modCredMan);
   Maintenance("Generate Objects for Agreements",GenCredManObjVClass,GenCredManObjMn,modCredMan);
   
+  Maintenance("Fill new data to IV Rows",FillNewDataToIVRowsVClass,FillNewDataToIVRowsMn,modSL);
+  
   Document("Credit Agreement Schedule",CredManScheduleRClass,CredManScheduleForm,CredManScheduleFClass,modCredMan);
   Document("Loan Application",LoanAppRClass,LoanAppForm,LoanAppFClass,modCredMan);
   //Document("Combined Application",LoanAppRClass,CombinedAgreementForm,CombinedAgreementFClass,modCredMan);
