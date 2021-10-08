@@ -25,6 +25,7 @@ external inner procedure IVToMailMn(record RcVc);
 external inner updating procedure CreateInvoicePdfFile(record IVVc);
 
 /*Invoicing tools*/
+global
 function Boolean GetItemPriorityRecord(Longint credmannr,var record CMItemPriorityVc IPr)
 begin
   record CredManVc CredManr;

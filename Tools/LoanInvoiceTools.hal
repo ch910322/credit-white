@@ -57,6 +57,8 @@ external procedure AddInterestBO(record CredManVc,record CredManPayPlanVc,record
 external inner function Boolean IVVc_PasteArtCode(var record IVVc,Integer,var string,var string,Boolean,var Integer);
 external inner function Boolean IVVc_PasteQuantity(var record IVVc,Integer);
 external function Boolean IsOmegaCustomer;
+external procedure InsertCredHistInArray(record CredHistVc,array record ORVc,Integer,Date);
+external function Integer GetItemPriority(Longint,string);
 
 
 enum begin
@@ -5098,4 +5100,145 @@ begin
   
   AddCredManInvoiceMailRecipients = res;
   return;
+end;
+
+
+global updating procedure FillNewDataToIVRowsMn(record RcVc RepSpec)
+begin
+  record IVVc IVr;
+  row IVVc IVrw;
+  integer i,j,rwcnt,priority,itemquant;
+  val ppsum,paid,remsum;
+  boolean isprepay,needstore;
+  val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
+  record CredHistVc CredHistr;
+  boolean TrHs;
+  array record ORVc arrORr;
+  record ORVc ORr;
+  row ORVc ORrw;
+  vector val paidammont;
+
+
+
+  IVr.SerNr = -1;
+  while(loopmain(IVr,1,true))begin
+    rwcnt = MatRowCnt(IVr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(IVr,i,IVrw);
+      if (IVrw.stp==kInvoiceRowTypeNormal and nonblank(IVrw.ArtCode))then begin
+        InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+        IVrw.SumWithVAT = IVrw.Sum + vatval;
+        IVrw.SumAfterPrepayment = IVrw.SumWithVAT;
+        MatRowPut(IVr,i,IVrw);
+      end;
+    end;
+    recordstore(IVr,true);
+  end;
+  resetloop(IVr);
+  
+  IVr.SerNr = -1;
+  while(loopmain(IVr,1,true))begin
+    isprepay = false;
+    ppsum = blankval;
+    needstore = false;
+    priority = blankval;
+    clearvector(paidammont);
+    itemquant = 0;
+    if(IVr.OKFlag==1)then begin
+      rwcnt = matrowcnt(IVr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(IVr,i,IVrw);
+        if (IVrw.stp==kInvoiceRowTypePrepayment and IVrw.BasePrice>0) then begin
+          isprepay = true;
+          ppsum = ppsum + IVrw.Sum;
+        end;
+      end;
+      if((IVr.Sum4 - ppsum)==0)then begin
+        for (i=0;i<rwcnt;i=i+1) begin
+          MatRowGet(IVr,i,IVrw);
+          if (IVrw.stp==kInvoiceRowTypeNormal and nonblank(IVrw.ArtCode))then begin
+            itemquant = itemquant + 1;
+            paidammont[IVrw.CredHistNr] = IVrw.SumWithVAT;
+            IVrw.SumAfterPrepayment = 0;
+            needstore = true;
+            MatRowPut(IVr,i,IVrw);
+          end;
+        end;
+      end else begin
+        
+      end;
+    end;
+    
+    if(ppsum>0 and (IVr.Sum4 - ppsum)!=0)then begin
+      needstore = true;
+      CredHistr.RecordNr = IVr.SerNr;
+      CredHistr.RecordType = 0;
+      cleararray(arrORr);
+      TrHs = true;
+      while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+        if (CredHistr.RecordNr!=IVr.SerNr or CredHistr.RecordType!=0) then begin
+          TrHs = false;
+        end else begin
+          priority = GetItemPriority(CredHistr.CredManNr,CredHistr.ArtCode);
+          InsertCredHistInArray(CredHistr,arrORr,priority,IVr.InvDate);
+        end;
+      end;
+      resetloop(CredHistr);
+      SortRecordArray(arrORr,"BuildOn");
+      for (i=0;i<arrORr.length;i=i+1) begin
+        ORr = arrORr[i];
+        rwcnt = MatRowCnt(ORr);
+        for (j=0;j<rwcnt;j=j+1) begin
+          MatRowGet(ORr,j,ORrw);
+          ORrw.Price = 0;
+          MatRowPut(ORr,j,ORrw);
+        end;
+        arrORr[i] = ORr;
+      end;
+      
+      
+      
+      remsum = ppsum;
+      if (remsum>0) then begin
+      //we could do this more efficiently 
+        for (i=0;i<arrORr.length;i=i+1) begin
+          ORr = arrORr[i];
+          rwcnt = MatRowCnt(ORr);
+          for (j=0;j<rwcnt;j=j+1) begin
+            MatRowGet(ORr,j,ORrw);
+            paid = ORrw.Sum-ORrw.Price;
+            if (paid>0) then begin
+              if (remsum<paid) then begin
+                paid = remsum;
+              end;
+              remsum = remsum - paid;
+              for (j=0;j<matrowcnt(IVr);j=j+1) begin
+                MatRowGet(IVr,j,IVrw);
+                if (IVrw.stp==kInvoiceRowTypeNormal and nonblank(IVrw.ArtCode) and (IVrw.CredHistNr==ORrw.CUServiceHistNr or (nonblank(IVrw.ArtCode) and IVrw.ArtCode==ORrw.ArtCode)))then begin
+                  IVrw.SumAfterPrepayment = IVrw.SumAfterPrepayment - paid;
+                  needstore = true;
+                  MatRowPut(IVr,j,IVrw);
+                end;
+              end;
+            end;
+            if (remsum<=0) then begin
+              goto LFindUnpaidCredHist;
+            end;
+          end;
+        end;
+      end;
+LFindUnpaidCredHist:;
+      
+      
+    end;
+    
+    
+    if(isprepay)then begin
+      if(needstore)then begin
+        recordstore(IVr,true);
+      end;
+    end;
+  end;
+
+return;
 end;
