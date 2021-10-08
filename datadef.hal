@@ -1170,6 +1170,7 @@ begin
   RecordField(ForcePayDeal,M4Code,5,PDVc);
   RecordField(DocumentSigner,M4Code,20,UserVc);
   RecordField(LoanPurpose,M4Str,250,0);
+  RecordField(FinishDate,M4Date,0,0);
   
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -1463,6 +1464,8 @@ begin
   ArrayField(CredHistNr,M4Long,0,CredHistVc);
   ArrayField(FactoringInvoice,M4Long,0,CredManFactInvoiceVc);  
   ArrayField(CustCredManNrRow,M4Long,0,0);
+  ArrayField(SumWithVAT,M45Val,0,0);
+  ArrayField(SumAfterPrepayment,M45Val,0,0);
   EndRecordAdd;
 
   BlockBegin(ItemPriorityBlock,-,"");
@@ -2021,6 +2024,7 @@ begin
   RecordField(advancedCreditNote,M4Int,0,0);  
   RecordField(PurchInvNoFromCredMan,M4Int,0,0);
   RecordField(OvdRoundOptions,M4Int,0,0);
+  RecordField(HidePeriodInSepOVD,M4Int,0,0);
   EndBlock;
 
   RecordAddBegin(SMVc,"SMVc_FIN");

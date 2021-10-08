@@ -244,6 +244,7 @@ begin
   SString(200304,"Palūkanų data");
   SString(200305,"Order Cls");
   SString(200306,"Classification");
+  SString(200307,"Legal No.");
 
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");

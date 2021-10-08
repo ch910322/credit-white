@@ -2105,10 +2105,10 @@ begin
   EditField(h,v=6,100,"Ser. No.",Normal,SerNr,false,);
   EditField(h2=350,v,150,"Official No.",Normal,OfficialSerNr,false,0);
   EditField(h,v+=vs,150,"Name",Normal,Addr0,false,0);
-  EditField(h,v+=vs,150,"Country",Normal,Addr1,false,CountrySClass);
-  EditField(h,v+=vs,150,"City",Normal,Addr2,false,0);
   EditField(h,v+=vs,150,"Address",Normal,Addr3,false,0);
+  EditField(h,v+=vs,150,"City",Normal,Addr2,false,0);
   EditField(h,v+=vs,150,"District",Normal,District,false,0);
+  EditField(h,v+=vs,150,"Country",Normal,Addr1,false,CountrySClass);
   EditField(h,v+=vs,150,"ZIP",Normal,Addr4,false,0);
   EditField(h,v+=vs,100,"Type",Normal,Type,false,CMPropertyTypeSClass);
   EditField(h,v+=vs,100,"Reported Value",Normal,RepVal,false,0);
