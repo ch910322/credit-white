@@ -1172,6 +1172,13 @@ begin
   RecordField(LoanPurpose,M4Str,250,0);
   RecordField(FinishDate,M4Date,0,0);
   
+  RecordField(Surety1InvCust,M4Int,0,0);   
+  RecordField(Surety2InvCust,M4Int,0,0);   
+  RecordField(Surety3InvCust,M4Int,0,0);   
+  RecordField(Surety4InvCust,M4Int,0,0);   
+  RecordField(Surety5InvCust,M4Int,0,0);   
+  RecordField(Surety6InvCust,M4Int,0,0);   
+  
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
   ArrayField(InvDate,M4Date,0,0);

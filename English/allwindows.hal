@@ -692,7 +692,7 @@ begin
   end;
   
   WindowBegin("Credit Agreement",wstr,CGview,-);
-  SetWRect(20,80,940,500);
+  SetWRect(20,80,1040,500);
   Sizeable(-1,-1,0,0);
   //DynamicWindow;
   UseView(CredManVc);
@@ -1128,6 +1128,7 @@ begin
     StaticText(h+610,v,"Legal No.",false);
     StaticText(h+690,v,"Signing Manager",false);
     StaticText(h+780,v,"Signed",false);
+    StaticText(h+830,v,"Invoice customer",false);
     
     v = v + 30;
     
@@ -1140,9 +1141,10 @@ begin
     EditField(h+580,v,90,"",Normal,Surety1OfficialSerNr,false,0);
     EditField(h+680,v,85,"",Normal,Surety1SignManager,false,UserNameSCLass);
     CheckBox(h+770,v,0,"",Surety1Signed);
-    HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassSignSuretySimplified","Open","1");
+    CheckBox(h+820,v,0,"",Surety1InvCust);
+    HalPushButtonTag(h+840,v,h+900,v+20,"CredManDClassSignSuretySimplified","Open","1");
     if (HasSuretyConditionTexts) then begin
-      HalPushButtonTag(h+870,v,h+940,v+20,"CredManDClassOpenConditions2","Cond.","1");
+      HalPushButtonTag(h+910,v,h+980,v+20,"CredManDClassOpenConditions2","Cond.","1");
     end;
     v = v + 30;
 
@@ -1155,9 +1157,10 @@ begin
     EditField(h+580,v,90,"",Normal,Surety2OfficialSerNr,false,0);
     EditField(h+680,v,85,"",Normal,Surety2SignManager,false,UserNameSCLass);
     CheckBox(h+770,v,0,"",Surety2Signed);
-    HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassSignSuretySimplified","Open","2");
+    CheckBox(h+820,v,0,"",Surety2InvCust);
+    HalPushButtonTag(h+840,v,h+900,v+20,"CredManDClassSignSuretySimplified","Open","2");
     if (HasSuretyConditionTexts) then begin
-      HalPushButtonTag(h+870,v,h+940,v+20,"CredManDClassOpenConditions2","Cond.","2");
+      HalPushButtonTag(h+910,v,h+980,v+20,"CredManDClassOpenConditions2","Cond.","2");
     end;
     v = v + 30;
 
@@ -1170,9 +1173,10 @@ begin
     EditField(h+580,v,90,"",Normal,Surety3OfficialSerNr,false,0);
     EditField(h+680,v,85,"",Normal,Surety3SignManager,false,UserNameSCLass);
     CheckBox(h+770,v,0,"",Surety3Signed);
-    HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassSignSuretySimplified","Open","3");
+    CheckBox(h+820,v,0,"",Surety3InvCust);
+    HalPushButtonTag(h+840,v,h+900,v+20,"CredManDClassSignSuretySimplified","Open","3");
     if (HasSuretyConditionTexts) then begin
-      HalPushButtonTag(h+870,v,h+940,v+20,"CredManDClassOpenConditions2","Cond.","3");
+      HalPushButtonTag(h+910,v,h+980,v+20,"CredManDClassOpenConditions2","Cond.","3");
     end;
     v = v + 30;
 
@@ -1185,9 +1189,10 @@ begin
     EditField(h+580,v,90,"",Normal,Surety4OfficialSerNr,false,0);
     EditField(h+680,v,85,"",Normal,Surety4SignManager,false,UserNameSCLass);
     CheckBox(h+770,v,0,"",Surety4Signed);
-    HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassSignSuretySimplified","Open","4");
+    CheckBox(h+820,v,0,"",Surety4InvCust);
+    HalPushButtonTag(h+840,v,h+900,v+20,"CredManDClassSignSuretySimplified","Open","4");
     if (HasSuretyConditionTexts) then begin
-      HalPushButtonTag(h+870,v,h+940,v+20,"CredManDClassOpenConditions2","Cond.","4");
+      HalPushButtonTag(h+910,v,h+980,v+20,"CredManDClassOpenConditions2","Cond.","4");
     end;
     v = v + 30;
 
@@ -1200,9 +1205,10 @@ begin
     EditField(h+580,v,90,"",Normal,Surety5OfficialSerNr,false,0);
     EditField(h+680,v,85,"",Normal,Surety5SignManager,false,UserNameSCLass);
     CheckBox(h+770,v,0,"",Surety5Signed);
-    HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassSignSuretySimplified","Open","5");
+    CheckBox(h+820,v,0,"",Surety5InvCust);
+    HalPushButtonTag(h+840,v,h+900,v+20,"CredManDClassSignSuretySimplified","Open","5");
     if (HasSuretyConditionTexts) then begin
-      HalPushButtonTag(h+870,v,h+940,v+20,"CredManDClassOpenConditions2","Cond.","5");
+      HalPushButtonTag(h+910,v,h+980,v+20,"CredManDClassOpenConditions2","Cond.","5");
     end;
     v = v + 30;
 
@@ -1215,9 +1221,10 @@ begin
     EditField(h+580,v,90,"",Normal,Surety6OfficialSerNr,false,0);
     EditField(h+680,v,85,"",Normal,Surety6SignManager,false,UserNameSCLass);
     CheckBox(h+770,v,0,"",Surety6Signed);
-    HalPushButtonTag(h+800,v,h+860,v+20,"CredManDClassSignSuretySimplified","Open","6");
+    CheckBox(h+820,v,0,"",Surety6InvCust);
+    HalPushButtonTag(h+840,v,h+900,v+20,"CredManDClassSignSuretySimplified","Open","6");
     if (HasSuretyConditionTexts) then begin
-      HalPushButtonTag(h+870,v,h+940,v+20,"CredManDClassOpenConditions2","Cond.","6");
+      HalPushButtonTag(h+910,v,h+980,v+20,"CredManDClassOpenConditions2","Cond.","6");
     end;
     v = v + 30;
 
