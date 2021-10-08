@@ -829,8 +829,8 @@ begin
   v = vm-vs;
 //CUST-BEGIN
   EditField(h3,v+=vs,72,"Order Class",Normal,OrderClass,false,OrderClassSClass);
+  EditField(h4,v,70,"Finished",ViewOnly,FinishDate,false,0);
   EditField(h3,v+=vs,72,"Overdue percentage",Normal,OverduePercentage,false,0);
-  EditField(h3+150,v,70,"Finished",ViewOnly,FinishDate,false,0);
   if (UseBuyOutMonths) then begin
     EditField(h3,v+=vs,72,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
   end else begin
