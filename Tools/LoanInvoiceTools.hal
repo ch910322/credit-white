@@ -3320,7 +3320,7 @@ logtext(0,"CheckBuyOutAgreement start");
   RepSpec.vals1 = IVr.Sum4;
   RepSpec.vals0 = dueamount;//should this be openamount?
   if(RepSpec.flags[2]==1)then begin
-    RepSpec.vals2 = openamount + IVr.Sum4 - prepayval;
+    RepSpec.vals2 = openamount + IVr.Sum4 - prepayval + interestlateamount;//added interestlateamount // Edit ************************** BPI Ukraine - KramarAlexandr - 05, 08 10 2021 y. at 3:50:52 PM
     if (prepayval>0 and RepSpec.vals2<0) then begin
       RepSpec.vals2 = 0;
     end;
