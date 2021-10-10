@@ -3289,7 +3289,7 @@ begin
   Date limitdate;
   Longint principlelatedays,interestlatedays,overdueslatedays;
   val principlelateamount,interestlateamount;
-  val t;
+  val t,interestmmount;
   val notlateprinciple,notlateinterest;
   val currperiodinterest,futurefees,totopeninvoices,otheropenfees;
   vector val vItemVals;
@@ -3317,15 +3317,18 @@ logtext(0,"CheckBuyOutAgreement start");
   if (balancef==false) then begin
     buyoutfee = GetBuyOutFee(CredManr,RepSpec.d1,RepSpec.vals3);
   end;
+  
+  interestmmount = GetInterestAmount(CredManr,RepSpec.d1);
+  
   RepSpec.vals1 = IVr.Sum4;
   RepSpec.vals0 = dueamount;//should this be openamount?
   if(RepSpec.flags[2]==1)then begin
-    RepSpec.vals2 = openamount + IVr.Sum4 - prepayval;
+    RepSpec.vals2 = openamount + IVr.Sum4 - prepayval + interestmmount;//added interestlateamount // Edit ************************** BPI Ukraine - KramarAlexandr - 05, 08 10 2021 y. at 3:50:52 PM
     if (prepayval>0 and RepSpec.vals2<0) then begin
       RepSpec.vals2 = 0;
     end;
   end else begin
-    RepSpec.vals2 = openamount + IVr.Sum4;
+    RepSpec.vals2 = openamount + IVr.Sum4 + interestmmount;//added interestlateamount // Edit ************************** BPI Ukraine - KramarAlexandr - 05, 08 10 2021 y. at 3:50:52 PM
   end;
   
   RepSpec.f14 = buyoutfee;
@@ -3339,7 +3342,7 @@ logtext(0,"CheckBuyOutAgreement start");
   t = GetActualBalance(CredManr,CredManPayPlanr,true);
   RepSpec.f13 = t;
   RepSpec.f17 = principlelateamount+interestlateamount;//was openamount;
-  RepSpec.f16 = GetInterestAmount(CredManr,RepSpec.d1);
+  RepSpec.f16 = interestmmount;
   RepSpec.f10 = principlelateamount;//f20 - the last fxx
   RepSpec.f11 = interestlateamount;
   RepSpec.f15 = t + notlateprinciple; //GetActualBalance(CredManr,CredManPayPlanr,true);PLUS total of all OPEN, but NOT overdue principle
