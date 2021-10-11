@@ -401,6 +401,7 @@ begin
   date fromdaterow;
   
   
+  fromdaterow = fromdate;
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin
     rwcnt = MatRowCnt(CSr);
