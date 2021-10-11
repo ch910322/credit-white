@@ -499,11 +499,7 @@ begin
     if(periodflag)then begin
       if (nonblank(fromdate)) then begin
         ClearRow(IVr,IVrw,1);
-        if(invtype==2)then begin
-          IVrw.Spec = GetInvoicePeriodString(CIb,fromdate,todate);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 23 09 2021 y. at 3:39:30 PM
-        end else begin
-          IVrw.Spec = GetInvoicePeriodString(CIb,fromdaterow,todate);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 23 09 2021 y. at 3:39:30 PM
-        end;
+        IVrw.Spec = GetInvoicePeriodString(CIb,fromdaterow,todate);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 23 09 2021 y. at 3:39:30 PM
         MatRowPut(IVr,1,IVrw);
       end else begin
         ClearRow(IVr,IVrw,1);
