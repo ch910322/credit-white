@@ -504,6 +504,10 @@ begin
   ValToText(topay3,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
   vVals["F_TOPAY3_TEXT"] = tstr;
   
+  if(topay4<0)then begin
+    topay4 = 0;
+  end;
+  
   vVals["F_TOPAY4"] = topay4;
   ValToText(topay4,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
   vVals["F_TOPAY4_TEXT"] = tstr;

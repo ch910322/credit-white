@@ -401,6 +401,7 @@ begin
   date fromdaterow;
   
   
+  fromdaterow = fromdate;
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin
     rwcnt = MatRowCnt(CSr);
@@ -499,7 +500,11 @@ begin
     if(periodflag)then begin
       if (nonblank(fromdate)) then begin
         ClearRow(IVr,IVrw,1);
-        IVrw.Spec = GetInvoicePeriodString(CIb,fromdaterow,todate);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 23 09 2021 y. at 3:39:30 PM
+        if(invtype==2)then begin
+          IVrw.Spec = GetInvoicePeriodString(CIb,fromdate,todate);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 23 09 2021 y. at 3:39:30 PM
+        end else begin
+          IVrw.Spec = GetInvoicePeriodString(CIb,fromdaterow,todate);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 23 09 2021 y. at 3:39:30 PM
+        end;
         MatRowPut(IVr,1,IVrw);
       end else begin
         ClearRow(IVr,IVrw,1);
