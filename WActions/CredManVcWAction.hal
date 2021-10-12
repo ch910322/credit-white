@@ -919,7 +919,7 @@ begin
   
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
-  if (IsOmegaCustomer) then begin
+  if (true/*IsOmegaCustomer*/) then begin// Enabled for all customers
     ORr.SerNr = CredManr.SerNr;
     OpenWindow("CheckBuyoutValueOmegaWClass",0,CurWindow,"","",ORr);
   end else begin

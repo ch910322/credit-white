@@ -1436,7 +1436,7 @@ begin
   //SpecialMenu("Open Subsystem Record",' ',3,"OpenSubsysCredManDsm");//CUST-REMOVED
 //CUST-BEGIN
 //  SpecialMenu("Terminate Agreement",' ',4,"TerminateCredManDsm");
-  SpecialMenu("Buy-out Agreement",' ',5,"BuyOutCredManDsm");
+  //SpecialMenu("Buy-out Agreement",' ',5,"BuyOutCredManDsm");
   SpecialMenu("Check Buy-out Value",' ',6,"CheckBuyoutValueWindowDsm");
   SpecialMenu("Customer Status",'e',7,"CUStatusCredManDsm");
   //SpecialMenu("Print Payment Schedule",' ',8,"PaymentScheduleCredManDsm");
