@@ -3871,7 +3871,7 @@ begin
   record ORVc ORr;
 
   //CheckBuyOutAgreement(CredManr,RepSpec);
-  if (IsOmegaCustomer) then begin
+  if (true/*IsOmegaCustomer*/) then begin//enabled for all customers
     RecordClear(ORr);
     ORr.OrdDate = CurrentDate;
     CheckBuyOutAgreementOmega(CredManr,ORr,false);
