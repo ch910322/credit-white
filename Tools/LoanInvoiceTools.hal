@@ -3752,7 +3752,7 @@ begin
   logtext(0,"------of withc Principle" & vcalcval["OVDOPENINVOICED:" & princItem]);
   ORr.Sum4 = vcalcval["OVDOPENINVOICED:" & princItem];
   logtext(0,"------Balance" & t + vcalcval["OPENINVOICED:" & princItem] - vcalcval["OVDOPENINVOICED:" & princItem]);
-  ORr.BaseSum4 = t + vcalcval["OPENINVOICED:" & princItem]- vcalcval["OVDOPENINVOICED:" & princItem];
+  ORr.BaseSum4 = t + vcalcval["OPENINVOICED:" & princItem] - vcalcval["OVDOPENINVOICED:" & princItem];
   logtext(0,"interestammount " & interestammount);
   logtext(0,"vcalcval1[\"INVOICEDCURRENTPERIOD\"] " & vcalcval1["INVOICEDCURRENTPERIOD"]);
   
@@ -3876,8 +3876,8 @@ begin
     ORr.OrdDate = CurrentDate;
     CheckBuyOutAgreementOmega(CredManr,ORr,false);
     
-    RepSpec.vals2 = ORr.FrBase;//buyoutvalue//ok
-    RepSpec.f13 = ORr.Sum0;//remainingprinciple//ok
+    RepSpec.vals2 = stringtoval(ORr.OYDescription,m4val);//buyoutvalue//ok
+    RepSpec.f13 = ORr.BaseSum4 + ORr.Sum4;//remainingprinciple//ok
     RepSpec.vals4 = ORr.Sum2;//totaldue//ok
     RepSpec.f12 = ORr.FrPrice;//acumpenalty
     RepSpec.f10 = ORr.Sum3;//lateprincipal
