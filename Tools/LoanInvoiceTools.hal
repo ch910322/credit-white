@@ -401,6 +401,7 @@ begin
   date fromdaterow;
   
   
+  fromdaterow = fromdate;
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin
     rwcnt = MatRowCnt(CSr);
@@ -499,7 +500,11 @@ begin
     if(periodflag)then begin
       if (nonblank(fromdate)) then begin
         ClearRow(IVr,IVrw,1);
-        IVrw.Spec = GetInvoicePeriodString(CIb,fromdaterow,todate);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 23 09 2021 y. at 3:39:30 PM
+        if(invtype==2)then begin
+          IVrw.Spec = GetInvoicePeriodString(CIb,fromdate,todate);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 23 09 2021 y. at 3:39:30 PM
+        end else begin
+          IVrw.Spec = GetInvoicePeriodString(CIb,fromdaterow,todate);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 23 09 2021 y. at 3:39:30 PM
+        end;
         MatRowPut(IVr,1,IVrw);
       end else begin
         ClearRow(IVr,IVrw,1);
@@ -3750,7 +3755,7 @@ begin
   logtext(0,"------of withc Principle" & vcalcval["OVDOPENINVOICED:" & princItem]);
   ORr.Sum4 = vcalcval["OVDOPENINVOICED:" & princItem];
   logtext(0,"------Balance" & t + vcalcval["OPENINVOICED:" & princItem] - vcalcval["OVDOPENINVOICED:" & princItem]);
-  ORr.BaseSum4 = t + vcalcval["OPENINVOICED:" & princItem]- vcalcval["OVDOPENINVOICED:" & princItem];
+  ORr.BaseSum4 = t + vcalcval["OPENINVOICED:" & princItem] - vcalcval["OVDOPENINVOICED:" & princItem];
   logtext(0,"interestammount " & interestammount);
   logtext(0,"vcalcval1[\"INVOICEDCURRENTPERIOD\"] " & vcalcval1["INVOICEDCURRENTPERIOD"]);
   
@@ -3869,13 +3874,13 @@ begin
   record ORVc ORr;
 
   //CheckBuyOutAgreement(CredManr,RepSpec);
-  if (IsOmegaCustomer) then begin
+  if (true/*IsOmegaCustomer*/) then begin//enabled for all customers
     RecordClear(ORr);
     ORr.OrdDate = CurrentDate;
     CheckBuyOutAgreementOmega(CredManr,ORr,false);
     
-    RepSpec.vals2 = ORr.FrBase;//buyoutvalue//ok
-    RepSpec.f13 = ORr.Sum0;//remainingprinciple//ok
+    RepSpec.vals2 = stringtoval(ORr.OYDescription,m4val);//buyoutvalue//ok
+    RepSpec.f13 = ORr.BaseSum4 + ORr.Sum4;//remainingprinciple//ok
     RepSpec.vals4 = ORr.Sum2;//totaldue//ok
     RepSpec.f12 = ORr.FrPrice;//acumpenalty
     RepSpec.f10 = ORr.Sum3;//lateprincipal

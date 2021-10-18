@@ -223,7 +223,7 @@ begin
   missednow = (due / CredManr.MonthlySum);
   
   //BuildCredManPayPlanCust(CredManr,CredManPayPlan2r,CredManSetb,true,false); // This build is ONLY for Next Suggested Instalment......
-  if (IsOmegaCustomer) then begin
+  if (true/*IsOmegaCustomer*/) then begin //for all customers
   //TODO: if (IsOmegaCustomer) then settlesum=ORr.FrBase from CheckBuyOutAgreementOmega ?
     RecordClear(ORr);
     ORr.OrdDate = CurrentDate;

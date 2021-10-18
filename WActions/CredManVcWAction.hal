@@ -786,7 +786,7 @@ end;
 global
 updating procedure CalculateBuyOutValue()
 begin
-  if (IsOmegaCustomer) then begin
+  if (true/*IsOmegaCustomer*/) then begin// for all customer
     CalculateBuyOutValueOmega;
   end else begin
     CalculateBuyOutValueStd;
@@ -919,7 +919,7 @@ begin
   
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
-  if (IsOmegaCustomer) then begin
+  if (true/*IsOmegaCustomer*/) then begin// Enabled for all customers
     ORr.SerNr = CredManr.SerNr;
     OpenWindow("CheckBuyoutValueOmegaWClass",0,CurWindow,"","",ORr);
   end else begin
@@ -1463,7 +1463,7 @@ begin
   record RCVc RepSpec;
   record ORVc ORr;
   
-  if (IsOmegaCustomer) then begin
+  if (true/*IsOmegaCustomer*/) then begin// Enabled for all customers
     ORr.SerNr = StringToLongint(l);
     OpenWindow("CheckBuyoutValueOmegaWClass",0,0,"","",ORr);
   end else begin
