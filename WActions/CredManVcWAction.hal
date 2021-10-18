@@ -3487,6 +3487,7 @@ begin
   GetWindowRecord(wn,ORr);
   ORr.OrdDate = CurrentDate;
   ORr.InvMark = 1;
+  ORr.ShipMark = 1;
   /*mwn = MotherWindow(wn);
   GetWindowRecord(mwn,CredManr);
   */

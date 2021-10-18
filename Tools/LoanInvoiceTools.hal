@@ -2718,7 +2718,9 @@ begin
     CreditOpenInvoices(CredManr,td,ORr);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 18 08 2021 y. at 2:26:56 PM
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,td,IVr,false,sd,false,ORr);
     rwcnt = matrowcnt(IVr);
-    CM_AddPrepayments(IVr,CredManr,CIb);
+    if(ORr.ShipMark==1)then begin
+      CM_AddPrepayments(IVr,CredManr,CIb);
+    end;
     if (IVr.SerNr>-1) then begin
       CheckAndAddHiddenPrinciple(IVr,CIb);
       if (IVr.Sum4>0) then begin
@@ -3809,9 +3811,17 @@ begin
 
   end else begin
     if(ORr.TotGP>0)then begin
-      ORr.OYDescription = ORr.FrBase + ORr.Sum2 + ORr.DownPayRedcd;
+      if(ORr.ShipMark==0)then begin
+        ORr.OYDescription = ORr.FrBase + ORr.Sum2 + ORr.DownPayRedcd;
+      end else begin
+        ORr.OYDescription = ORr.FrBase + ORr.Sum2 + ORr.DownPayRedcd - ORr.PrepaidAmount;
+      end;
     end else begin
-      ORr.OYDescription = ORr.FrBase + ORr.Sum2;
+      if(ORr.ShipMark==0)then begin
+        ORr.OYDescription = ORr.FrBase + ORr.Sum2;
+      end else begin
+        ORr.OYDescription = ORr.FrBase + ORr.Sum2 - ORr.PrepaidAmount;
+      end;
     end;
   end;
     
