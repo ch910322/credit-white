@@ -845,6 +845,9 @@ begin
   if(CMAb.BuyOutInclPaymDay==0)then begin
     ed = addday(ed,-1);
   end;
+  if(CMAb.OvdInclInvDay==0)then begin
+    ed = addday(ed,-1);
+  end;
   
   
   paysum = CredHistr.Sum;
