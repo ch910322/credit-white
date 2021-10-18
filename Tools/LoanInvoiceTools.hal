@@ -886,7 +886,7 @@ begin
           daydiff3 = daydiff;
           df = CredPayr.TransDate;
           if(CMIb.NewCalcForGrace==1)then begin
-            if(addday(CredHistr.PayDate,latefeedays)>=addday(CredPayr.TransDate,-daydiff+1))then begin
+            if(addday(CredHistr.PayDate,latefeedays+1)>=addday(CredPayr.TransDate,-daydiff+1))then begin
                 daydiff3 = daydiff2;
                 df = CredPayr.TransDate;
             end;
@@ -939,7 +939,7 @@ begin
       for (i=0;i<daydiff3;i=i+1) begin
         amounts[amounts.length] = paysum;
         daycnt[daycnt.length] = GetMonthDays(AddDay(tempsd,i));
-        period[period.length] = addday(df,-daydiff3+1) & " -- " & df;
+        period[period.length] = addday(df,-daydiff3+1) & " - " & df;
       end;
     end;
   end;
