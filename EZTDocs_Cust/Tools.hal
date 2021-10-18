@@ -440,7 +440,7 @@ begin
   topay2 = openamount;
   topay1 = topay2;
   if (IVr.PayDate>=CurrentDate) then begin
-    topay2 = topay2 + abovehiddenbase/* + abovehiddenvat*/;
+    topay2 = topay2 + abovehiddenbase + abovehiddenvat;
     topay1 = topay2 + GetCredManItemValue(IVr,CMb.InstalmentItem,true);
     if (hiddenf) then begin
       topay2 = topay2 + GetCredManItemValue(IVr,CMb.InstalmentItem,true);
