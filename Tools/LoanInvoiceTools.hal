@@ -3557,6 +3557,32 @@ begin
 end;
 
 global
+function boolean CheckCsheduleLastBalance(record CredManVc CredManr)
+begin
+  boolean res;
+  Integer rwcnt,i,spenddays,leftdays;
+  val openamount;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  
+  res = true;
+  
+  CSr.CredManNr = CredManr.SerNr;
+  if(readfirstmain(CSr,1,true))then begin
+    rwcnt = matrowcnt(CSr);
+    for(i=0;i<rwcnt;i=i+1)begin
+      matrowget(CSr,i,CSrw);
+      if(CSrw.Invoiced==1 and CSrw.Balance==0)then begin
+        res = false;
+      end;
+    end;
+  end;
+  
+  CheckCsheduleLastBalance = res;
+return;
+end;
+
+global
 procedure CheckBuyOutAgreementOmega(record CredManVc CredManr,var record ORVc ORr,Boolean balancef)
 begin
   row ORVc ORrw;
@@ -3600,7 +3626,9 @@ begin
   blockload(CMAb);
   
   
+  
   logtext(0,"CheckBuyOutAgreementOmega start");
+  
 //LogText(0,"aa RepSpec.d1=" & RepSpec.d1); //d1 is CurrentDate here. Why?
 
   gSilenceIVOpenPrepExists = true;
@@ -3861,9 +3889,15 @@ begin
     end;
   end;
   
+  if(CheckCsheduleLastBalance(CredManr)==false)then begin
+    logtext(0,CredManr.SerNr &  " balance is 0 ");
+    ORr.OYDescription = "";
+  end;
+  
   
   gSilenceIVOpenPrepExists = false;
-
+  
+  
 logtext(0,"CheckBuyOutAgreementOmega end");
 
   return;
