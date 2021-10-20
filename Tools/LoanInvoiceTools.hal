@@ -401,6 +401,7 @@ begin
   date fromdaterow;
   
   
+  fromdaterow = fromdate;
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin
     rwcnt = MatRowCnt(CSr);
@@ -499,7 +500,11 @@ begin
     if(periodflag)then begin
       if (nonblank(fromdate)) then begin
         ClearRow(IVr,IVrw,1);
-        IVrw.Spec = GetInvoicePeriodString(CIb,fromdaterow,todate);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 23 09 2021 y. at 3:39:30 PM
+        if(invtype==2)then begin
+          IVrw.Spec = GetInvoicePeriodString(CIb,fromdate,todate);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 23 09 2021 y. at 3:39:30 PM
+        end else begin
+          IVrw.Spec = GetInvoicePeriodString(CIb,fromdaterow,todate);// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 23 09 2021 y. at 3:39:30 PM
+        end;
         MatRowPut(IVr,1,IVrw);
       end else begin
         ClearRow(IVr,IVrw,1);
@@ -845,6 +850,9 @@ begin
   if(CMAb.BuyOutInclPaymDay==0)then begin
     ed = addday(ed,-1);
   end;
+  if(CMAb.OvdInclInvDay==0)then begin
+    ed = addday(ed,-1);
+  end;
   
   
   paysum = CredHistr.Sum;
@@ -881,7 +889,7 @@ begin
           daydiff3 = daydiff;
           df = CredPayr.TransDate;
           if(CMIb.NewCalcForGrace==1)then begin
-            if(addday(CredHistr.PayDate,latefeedays)>=addday(CredPayr.TransDate,-daydiff+1))then begin
+            if(addday(CredHistr.PayDate,latefeedays+1)>=addday(CredPayr.TransDate,-daydiff+1))then begin
                 daydiff3 = daydiff2;
                 df = CredPayr.TransDate;
             end;
@@ -934,7 +942,7 @@ begin
       for (i=0;i<daydiff3;i=i+1) begin
         amounts[amounts.length] = paysum;
         daycnt[daycnt.length] = GetMonthDays(AddDay(tempsd,i));
-        period[period.length] = addday(df,-daydiff3+1) & " -- " & df;
+        period[period.length] = addday(df,-daydiff3+1) & " - " & df;
       end;
     end;
   end;
@@ -2713,7 +2721,9 @@ begin
     CreditOpenInvoices(CredManr,td,ORr);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 18 08 2021 y. at 2:26:56 PM
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,td,IVr,false,sd,false,ORr);
     rwcnt = matrowcnt(IVr);
-    CM_AddPrepayments(IVr,CredManr,CIb);
+    if(ORr.ShipMark==1)then begin
+      CM_AddPrepayments(IVr,CredManr,CIb);
+    end;
     if (IVr.SerNr>-1) then begin
       CheckAndAddHiddenPrinciple(IVr,CIb);
       if (IVr.Sum4>0) then begin
@@ -3547,6 +3557,32 @@ begin
 end;
 
 global
+function boolean CheckCsheduleLastBalance(record CredManVc CredManr)
+begin
+  boolean res;
+  Integer rwcnt,i,spenddays,leftdays;
+  val openamount;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  
+  res = true;
+  
+  CSr.CredManNr = CredManr.SerNr;
+  if(readfirstmain(CSr,1,true))then begin
+    rwcnt = matrowcnt(CSr);
+    for(i=0;i<rwcnt;i=i+1)begin
+      matrowget(CSr,i,CSrw);
+      if(CSrw.Invoiced==1 and CSrw.Balance==0)then begin
+        res = false;
+      end;
+    end;
+  end;
+  
+  CheckCsheduleLastBalance = res;
+return;
+end;
+
+global
 procedure CheckBuyOutAgreementOmega(record CredManVc CredManr,var record ORVc ORr,Boolean balancef)
 begin
   row ORVc ORrw;
@@ -3590,7 +3626,9 @@ begin
   blockload(CMAb);
   
   
+  
   logtext(0,"CheckBuyOutAgreementOmega start");
+  
 //LogText(0,"aa RepSpec.d1=" & RepSpec.d1); //d1 is CurrentDate here. Why?
 
   gSilenceIVOpenPrepExists = true;
@@ -3747,7 +3785,7 @@ begin
   logtext(0,"------of withc Principle" & vcalcval["OVDOPENINVOICED:" & princItem]);
   ORr.Sum4 = vcalcval["OVDOPENINVOICED:" & princItem];
   logtext(0,"------Balance" & t + vcalcval["OPENINVOICED:" & princItem] - vcalcval["OVDOPENINVOICED:" & princItem]);
-  ORr.BaseSum4 = t + vcalcval["OPENINVOICED:" & princItem]- vcalcval["OVDOPENINVOICED:" & princItem];
+  ORr.BaseSum4 = t + vcalcval["OPENINVOICED:" & princItem] - vcalcval["OVDOPENINVOICED:" & princItem];
   logtext(0,"interestammount " & interestammount);
   logtext(0,"vcalcval1[\"INVOICEDCURRENTPERIOD\"] " & vcalcval1["INVOICEDCURRENTPERIOD"]);
   
@@ -3804,9 +3842,17 @@ begin
 
   end else begin
     if(ORr.TotGP>0)then begin
-      ORr.OYDescription = ORr.FrBase + ORr.Sum2 + ORr.DownPayRedcd;
+      if(ORr.ShipMark==0)then begin
+        ORr.OYDescription = ORr.FrBase + ORr.Sum2 + ORr.DownPayRedcd;
+      end else begin
+        ORr.OYDescription = ORr.FrBase + ORr.Sum2 + ORr.DownPayRedcd - ORr.PrepaidAmount;
+      end;
     end else begin
-      ORr.OYDescription = ORr.FrBase + ORr.Sum2;
+      if(ORr.ShipMark==0)then begin
+        ORr.OYDescription = ORr.FrBase + ORr.Sum2;
+      end else begin
+        ORr.OYDescription = ORr.FrBase + ORr.Sum2 - ORr.PrepaidAmount;
+      end;
     end;
   end;
     
@@ -3843,9 +3889,15 @@ begin
     end;
   end;
   
+  if(CheckCsheduleLastBalance(CredManr)==false)then begin
+    logtext(0,CredManr.SerNr &  " balance is 0 ");
+    ORr.OYDescription = "";
+  end;
+  
   
   gSilenceIVOpenPrepExists = false;
-
+  
+  
 logtext(0,"CheckBuyOutAgreementOmega end");
 
   return;
@@ -3866,13 +3918,13 @@ begin
   record ORVc ORr;
 
   //CheckBuyOutAgreement(CredManr,RepSpec);
-  if (IsOmegaCustomer) then begin
+  if (true/*IsOmegaCustomer*/) then begin//enabled for all customers
     RecordClear(ORr);
     ORr.OrdDate = CurrentDate;
     CheckBuyOutAgreementOmega(CredManr,ORr,false);
     
-    RepSpec.vals2 = ORr.FrBase;//buyoutvalue//ok
-    RepSpec.f13 = ORr.Sum0;//remainingprinciple//ok
+    RepSpec.vals2 = stringtoval(ORr.OYDescription,m4val);//buyoutvalue//ok
+    RepSpec.f13 = ORr.BaseSum4 + ORr.Sum4;//remainingprinciple//ok
     RepSpec.vals4 = ORr.Sum2;//totaldue//ok
     RepSpec.f12 = ORr.FrPrice;//acumpenalty
     RepSpec.f10 = ORr.Sum3;//lateprincipal

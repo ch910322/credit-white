@@ -74,6 +74,7 @@ remote updating function boolean RA_CreateCredManOfferEmail(record RcVc, record 
 external outer function Boolean IsOmegaCustomer;
 remote procedure CheckBuyOutAgreementOmega(record CredManVc,var record ORVc, Boolean);
 external procedure GetItemName(string,var string);
+remote function boolean CheckCsheduleLastBalance(record CredManVc);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -683,6 +684,9 @@ begin
     if (lastinvdate>=td) then begin
       res = false;
     end;
+    if(res)then begin
+      res = CheckCsheduleLastBalance(CredManr);
+    end;
   end;
 
   CanTerminateWithDate = res;
@@ -786,7 +790,7 @@ end;
 global
 updating procedure CalculateBuyOutValue()
 begin
-  if (IsOmegaCustomer) then begin
+  if (true/*IsOmegaCustomer*/) then begin// for all customer
     CalculateBuyOutValueOmega;
   end else begin
     CalculateBuyOutValueStd;
@@ -919,7 +923,7 @@ begin
   
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
-  if (IsOmegaCustomer) then begin
+  if (true/*IsOmegaCustomer*/) then begin// Enabled for all customers
     ORr.SerNr = CredManr.SerNr;
     OpenWindow("CheckBuyoutValueOmegaWClass",0,CurWindow,"","",ORr);
   end else begin
@@ -1463,7 +1467,7 @@ begin
   record RCVc RepSpec;
   record ORVc ORr;
   
-  if (IsOmegaCustomer) then begin
+  if (true/*IsOmegaCustomer*/) then begin// Enabled for all customers
     ORr.SerNr = StringToLongint(l);
     OpenWindow("CheckBuyoutValueOmegaWClass",0,0,"","",ORr);
   end else begin
@@ -3487,6 +3491,7 @@ begin
   GetWindowRecord(wn,ORr);
   ORr.OrdDate = CurrentDate;
   ORr.InvMark = 1;
+  ORr.ShipMark = 1;
   /*mwn = MotherWindow(wn);
   GetWindowRecord(mwn,CredManr);
   */
