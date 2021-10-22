@@ -74,6 +74,7 @@ remote updating function boolean RA_CreateCredManOfferEmail(record RcVc, record 
 external outer function Boolean IsOmegaCustomer;
 remote procedure CheckBuyOutAgreementOmega(record CredManVc,var record ORVc, Boolean);
 external procedure GetItemName(string,var string);
+remote function boolean CheckCsheduleLastBalance(record CredManVc);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -682,6 +683,9 @@ begin
     lastinvdate = GetLastInvoiceDate(CredManr,AddYear(CurrentDate,1));
     if (lastinvdate>=td) then begin
       res = false;
+    end;
+    if(res)then begin
+      res = CheckCsheduleLastBalance(CredManr);
     end;
   end;
 
@@ -3487,6 +3491,7 @@ begin
   GetWindowRecord(wn,ORr);
   ORr.OrdDate = CurrentDate;
   ORr.InvMark = 1;
+  ORr.ShipMark = 1;
   /*mwn = MotherWindow(wn);
   GetWindowRecord(mwn,CredManr);
   */
