@@ -716,8 +716,6 @@ begin
   row CredManPayPlanVc CredManPayPlanrw;
   val tsum,tint,nint;
 
-  
-  logtext(0,"type " & type);
   switch (type) begin
     case 0:
       AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,calcbal,0,acumint,calcbal,frdate,todate,-1,-1,0);
@@ -750,7 +748,6 @@ begin
         AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,sum,0,acumint,calcbal,frdate,todate,-1,-1,0);
       end;
     case 2:
-      logtext(0,"monthtypef " & monthtypef & " " & kMonthTypeLast);
       if (monthtypef==kMonthTypeLast) then begin
         AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,calcbal,0,acumint,calcbal,frdate,todate,-1,-1,0);
       end else begin
@@ -773,11 +770,6 @@ begin
         end;
         sum = FIN_PPMT(rate, tusemonths, tusesum, month+1);
         BlockLoad(CMAb);
-        
-        logtext(0,"rate " & rate);
-        logtext(0,"tusemonths " & tusemonths);
-        logtext(0,"tusesum " & tusesum);
-        logtext(0,"sum " & sum);
         
         if (GetDaysInMonth(CMAb,CredManr)==1) then begin
           //get monthly sum
@@ -838,7 +830,6 @@ begin
             sum = calcbal - CredManr.LastMonthPrinc;
           end;
         end;
-        logtext(0,"Sum " & sum);
         if (sum<0) then begin
           sum = 0;
         end;
@@ -856,10 +847,6 @@ begin
   val newcalcbal;
   record CMInvoicingBlock CMIb;
   record CMBuyOutBlock CMBOb;
-  
-  logtext(0,"amount " & amount);
-  logtext(0,"issuedinsbal " & issuedinsbal);
-  logtext(0,"newcalcbal " & newcalcbal);
   
   if(issuedinsbal>0)then begin
     blockload(CMIb);
@@ -1355,7 +1342,6 @@ begin
 
   diff = v1-v2;//2nd last - 
   limit = GetAnnuityDiffLimit(usemonths);
-  logtext(0,"------------------------------------------------------limit " & limit & " diff " & diff);
   if (AbsoluteVal(diff)>limit) then begin
     res = true;
     diff = CalculateAnnuityDiff(CredManr,diff,usemonths);
@@ -1364,7 +1350,6 @@ begin
   end;
   diff = origdiff + diff;
   
-  logtext(0,"TotalsDifferTooMuch " & res);
   TotalsDifferTooMuch = res;
   return;
 end;
@@ -1660,13 +1645,9 @@ LCalcSchedule:;
 //logtext(0,"start dev");
 
   LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths);
-  logtext(0,"calculatedmonths " & calculatedmonths);
-  logtext(0,"months " & months);
   for(i=calculatedmonths;i<months;i=i+1) begin
-    logtext(0,i & " calcbal " & calcbal & " int_type " & int_type);
     if (calcbal>0 or int_type==2) then begin
       CalcCredManCurrentPeriod(inCredManr,CIb,i-1,payoutdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
-      logtext(0,"frdat " & frdat & " - " & todat);
       LoadAgreementChangesMonthly(inCredManr,invdat);
       //if (i!=0) then begin
         UpdateAgreementBalance(CredManPayPlanr,inCredManr,calcbal,acumint,frdat,todat,usesum,usemonths,months,int_type,addbal,payoutdate,i);
@@ -1726,8 +1707,6 @@ LCalcSchedule:;
           if (curmonth>=inCredManr.PrincipleDelayMonths and ispausedf==false) then begin
             AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1,false);
             AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,addbal,int_frdat,int_todat,-1,false,int_type);
-                      logtext(0,"before==============new calcbal " & calcbal);
-
             AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,2,monthtype,invdat,acumint,calcbal,frdat,todat,sendcurmonth,usesum,usemonths,annuity_diff);
           end else begin
             if (ispausedf) then begin
@@ -1737,9 +1716,7 @@ LCalcSchedule:;
             end;
             AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat, acumint,addbal,int_frdat,int_todat,-1,false,int_type);
           end;
-          
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
-          logtext(0,"==============new calcbal " & calcbal);
         case 1://linear with delay
           monthtype2 = monthtype;
           if (monthtype2==kMonthTypeLast) then begin
