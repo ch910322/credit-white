@@ -9,21 +9,32 @@ global
 updating function LongInt IPVcRecordUpdateAfter(var record IPVc IPr,record IPVc IP2r,LongInt stat,LongInt long4)
 BEGIN
   LongInt res;
-
+  
+  logtext(0,"IPVcRecordUpdateAfter start");
+  
   res = inner.IPVcRecordUpdateAfter(IPr,IP2r,stat,long4);
 
   if (IPr.OKFlag==1 and IP2r.OKFlag==0) then begin
+    logtext(0,"IPVcRecordUpdateAfter start SplitLoanPaymentsInReceipt");
     SplitLoanPaymentsInReceipt(IPr,true);
+    logtext(0,"IPVcRecordUpdateAfter start UpdateFactoringInvoiceReceipt");
     UpdateFactoringInvoiceReceipt(IPr,true);
+    logtext(0,"IPVcRecordUpdateAfter start UpdatePmtGrntReportReceipt");
     UpdatePmtGrntReportReceipt(IPr,true);
+    logtext(0,"IPVcRecordUpdateAfter start CheckCredManFinished2");
     CheckCredManFinished2(IPr);
   end;
   if (IPr.OKFlag==0 and IP2r.OKFlag==1) then begin
+    logtext(0,"IPVcRecordUpdateAfter start SplitLoanPaymentsInReceipt");
     SplitLoanPaymentsInReceipt(IPr,false);
+    logtext(0,"IPVcRecordUpdateAfter start UpdateFactoringInvoiceReceipt");
     UpdateFactoringInvoiceReceipt(IPr,false);
+    logtext(0,"IPVcRecordUpdateAfter start UpdatePmtGrntReportReceipt");
     UpdatePmtGrntReportReceipt(IPr,false);
   end;
-
+  
+  logtext(0,"IPVcRecordUpdateAfter end;");
+  
   IPVcRecordUpdateAfter = res;
   return;
 end;
