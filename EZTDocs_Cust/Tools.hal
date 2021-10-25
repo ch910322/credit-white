@@ -405,7 +405,7 @@ begin
   Array string 10 debaccs;
   val rval,rval2,tval,LateFeeItemSum,OpenLateFeeItemSum;
   record CMPrintConstantsBlock PCb;
-  Boolean hiddenf;
+  Boolean hiddenf,printf;
   record ARVc ARr;
 
   Ext_PrintInvoiceSigner(vVals);
@@ -613,6 +613,48 @@ begin
     regnr = CUr.RegNr1;
     vVals["F_REGNRCOMMENT"] = PCb.RegNrComment;
   end;
+  
+  printf = false;
+  if(CredManr.Surety1InvCust==1)then begin
+    printf = true;
+    if(nonblank(CredManr.Surety1Name))then begin
+      vVals["F_INVOICECUSTOMERSURETYES"] = CredManr.Surety1Name & "\\n";
+    end;
+  end;
+  if(CredManr.Surety2InvCust==1)then begin
+    printf = true;
+    if(nonblank(CredManr.Surety2Name))then begin
+      vVals["F_INVOICECUSTOMERSURETYES"] = CredManr.Surety1Name & "\\n";
+    end;
+  end;
+  if(CredManr.Surety3InvCust==1)then begin
+    printf = true;
+    if(nonblank(CredManr.Surety3Name))then begin
+      vVals["F_INVOICECUSTOMERSURETYES"] = CredManr.Surety1Name & "\\n";
+    end;
+  end;
+  if(CredManr.Surety4InvCust==1)then begin
+    printf = true;
+    if(nonblank(CredManr.Surety4Name))then begin
+      vVals["F_INVOICECUSTOMERSURETYES"] = CredManr.Surety1Name & "\\n";
+    end;
+  end;
+  if(CredManr.Surety5InvCust==1)then begin
+    printf = true;
+    if(nonblank(CredManr.Surety5Name))then begin
+      vVals["F_INVOICECUSTOMERSURETYES"] = CredManr.Surety1Name & "\\n";
+    end;
+  end;
+  if(CredManr.Surety6InvCust==1)then begin
+    printf = true;
+    if(nonblank(CredManr.Surety6Name))then begin
+      vVals["F_INVOICECUSTOMERSURETYES"] = CredManr.Surety1Name & "\\n";
+    end;
+  end;
+  if(printf and nonblank(PCb.AddInvRecText))then begin
+    vVals["F_ADDINVRECTEXT"] = PCb.AddInvRecText;
+  end;
+  
   BlockLoad(CIb);
   if (nonblank(CIb.ReplaceVATNr)) then begin
     if (CIb.ReplaceVATNr==vatnr) then begin
