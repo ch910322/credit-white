@@ -36,10 +36,13 @@ BEGIN
   Integer i,rwcnt;
   row IPVc IPrw;
   record CredHistVc CredHistr;
-
+  
+  logtext(0,"IPVcRecordCheck cust start");
+  
   if (UserCanAction("ReceiptBankTRDiffAmounts",false)==false) then begin
     BTr.FileName = "IPVc";
     BTr.TransNr = IPr.SerNr;
+    logtext(0,"IPVcRecordCheck BTr check");
     if (ReadFirstKey("FileName",BTr,2,true)) then begin
       if (BTr.Sum!=IPr.CurPayVal) then begin
         RecordCheckError(200260,"",-1,"CurPayVal");
@@ -49,20 +52,26 @@ BEGIN
     end;
   end;
   rwcnt = MatRowCnt(IPr);
+  logtext(0,"IPVcRecordCheck for start");
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(IPr,i,IPrw);
     if (IPrw.CredHistNr>0) then begin
       CredHistr.SerNr = IPrw.CredHistNr;
       if (ReadFirstMain(CredHistr,1,true)==false) then begin
+        logtext(0,"IPVcRecordCheck DistributeCredHistValues call");
         DistributeCredHistValues(IPr,i);
         rwcnt = MatRowCnt(IPr);
       end;
     end;
   end;
-
+  
+  logtext(0,"IPVcRecordCheck level0 call");
   res = inner.IPVcRecordCheck(IPr,IP2r,stat,long4);
 
 LIPVcRecordCheck:;
+  
+  logtext(0,"IPVcRecordCheck cust start");
+  
   IPVcRecordCheck = res;
   return;
 end;
