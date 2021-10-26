@@ -888,7 +888,7 @@ begin
           
           daydiff3 = daydiff;
           df = CredPayr.TransDate;
-          if(CMIb.NewCalcForGrace==1)then begin
+          if(true/*CMIb.NewCalcForGrace==1*/)then begin
             if(addday(CredHistr.PayDate,latefeedays+1)>=addday(CredPayr.TransDate,-daydiff+1))then begin
                 daydiff3 = daydiff2;
                 df = CredPayr.TransDate;
@@ -931,7 +931,7 @@ begin
     
     daydiff3 = daydiff;
     df = ed;
-    if(CMIb.NewCalcForGrace==1)then begin
+    if(true/*CMIb.NewCalcForGrace==1*/)then begin
       if(CredManr.LateFeeDays>daydiff2-daydiff)then begin
         daydiff3 = daydiff2;
         df = ed;
