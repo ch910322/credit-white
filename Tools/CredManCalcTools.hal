@@ -770,7 +770,7 @@ begin
         end;
         sum = FIN_PPMT(rate, tusemonths, tusesum, month+1);
         BlockLoad(CMAb);
-        
+
         if (GetDaysInMonth(CMAb,CredManr)==1) then begin
           //get monthly sum
           //substract interest
@@ -847,6 +847,10 @@ begin
   val newcalcbal;
   record CMInvoicingBlock CMIb;
   record CMBuyOutBlock CMBOb;
+  
+  logtext(0,"amount " & amount);
+  logtext(0,"issuedinsbal " & issuedinsbal);
+  logtext(0,"newcalcbal " & newcalcbal);
   
   if(issuedinsbal>0)then begin
     blockload(CMIb);
@@ -1349,7 +1353,7 @@ begin
     diff = 0;
   end;
   diff = origdiff + diff;
-  
+
   TotalsDifferTooMuch = res;
   return;
 end;
@@ -1645,6 +1649,7 @@ LCalcSchedule:;
 //logtext(0,"start dev");
 
   LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths);
+
   for(i=calculatedmonths;i<months;i=i+1) begin
     if (calcbal>0 or int_type==2) then begin
       CalcCredManCurrentPeriod(inCredManr,CIb,i-1,payoutdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat

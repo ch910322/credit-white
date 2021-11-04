@@ -60,7 +60,7 @@ BEGIN
         IPrw.CUPNr = -1;
         MatRowPut(IPr,rownr,IPrw);
       end;
-      if (IPrw.InvoiceNr>0 and IPrw.RecVal>0) then begin
+      if (IPrw.InvoiceNr>0) then begin
         custcode = IPrw.CustCode;
         if (FindBankTransaction(IPr,BTr)) then begin
           if (IPr.CurPayVal!=BTr.Sum) then begin

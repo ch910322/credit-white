@@ -166,13 +166,12 @@ begin
     end;
   end;
   
-  if (true) then begin
+  if (foundf) then begin
     GetWindowRecord(wn,IVr);
     if ((IVr.OKFlag!=0) and (IVr.InvType!=kInvoiceTypeCredit and IVr.InvType!=kInvoiceTypeCreditSpecialSales)) then begin
       BlockLoad(LMb);
       res = CreateCreditNoteIV(IVr,kInvoiceTypeCredit,IVCreditr,LMb.DefReturnLocation,false);
-      if(foundf)then begin  
-        if (res==0) then begin
+      if (res==0) then begin
           if(IVCreditr.SerNr>-1)then begin
             recordcopy(oldIVCreditr,IVCreditr);
           end;
@@ -217,22 +216,11 @@ begin
             IVr.NoInterestFlag = 1;
             recordstore(IVr,true);
           end;
-          if (WindowDoOK(nwn,0)) then begin
-            UpdateBrowses("IVVc");
-          end;
-        end else begin
-          MessageBox(res,"");
+        if (WindowDoOK(nwn,0)) then begin
+          UpdateBrowses("IVVc");
         end;
       end else begin
-        if (res==0) then begin
-          closewindow(mwn);
-          nwn = OpenWindow("IVDClass",1,0,"","",IVCreditr);
-          if (WindowDoOK(nwn,0)) then begin
-            UpdateBrowses("IVVc");
-          end;
-        end else begin
-          MessageBox(res,"");
-        end;
+        MessageBox(res,"");
       end;
     end else begin
       MessageBox(12556,"");      

@@ -443,7 +443,7 @@ end;
 3. sort in priority and make payments history records
 */
 global
-updating procedure FindUnpaidCredHist(record IPVc IPr,row IPVc IPrw,var vector val arrCredManr,Integer rectype)
+updating procedure FindUnpaidCredHist(record IPVc IPr,row IPVc IPrw,var array val arrCredManr,Integer rectype)
 begin
   record CredHistVc CredHistr;
   Boolean TrHs;
@@ -455,12 +455,9 @@ begin
   Longint histnr,credmannr;
   val tmpval;
   
-  logtext(0,"FindUnpaidCredHist start ");
-  
   if (IPrw.CredHistNr>0) then begin
     CredHistr.SerNr = IPrw.CredHistNr;
     if (ReadFirstMain(CredHistr,1,true)) then begin
-      logtext(0,"FindUnpaidCredHist InsertCredHistInArray call ");
       InsertCredHistInArray(CredHistr,arrORr,0,IPr.TransDate);
     end;
   end else begin
@@ -472,15 +469,12 @@ begin
         if (CredHistr.RecordNr!=IPrw.InvoiceNr or CredHistr.RecordType!=0) then begin
           TrHs = false;
         end else begin
-          logtext(0,"FindUnpaidCredHist GetItemPriority call ");
           priority = GetItemPriority(CredHistr.CredManNr,CredHistr.ArtCode);
-          logtext(0,"FindUnpaidCredHist InsertCredHistInArray call ");
           InsertCredHistInArray(CredHistr,arrORr,priority,IPr.TransDate);
         end;
       end;
     end;
   end;
-  logtext(0,"FindUnpaidCredHist SortRecordArray call ");
   SortRecordArray(arrORr,"BuildOn");
  
  //get all paid amounts for each CredHistr
@@ -489,7 +483,6 @@ begin
     rwcnt = MatRowCnt(ORr);
     for (j=0;j<rwcnt;j=j+1) begin
       MatRowGet(ORr,j,ORrw);
-      logtext(0,"FindUnpaidCredHist GetLoanItemPaidAmount call ");
       paid = GetLoanItemPaidAmount(ORrw.CUServiceHistNr,-1);
       ORrw.Price = paid;
       MatRowPut(ORr,j,ORrw);
@@ -500,7 +493,6 @@ begin
   remsum = IPrw.RecVal;
   if (remsum>0) then begin
   //we could do this more efficiently 
-    logtext(0,"FindUnpaidCredHist for 01 call ");
     for (i=0;i<arrORr.length;i=i+1) begin
       ORr = arrORr[i];
       rwcnt = MatRowCnt(ORr);
@@ -520,7 +512,6 @@ begin
             arrCredManr[credmannr] = 0;
             //mainf = 1;
           end;
-          logtext(0,"FindUnpaidCredHist CreateCredHist call ");
           CreateCredHist(IPr.SerNr,10,ORrw.VECode,paid,rectype,"",IPr.TransDate,ORrw.TAX2Reb,IPr.TransDate,histnr,"","",mainf,ORrw.CUServiceHistNr,recval,-1,0);
         end;
         if (remsum<=0) then begin
@@ -530,7 +521,6 @@ begin
     end;
   end else begin
     remsum = -remsum;
-    logtext(0,"FindUnpaidCredHist for 02 call ");
     for (i=0;i<arrORr.length;i=i+1) begin
       ORr = arrORr[i];
       rwcnt = MatRowCnt(ORr);
@@ -551,7 +541,6 @@ begin
             arrCredManr[credmannr] = 0;
             //mainf = 1;
           end;
-          logtext(0,"FindUnpaidCredHist CreateCredHist call ");
           CreateCredHist(IPr.SerNr,10,ORrw.VECode,-tmpval,rectype,"",IPr.TransDate,ORrw.TAX2Reb,IPr.TransDate,histnr,"","",mainf,ORrw.CUServiceHistNr,recval,-1,0);
         end;
         if (remsum<=0) then begin
@@ -572,38 +561,29 @@ begin
   Integer i,rwcnt;
   row IPVc IPrw;
   record IVVc IVr;
-  vector val arrCredManr;
+  array val arrCredManr;
   record CredHistVc CredHistr;
-  
-  logtext(0,"SplitLoanPaymentsInReceipt start 01");
+
   rwcnt = MatRowCnt(IPr);
-  logtext(0,"rwcnt " & rwcnt);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(IPr,i,IPrw);
-    logtext(0,i & " i IPrw.InvoiceNr " & IPrw.InvoiceNr);
     if (IPrw.InvoiceNr>-1) then begin
       IVr.SerNr = IPrw.InvoiceNr;
       if (ReadFirstMain(IVr,1,true)) then begin
-        logtext(0,"IVrw RFM " & IVr.SerNr & " IPrw.RecVal " & IPrw.RecVal);
-        logtext(0,"IVr.CustCredManNr " & IVr.CustCredManNr);
         arrCredManr[IVr.CustCredManNr] = arrCredManr[IVr.CustCredManNr] + IPrw.RecVal;
       end;
     end;
   end;
-  
-  
+
   if (okf) then begin
-    logtext(0,"SplitLoanPaymentsInReceipt start 02");
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(IPr,i,IPrw);
       if (IPrw.InvoiceNr>-1) then begin
-        logtext(0,"FindUnpaidCredHist call");
         FindUnpaidCredHist(IPr,IPrw,arrCredManr,1);
       end;
     end;
   end else begin
     //unok
-    logtext(0,"SplitLoanPaymentsInReceipt start 03");
     TrHs = true;
     CredHistr.RecordNr = IPr.SerNr;
     CredHistr.RecordType = 1;

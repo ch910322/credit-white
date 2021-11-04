@@ -718,7 +718,7 @@ begin
   row ORVc ORrw;
   Integer mainf;
   Longint credmannr;
-  vector Longint arrCredManr;
+  array Longint arrCredManr;
   Integer currow;
   record IVVc IVr;
   record ARVc ARr;
