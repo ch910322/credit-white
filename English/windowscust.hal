@@ -2433,7 +2433,12 @@ begin
   EditField(h+360,v,30,"Day of Month",Normal,InterestIVDay,false,0);
 
   CheckBox(h,v+=20,0,"F_EMAIL depends on following settings",eMailBasedOnCMSettings);
+  CheckBox(h,v+=20,0,"Surety - Invoice Customers",InvRecSurProv);
+  ButtonFrame(h+230,v,40,2,"");
+  RadioButton(h+230,v,0,0,"To",InvRecSurProvToOrCC);
+  RadioButton(h+230,v+16,1,0,"Cc",InvRecSurProvToOrCC);
   v = v + 40;
+  
   ButtonFrame(h,vm=v,200,5,"Invoice Recipients");
   Checkbox(h,v,0,"Primary Contact Email",SendToMainContact);
   Checkbox(h,v+=16,0,"Company Contact Email",SendToCompany);
@@ -2441,7 +2446,7 @@ begin
   Checkbox(h,v+=16,0,"Additional Recipients",SendToAddRecip);
   EditField(h+100,v+=20,100,"Job Title",Normal,SendToJobDescr,false,JobTitleSClass);
 
-  ButtonFrame(h2=400,v=vm,230,2,"Invoice Date");
+  ButtonFrame(h2=400,v=vm+30,230,2,"Invoice Date");
   RadioButton(h2,v,0,0,"Payment Day",InvoiceDay);
   RadioButton(h2,v+=16,1,0,"Payment Day - Days of Payment Term",InvoiceDay);  
 

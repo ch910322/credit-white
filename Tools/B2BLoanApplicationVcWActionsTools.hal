@@ -341,7 +341,7 @@ end;
 global
 function Boolean InsertContactName(var record B2BLoanApplicationVc LAr)
 begin
-  Boolean res;
+  Boolean res,TrHs;
   record CUVc CUr;
   record ContactRelVc CRr;
   
@@ -354,6 +354,26 @@ begin
       LAr.ContactMobile = CUr.Mobile;
       LAr.ContacteMail = CUr.eMail;
       res = true;
+    end;
+  end else begin
+    CRr.CustCode = LAr.CustCode;
+    TrHs = true;
+    while (LoopMain(CRr,1,TrHs)) begin
+      if (CRr.CustCode!=LAr.CustCode) then begin
+        TrHs = false;
+      end else begin
+        if (CRr.Invalid==0) then begin
+          if((CRr.ContactMobile==LAr.ContactMobile and nonblank(CRr.ContactMobile)) or (CRr.ContacteMail==LAr.ContacteMail and nonblank(CRr.ContacteMail)))then begin
+            CUr.Code = CRr.ContactCode;
+            if (ReadFirstMain(CUr,1,true)) then begin
+              LAr.ContactPhoneNo = CUr.Phone;
+              LAr.ContactMobile = CUr.Mobile;
+              LAr.ContacteMail = CUr.eMail;
+              res = true;
+            end;
+          end;
+        end;
+      end;
     end;
   end;
 
