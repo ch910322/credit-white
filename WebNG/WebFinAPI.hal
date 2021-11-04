@@ -1326,6 +1326,8 @@ begin
     LAr.Type = type;
     if (InsertB2BLoanApplicationType(LAr)) then begin end;
     LAr.ContactName = name & " " & surname;
+    LAr.ContacteMail = email;
+    LAr.ContactMobile = phone;
     if (InsertContactName(LAr)) then begin end;
     LAr.Sum = t;
     err = B2BLoanApplicationVcRecordCheck(LAr,fakeLAr,Rs_Insert,0);
