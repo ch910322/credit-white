@@ -2452,7 +2452,7 @@ begin
   EditField(h,v+=vs,100,"Overdue Months",Normal,OverdueMonths,false,0);
   EditField(h,v+=vs,100,"Overdue Payment Terms",Normal,OverduePayTerm,false,PDSClass);
   EditField(h,v+=vs,100,"Overdue From",Normal,OverdueFrom,false,PasteCurDate);
-  CheckBox(h+200,v-vs,0,"New calculation for Grace periods",NewCalcForGrace);
+  //CheckBox(h+200,v-vs,0,"New calculation for Grace periods",NewCalcForGrace);
   CheckBox(h+200,v,0,"Next overdue date from previous",StartDateForOverdue);
 
   ButtonFrame(h,v+=40,400,3,"Overdue Invoicing");
@@ -3240,9 +3240,13 @@ begin
   EditField(h+280,v,140,"Reimburs. Lang.",Normal,ReimbLanguages,false,LangSClass);
   EditField(h,v+vs,50,"Item Short Desc. Language",Normal,ItemShortLang,false,LangSClass);
   Tile(5,50,false,"5",InvoiceText);
+  h = h + 20;
   EditField(h,v=6,140,"Netting Text",Normal,InvoiceText,false,0);
   EditField(h,v+=vs,140,"Company Reg. No. Comment",Normal,RegNrComment,false,0);
-
+  EditField(h,v+=vs,-20,"Additional Invoice recipients text",Normal,AddInvRecText,false,0);
+  h = h - 20;
+  
+  
   Tile(6,60,false,"6",SubordinationYes);
   EditField(h,v=6,140,"Yes",Normal,SubordinationYes,false,0);
   EditField(h,v+=vs,140,"No",Normal,SubordinationNo,false,0);

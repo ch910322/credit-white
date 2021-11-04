@@ -2511,7 +2511,9 @@ begin
  
   res = false;
   if (wnst==2) then begin//Rs_update
+    GetPrevWindowRecord(wn,CredManr);
     switch (fieldname) begin
+      case "TransDate": if(blankdate(CredManr.TransDate))then begin res = true; end;
       case "Classifications": res = true;
       case "MoneyTransferDate": 
         if (UserCanAction("CredManChangeTransferDate",false)==true) then begin
