@@ -363,12 +363,14 @@ begin
         TrHs = false;
       end else begin
         if (CRr.Invalid==0) then begin
-          CUr.Code = CRr.ContactCode;
-          if (ReadFirstMain(CUr,1,true) and CUr.eMail==LAr.ContacteMail or LAr.ContactMobile==CUr.Mobile) then begin
-            LAr.ContactPhoneNo = CUr.Phone;
-            LAr.ContactMobile = CUr.Mobile;
-            LAr.ContacteMail = CUr.eMail;
-            res = true;
+          if(CRr.ContactMobile==LAr.ContactMobile or CRr.ContacteMail==LAr.ContacteMail)then begin
+            CUr.Code = CRr.ContactCode;
+            if (ReadFirstMain(CUr,1,true)) then begin
+              LAr.ContactPhoneNo = CUr.Phone;
+              LAr.ContactMobile = CUr.Mobile;
+              LAr.ContacteMail = CUr.eMail;
+              res = true;
+            end;
           end;
         end;
       end;
