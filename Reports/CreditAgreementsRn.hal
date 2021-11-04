@@ -7,7 +7,6 @@ external inner function LongInt MonthDiff(Date,Date);
 external function string 255 AddCredManInvoiceMailRecipients(record CUVc,var string);
 external outer function Boolean IsNovitiCustomer();
 external procedure GetCredManLateAmounts2(record CredManVc,Date,Date,Integer,var Longint,var val,var val,var Date);
-external procedure CheckBuyOutAgreementOmega(record CredManVc,var record ORVc, Boolean);
 
 function string 10 Checkbocout(boolean in)
 begin
@@ -252,8 +251,7 @@ begin
 		if(testf)then begin
 		  CUr.Code = CredManr.CustCode;
       tRepSpec.d1 = RepSpec.d1;
-      //CheckBuyOutAgreement(CredManr,tRepSpec);
-      CheckBuyOutAgreementOmega(CredManr,tRepSpec,false);
+      CheckBuyOutAgreement(CredManr,tRepSpec);
       realmonths = GetActualMonths(CredManr,CredManPayr);
       realrate = CredManr.IntRate;
       LoadAgreementRateToDate(CredManr,RepSpec.sEndDate,realrate,ratedate);
