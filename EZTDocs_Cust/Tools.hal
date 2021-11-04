@@ -747,6 +747,32 @@ begin
   return;
 end;
 
+procedure AddSingleCCRecipient(var record MailVc Mailr,string email)
+begin
+  row MailVc Mailrw;
+  Integer i,rwcnt;
+  Boolean foundf;
+  
+  if (nonblank(email)) then begin 
+    rwcnt = MatRowCnt(Mailr);
+    for (i=1;i<rwcnt;i=i+1) begin
+      MatRowGet(Mailr,i,Mailrw);
+      if (Mailrw.AddrCode==email) then begin
+        foundf = true;
+        i = rwcnt;
+      end;
+    end;
+    if (!foundf) then begin
+      ClearRow(Mailr,Mailrw,1);
+      Mailrw.RowTyp = kMailRowTypeCC;
+      Mailrw.AddrCode = email;
+      MatRowPut(Mailr,MatRowCnt(Mailr),Mailrw);
+    end;
+  end; 
+
+  return;
+end;
+
 procedure AddContactsByJobDescription(record MailVc Mailr,record CUVc CUr,string jobdescr)
 begin
   record CUVc ContactCUr;
@@ -847,37 +873,61 @@ begin
         if(CredManr.Surety1InvCust==1)then begin
           surCUr.Code = CredManr.SuretyProvider1;
           if(readfirstmain(surCUr,1,true) and nonblank(surCUr.eMail))then begin
-            AddSingleRecipient(Mailr,surCUr.eMail);
+            if(CIb.InvRecSurProvToOrCC==0)then begin
+              AddSingleRecipient(Mailr,surCUr.eMail);
+            end else begin
+              AddSingleCCRecipient(Mailr,surCUr.eMail);
+            end;
           end;
         end;
         if(CredManr.Surety1InvCust==1)then begin
           surCUr.Code = CredManr.SuretyProvider2;
           if(readfirstmain(surCUr,1,true) and nonblank(surCUr.eMail))then begin
-            AddSingleRecipient(Mailr,surCUr.eMail);
+            if(CIb.InvRecSurProvToOrCC==0)then begin
+              AddSingleRecipient(Mailr,surCUr.eMail);
+            end else begin
+              AddSingleCCRecipient(Mailr,surCUr.eMail);
+            end;
           end;
         end;
         if(CredManr.Surety1InvCust==1)then begin
           surCUr.Code = CredManr.SuretyProvider3;
           if(readfirstmain(surCUr,1,true) and nonblank(surCUr.eMail))then begin
-            AddSingleRecipient(Mailr,surCUr.eMail);
+            if(CIb.InvRecSurProvToOrCC==0)then begin
+              AddSingleRecipient(Mailr,surCUr.eMail);
+            end else begin
+              AddSingleCCRecipient(Mailr,surCUr.eMail);
+            end;
           end;
         end;
         if(CredManr.Surety1InvCust==1)then begin
           surCUr.Code = CredManr.SuretyProvider4;
           if(readfirstmain(surCUr,1,true) and nonblank(surCUr.eMail))then begin
-            AddSingleRecipient(Mailr,surCUr.eMail);
+            if(CIb.InvRecSurProvToOrCC==0)then begin
+              AddSingleRecipient(Mailr,surCUr.eMail);
+            end else begin
+              AddSingleCCRecipient(Mailr,surCUr.eMail);
+            end;
           end;
         end;
         if(CredManr.Surety1InvCust==1)then begin
           surCUr.Code = CredManr.SuretyProvider5;
           if(readfirstmain(surCUr,1,true) and nonblank(surCUr.eMail))then begin
-            AddSingleRecipient(Mailr,surCUr.eMail);
+            if(CIb.InvRecSurProvToOrCC==0)then begin
+              AddSingleRecipient(Mailr,surCUr.eMail);
+            end else begin
+              AddSingleCCRecipient(Mailr,surCUr.eMail);
+            end;
           end;
         end;
         if(CredManr.Surety1InvCust==1)then begin
           surCUr.Code = CredManr.SuretyProvider6;
           if(readfirstmain(surCUr,1,true) and nonblank(surCUr.eMail))then begin
-            AddSingleRecipient(Mailr,surCUr.eMail);
+            if(CIb.InvRecSurProvToOrCC==0)then begin
+              AddSingleRecipient(Mailr,surCUr.eMail);
+            end else begin
+              AddSingleCCRecipient(Mailr,surCUr.eMail);
+            end;
           end;
         end;
       end;
