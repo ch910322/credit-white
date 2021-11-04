@@ -140,6 +140,7 @@ begin
   val principlelateamount,notlateprinciple;
   Date limitdate;
   Longint principlelatedays;
+  record ORVc ORr;
   
 	BlockLoad(CredManSetb);
 	startreportjob(USetStr(200280));
@@ -253,7 +254,10 @@ begin
 		  CUr.Code = CredManr.CustCode;
       tRepSpec.d1 = RepSpec.d1;
       //CheckBuyOutAgreement(CredManr,tRepSpec);
-      CheckBuyOutAgreementOmega(CredManr,tRepSpec,false);
+      recordnew(ORr);
+      ORr.OrdDate = RepSpec.d1;
+      CheckBuyOutAgreementOmega(CredManr,ORr,false);
+      tRepSpec.vals2 = stringtoval(ORr.OYDescription,m4val);
       realmonths = GetActualMonths(CredManr,CredManPayr);
       realrate = CredManr.IntRate;
       LoadAgreementRateToDate(CredManr,RepSpec.sEndDate,realrate,ratedate);
