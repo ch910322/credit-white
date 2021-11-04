@@ -363,7 +363,7 @@ begin
         TrHs = false;
       end else begin
         if (CRr.Invalid==0) then begin
-          if(CRr.ContactMobile==LAr.ContactMobile or CRr.ContacteMail==LAr.ContacteMail)then begin
+          if((CRr.ContactMobile==LAr.ContactMobile and nonblank(CRr.ContactMobile)) or (CRr.ContacteMail==LAr.ContacteMail and nonblank(CRr.ContacteMail)))then begin
             CUr.Code = CRr.ContactCode;
             if (ReadFirstMain(CUr,1,true)) then begin
               LAr.ContactPhoneNo = CUr.Phone;
