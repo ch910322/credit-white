@@ -789,6 +789,7 @@ begin
     if (th==h) then begin
       v = v + 30;
     end;
+    v = v + 30;
     HalPushButton(th,v,th+120,v+20,"CredManDClassMoneyReceivers","Money Receivers");
   end;
 
@@ -811,6 +812,7 @@ begin
   end;
 //CUST-END
   EditField(h2,v+=vs,82,"End Date",ViewOnly,endDate,false,PasteCurDate);
+  EditField(h2,v+=vs,82,"Finished Date",ViewOnly,FinishDate,false,0);
 //CUST-BEGIN
   if (UseDisburseUntil) then begin
     EditField(h2,v+=vs,82,"Disburse Until",Normal,DisburseUntil,false,PasteCurDate);
@@ -829,13 +831,7 @@ begin
   v = vm-vs;
 //CUST-BEGIN
   EditField(h3,v+=vs,72,"Order Class",Normal,OrderClass,false,OrderClassSClass);
-  if(IsNovitiCustomer)then begin
-    EditField(h4,v,70,"Finished",ViewOnly,FinishDate,false,0);
-  end;
   EditField(h3,v+=vs,72,"Overdue percentage",Normal,OverduePercentage,false,0);
-  if(!IsNovitiCustomer)then begin
-    EditField(h3+150,v,70,"Finished",ViewOnly,FinishDate,false,0);
-  end;
   if (UseBuyOutMonths) then begin
     EditField(h3,v+=vs,72,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
   end else begin

@@ -4762,7 +4762,7 @@ begin
 end;
 
 global 
-updating procedure CheckCredManFinished(Longint credmannr)
+updating procedure CheckCredManFinished(Longint credmannr,date fdate)
 begin
   record CMOrderClassBlock OCb;
   record CredManVc CredManr,oldCredManr;
@@ -4781,7 +4781,7 @@ begin
         RecordCopy(oldCredManr,CredManr);
         CredManr.OrderClass = OCb.FinishCredOrderClass;
         CredManr.Status = 7;
-        CredManr.FinishDate = currentdate;
+        CredManr.FinishDate = fdate;
         
         RecordUpdate(oldCredManr,CredManr,true);
       end;
@@ -4806,7 +4806,7 @@ begin
     if (IPrw.InvoiceNr>0 and ReadFirstMain(IVr,1,true)) then begin
       if (IVr.CustCredManNr>0) then begin
         if (vCMr[IVr.CustCredManNr]==false) then begin
-          CheckCredManFinished(IVr.CustCredManNr);
+          CheckCredManFinished(IVr.CustCredManNr,IPr.TransDate);
           vCMr[IVr.CustCredManNr] = true;
         end;
       end;
