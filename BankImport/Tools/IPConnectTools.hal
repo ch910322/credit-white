@@ -1,6 +1,6 @@
 external function string 255 BPI_ParseInvStr(string);
-external updating procedure BankFillIProws2(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean,Date);
-external updating procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
+external updating procedure BankFillIProws2(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean,Date,longint);
+external updating procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean,longint);
 external procedure BankFillOProws(var record OPVc,string,string,var val,string,boolean,string,string);
 external inner procedure IPVc_PasteRecVal(var record IPVc,Integer);
 external function Integer GetItemPriority(Longint,string);
@@ -436,7 +436,7 @@ begin
     FindCustomerForBankImport(BTr.PayCustCode,BTr.PayRegNr1,BTr.PayVATNr,BTr.PayBankAcc,BTr.PayName,CUr);
     instr = BPI_ParseInvStr(BTr.PayReference);
     remsum = BTr.Sum;
-    BankFillIProws2(IPr,CUr.Name,BTr.CurncyCode,remsum,CUr.Code,nonblank(CUr.Code),instr,BTr.PayReference,true,IPr.TransDate);
+    BankFillIProws2(IPr,CUr.Name,BTr.CurncyCode,remsum,CUr.Code,nonblank(CUr.Code),instr,BTr.PayReference,true,IPr.TransDate,-1);
     if (MatRowCnt(IPr)>0) then begin
       if (RecordInsert(IPr,true)) then begin
         if (BISb.OKIPFlag==1) then begin
@@ -647,7 +647,7 @@ begin
     for (i=rwcnt-1;i>=0;i=i-1) begin
       MatRowDelete(IPr,i);
     end;
-    BankFillIProws2(IPr,RepSpec.f5,IPr.PayCurCode,remsum,RepSpec.f4,nonblank(RepSpec.f4),"","",true,IPr.TransDate);
+    BankFillIProws2(IPr,RepSpec.f5,IPr.PayCurCode,remsum,RepSpec.f4,nonblank(RepSpec.f4),"","",true,IPr.TransDate,-1);
     RecordUpdate(oldIPr,IPr,true);
     if (okf) then begin
       RecordCopy(oldIPr,IPr);

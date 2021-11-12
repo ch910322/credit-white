@@ -1,6 +1,6 @@
 //<halrule>server-only</halrule>
 external inner procedure IPPastePayMode(var record IPVc);
-external updating procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
+external updating procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean,longint);
 external updating procedure CreateSingleAgreementInvoice(record CredManVc,Date,var record IVVc,string,Boolean);
 
 procedure GetReceipts(record IVVc IVr,var array record IPVc aIPr)
@@ -86,7 +86,7 @@ begin
     if (ORrw.PickingDate<td) then begin
       PrepareIPRecord(ORrw,IPr);
       instr = "";
-      BankFillIProws(IPr,CredManr.Addr0,tIVr.CurncyCode,ORrw.Sum,CredManr.CustCode,true,instr,"",true);
+      BankFillIProws(IPr,CredManr.Addr0,tIVr.CurncyCode,ORrw.Sum,CredManr.CustCode,true,instr,"",true,-1);
       MatRowDelete(ORr,i);
       i = i - 1;
       rwcnt = MatRowCnt(ORr);

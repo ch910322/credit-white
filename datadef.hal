@@ -2040,6 +2040,7 @@ begin
   RecordAddBegin(SMVc,"SMVc_FIN");
   ArrayField(DueDate,M4Date,0,0);
   ArrayField(FeesMatrix,M4PackedMatrix,0,CredFeesMatrixVc);
+  ArrayField(LongField01,M4Long,0,0);
   EndRecordAdd;
 
   BlockBegin(CredLegalInvNrBlock,-,"");

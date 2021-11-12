@@ -26,6 +26,7 @@ BEGIN
   row SMVc SMrw;
   record CUVc CUr;
   record BaseCurBlock BCb;
+  record CredManVc CredManr;
 
   switch (fieldname) begin
     case "Objects": 
@@ -34,9 +35,34 @@ BEGIN
         MatRowGet(SMr,rownr,SMrw);
         BlockLoad(BCb);
         SMrw.CurncyCode = BCb.BaseCur1;
+        SMrw.LongField01 = -1;
         CUr.Code = SMrw.Objects;
         if (ReadFirstMain(CUr,1,true)) then begin
           SMrw.Comment = CUr.Name;
+          MatRowPut(SMr,rownr,SMrw);
+          PutWindowRecord(wn,SMr);
+        end;
+      end;
+    case "LongField01": 
+      if (changed!=0) then begin
+        GetWindowRecord(wn,SMr);
+        MatRowGet(SMr,rownr,SMrw);
+        BlockLoad(BCb);
+        
+        CredManr.SerNr = SMrw.LongField01;
+        if(readfirstmain(CredManr,1,true))then begin
+          SMrw.Objects = CredManr.CustCode;
+          SMrw.CurncyCode = BCb.BaseCur1;
+          CUr.Code = SMrw.Objects;
+          if (ReadFirstMain(CUr,1,true)) then begin
+            SMrw.Comment = CUr.Name;
+            MatRowPut(SMr,rownr,SMrw);
+            PutWindowRecord(wn,SMr);
+          end;
+        end else begin
+          SMrw.Objects = "";
+          SMrw.CurncyCode = "";
+          SMrw.Comment = "";
           MatRowPut(SMr,rownr,SMrw);
           PutWindowRecord(wn,SMr);
         end;

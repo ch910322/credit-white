@@ -2197,7 +2197,7 @@ begin
 
   WindowBegin("Receipt Entry",ReceiptEntryWClass,CGother,-);
   UseView(SMVc);
-  SetWRect(20,80,580,621);
+  SetWRect(20,80,680,621);
   h = 120; v = 27; h2 = 300; h3 = 480;
   vs = 20;
 	EditField(h,v=6,82,"Date",Normal,RegDate,false,PasteCurDate);
@@ -2205,7 +2205,8 @@ begin
 
   MatrixBegin(10,v+=40,-30,-60,-,100);
   MatCol(1,34,"Customer",0,Objects,false,CUSClass);
-  MatCol(1,124,"Name",0,Comment,false,0);
+  MatCol(1,124,"Agreement No.",0,LongField01,false,CredManSClass);
+  MatCol(1,224,"Name",0,Comment,false,0);
   MatCol(1,-180,"Amount",0,DebVal,false,0);
   MatCol(1,-70,"Currency",0,CurncyCode,false,CurncyCodeSClass);
   EndMatrix;
