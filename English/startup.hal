@@ -21,7 +21,7 @@ begin
   Setting("Credit Management Settings",CMApplicationSetTClass,modCredMan);
   Setting("Invoicing Settings",CMInvoicingTClass,modCredMan);
   Setting("Company Status",LACompStatusLClass,modCredMan);
-  Setting("Buy-out Settings",CMBuyOutTClass,modCredMan);
+  Setting("Buy-out and Change Settings",CMBuyOutTClass,modCredMan);
   Setting("Application Interest Rates",AppInterestRateTClass,modCredMan);
   Setting("Scoring Support",ScoringSupLClass,modCredMan);
   Setting("Agreement Properties",CredManPropertiesLClass,modCredMan);

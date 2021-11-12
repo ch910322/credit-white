@@ -724,14 +724,30 @@ end;
 
   WindowBegin("Register Agreement Changes",PauseCredManWClass,CGother,RcType);
   UseView(RcVc);
-  SetWRect(20,80,400,360);
+  SetWRect(20,80,440,560);
   AutoSizeWindow(false);  
   h = 150; h2 = 250; v=450;
   EditFieldTL(h,v=6,120,"Changes Start Date",M4Date,Normal,0,d1,false,PasteCurDate);
   EditFieldTL(h,v+=vs,120,"Pause Months",M4Qty,Normal,0,vals0,false,0);
   EditFieldTL(h,v+=vs,120,"Prolong Months",M4Qty,Normal,0,vals1,false,0);
   EditFieldTL(h,v+=vs,120,"New Rate",M4Rate,Normal,0,vals3,false,0);
+  EditField(h,v+=vs,100,"Balance",ViewOnly,ObjStr,false,0);//====================Balance
   EditFieldTL(h,v+=vs,120,"Extra Value",M4Rate,Normal,0,vals4,false,0);
+  EditField(h,v+=vs,100,"Interest Amount",ViewOnly,Stext,false,0);//====================Interest Amount
+  EditField(h,v+=vs,100,"Current Period Interest",ViewOnly,FirstAcc,false,0);//====================Current Period Interest
+  EditField(h,v+=vs,100,"Credited Interest",ViewOnly,AccStr,false,0);//====================Credited Interest
+  CheckBox(h+140,v,0,"Credit Interest",Notation);//====================Credit Interest
+  EditField(h,v+=vs,100,"Overdue invoices",ViewOnly,TransStr,false,0);//====================Overdue invoices
+  EditField(h,v+=vs,100,"Added to New Balance",ViewOnly,f5,false,0);//====================Added to New Balance
+  EditField(h,v+=vs,100,"Added to Future Fees",ViewOnly,f6,false,0);//====================Added to Future Feesvals4  
+  EditField(h,v+=vs,100,"Future Fees Period",Normal,wholemonthf,false,0);//====================Future Fees Period
+  
+  
+  
+  EditField(h,v+=vs,100,"Prepayments",ViewOnly,f7,false,0);//=====================Prepayments
+  CheckBox(h+140,v,0,"Reduce from Balance",Mirrorf);//"Reduce from Balance"
+  EditField(h,v+=vs,100,"New Balance",Normal,f8,false,0);//=====================Prepayments
+  
   EditField(h,v+=vs,100,"Change Purpose",Normal,f1,false,AgrChangesPurpSClass);
   CheckBox(h,v+=vs,0,"Re-sign Schedule",flags[1]);
   CheckBox(h,v+=vs,0,"Issue Prolong Invoice",flags[2]);
@@ -740,7 +756,7 @@ end;
     EditFieldTL(h,v+=vs,50,"Salesman",M4Code,Normal,20,f3,false,UserSClass);
     EditFieldTL(h,v+=vs,120,"Description",M4Str,Normal,60,f4,false,0);
   end;
-  CheckBox(h,v+=vs,0,"Prolong only when Invoice is paid",flags[3]);
+  CheckBox(h,v+=vs,0,"Prolong only when Prolongation Invoice is paid",flags[3]);
   HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassPause","Register Changes");
   EndWindow;
   
@@ -4293,7 +4309,7 @@ begin
   real h,v,vs,vs2,hm,h2,vm;
   Integer tilenr;
   vs = 20;
-  WindowBegin("Buy-out Settings",CMBuyOutTClass,CGSbl,SRType);
+  WindowBegin("Buy-out and Change Settings",CMBuyOutTClass,CGSbl,SRType);
   SetBlid(CMBuyOutBlock);
   SetWRect(20,80,670,298);
   Sizeable(-1,-1,0,0);
@@ -4301,6 +4317,7 @@ begin
   EditField(h=180,v=6,100,"Buyout Paym. Term",Normal,BuyOutPayDeal,false,PDSClass); 
   EditField(h,v+=vs,100,"Premature Term. Item",Normal,BuyOutItem,false,INSClass);   
   EditField(h,v+=vs,100,"Premature Term. Principle",Normal,PremTermPrincpl,false,INSClass);
+  EditField(h,v+=vs,100,"Future Fee Item",Normal,FutFeeItem,false,INSClass);
   CheckBox(h,v+=20,0,"Calculate Interest for Buy-Out Day",CalcIntBOday);
   CheckBox(h,v+=20,0,"Calculate Overdues for Buy-Out Day",CalcOvdBOday);  
   

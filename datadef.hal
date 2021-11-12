@@ -2095,6 +2095,10 @@ begin
   ArrayField(CredHistNr,M4Long,0,0);
   ArrayField(CredHistItem,M4Code,20,0);
   EndRecordAdd;
+  
+  RecordAddBegin(ORVc,"ORVc_EBS");
+    RecordField(CustVal01,M4Val,0,0);
+  EndRecordAdd;
 
   RecordBegin(CMPropertyVc,-,"");
   RecordField(SerNr,M4Long,0,0);
@@ -2733,6 +2737,7 @@ begin
   RecordField(PremTermPrincpl,M4Code,20,0);
   RecordField(CalcIntBOday,M4Int,0,0);
   RecordField(CalcOvdBOday,M4Int,0,0);
+  RecordField(FutFeeItem,M4Code,20,0);
   EndBlock;
   
   BlockBegin(AppInterestRateBlock,-,"");

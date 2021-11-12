@@ -3412,6 +3412,7 @@ begin
       rwcnt = matrowcnt(IVr);
       for(i=0;i<rwcnt;i=i+1)begin
         matrowget(IVr,i,IVrw);
+        
         if(IVrw.stp==kInvoiceRowTypeNormal and nonblank(IVrw.ArtCode))then begin
           vcalcval["INVOICED:" & IVrw.ArtCode] = vcalcval["INVOICED:" & IVrw.ArtCode] + IVrw.Sum*credflag;
           vcalcval["INVOICED"] = vcalcval["INVOICED"] + IVrw.Sum*credflag;
@@ -3612,7 +3613,7 @@ begin
   longint dummy_ivnr;
   record CredHistVc CredHistr;
   vector val vcalcval,vcalcval1;
-  string 50 intItem,princItem,demandItem,insurItem,prematureItem,feesItem;
+  string 50 intItem,princItem,demandItem,insurItem,prematureItem,feesItem,futurefeesitem;
   record CMInvoicingBlock CIb;
   array string 30 acalcval;
   val interestammount;
@@ -3753,6 +3754,7 @@ begin
   intItem = CMb.RateItem;
   feesItem = CMb.LateRateItem;
   princItem = CMb.InstalmentItem;
+  futurefeesitem = CMBOb.FutFeeItem;
   
   FindAllInvoicesAndPrepayments(CredManr,vcalcval,ORr.OrdDate);
   vcalcval1["OPENNOTOVERDUEINT"] = vcalcval["OPENINVOICED:" & intItem] - vcalcval["OVDOPENINVOICED:" & intItem];
@@ -3789,6 +3791,7 @@ begin
   logtext(0,"interestammount " & interestammount);
   logtext(0,"vcalcval1[\"INVOICEDCURRENTPERIOD\"] " & vcalcval1["INVOICEDCURRENTPERIOD"]);
   
+  ORr.CustVal01 = vcalcval["OVDOPENINVOICED:" & futurefeesitem];
   //vcalcval1["CURRPERIODINTEREST"];
   logtext(0,"vcalcval1[\"CURRPERIODINTEREST\"] " & vcalcval1["CURRPERIODINTEREST"]);
   //logtext(0,"------Current Period Interest" & interestammount - vcalcval1["INVOICEDCURRENTPERIOD"]  );//???????????

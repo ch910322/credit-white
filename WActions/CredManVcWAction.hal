@@ -978,6 +978,70 @@ begin
   return;
 end;
 
+
+function integer CalcMonthsBetween(date sd, date ed)
+begin
+  integer res;
+  date tmpdate;
+  
+    tmpdate = sd;
+    if(sd<ed)then begin
+      while(tmpdate<ed)begin
+        tmpdate = addmonth(tmpdate,1);
+        res = res + 1;
+      end;
+    end else begin
+      res = 0;
+    end;
+  
+  CalcMonthsBetween = res;
+return;
+end;
+
+procedure calcPauseData(record CredManVc CredManr,var record RcVc RepSpec)
+begin
+  Integer wn;
+  Date td;
+  record CMInvoicingBlock CIb;
+  record ORVc ORr;
+  val newbal;
+  
+  ORr.OrdDate = RepSpec.d1;
+  threadremote.CheckBuyOutAgreementOmega(CredManr,ORr,false);
+  RepSpec.ObjStr = ORr.BaseSum4;//"Balance"
+  RepSpec.Stext = ORr.Sum1;
+  RepSpec.FirstAcc = ORr.TotGP;
+  RepSpec.AccStr = ORr.DownPaySent;
+  RepSpec.Notation = ORr.InvMark;
+  RepSpec.TransStr = ORr.Sum2;
+  RepSpec.f5 = ORr.Sum2 - ORr.CustVal01;//"Added to New Balance"
+  RepSpec.f6 = ORr.CustVal01;
+  
+  RepSpec.f7 = ORr.PrepaidAmount;//prepayments
+  
+  if(RepSpec.vals3==0 and RepSpec.vals4==0)then begin
+    newbal = ORr.BaseSum4;
+  end else begin
+    newbal = ORr.BaseSum4 + RepSpec.vals4 + (ORr.Sum2 - ORr.CustVal01);
+    if(RepSpec.Mirrorf==1)then begin
+      newbal = newbal - ORr.PrepaidAmount;
+    end;
+  end;
+  RepSpec.f8 = newbal;
+  RepSpec.wholemonthf = CalcMonthsBetween(RepSpec.d1,CredManr.endDate);
+  
+  RepSpec.flags[1] = 1;
+  BlockLoad(CIb);
+  RepSpec.f2 = CIb.FirstInvPayDeal;
+  RepSpec.f3 = CurrentUser;
+  RepSpec.f4 = "";
+  GetItemName(CIb.ProlongItem,RepSpec.f4);
+  
+  
+return;
+end;
+
+
 global
 procedure PauseCredManDsm()
 begin
@@ -986,6 +1050,7 @@ begin
   record CredManVc CredManr;
   Date td;
   record CMInvoicingBlock CIb;
+  record ORVc ORr;
   
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
@@ -994,14 +1059,8 @@ begin
       MessageBox(200233,"");
     end else begin
       threadremote.GetPauseCredManNextDate(CredManr,td);
-      //RepSpec.vals1 = CredManr.ProlongMonths;
       RepSpec.d1 = td;
-      RepSpec.flags[1] = 1;
-      BlockLoad(CIb);
-      RepSpec.f2 = CIb.FirstInvPayDeal;
-      RepSpec.f3 = CurrentUser;
-      RepSpec.f4 = "";
-      GetItemName(CIb.ProlongItem,RepSpec.f4);
+      calcPauseData(CredManr,RepSpec);      
       OpenWindow("PauseCredManWClass",0,wn,"","",RepSpec);
     end;
   end;
@@ -1556,24 +1615,6 @@ begin
   end;
 
   RefinCredMan2WClassAfterEditField = res;
-  return;
-end;
-
-global
-function Boolean PauseCredManWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
-begin
-  Boolean res;
-  record RcVc RepSpec;
-
-  switch (fieldname) begin
-    case "vals0":
-      DeselectWindow(wn,true);
-      GetWindowRecord(wn,RepSpec);
-      RepSpec.vals1 = RepSpec.vals0;
-      PutWindowRecord(wn,RepSpec);
-  end;
-
-  PauseCredManWClassAfterEditField = res;
   return;
 end;
 
@@ -3565,6 +3606,41 @@ begin
     end;
   end;
   CheckBuyoutValueOmegaWClassAfterEditField = res;
+  return;
+end;
+
+
+
+function boolean PauseCredManWClassd1EFAfter(integer wn,integer changed)
+begin
+  record RcVc RepSpec;
+  integer mwn;
+  record CredManVc CredManr;
+  
+  if(changed>0)then begin
+    getwindowrecord(wn,RepSpec);
+    mwn = motherwindow(wn);
+    getwindowrecord(mwn,CredManr);
+    calcPauseData(CredManr,RepSpec);
+    putwindowrecord(wn,RepSpec);
+  end;
+  PauseCredManWClassd1EFAfter = true;
+return;
+end;
+
+
+global
+function Boolean PauseCredManWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+  
+  res = true;
+  if (changed!=0) then begin
+    switch (fieldname) begin
+      case "d1": res = PauseCredManWClassd1EFAfter(wn,changed);//"Letter of Demand"
+    end;
+  end;
+  PauseCredManWClassAfterEditField = res;
   return;
 end;
 
