@@ -4630,6 +4630,7 @@ logtext(0,"GenerateAgreementSchedule1");
       CSrw.InvDate = SMrw.TransDate;
       CSrw.PayDate = SMrw.DueDate;
       CSrw.Type = SMrw.RowSimStat;
+      logtext(0,"SMrw.RowSimStat " & SMrw.RowSimStat);
       switch (CSrw.Type) begin
         case 4:
           CSrw.Total = SMrw.CurDebVal;
@@ -4641,11 +4642,6 @@ logtext(0,"GenerateAgreementSchedule1");
           bal = bal + CSrw.Principle;
           CSrw.Invoiced = 1;
           CSrw.Balance = bal;
-        case 6:
-          /*CSrw.Principle = SMrw.DebVal;
-          bal = bal + CSrw.Principle;
-          CSrw.Invoiced = 1;
-          CSrw.Balance = bal;*/
         otherwise
           CSrw.FromDate = SMrw.Objects;
           CSrw.Principle = SMrw.DebVal - SMrw.ToRateB1;
