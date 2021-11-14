@@ -3557,12 +3557,21 @@ end;
 window CMInterfaceSetTClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  real h,v,vs,v2,vs2,hm,h2;
+  real h,v,vs,v2,vs2,hm,h2,tilenr;
 
   WindowBegin("Credit Management Settings",CMInterfaceSetTClass,CGSbl,-);
   SetBlid(CMInterfaceSetBlock);
   SetWRect(20,80,670,298);
   Sizeable(-1,-1,0,0);
+  
+  Tile(0,30,false,"",DefCredManLoanType);
+  tilenr = 1;
+  
+  TileButton(tilenr,"Main"); tilenr = tilenr + 1;//Bk
+  TileButton(tilenr,"Cred. Agreement"); tilenr = tilenr + 1;//Bk
+  
+  tilenr = 1;
+  Tile(tilenr,320,false,tilenr,DefCredManLoanType);  tilenr = tilenr + 1;
   h = 100;
   vs = 20;
   if (HasBalloonLoanType) then begin//stupid workaround because EndFrame doens't work here
@@ -3602,6 +3611,22 @@ begin
   CheckBox(h,v+=vs,0,"Show 'Int. based on Money Transfer'",ShowRealInterestFlag);
   CheckBox(h,v+=vs,0,"Use Days In Month in Agreement",UseCredManDaysInMonth);
   CheckBox(h,v+=vs,0,"Manual Agreement Date",ManualAgreeDate);
+  Tile(tilenr,320,false,tilenr,DefCredManLoanType);  tilenr = tilenr + 1;
+  v = 6;
+  EditField(h,v+=vs,-20,"Person Groups",Normal,AccGroups,false,AccessSClass);
+  
+  CheckBox(h,v+=16,0,"Allow Changing Salesman",AllovChngSalesman);
+  CheckBox(h,v+=16,0,"Allow Changing Surety information",AllovChngSuretyInf);
+  CheckBox(h,v+=16,0,"Allow Changing Force Payment Terms",AllovChngFrcPayTer);
+  CheckBox(h,v+=16,0,"Allow Changing Other Conditions",AllovChngOtherCond);
+  CheckBox(h,v+=16,0,"Allow Changing End Date",AllovChngEndDate);
+  CheckBox(h,v+=16,0,"Allow Changing Agreement Date",AllovChngAgrDate);
+  CheckBox(h,v+=16,0,"Allow Changing Order Class",AllovChngOrdClass);
+  CheckBox(h,v+=16,0,"Allow Changing Overdue Percentage",AllovChngOvrdPerc);
+  CheckBox(h,v+=16,0,"Allow Changing Premature Term. Months",AllovChngPremTermMon);
+  CheckBox(h,v+=16,0,"Allow Changing Premature Term. Fee %",AllovChngPremTermFee);
+  CheckBox(h,v+=16,0,"Allow Changing Std. Prolongation Fee",AllovChngStdProlFee);
+  CheckBox(h,v+=16,0,"Allow Changing Std. Prolongation Fee %",AllovChngStdProlFeePrc);
   
   EndWindow;
 end;

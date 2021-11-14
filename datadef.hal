@@ -2413,6 +2413,19 @@ begin
   RecordField(ShowLoanType8,M4Int,0,0);
   RecordField(ManualAgreeDate,M4Int,0,0);
   RecordField(AgreeListClassType,M4Int,0,0);
+  RecordField(AccGroups,M4UStr,200,0);
+  RecordField(AllovChngSalesman,M4Int,0,0);
+  RecordField(AllovChngSuretyInf,M4Int,0,0);
+  RecordField(AllovChngFrcPayTer,M4Int,0,0);
+  RecordField(AllovChngOtherCond,M4Int,0,0);
+  RecordField(AllovChngEndDate,M4Int,0,0);
+  RecordField(AllovChngAgrDate,M4Int,0,0);
+  RecordField(AllovChngOrdClass,M4Int,0,0);
+  RecordField(AllovChngOvrdPerc,M4Int,0,0);
+  RecordField(AllovChngPremTermMon,M4Int,0,0);
+  RecordField(AllovChngPremTermFee,M4Int,0,0);
+  RecordField(AllovChngStdProlFee,M4Int,0,0);
+  RecordField(AllovChngStdProlFeePrc,M4Int,0,0);
   EndBlock;
 
   RecordBegin(CredManChangeVc,-,"");

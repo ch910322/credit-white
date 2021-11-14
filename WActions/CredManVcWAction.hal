@@ -75,6 +75,7 @@ external outer function Boolean IsOmegaCustomer;
 remote procedure CheckBuyOutAgreementOmega(record CredManVc,var record ORVc, Boolean);
 external procedure GetItemName(string,var string);
 remote function boolean CheckCsheduleLastBalance(record CredManVc);
+external inner procedure ExtractObj(string,var Integer,var string);
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -2548,12 +2549,43 @@ begin
   return;
 end;
 
+
+function boolean CheckUserAccessGroupForCredMan(record CMInterfaceSetBlock CMIb)
+begin
+record UserVc USr;
+boolean res;
+integer pos;
+string 100 tstr;
+
+  res = false;
+  
+  if(nonblank(CMIb.AccGroups))then begin
+    USr.Code = currentuser;
+    if(readfirstmain(USr,1,true))then begin
+      pos = 0;
+      ExtractObj(CMIb.AccGroups,pos,tstr);
+      while(nonblank(tstr))begin
+        if(nonblank(tstr))then begin
+          if(setinset(tstr,USr.AccessGroup))then begin
+            res = true;
+          end;
+        end;
+        ExtractObj(CMIb.AccGroups,pos,tstr);
+      end;
+    end;
+  end;
+  
+  CheckUserAccessGroupForCredMan = res;
+return;
+end;
+
 global
 function Boolean CredManDClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
 begin
   Boolean res;
   record CredManVc CredManr;
- 
+  record CMInterfaceSetBlock CMIb;
+  
   res = false;
   if (wnst==2) then begin//Rs_update
     GetPrevWindowRecord(wn,CredManr);
@@ -2570,6 +2602,30 @@ begin
         if (left(fn,6)=="Surety") then begin
           res = true;
         end;
+    end;
+  end;
+  
+  // Checking of grant access to edit fields anyway
+  if(CredManr.OKFlag==1 or CredManr.Approved==1)then begin
+    blockload(CMIb);
+    if(CheckUserAccessGroupForCredMan(CMIb))then begin
+      switch (fieldname) begin
+        case "SalesMan":if(CMIb.AllovChngSalesman==1)then begin res = true; end;
+        case "Surety....":
+        case "ForcePayDeal": if(CMIb.AllovChngFrcPayTer==1)then begin res = true; end;
+        case "OtherConditions": if(CMIb.AllovChngOtherCond==1)then begin res = true; end;
+        case "endDate": if(CMIb.AllovChngEndDate==1)then begin res = true; end;
+        case "TransDate": if(CMIb.AllovChngAgrDate==1)then begin res = true; end;
+        case "OrderClass": if(CMIb.AllovChngOrdClass==1)then begin res = true; end;
+        case "OverduePercentage": if(CMIb.AllovChngOvrdPerc==1)then begin res = true; end;
+        case "BuyoutFeeMonths": if(CMIb.AllovChngPremTermMon==1)then begin res = true; end;
+        case "BuyoutFeePrc": if(CMIb.AllovChngPremTermFee==1)then begin res = true; end;
+        case "StdProlongFee": if(CMIb.AllovChngStdProlFee==1)then begin res = true; end;
+        case "StdProlongPrc": if(CMIb.AllovChngStdProlFeePrc==1)then begin res = true; end;
+      end;
+      if(left(fieldname,6)=="Surety")then begin
+        if(CMIb.AllovChngSuretyInf==1)then begin res = true; end;
+      end;
     end;
   end;
   
