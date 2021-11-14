@@ -2345,6 +2345,7 @@ begin
   AutoSizeWindow(false);
   vs=20; h=120; vs2=16; hm=-100; h2 = 350;
   EditField(h,v=6,120,"Agreement",ViewOnly,CredManNr,false,0);
+  CheckBox(-160,v,0,"Do not recalculate",DontRecalculate);
   EditField(h,v+=vs,90,"Customer",ViewOnly,CustCode,false,CUSClass);
   EditField(h2,v,-40,"Name",ViewOnly,CustName,false,0);
   EditField(h,v+=vs,90,"Date",ViewOnly,TransDate,false,0);

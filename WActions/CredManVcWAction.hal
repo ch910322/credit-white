@@ -2355,7 +2355,11 @@ begin
     CSr.CredManNr = CredManr.SerNr;
     if (ReadFirstMain(CSr,1,true)) then begin
       RepSpec.long1 = CredManr.SerNr;
-      OpenWindow("SchedYesNoWClass",0,0,"","",RepSpec);
+      if(CSr.DontRecalculate==0)then begin
+        OpenWindow("SchedYesNoWClass",0,0,"","",RepSpec);
+      end else begin
+        messagebox(200311,"");
+      end;
     end else begin
       GenerateAgreementScheduleTask(CredManr,false,true);
     end;

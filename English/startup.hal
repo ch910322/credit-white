@@ -334,6 +334,8 @@ begin
   /*IVInfoRn*/
   SString(200310,"Item Total Incl VAT");
   
+  SString(200311,"Disallowed to recalculate, check Agreement Schedule");
+  
   
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");

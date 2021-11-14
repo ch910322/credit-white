@@ -1924,6 +1924,7 @@ begin
   RecordField(TransTime,M4Time,0,0);
   RecordField(Math,M4Matrix,0,0);
   RecordField(OfficialSerNr,M4Str,100,0);
+  RecordField(DontRecalculate,M4Int,0,0);
   ArrayBegin(Math,-,1);
   ArrayField(Type,M4Set,2027,0);
   ArrayField(InvDate,M4Date,0,0);
