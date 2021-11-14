@@ -3681,3 +3681,19 @@ begin
   LManualExtraFeeWClassAfterEditField:;
   return;
 end;
+
+
+global
+function string 255 CredManFinishColumn(record CredManVc CredManr)
+begin
+  date res;
+  
+  logtext(0,CredManr.SerNr);
+  res = CredManr.endDate;
+  if(nonblankdate(CredManr.FinishDate))then begin
+    res = CredManr.FinishDate;
+  end;
+  
+  CredManFinishColumn = res;
+  return;
+end;
