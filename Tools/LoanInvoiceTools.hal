@@ -3725,7 +3725,9 @@ begin
   ORr.TAX1Sum = otheropenfees;
   ORr.RvrsVAT = GetOpenInsuranceValue(CredManr.SerNr,ORr.OrdDate);
   t = GetOpenOverdueFeesValue(CredManr.SerNr,ORr.OrdDate);
+  
   ORr.FrBase = ORr.Sum2+ORr.BaseSum4+ORr.TotGP+ORr.DiscSum+otheropenfees+lateamount+t;//total debt
+  
   t = GetOpenLetterOfDemandValue(CredManr.SerNr,ORr.OrdDate);
   ORr.SumIncCom = t;
   ORr.FrBase = ORr.FrBase+t+ORr.RvrsVAT+ORr.TAX2Sum-prepayval;
@@ -3801,7 +3803,9 @@ begin
   ORr.TotGP = vcalcval1["CURRPERIODINTEREST"];
   
   logtext(0,"------Future Fees" & vcalcval1["FUTUREFEES"]);
-  ORr.DiscSum = vcalcval1["FUTUREFEES"];
+  if(ORr.NoTax1==1)then begin
+    ORr.DiscSum = vcalcval1["FUTUREFEES"];
+  end;
   
   
   logtext(0,"OPENINVOICED " & vcalcval["OVDOPENINVOICED"]);
