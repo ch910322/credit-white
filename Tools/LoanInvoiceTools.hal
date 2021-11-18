@@ -3803,8 +3803,10 @@ begin
   ORr.TotGP = vcalcval1["CURRPERIODINTEREST"];
   
   logtext(0,"------Future Fees" & vcalcval1["FUTUREFEES"]);
-  if(ORr.NoTax1==1)then begin
+  if(CMBOb.InvFutFees==1)then begin
     ORr.DiscSum = vcalcval1["FUTUREFEES"];
+  end else begin
+    ORr.DiscSum = blankval;
   end;
   
   

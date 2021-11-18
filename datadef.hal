@@ -2753,6 +2753,7 @@ begin
   RecordField(CalcIntBOday,M4Int,0,0);
   RecordField(CalcOvdBOday,M4Int,0,0);
   RecordField(FutFeeItem,M4Code,20,0);
+  RecordField(InvFutFees,M4Int,0,0);
   EndBlock;
   
   BlockBegin(AppInterestRateBlock,-,"");
