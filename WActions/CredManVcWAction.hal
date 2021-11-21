@@ -76,6 +76,8 @@ remote procedure CheckBuyOutAgreementOmega(record CredManVc,var record ORVc, Boo
 external procedure GetItemName(string,var string);
 remote function boolean CheckCsheduleLastBalance(record CredManVc);
 external inner procedure ExtractObj(string,var Integer,var string);
+remote function date CheckCsheduleLastStartPeriod(record CredManVc);
+
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -1016,6 +1018,8 @@ begin
   RepSpec.Notation = ORr.InvMark;
   RepSpec.TransStr = ORr.Sum2;
   RepSpec.f5 = ORr.Sum2 - ORr.CustVal01;//"Added to New Balance"
+  RepSpec.f9 = ORr.CustVal02;
+  
   RepSpec.f6 = ORr.CustVal01;
   
   RepSpec.f7 = ORr.PrepaidAmount;//prepayments
@@ -1024,12 +1028,13 @@ begin
     newbal = ORr.BaseSum4;
   end else begin
     newbal = ORr.BaseSum4 + RepSpec.vals4 + (ORr.Sum2 - ORr.CustVal01);
-    if(RepSpec.Mirrorf==1)then begin
+    if(RepSpec.Custf==1)then begin//Revert flag value - if ticked!!!
       newbal = newbal - ORr.PrepaidAmount;
     end;
   end;
   RepSpec.f8 = newbal;
   RepSpec.wholemonthf = CalcMonthsBetween(RepSpec.d1,CredManr.endDate);
+  RepSpec.flags[2] = 1;
   
   RepSpec.flags[1] = 1;
   BlockLoad(CIb);
@@ -1131,10 +1136,12 @@ begin
   Boolean res,setf,closedf;
   record IVVc IVr;
   Integer err;
+  boolean scenario;
 
   wn = CurWindow;
   DeselectWindow(wn,true);
   GetWindowRecord(wn,RepSpec);
+  
   //if (RepSpec.long1>0) then begin
     mwn = MotherWindow(wn);
     if (WindowState(mwn)==Rs_Normal) then begin
@@ -1142,6 +1149,21 @@ begin
         MessageBox(200264,"");
         goto LPauseCredManWClassPause;
       end;
+      if(RepSpec.vals3==0 and RepSpec.vals4==0 and nonblank(RepSpec.f6))then begin
+        if(RepSpec.wholemonthf==0)then begin
+          MessageBox(1058,"");
+          WindowFieldGoto(wn,RepSpec,-1,"wholemonthf",true);
+          goto LPauseCredManWClassPause;
+        end;
+      end;
+      if(RepSpec.flags[2]==1)then begin
+        if(blank(RepSpec.f9) or stringtoval(RepSpec.f9,m4val)==0)then begin
+          MessageBox(1058,"");
+          WindowFieldGoto(wn,RepSpec,-1,"f9",true);
+          goto LPauseCredManWClassPause;
+        end;
+      end;
+      
       GetWindowRecord(mwn,CredManr);
       DoPauseCredMan(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr,RepSpec.f1,err);
       if (res) then begin
@@ -3676,6 +3698,29 @@ begin
   record RcVc RepSpec;
   integer mwn;
   record CredManVc CredManr;
+  date tmpdate;
+  
+  if(changed>0)then begin
+    getwindowrecord(wn,RepSpec);
+    mwn = motherwindow(wn);
+    getwindowrecord(mwn,CredManr);
+    tmpdate = CheckCsheduleLastStartPeriod(CredManr);
+    if(tmpdate>RepSpec.d1)then begin
+      RepSpec.d1 = tmpdate;
+    end;
+    calcPauseData(CredManr,RepSpec);
+    putwindowrecord(wn,RepSpec);
+  end;
+  PauseCredManWClassd1EFAfter = true;
+return;
+end;
+
+function boolean recalcPause(integer wn,integer changed)
+begin
+  record RcVc RepSpec;
+  integer mwn;
+  record CredManVc CredManr;
+  date tmpdate;
   
   if(changed>0)then begin
     getwindowrecord(wn,RepSpec);
@@ -3684,7 +3729,7 @@ begin
     calcPauseData(CredManr,RepSpec);
     putwindowrecord(wn,RepSpec);
   end;
-  PauseCredManWClassd1EFAfter = true;
+  recalcPause = true;
 return;
 end;
 
@@ -3693,16 +3738,40 @@ global
 function Boolean PauseCredManWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
 begin
   Boolean res;
+  record RcVc RepSpec;
   
   res = true;
   if (changed!=0) then begin
     switch (fieldname) begin
       case "d1": res = PauseCredManWClassd1EFAfter(wn,changed);//"Letter of Demand"
+      case "vals3": res = recalcPause(wn,changed);
+      case "vals4": res = recalcPause(wn,changed);
+      case "vals1": res = recalcPause(wn,changed);
+      case "vals2": res = recalcPause(wn,changed);
+      case "f9":
+      GetWindowRecord(wn,RepSpec);
+      RepSpec.f9 = stringtoval(RepSpec.f9,M4Val);
+      PutWindowRecord(wn,RepSpec);
     end;
   end;
   PauseCredManWClassAfterEditField = res;
   return;
 end;
+
+
+
+global procedure PauseCredManWClassRecalculate()
+begin
+  integer wn;
+  
+  wn = curwindow;
+  deselectwindow(wn,true);
+  recalcPause(wn,1);
+  
+return;
+end;
+
+
 
 global
 procedure ManualExtraFeeWClassOnOpenWindow(Integer wn)

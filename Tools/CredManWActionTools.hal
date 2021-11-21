@@ -86,6 +86,7 @@ external inner function string 255 CredManCustEmail(record CUVc);
 external inner function string 255 StrReplace(string,string,string);
 external function boolean getAdditionalLangCode(record CredManVc,string,var string);
 external function string 20 getAdditionalCredManLangCode(record CredManVc);
+external updating procedure CreditOpenInvoices(record CredManVc,Date,record ORVc);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -466,9 +467,23 @@ updating procedure DoPauseCredMan(var record CredManVc CredManr,val months,val p
 begin
   record AgreementDocVc ADr;
   record VIVc VIr;
+  boolean scenario;
   val tmonths,tprolongmonths,rate,addval;
+  record ORVc ORr;
+  
   res = false;
-
+    
+    
+    if((RepSpec.vals3==0 or RepSpec.vals3==blankval) and (RepSpec.vals4==0 or RepSpec.vals4==blankval))then begin
+      //messagebox(0,"A");
+      scenario = false;
+    end else begin
+      scenario = true;
+      ORr.InvMark = RepSpec.Notation;
+      CreditOpenInvoices(CredManr,td,ORr);
+      //messagebox(0,"B");
+    end;
+    
 //  if (nonblank(td)) then begin
     //RecordCopy(oldCredManr,CredManr);
     tprolongmonths = prolongmonths;
@@ -486,6 +501,7 @@ begin
       tmonths = blankval;
     end;
     if (CanPauseAgreement(CredManr,td,months,err)) then begin
+      
       if (RepSpec.flags[2]==1) then begin
         CreateProlongSession(CredManr,td,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1],RepSpec.vals3,RepSpec.vals4);
         CreateProlongInvoice(CredManr,RepSpec.f2,RepSpec.f3,RepSpec.f4,IVr);

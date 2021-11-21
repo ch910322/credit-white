@@ -2100,6 +2100,7 @@ begin
   
   RecordAddBegin(ORVc,"ORVc_EBS");
     RecordField(CustVal01,M4Val,0,0);
+    RecordField(CustVal02,M4Val,0,0);
   EndRecordAdd;
 
   RecordBegin(CMPropertyVc,-,"");
@@ -2754,6 +2755,7 @@ begin
   RecordField(CalcOvdBOday,M4Int,0,0);
   RecordField(FutFeeItem,M4Code,20,0);
   RecordField(InvFutFees,M4Int,0,0);
+  RecordField(FutFeeItemClass,M4Code,20,0);
   EndBlock;
   
   BlockBegin(AppInterestRateBlock,-,"");
