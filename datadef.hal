@@ -2099,8 +2099,10 @@ begin
   EndRecordAdd;
   
   RecordAddBegin(ORVc,"ORVc_EBS");
-    RecordField(CustVal01,M4Val,0,0);
-    RecordField(CustVal02,M4Val,0,0);
+    RecordField(CustVal01,M4Val,0,0);//Buy-out
+    RecordField(CustVal02,M4Val,0,0);//Buy-out
+    RecordField(CustVal03,M4Val,0,0);//Buy-out
+    RecordField(CustVal04,M4Val,0,0);//Buy-out
   EndRecordAdd;
 
   RecordBegin(CMPropertyVc,-,"");
