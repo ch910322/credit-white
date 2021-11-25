@@ -825,7 +825,7 @@ end;
     EditFieldTL(h,v+=vs,120,"Other Open Fees",M4Val,ViewOnly,255,TAX1Sum,true,0);
     EditFieldTL(h,v+=vs,120,"Open Overdue Fee Invoices",M4Val,ViewOnly,255,DownPayRedcd,true,0);
     EditFieldTL(h,v+=vs,120,"Credited Interest",M4Val,ViewOnly,255,DownPaySent,true,0);
-    //CheckBox(h+140,v,0,"Credit Interest",InvMark);
+    CheckBox(h+140,v,0,"Credit Interest",InvMark);
 
 
     EditFieldTL(h,v+=vs,120,"Letter of Demand",M4Val,Normal,20,SumIncCom,true,0);
