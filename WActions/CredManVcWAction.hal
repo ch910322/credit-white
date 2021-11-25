@@ -78,6 +78,8 @@ remote function boolean CheckCsheduleLastBalance(record CredManVc);
 external inner procedure ExtractObj(string,var Integer,var string);
 remote function date CheckCsheduleLastStartPeriod(record CredManVc);
 external inner procedure ExtractObj(string,var Integer,var string);
+remote updating procedure newCreateRefinCredMan(record ORVc,record CredManVc,record CredManVc);
+external updating procedure CredManMakePaymentDsm;
 
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
@@ -975,6 +977,80 @@ begin
   
   return;
 end;
+
+
+
+global
+updating procedure RefinanceButtonDo()
+begin
+  record ORVc ORr,OR2r;
+  Integer wn,mwn,pos,nwn;
+  record IVVc IVr,IV2r;
+  record CredManVc CredManr,tCredManr;
+  string 100 tstr,errstr;
+  array longint aIVnr;
+  record VIVc VIr;
+  record IVVc feeIVr;
+  val sum,sendsum;
+  boolean receiptf;
+  string 255 wstr,ivno;
+  
+  
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,ORr);
+  CredManr.SerNr = ORr.SerNr;
+  if (ReadFirstMain(CredManr,1,true)) then begin
+    OR2r.SerNr = ORr.SerNr;
+    OR2r.OrdDate = ORr.OrdDate;
+    threadremote.CheckBuyOutAgreementOmega(CredManr,OR2r,false);
+    if (CanTerminateWithDate(CredManr,OR2r.OrdDate)) then begin
+      DoBuyOutAgreement(CredManr,OR2r.OrdDate,false,IVr,OR2r);
+      if (IVr.SerNr>0) then begin
+        aIVnr[aIVnr.length] = IVr.SerNr;
+        //OpenWindow("IVDClass",1,0,"","",IVr);
+      end;
+      CloseWindow(wn);
+      if(nonblanK(ORr.OfficialSerNr))then begin
+        pos = 0;
+        tstr = "";
+        ExtractObj(ORr.OfficialSerNr,pos,tstr);
+        while(nonblank(tstr))begin
+          if(nonblank(tstr))then begin
+            CredManr.SerNr = stringtolongint(tstr);
+            if (ReadFirstMain(CredManr,1,true)) then begin
+              OR2r.SerNr = stringtolongint(tstr);
+              OR2r.OrdDate = ORr.OrdDate;
+              recordnew(IVr);
+              threadremote.CheckBuyOutAgreementOmega(CredManr,OR2r,false);
+              if (CanTerminateWithDate(CredManr,ORr.OrdDate)) then begin
+                DoBuyOutAgreement(CredManr,ORr.OrdDate,false,IVr,OR2r);
+                if (IVr.SerNr>0) then begin
+                  aIVnr[aIVnr.length] = IVr.SerNr;
+                  //OpenWindow("IVDClass",1,0,"","",IVr);
+                end;
+              end;
+            end;
+          end;
+          ExtractObj(ORr.OfficialSerNr,pos,tstr);
+        end;
+      end;
+      
+      newCreateRefinCredMan(ORr,tCredManr,CredManr);
+      if(tCredManr.SerNr>0)then begin
+        OpenWindow(nwn,1,0,"","",tCredManr);
+        if (CanCredManMakePayment(CredManr,errstr)) then begin
+          CredManMakePaymentRemote(CredManr,VIr,IV2r,ivno,sum,receiptf,sendsum);
+        end;
+      end;
+      
+    end else begin
+      MessageBox(200274,"");
+    end;
+  end;
+  return;
+end;
+
 
 //same as CredManBuyoutWClassProceed, except ORVc is used
 global

@@ -668,6 +668,42 @@ begin
 end;
 
 global
+updating procedure newCreateRefinCredMan(record ORVc ORr,var record CredManVc CredManr,record CredManVc tCredManr)
+begin
+  record CredManVc oldCredManr;
+  
+  RecordNew(CredManr);
+  CredManr.TransDate = ORr.OrdDate;
+  CredManr.startDate = ORr.OrdDate;
+  CredManr.FirstInvDate = ORr.OrdDate;
+  CredManr.InvSum4 = stringtoval(ORr.OYDescription,m4val);
+  CredManr.Type = ORr.IntrastatTransCode;
+  CredManr.CustCode = ORr.DelRecipientGLN;
+  PasteCustInCredMan(CredManr);
+  CredManVc_PasteType(CredManr);
+  CredManr.IntRate = ORr.CustVal04;
+  CredManr.ClientContact = tCredManr.ClientContact;
+  CredManr.MonthlyPaymentDay = ORr.AcceptanceStatus;
+  CredManr.InstalmentMonths = ORr.SHShipSetToZero;
+  CredManSetDatesCust(CredManr,true); 
+  CopyCredManSurety(CredManr,tCredManr);
+  CredManr.LoanApplication = tCredManr.LoanApplication;
+  CredManr.SerNr = NextSerNr("CredManVc",CredManr.startDate,-1,false,"");
+  CredManr.OKFlag = 1;
+  CredManr.Approved = 1;
+  RecordInsert(CredManr,true);
+  if(CredManr.SerNr>-1)then begin
+    recordcopy(oldCredManr,CredManr);
+    CredManr.SignAgreement = 1;
+    CredManr.SignSchedule = 1;
+    CredManr.Status = 2;
+    recordupdate(oldCredManr,CredManr,true);
+  end;
+    
+  return;
+end;
+
+global
 updating procedure CreditAndOKInvoice(Longint ivnr,val prc,var val credval,var vector val vCredVal,val rval,Boolean sellf,Date td,string artcode,string findstr,string overrideperiod)
 begin
   record IVVc IVr,IVCreditr,oldIVr,IV2r;

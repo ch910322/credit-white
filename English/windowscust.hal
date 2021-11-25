@@ -801,7 +801,7 @@ end;
 
   WindowBegin("Refinance Agreement",RefinCredManWClass,CGother,-);
     UseView(ORVc);
-    h = 860;//380;
+    h = 660;//380;
     if (ShowBuyOutFee) then begin
       h = h + 20;
     end;
@@ -850,12 +850,12 @@ end;
     
   //  EditFieldTL(h,v+=vs,120,"Last Invoice Value",M4Val,ViewOnly,0,vals1,true,0);
   //  EditFieldTL(h,v+=vs,120,"Expected Payment",M4Val,ViewOnly,0,vals2,true,0);
-    StaticText(20,v+=40,"Other Open Fees Details",false);
+   /* StaticText(20,v+=40,"Other Open Fees Details",false);
     MatrixBegin(20,vm=(v+=vs),-50,-70,-,10);
     MatColTL(t=1,32,"Item",0,-1,ViewOnly,0,ArtCode,false,0);
     MatColTL(t,100,"Description",0,-1,ViewOnly,0,Spec,false,0);
     MatColTL(t,280,"Total",0,-1,ViewOnly,0,Sum,true,0);
-    EndMatrix;
+    EndMatrix;*/
     v=-60;
     HalPushButton(h=20,v,h+120,v+20,"CalculateRefinanceDo","Calculate");
     HalPushButton(h2=h+140,v,h2+120,v+20,"RefinanceButtonDo","Refinance");
