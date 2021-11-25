@@ -999,55 +999,88 @@ begin
   wn = CurWindow;
   DeselectWindow(wn,true);
   GetWindowRecord(wn,ORr);
-  CredManr.SerNr = ORr.SerNr;
-  if (ReadFirstMain(CredManr,1,true)) then begin
-    OR2r.SerNr = ORr.SerNr;
-    OR2r.OrdDate = ORr.OrdDate;
-    threadremote.CheckBuyOutAgreementOmega(CredManr,OR2r,false);
-    if (CanTerminateWithDate(CredManr,OR2r.OrdDate)) then begin
-      DoBuyOutAgreement(CredManr,OR2r.OrdDate,false,IVr,OR2r);
-      if (IVr.SerNr>0) then begin
-        aIVnr[aIVnr.length] = IVr.SerNr;
-        //OpenWindow("IVDClass",1,0,"","",IVr);
-      end;
-      CloseWindow(wn);
-      if(nonblanK(ORr.OfficialSerNr))then begin
-        pos = 0;
-        tstr = "";
-        ExtractObj(ORr.OfficialSerNr,pos,tstr);
-        while(nonblank(tstr))begin
-          if(nonblank(tstr))then begin
-            CredManr.SerNr = stringtolongint(tstr);
-            if (ReadFirstMain(CredManr,1,true)) then begin
-              OR2r.SerNr = stringtolongint(tstr);
-              OR2r.OrdDate = ORr.OrdDate;
-              recordnew(IVr);
-              threadremote.CheckBuyOutAgreementOmega(CredManr,OR2r,false);
-              if (CanTerminateWithDate(CredManr,ORr.OrdDate)) then begin
-                DoBuyOutAgreement(CredManr,ORr.OrdDate,false,IVr,OR2r);
-                if (IVr.SerNr>0) then begin
-                  aIVnr[aIVnr.length] = IVr.SerNr;
-                  //OpenWindow("IVDClass",1,0,"","",IVr);
+  if(ORr.AcceptanceStatus==0)then begin
+    MessageBox(1058,"");
+    WindowFieldGoto(wn,ORr,-1,"AcceptanceStatus",true);
+    goto lRefinanceButtonDo;
+  end;
+  
+  if(ORr.CustVal04==0)then begin
+    MessageBox(1058,"");
+    WindowFieldGoto(wn,ORr,-1,"CustVal04",true);
+    goto lRefinanceButtonDo;
+  end;
+  
+  if(blank(ORr.SHShipSetToZero) or ORr.SHShipSetToZero==0)then begin
+    MessageBox(1058,"");
+    WindowFieldGoto(wn,ORr,-1,"SHShipSetToZero",true);
+    goto lRefinanceButtonDo;
+  end;
+  
+  if(blank(ORr.DelRecipientGLN))then begin
+    MessageBox(1058,"");
+    WindowFieldGoto(wn,ORr,-1,"DelRecipientGLN",true);
+    goto lRefinanceButtonDo;
+  end;
+  
+  if(blank(ORr.IntrastatTransCode))then begin
+    MessageBox(1058,"");
+    WindowFieldGoto(wn,ORr,-1,"IntrastatTransCode",true);
+    goto lRefinanceButtonDo;
+  end;
+  
+    CredManr.SerNr = ORr.SerNr;
+    if (ReadFirstMain(CredManr,1,true)) then begin
+      OR2r.SerNr = ORr.SerNr;
+      OR2r.OrdDate = ORr.OrdDate;
+      threadremote.CheckBuyOutAgreementOmega(CredManr,OR2r,false);
+      if (CanTerminateWithDate(CredManr,OR2r.OrdDate)) then begin
+        DoBuyOutAgreement(CredManr,OR2r.OrdDate,false,IVr,OR2r);
+        if (IVr.SerNr>0) then begin
+          aIVnr[aIVnr.length] = IVr.SerNr;
+          //OpenWindow("IVDClass",1,0,"","",IVr);
+        end;
+        CloseWindow(wn);
+        if(nonblanK(ORr.OfficialSerNr))then begin
+          pos = 0;
+          tstr = "";
+          ExtractObj(ORr.OfficialSerNr,pos,tstr);
+          while(nonblank(tstr))begin
+            if(nonblank(tstr))then begin
+              CredManr.SerNr = stringtolongint(tstr);
+              if (ReadFirstMain(CredManr,1,true)) then begin
+                OR2r.SerNr = stringtolongint(tstr);
+                OR2r.OrdDate = ORr.OrdDate;
+                recordnew(IVr);
+                threadremote.CheckBuyOutAgreementOmega(CredManr,OR2r,false);
+                if (CanTerminateWithDate(CredManr,ORr.OrdDate)) then begin
+                  DoBuyOutAgreement(CredManr,ORr.OrdDate,false,IVr,OR2r);
+                  if (IVr.SerNr>0) then begin
+                    aIVnr[aIVnr.length] = IVr.SerNr;
+                    //OpenWindow("IVDClass",1,0,"","",IVr);
+                  end;
                 end;
               end;
             end;
+            ExtractObj(ORr.OfficialSerNr,pos,tstr);
           end;
-          ExtractObj(ORr.OfficialSerNr,pos,tstr);
         end;
-      end;
       
-      newCreateRefinCredMan(ORr,tCredManr,CredManr);
-      if(tCredManr.SerNr>0)then begin
-        OpenWindow(nwn,1,0,"","",tCredManr);
-        if (CanCredManMakePayment(CredManr,errstr)) then begin
-          CredManMakePaymentRemote(CredManr,VIr,IV2r,ivno,sum,receiptf,sendsum);
+        newCreateRefinCredMan(ORr,tCredManr,CredManr);
+        if(tCredManr.SerNr>0)then begin
+          OpenWindow(nwn,1,0,"","",tCredManr);
+          if (CanCredManMakePayment(CredManr,errstr)) then begin
+            CredManMakePaymentRemote(CredManr,VIr,IV2r,ivno,sum,receiptf,sendsum);
+          end;
         end;
-      end;
       
-    end else begin
-      MessageBox(200274,"");
+      end else begin
+        MessageBox(200274,"");
+      end;
     end;
-  end;
+
+lRefinanceButtonDo:;
+
   return;
 end;
 
