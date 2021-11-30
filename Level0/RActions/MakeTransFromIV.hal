@@ -635,7 +635,7 @@ LkInvoiceTypeCash:;
         goto LMakeTransFromIV;
       end;
       //CUST-BEGIN
-      if (CM_GetInvoiceItemOrder(IVp,sum4,vAmounts,true)) then begin
+      if (CM_GetInvoiceItemOrder(IVp,sum4,vAmounts,IVp.InvType!=3)) then begin
         GetVectorTags(vAmounts,aAmounts);
         for (i=0;i<aAmounts.length;i=i+1) begin
           tacc = aAmounts[i];
@@ -699,7 +699,7 @@ LkInvoiceTypeCash:;
         goto LMakeTransFromIV;
       end;
       //CUST-BEGIN
-      if (CM_GetInvoiceItemOrder(IVp,sum4,vAmounts,true)) then begin
+      if (CM_GetInvoiceItemOrder(IVp,sum4,vAmounts,IVp.InvType!=3)) then begin
         GetVectorTags(vAmounts,aAmounts);
         for (i=0;i<aAmounts.length;i=i+1) begin
           tacc = aAmounts[i];

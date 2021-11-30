@@ -371,6 +371,9 @@ begin
     SMrw.TransDate = IVr.InvDate;
     SMrw.DueDate = IVr.PayDate;
     SMrw.RowSimStat = 0;//type
+    if(IVr.InvType==kInvoiceTypeCredit)then begin
+      SMrw.RowSimStat = 6;
+    end;
     SMrw.DebVal = inst;
     SMrw.CredVal = intrate;
     SMrw.DebVal2 = fees;
@@ -516,6 +519,7 @@ begin
   val calcbal;
   vector Boolean vRec;
   Integer int_type;
+  row SMVc SMrw,SM2rw,SM3rw;
 
   int_type = GetInterestPaymentType(CredManr);
   if (int_type==2) then begin
@@ -533,6 +537,11 @@ begin
           vRec[CredHistr.RecordType & ":" & CredHistr.RecordNr] = true;
           switch (CredHistr.RecordType) begin//invoice
             case 0:
+              IVr.SerNr = CredHistr.RecordNr;
+              if (ReadFirstMain(IVr,1,true)) then begin
+                AddInvoiceToList(CredManr,IVr,SMr,calcbal,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,CMb);
+              end;
+            case 3:
               IVr.SerNr = CredHistr.RecordNr;
               if (ReadFirstMain(IVr,1,true)) then begin
                 AddInvoiceToList(CredManr,IVr,SMr,calcbal,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,CMb);
@@ -560,8 +569,22 @@ begin
     AddInvoiceToList(CredManr,IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate,CMb);
   end;
 
-  SortRows(SMr,"TransDate",true);
-
+  SortRows(SMr,"TransDate",true);//ExtraComment
+  if(matrowcnt(SMr)>1)then begin
+    for(i=0;i<matrowcnt(SMr)-1;i=i+1)begin
+       matrowget(SMr,i,SMrw);
+       matrowget(SMr,i+1,SM2rw);
+       if(SMrw.RowSimStat==0 or SMrw.RowSimStat==6)then begin
+          if(SM2rw.RowSimStat==0 or SM2rw.RowSimStat==6)then begin
+            if(SM2rw.ExtraComment<SMrw.ExtraComment and nonblank(SM2rw.ExtraComment) and SM2rw.ExtraComment!="-1")then begin
+              matrowput(SMr,i+1,SMrw);
+              matrowput(SMr,i,SM2rw);
+            end;
+          end;
+       end;
+    end;
+  end;
+  
   return;
 end;
 

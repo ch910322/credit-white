@@ -1179,6 +1179,7 @@ begin
   RecordField(Surety4InvCust,M4Int,0,0);   
   RecordField(Surety5InvCust,M4Int,0,0);   
   RecordField(Surety6InvCust,M4Int,0,0);   
+  RecordField(RefinancedAgreements,M4Str,255,0);
   
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -1924,6 +1925,7 @@ begin
   RecordField(TransTime,M4Time,0,0);
   RecordField(Math,M4Matrix,0,0);
   RecordField(OfficialSerNr,M4Str,100,0);
+  RecordField(DontRecalculate,M4Int,0,0);
   ArrayBegin(Math,-,1);
   ArrayField(Type,M4Set,2027,0);
   ArrayField(InvDate,M4Date,0,0);
@@ -2040,6 +2042,7 @@ begin
   RecordAddBegin(SMVc,"SMVc_FIN");
   ArrayField(DueDate,M4Date,0,0);
   ArrayField(FeesMatrix,M4PackedMatrix,0,CredFeesMatrixVc);
+  ArrayField(LongField01,M4Long,0,0);
   EndRecordAdd;
 
   BlockBegin(CredLegalInvNrBlock,-,"");
@@ -2094,6 +2097,14 @@ begin
   RecordAddBegin(IPVc,"IPVc_FIN");
   ArrayField(CredHistNr,M4Long,0,0);
   ArrayField(CredHistItem,M4Code,20,0);
+  EndRecordAdd;
+  
+  RecordAddBegin(ORVc,"ORVc_EBS");
+    RecordField(CustVal01,M4Val,0,0);//Buy-out
+    RecordField(CustVal02,M4Val,0,0);//Buy-out
+    RecordField(CustVal03,M4Val,0,0);//Buy-out
+    RecordField(CustVal04,M4Val,0,0);//Buy-out
+    RecordField(CustVal05,M4Val,0,0);//Refinance Remaining Value
   EndRecordAdd;
 
   RecordBegin(CMPropertyVc,-,"");
@@ -2407,6 +2418,19 @@ begin
   RecordField(ShowLoanType8,M4Int,0,0);
   RecordField(ManualAgreeDate,M4Int,0,0);
   RecordField(AgreeListClassType,M4Int,0,0);
+  RecordField(AccGroups,M4UStr,200,0);
+  RecordField(AllovChngSalesman,M4Int,0,0);
+  RecordField(AllovChngSuretyInf,M4Int,0,0);
+  RecordField(AllovChngFrcPayTer,M4Int,0,0);
+  RecordField(AllovChngOtherCond,M4Int,0,0);
+  RecordField(AllovChngEndDate,M4Int,0,0);
+  RecordField(AllovChngAgrDate,M4Int,0,0);
+  RecordField(AllovChngOrdClass,M4Int,0,0);
+  RecordField(AllovChngOvrdPerc,M4Int,0,0);
+  RecordField(AllovChngPremTermMon,M4Int,0,0);
+  RecordField(AllovChngPremTermFee,M4Int,0,0);
+  RecordField(AllovChngStdProlFee,M4Int,0,0);
+  RecordField(AllovChngStdProlFeePrc,M4Int,0,0);
   EndBlock;
 
   RecordBegin(CredManChangeVc,-,"");
@@ -2732,6 +2756,9 @@ begin
   RecordField(PremTermPrincpl,M4Code,20,0);
   RecordField(CalcIntBOday,M4Int,0,0);
   RecordField(CalcOvdBOday,M4Int,0,0);
+  RecordField(FutFeeItem,M4Code,20,0);
+  RecordField(InvFutFees,M4Int,0,0);
+  RecordField(FutFeeItemClass,M4Code,20,0);
   EndBlock;
   
   BlockBegin(AppInterestRateBlock,-,"");

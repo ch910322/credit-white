@@ -2174,8 +2174,7 @@ begin
     vVals["F_SURETY1NAME"] = CUr.Name;
     vVals["F_SURETY1ID"] = CUr.RegNr1;
   end;
-  
-  
+    
   vVals["F_SERNR"] = LAr.SerNr;//Ser. No.
   vVals["F_TRANSDATE"] = LAr.TransDate;//Date
   vVals["F_CUSTREGNR1"] = LAr.CustRegNr1;//Reg. No
@@ -2189,6 +2188,11 @@ begin
   vVals["F_CUSTCODE"] = LAr.CustCode;//Customer ID
   vVals["F_CUSTNAME"] = LAr.CustName;//Customer Name
   vVals["F_EMAIL"] = LAr.eMail;//Customer Email
+  if(nonblank(LAr.ContactMobile))then begin
+    vVals["F_CONTPHONENO"] = LAr.ContactMobile; //Contact Mobile
+  end else begin
+    vVals["F_CONTPHONENO"] = LAr.ContactPhoneNo; //Contact Mobile
+  end;
   vVals["F_PHONENO"] = LAr.PhoneNo;//Customer Telephone
   vVals["F_REGDATE"] = LAr.RegDate;//Registration Date
   vVals["F_INDUSTRY"] = LAr.Industry;//Industry

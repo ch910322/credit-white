@@ -309,12 +309,22 @@ begin
   return;
 end;
 
-function Boolean ShouldAddInvoiceToIP(record IPVc IPr,record ARVc ARr,Date untildate,val remsum)
+function Boolean ShouldAddInvoiceToIP(record IPVc IPr,record ARVc ARr,Date untildate,val remsum,longint crednr)
 begin
   Boolean res;
+  record IVVc IVr;
+  
 
   if (remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate) and CredManPMCodeMatches(IPr.PayMode,ARr.InvoiceNr,false) and ARr.InvDate<=IPr.TransDate) then begin
     res = true;
+  end;
+  if(crednr>-1)then begin
+    IVr.SerNr = ARr.InvoiceNr;
+    if(readfirstmain(IVr,1,true))then begin
+      if(IVr.CustCredManNr!=crednr)then begin
+        res = false;
+      end;
+    end;
   end;
 
   ShouldAddInvoiceToIP = res;
@@ -322,7 +332,7 @@ begin
 end;
 
 global updating
-procedure BankFillIProws2(var record IPVc IPr,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,Boolean allf,Date untildate)
+procedure BankFillIProws2(var record IPVc IPr,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,Boolean allf,Date untildate,longint crednr)
 begin
 	row IPVc IPrw;
 	boolean installmentf;
@@ -363,7 +373,7 @@ begin
 			if(ARr.CustCode!=cucode)then begin TrHs = false; end;
 									
 			if(TrHs)then begin
-				if(ShouldAddInvoiceToIP(IPr,ARr,untildate,remsum))then begin
+				if(ShouldAddInvoiceToIP(IPr,ARr,untildate,remsum,crednr))then begin
 					
 					primsearch = false;
 					if(BISb.DefSearchInv==0)then begin
@@ -436,7 +446,7 @@ begin
 		while(loopkey("CustCode",ARr,1,TrHs))begin
 			if(ARr.CustCode!=cucode)then begin TrHs = false; end;
 			if(TrHs)then begin
-				if(ShouldAddInvoiceToIP(IPr,ARr,untildate,remsum))then begin
+				if(ShouldAddInvoiceToIP(IPr,ARr,untildate,remsum,crednr))then begin
 					primsearch = false;
 					if(BISb.DefSearchInv==1)then begin
 						primsearch = setinset(ARr.InvoiceNr,instr);
@@ -521,7 +531,7 @@ begin
 				if(invused[ARr.InvoiceNr]==true)then begin testf = false; end;
 							
 				if(testf)then begin
-					if(ShouldAddInvoiceToIP(IPr,ARr,untildate,remsum))then begin
+					if(ShouldAddInvoiceToIP(IPr,ARr,untildate,remsum,crednr))then begin
 						clearrow(IPr,IPrw,1);
 						IPrw.InvoiceNr = ARr.InvoiceNr;
 						matrowput(IPr,k,IPrw);
@@ -569,7 +579,7 @@ begin
 		ARr.CustCode = "";
 		while(loopkey("CustCode",ARr,1,TrHs))begin												
 			if(TrHs)then begin
-				if(ShouldAddInvoiceToIP(IPr,ARr,untildate,remsum))then begin
+				if(ShouldAddInvoiceToIP(IPr,ARr,untildate,remsum,crednr))then begin
 					primsearch = false;
 					if(BISb.DefSearchInv==0)then begin
 						primsearch = setinset(ARr.InvoiceNr,instr);
@@ -646,7 +656,7 @@ begin
 		ARr.CustCode = "";
 		while(loopkey("CustCode",ARr,1,TrHs))begin												
 			if(TrHs)then begin
-				if(ShouldAddInvoiceToIP(IPr,ARr,untildate,remsum))then begin
+				if(ShouldAddInvoiceToIP(IPr,ARr,untildate,remsum,crednr))then begin
 					primsearch = false;
 					if(BISb.DefSearchInv==1)then begin
 						primsearch = setinset(ARr.InvoiceNr,instr);
@@ -761,10 +771,10 @@ return;
 end;
 
 global updating
-procedure BankFillIProws(var record IPVc IPr,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,Boolean allf)
+procedure BankFillIProws(var record IPVc IPr,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm,Boolean allf,longint crednr)
 begin
   
-  BankFillIProws2(IPr,RecName,CurncyCode,remsum,cucode,cufnd,instr,origcomm,allf,"");
+  BankFillIProws2(IPr,RecName,CurncyCode,remsum,cucode,cufnd,instr,origcomm,allf,"",crednr);
 
   return;
 end;

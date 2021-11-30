@@ -290,10 +290,7 @@ begin
     end;
     
     if(blank(CredManr.OfficialSerNr))then begin
-      ContactRelr.CustCode = CUr.Code;
-      if(readfirstmain(ContactRelr,1,true))then begin
-          CredManr.OfficialSerNr = ContactRelr.ContactCode;
-      end;
+      CredManr.OfficialSerNr = CUr.Code;
     end;
   //CUST-BEGIN
     if (nonblank(CUr.LangCode)) then begin

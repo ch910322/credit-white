@@ -13,7 +13,7 @@ external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetB
 external procedure SetupLoanInvoice(record CredManVc,record CredManSetBlock,var record IVVc,Date,Date,Date,Boolean,Boolean,string,Integer,Boolean);
 external inner procedure IPPastePayMode(var record IPVc);
 external procedure AddLateFees(record CredManVc,record CredManSetBlock,var record IVVc,Integer,val,array string);
-external updating procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean);
+external updating procedure BankFillIProws(var record IPVc,string,var string,var val,string,boolean,string,string,Boolean,longint);
 external procedure SetupOverdueLangCode(var record IVVc,record CredManVc);
 external updating procedure StoreLoanInvoice(var record IVVc,record CredManVc);
 external function Boolean CredManPMCodeMatches(string,Longint,Boolean);
@@ -717,6 +717,7 @@ begin
   record RcVc RepSpec;
   transaction Boolean gPDRAfterReciept;
   array longint ivtomail;
+  boolean testf;
   
   
   PrepareIPRecord(SMr,IPr);
@@ -738,19 +739,24 @@ begin
       if (CredManr.CustCode!=SMrw.Objects) then begin
         TrHs = false;
       end else begin
-        if (CredManr.OKFlag==1) then begin
-          latedays = 0;
-          lateamount = 0;
-          invdate = SMr.RegDate;
-          sd = GetLastInvoiceDate(CredManr,SMr.RegDate);
-          GetCredManOverdueInvoices(CredManr,CMb,invdate,sd,latedays,lateamount,lateformula,true,false,calcsd);
-          if (latedays>0 or lateamount>0) then begin
-            //Setup always new invoice
-            SetupLoanInvoice(CredManr,CMb,IVr,invdate,calcsd,invdate,true,false,"",2,true);
-            AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
-            SetupOverdueLangCode(IVr,CredManr);
-            StoreLoanInvoice(IVr,CredManr);
-            ivtomail[ivtomail.length] = IVr.SerNr;
+        testf = true;
+        if(SMrw.LongField01>-1 and CredManr.SerNr!=SMrw.LongField01)then begin testf = false; end;
+        
+        if(testf)then begin
+          if (CredManr.OKFlag==1) then begin
+            latedays = 0;
+            lateamount = 0;
+            invdate = SMr.RegDate;
+            sd = GetLastInvoiceDate(CredManr,SMr.RegDate);
+            GetCredManOverdueInvoices(CredManr,CMb,invdate,sd,latedays,lateamount,lateformula,true,false,calcsd);
+            if (latedays>0 or lateamount>0) then begin
+              //Setup always new invoice
+              SetupLoanInvoice(CredManr,CMb,IVr,invdate,calcsd,invdate,true,false,"",2,true);
+              AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
+              SetupOverdueLangCode(IVr,CredManr);
+              StoreLoanInvoice(IVr,CredManr);
+              ivtomail[ivtomail.length] = IVr.SerNr;
+            end;
           end;
         end;
       end;
@@ -765,7 +771,7 @@ begin
       end;
       instr = "";
       remsum = SMrw.DebVal;
-      BankFillIProws(IPr,CUr.Name,SMrw.CurncyCode,remsum,CUr.Code,nonblank(CUr.Code),instr,"",allf);
+      BankFillIProws(IPr,CUr.Name,SMrw.CurncyCode,remsum,CUr.Code,nonblank(CUr.Code),instr,"",allf,SMrw.LongField01);
     end;
   end;
 

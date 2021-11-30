@@ -75,6 +75,12 @@ external outer function Boolean IsOmegaCustomer;
 remote procedure CheckBuyOutAgreementOmega(record CredManVc,var record ORVc, Boolean);
 external procedure GetItemName(string,var string);
 remote function boolean CheckCsheduleLastBalance(record CredManVc);
+external inner procedure ExtractObj(string,var Integer,var string);
+remote function date CheckCsheduleLastStartPeriod(record CredManVc);
+external inner procedure ExtractObj(string,var Integer,var string);
+remote updating procedure newCreateRefinCredMan(record ORVc,record CredManVc,record CredManVc);
+external updating procedure CredManMakePaymentDsm;
+
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
 begin
@@ -755,6 +761,101 @@ begin
   return;
 end;
 
+
+global
+updating procedure CalculateRefinanceDo()
+begin
+  Integer wn,mwn;
+  record ORVc ORr,OR2r;
+  row ORVc ORrw,OR2rw;
+  record CredManVc CredManr;
+  integer pos,i,j,rwcnt,rwcnt2;
+  string 50 tstr;
+  boolean foundf;
+  
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,ORr);
+  mwn = MotherWindow(wn);
+
+  if (ORr.SerNr!=-1) then begin
+    CredManr.SerNr = ORr.SerNr;
+    if (ReadFirstMain(CredManr,1,true)) then begin
+    end;
+  end;
+
+  if (true) then begin 
+    threadremote.CheckBuyOutAgreementOmega(CredManr,ORr,false);
+    ORr.OYDescription = stringtoval(ORr.OYDescription,m4val) + ORr.CustVal03;
+    if(nonblank(ORr.OfficialSerNr))then begin
+      pos = 0;
+      tstr = "";
+      ExtractObj(ORr.OfficialSerNr,pos,tstr);
+      while(nonblank(tstr))begin
+        if(nonblank(tstr))then begin
+          CredManr.SerNr = stringtolongint(tstr);
+            
+          if(CredManr.SerNr!=ORr.SerNr)then begin
+            if(readfirstmain(CredManr,1,true))then begin
+              OR2r.OrdDate = ORr.OrdDate;
+              OR2r.SerNr = ORr.SerNr;
+              threadremote.CheckBuyOutAgreementOmega(CredManr,OR2r,false);
+              
+              ORr.Sum1 = ORr.Sum1 + OR2r.Sum1;
+              ORr.Sum2 = ORr.Sum2 + OR2r.Sum2;
+              ORr.Sum3 = ORr.Sum3 + OR2r.Sum3;
+              ORr.Sum4 = ORr.Sum4 + OR2r.Sum4;
+              ORr.Sum0 = ORr.Sum0+ OR2r.Sum0;
+              ORr.BaseSum4 = ORr.BaseSum4 + OR2r.BaseSum4;
+              ORr.TotGP = ORr.TotGP + OR2r.TotGP;
+              ORr.DiscSum = ORr.DiscSum + OR2r.DiscSum;
+              ORr.TAX1Sum = ORr.TAX1Sum + OR2r.TAX1Sum;
+              ORr.DownPayRedcd = ORr.DownPayRedcd + OR2r.DownPayRedcd;
+              ORr.DownPaySent = ORr.DownPaySent + OR2r.DownPaySent;
+              ORr.SumIncCom = ORr.SumIncCom + OR2r.SumIncCom;
+              ORr.RvrsVAT = ORr.RvrsVAT + OR2r.RvrsVAT;
+              ORr.TAX2Sum = ORr.TAX2Sum + OR2r.TAX2Sum;
+              ORr.FrPrice = ORr.FrPrice + OR2r.FrPrice;
+              ORr.PrepaidAmount = ORr.PrepaidAmount + OR2r.PrepaidAmount;
+              ORr.FrBase = ORr.FrBase + OR2r.FrBase;
+              ORr.OYDescription = stringtoval(ORr.OYDescription,m45val) + stringtoval(OR2r.OYDescription,m45val);
+              
+              rwcnt = matrowcnt(ORr);
+              rwcnt2 = matrowcnt(OR2r);
+              
+              for(i=0;i<rwcnt2;i=i+1)begin
+                matrowget(OR2r,i,OR2rw);
+                foundf = false;
+                for(j=0;j<rwcnt;j=j+1)begin
+                  matrowget(ORr,j,ORrw);
+                  if(OR2rw.ArtCode==ORrw.ArtCode)then begin
+                    ORrw.Sum = ORrw.Sum + OR2rw.Sum;
+                    matrowput(ORr,j,ORrw);
+                    foundf = true;
+                  end;
+                end;
+                if(!foundf)then begin
+                  matrowput(ORr,matrowcnt(ORr),OR2rw);
+                  rwcnt = matrowcnt(ORr);
+                end;
+              end;
+              
+            end;
+          end;
+        end;
+        ExtractObj(ORr.OfficialSerNr,pos,tstr);
+      end;
+
+    end;
+    PutWindowRecord(wn,ORr);
+  end;
+  SelectWindow(wn);
+
+  return;
+end;
+
+
+
 global
 updating procedure CalculateBuyOutValueOmega()
 begin
@@ -877,6 +978,140 @@ begin
   return;
 end;
 
+
+
+global
+updating procedure RefinanceButtonDo()
+begin
+  record ORVc ORr,OR2r;
+  Integer wn,mwn,pos,nwn;
+  record IVVc IVr,IV2r;
+  record CredManVc CredManr,tCredManr;
+  string 100 tstr,errstr;
+  array longint aIVnr;
+  record VIVc VIr;
+  record IVVc feeIVr;
+  val sum,sendsum;
+  boolean receiptf;
+  string 255 wstr,ivno;
+  
+  
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,ORr);
+  if(ORr.AcceptanceStatus==0)then begin
+    MessageBox(1058,"");
+    WindowFieldGoto(wn,ORr,-1,"AcceptanceStatus",true);
+    goto lRefinanceButtonDo;
+  end;
+  
+  if(ORr.CustVal04==0)then begin
+    MessageBox(1058,"");
+    WindowFieldGoto(wn,ORr,-1,"CustVal04",true);
+    goto lRefinanceButtonDo;
+  end;
+  
+  if(blank(ORr.SHShipSetToZero) or ORr.SHShipSetToZero==0)then begin
+    MessageBox(1058,"");
+    WindowFieldGoto(wn,ORr,-1,"SHShipSetToZero",true);
+    goto lRefinanceButtonDo;
+  end;
+  
+  if(blank(ORr.DelRecipientGLN))then begin
+    MessageBox(1058,"");
+    WindowFieldGoto(wn,ORr,-1,"DelRecipientGLN",true);
+    goto lRefinanceButtonDo;
+  end;
+  
+  if(blank(ORr.IntrastatTransCode))then begin
+    MessageBox(1058,"");
+    WindowFieldGoto(wn,ORr,-1,"IntrastatTransCode",true);
+    goto lRefinanceButtonDo;
+  end;
+  
+    CredManr.SerNr = ORr.SerNr;
+    if (ReadFirstMain(CredManr,1,true)) then begin
+      
+      pos = 0;
+      tstr = "";
+      ExtractObj(ORr.OfficialSerNr,pos,tstr);
+      while(nonblank(tstr))begin
+        if(nonblank(tstr))then begin
+          CredManr.SerNr = stringtolongint(tstr);
+          if (ReadFirstMain(CredManr,1,true)==false) then begin
+            messagebox(200265," #" & tstr);
+            goto lRefinanceButtonDo;
+          end;
+        end;
+      end;
+      
+      
+      newCreateRefinCredMan(ORr,tCredManr,CredManr);
+      if(tCredManr.SerNr>0)then begin
+        OpenWindow(nwn,1,0,"","",tCredManr);
+        if (CanCredManMakePayment(CredManr,errstr)) then begin
+          CredManMakePaymentRemote(CredManr,VIr,IV2r,ivno,sum,receiptf,sendsum);
+        end;
+      end;
+      
+      /*OR2r.SerNr = ORr.SerNr;
+      OR2r.OrdDate = ORr.OrdDate;
+      threadremote.CheckBuyOutAgreementOmega(CredManr,OR2r,false);
+      if (CanTerminateWithDate(CredManr,OR2r.OrdDate)) then begin
+        OR2r.SumIncCom = ORr.SumIncCom;
+        OR2r.RvrsVAT = ORr.RvrsVAT;
+        DoBuyOutAgreement(CredManr,OR2r.OrdDate,false,IVr,OR2r);
+        if (IVr.SerNr>0) then begin
+          aIVnr[aIVnr.length] = IVr.SerNr;
+          //OpenWindow("IVDClass",1,0,"","",IVr);
+        end;
+        CloseWindow(wn);
+        if(nonblanK(ORr.OfficialSerNr))then begin
+          pos = 0;
+          tstr = "";
+          ExtractObj(ORr.OfficialSerNr,pos,tstr);
+          while(nonblank(tstr))begin
+            if(nonblank(tstr))then begin
+              CredManr.SerNr = stringtolongint(tstr);
+              if (ReadFirstMain(CredManr,1,true)) then begin
+                OR2r.SerNr = stringtolongint(tstr);
+                OR2r.OrdDate = ORr.OrdDate;
+                recordnew(IVr);
+                threadremote.CheckBuyOutAgreementOmega(CredManr,OR2r,false);
+                if (CanTerminateWithDate(CredManr,ORr.OrdDate)) then begin
+                  OR2r.SumIncCom = blankval;
+                  OR2r.RvrsVAT = blankval;
+                  DoBuyOutAgreement(CredManr,ORr.OrdDate,false,IVr,OR2r);
+                  if (IVr.SerNr>0) then begin
+                    aIVnr[aIVnr.length] = IVr.SerNr;
+                    //OpenWindow("IVDClass",1,0,"","",IVr);
+                  end;
+                end;
+              end;
+            end;
+            ExtractObj(ORr.OfficialSerNr,pos,tstr);
+          end;
+        end;
+      
+        newCreateRefinCredMan(ORr,tCredManr,CredManr);
+        if(tCredManr.SerNr>0)then begin
+          OpenWindow(nwn,1,0,"","",tCredManr);
+          if (CanCredManMakePayment(CredManr,errstr)) then begin
+            CredManMakePaymentRemote(CredManr,VIr,IV2r,ivno,sum,receiptf,sendsum);
+          end;
+        end;
+      
+      end else begin
+        MessageBox(200274,"");
+      end;*/
+    end;
+
+lRefinanceButtonDo:;
+
+  return;
+end;
+
+
 //same as CredManBuyoutWClassProceed, except ORVc is used
 global
 updating procedure BuyOutAgreementYesNoWClassYes()
@@ -978,6 +1213,73 @@ begin
   return;
 end;
 
+
+function integer CalcMonthsBetween(date sd, date ed)
+begin
+  integer res;
+  date tmpdate;
+  
+    tmpdate = sd;
+    if(sd<ed)then begin
+      while(tmpdate<ed)begin
+        tmpdate = addmonth(tmpdate,1);
+        res = res + 1;
+      end;
+    end else begin
+      res = 0;
+    end;
+  
+  CalcMonthsBetween = res;
+return;
+end;
+
+procedure calcPauseData(record CredManVc CredManr,var record RcVc RepSpec)
+begin
+  Integer wn;
+  Date td;
+  record CMInvoicingBlock CIb;
+  record ORVc ORr;
+  val newbal;
+  
+  ORr.OrdDate = RepSpec.d1;
+  threadremote.CheckBuyOutAgreementOmega(CredManr,ORr,false);
+  RepSpec.ObjStr = ORr.BaseSum4;//"Balance"
+  RepSpec.Stext = ORr.Sum1;
+  RepSpec.FirstAcc = ORr.TotGP;
+  RepSpec.AccStr = ORr.DownPaySent;
+  RepSpec.Notation = ORr.InvMark;
+  RepSpec.TransStr = ORr.Sum2;
+  RepSpec.f5 = ORr.Sum2 - ORr.CustVal01;//"Added to New Balance"
+  RepSpec.f9 = ORr.CustVal02;
+  
+  RepSpec.f6 = ORr.CustVal01;
+  
+  RepSpec.f7 = ORr.PrepaidAmount;//prepayments
+  
+  if(RepSpec.vals3==0 and RepSpec.vals4==0)then begin
+    newbal = ORr.BaseSum4;
+  end else begin
+    newbal = ORr.BaseSum4 + RepSpec.vals4 + (ORr.Sum2 - ORr.CustVal01);
+    if(RepSpec.Custf==1)then begin//Revert flag value - if ticked!!!
+      newbal = newbal - ORr.PrepaidAmount;
+    end;
+  end;
+  RepSpec.f8 = newbal;
+  RepSpec.wholemonthf = CalcMonthsBetween(RepSpec.d1,CredManr.endDate);
+  RepSpec.flags[2] = 1;
+  
+  RepSpec.flags[1] = 1;
+  BlockLoad(CIb);
+  RepSpec.f2 = CIb.FirstInvPayDeal;
+  RepSpec.f3 = CurrentUser;
+  RepSpec.f4 = "";
+  GetItemName(CIb.ProlongItem,RepSpec.f4);
+  
+  
+return;
+end;
+
+
 global
 procedure PauseCredManDsm()
 begin
@@ -986,6 +1288,7 @@ begin
   record CredManVc CredManr;
   Date td;
   record CMInvoicingBlock CIb;
+  record ORVc ORr;
   
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
@@ -994,14 +1297,8 @@ begin
       MessageBox(200233,"");
     end else begin
       threadremote.GetPauseCredManNextDate(CredManr,td);
-      //RepSpec.vals1 = CredManr.ProlongMonths;
       RepSpec.d1 = td;
-      RepSpec.flags[1] = 1;
-      BlockLoad(CIb);
-      RepSpec.f2 = CIb.FirstInvPayDeal;
-      RepSpec.f3 = CurrentUser;
-      RepSpec.f4 = "";
-      GetItemName(CIb.ProlongItem,RepSpec.f4);
+      calcPauseData(CredManr,RepSpec);      
       OpenWindow("PauseCredManWClass",0,wn,"","",RepSpec);
     end;
   end;
@@ -1071,10 +1368,12 @@ begin
   Boolean res,setf,closedf;
   record IVVc IVr;
   Integer err;
+  boolean scenario;
 
   wn = CurWindow;
   DeselectWindow(wn,true);
   GetWindowRecord(wn,RepSpec);
+  
   //if (RepSpec.long1>0) then begin
     mwn = MotherWindow(wn);
     if (WindowState(mwn)==Rs_Normal) then begin
@@ -1082,6 +1381,21 @@ begin
         MessageBox(200264,"");
         goto LPauseCredManWClassPause;
       end;
+      if(RepSpec.vals3==0 and RepSpec.vals4==0 and nonblank(RepSpec.f6))then begin
+        if(RepSpec.wholemonthf==0)then begin
+          MessageBox(1058,"");
+          WindowFieldGoto(wn,RepSpec,-1,"wholemonthf",true);
+          goto LPauseCredManWClassPause;
+        end;
+      end;
+      if(RepSpec.flags[2]==1)then begin
+        if(blank(RepSpec.f9) or stringtoval(RepSpec.f9,m4val)==0)then begin
+          MessageBox(1058,"");
+          WindowFieldGoto(wn,RepSpec,-1,"f9",true);
+          goto LPauseCredManWClassPause;
+        end;
+      end;
+      
       GetWindowRecord(mwn,CredManr);
       DoPauseCredMan(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr,RepSpec.f1,err);
       if (res) then begin
@@ -1559,24 +1873,6 @@ begin
   return;
 end;
 
-global
-function Boolean PauseCredManWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
-begin
-  Boolean res;
-  record RcVc RepSpec;
-
-  switch (fieldname) begin
-    case "vals0":
-      DeselectWindow(wn,true);
-      GetWindowRecord(wn,RepSpec);
-      RepSpec.vals1 = RepSpec.vals0;
-      PutWindowRecord(wn,RepSpec);
-  end;
-
-  PauseCredManWClassAfterEditField = res;
-  return;
-end;
-
 
 procedure RefinCredMan(Integer type)
 begin
@@ -1643,13 +1939,16 @@ begin
   record RcVc RepSpec;
   record CredManVc CredManr;
   Integer wn;
+  record ORVc ORr;
 
   wn = CurWindow;
   if (WindowState(wn)==Rs_Normal) then begin
     GetWindowRecord(wn,CredManr);
-    RepSpec.long1 = CredManr.SerNr;
-    RepSpec.flags[29] = wn;
-    OpenWindow("RefinCredManWClass",0,0,"","",RepSpec);
+    //RepSpec.long1 = CredManr.SerNr;
+    //RepSpec.flags[29] = wn;
+    ORr.HashKeyVersion = 1;
+    ORr.SerNr = CredManr.SerNr;
+    OpenWindow("RefinCredManWClass",0,0,"","",ORr);
   end;
 
   return;
@@ -2314,7 +2613,11 @@ begin
     CSr.CredManNr = CredManr.SerNr;
     if (ReadFirstMain(CSr,1,true)) then begin
       RepSpec.long1 = CredManr.SerNr;
-      OpenWindow("SchedYesNoWClass",0,0,"","",RepSpec);
+      if(CSr.DontRecalculate==0)then begin
+        OpenWindow("SchedYesNoWClass",0,0,"","",RepSpec);
+      end else begin
+        messagebox(200311,"");
+      end;
     end else begin
       GenerateAgreementScheduleTask(CredManr,false,true);
     end;
@@ -2503,12 +2806,43 @@ begin
   return;
 end;
 
+
+function boolean CheckUserAccessGroupForCredMan(record CMInterfaceSetBlock CMIb)
+begin
+record UserVc USr;
+boolean res;
+integer pos;
+string 100 tstr;
+
+  res = false;
+  
+  if(nonblank(CMIb.AccGroups))then begin
+    USr.Code = currentuser;
+    if(readfirstmain(USr,1,true))then begin
+      pos = 0;
+      ExtractObj(CMIb.AccGroups,pos,tstr);
+      while(nonblank(tstr))begin
+        if(nonblank(tstr))then begin
+          if(setinset(tstr,USr.AccessGroup))then begin
+            res = true;
+          end;
+        end;
+        ExtractObj(CMIb.AccGroups,pos,tstr);
+      end;
+    end;
+  end;
+  
+  CheckUserAccessGroupForCredMan = res;
+return;
+end;
+
 global
 function Boolean CredManDClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
 begin
   Boolean res;
   record CredManVc CredManr;
- 
+  record CMInterfaceSetBlock CMIb;
+  
   res = false;
   if (wnst==2) then begin//Rs_update
     switch (fieldname) begin
@@ -2523,6 +2857,30 @@ begin
         if (left(fn,6)=="Surety") then begin
           res = true;
         end;
+    end;
+  end;
+  
+  // Checking of grant access to edit fields anyway
+  if(CredManr.OKFlag==1 or CredManr.Approved==1)then begin
+    blockload(CMIb);
+    if(CheckUserAccessGroupForCredMan(CMIb))then begin
+      switch (fieldname) begin
+        case "SalesMan":if(CMIb.AllovChngSalesman==1)then begin res = true; end;
+        case "Surety....":
+        case "ForcePayDeal": if(CMIb.AllovChngFrcPayTer==1)then begin res = true; end;
+        case "OtherConditions": if(CMIb.AllovChngOtherCond==1)then begin res = true; end;
+        case "endDate": if(CMIb.AllovChngEndDate==1)then begin res = true; end;
+        case "TransDate": if(CMIb.AllovChngAgrDate==1)then begin res = true; end;
+        case "OrderClass": if(CMIb.AllovChngOrdClass==1)then begin res = true; end;
+        case "OverduePercentage": if(CMIb.AllovChngOvrdPerc==1)then begin res = true; end;
+        case "BuyoutFeeMonths": if(CMIb.AllovChngPremTermMon==1)then begin res = true; end;
+        case "BuyoutFeePrc": if(CMIb.AllovChngPremTermFee==1)then begin res = true; end;
+        case "StdProlongFee": if(CMIb.AllovChngStdProlFee==1)then begin res = true; end;
+        case "StdProlongPrc": if(CMIb.AllovChngStdProlFeePrc==1)then begin res = true; end;
+      end;
+      if(left(fieldname,6)=="Surety")then begin
+        if(CMIb.AllovChngSuretyInf==1)then begin res = true; end;
+      end;
     end;
   end;
   
@@ -3501,7 +3859,7 @@ begin
   end else begin
     StopAlert("CheckBuyoutValueOmega CredManNr=-1");
   end;
-  ;
+
   ORr.SumIncCom = CredManr.LetterOfDemand;
   //ORr.RvrsVAT = CredManr.InsuranceCost; open insurance invoices instead
   PutWindowRecord(wn,ORr);
@@ -3510,6 +3868,39 @@ begin
   CheckBuyoutValueOmegaWClassOnOpenWindow = false;
   return;
 end;
+
+
+global
+updating function Boolean RefinCredManWClassOnOpenWindow(Integer wn)
+begin
+  record ORVc ORr;
+  record CredManVc CredManr;
+  Integer mwn;
+  
+  GetWindowRecord(wn,ORr);
+  ORr.OrdDate = CurrentDate;
+  ORr.InvMark = 1;
+  ORr.ShipMark = 1;
+
+  if (ORr.SerNr!=-1) then begin
+    CredManr.SerNr = ORr.SerNr;
+    if (ReadFirstMain(CredManr,1,true)) then begin end;
+  end else begin
+    StopAlert("CheckBuyoutValueOmega CredManNr=-1");
+  end;
+
+  ORr.SumIncCom = CredManr.LetterOfDemand;
+  ORr.DelRecipientGLN = CredManr.CustCode;
+  ORr.CustVal04 = CredManr.IntRate;
+  ORr.AcceptanceStatus = CredManr.MonthlyPaymentDay;
+  
+  PutWindowRecord(wn,ORr);
+  CalculateBuyOutValue;
+
+  RefinCredManWClassOnOpenWindow = false;
+  return;
+end;
+
 
 function Boolean CheckBuyoutValueOmegaWClassSumIncComEFAfter(Integer wn,integer changedf)
 begin
@@ -3566,6 +3957,88 @@ begin
   return;
 end;
 
+
+
+function boolean PauseCredManWClassd1EFAfter(integer wn,integer changed)
+begin
+  record RcVc RepSpec;
+  integer mwn;
+  record CredManVc CredManr;
+  date tmpdate;
+  
+  if(changed>0)then begin
+    getwindowrecord(wn,RepSpec);
+    mwn = motherwindow(wn);
+    getwindowrecord(mwn,CredManr);
+    tmpdate = CheckCsheduleLastStartPeriod(CredManr);
+    if(tmpdate>RepSpec.d1)then begin
+      RepSpec.d1 = tmpdate;
+    end;
+    calcPauseData(CredManr,RepSpec);
+    putwindowrecord(wn,RepSpec);
+  end;
+  PauseCredManWClassd1EFAfter = true;
+return;
+end;
+
+function boolean recalcPause(integer wn,integer changed)
+begin
+  record RcVc RepSpec;
+  integer mwn;
+  record CredManVc CredManr;
+  date tmpdate;
+  
+  if(changed>0)then begin
+    getwindowrecord(wn,RepSpec);
+    mwn = motherwindow(wn);
+    getwindowrecord(mwn,CredManr);
+    calcPauseData(CredManr,RepSpec);
+    putwindowrecord(wn,RepSpec);
+  end;
+  recalcPause = true;
+return;
+end;
+
+
+global
+function Boolean PauseCredManWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+  record RcVc RepSpec;
+  
+  res = true;
+  if (changed!=0) then begin
+    switch (fieldname) begin
+      case "d1": res = PauseCredManWClassd1EFAfter(wn,changed);//"Letter of Demand"
+      case "vals3": res = recalcPause(wn,changed);
+      case "vals4": res = recalcPause(wn,changed);
+      case "vals1": res = recalcPause(wn,changed);
+      case "vals2": res = recalcPause(wn,changed);
+      case "f9":
+      GetWindowRecord(wn,RepSpec);
+      RepSpec.f9 = stringtoval(RepSpec.f9,M4Val);
+      PutWindowRecord(wn,RepSpec);
+    end;
+  end;
+  PauseCredManWClassAfterEditField = res;
+  return;
+end;
+
+
+
+global procedure PauseCredManWClassRecalculate()
+begin
+  integer wn;
+  
+  wn = curwindow;
+  deselectwindow(wn,true);
+  recalcPause(wn,1);
+  
+return;
+end;
+
+
+
 global
 procedure ManualExtraFeeWClassOnOpenWindow(Integer wn)
 begin
@@ -3597,5 +4070,62 @@ begin
   end;
   PutWindowRecord(wn,RepSpec);   
   LManualExtraFeeWClassAfterEditField:;
+  return;
+end;
+
+
+global
+function string 255 CredManFinishColumn(record CredManVc CredManr)
+begin
+  date res;
+  
+  logtext(0,CredManr.SerNr);
+  res = CredManr.endDate;
+  if(nonblankdate(CredManr.FinishDate))then begin
+    res = CredManr.FinishDate;
+  end;
+  
+  CredManFinishColumn = res;
+  return;
+end;
+
+
+
+global
+function Boolean RefinCredManWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+  record ORVc ORr,oldORr;
+  Integer num;
+  record CredManTypeVc CMTr;
+  
+ 
+  res = true;
+  if(changed>0)then begin
+    if (fieldname=="RvrsVAT") begin
+      getwindowrecord(wn,ORr);
+      GetPrevWindowRecord(wn,oldORr);
+      ORr.OYDescription = stringtoval(ORr.OYDescription,m4val) - oldORr.RvrsVAT + ORr.RvrsVAT;
+      putwindowrecord(wn,ORr);
+    end;
+    if (fieldname=="SumIncCom") begin
+      getwindowrecord(wn,ORr);
+      GetPrevWindowRecord(wn,oldORr);
+      ORr.OYDescription = stringtoval(ORr.OYDescription,m4val) - oldORr.SumIncCom + ORr.SumIncCom;
+      putwindowrecord(wn,ORr);
+    end;
+    if (fieldname=="IntrastatTransCode") begin
+      getwindowrecord(wn,ORr);
+      CMTr.Code = ORr.IntrastatTransCode;
+      if(readfirstmain(CMTr,1,true))then begin
+        ORr.CustVal04 = CMTr.IntRate;
+        //ORr.TREOExpDate = CMTr.MonthlyPaymentDay;
+      end;
+      putwindowrecord(wn,ORr);
+    end;
+  end;
+  
+
+  RefinCredManWClassAfterEditField = res;
   return;
 end;

@@ -34,6 +34,36 @@ L99:;
   return;
 end;
 
+function
+Boolean CheckCustCatCode(string custcat,record IPVc IPr)
+begin
+  Boolean res;
+  row IPVc IPrw;
+  Integer i,rwcnt;
+  record CUVc CUr;
+  
+  res = false;
+  rwcnt = MatRowCnt(IPr);
+  for (i=0; i<rwcnt; i=i+1) begin
+    MatRowGet(IPr,i,IPrw);
+    if (nonblank(IPrw.CustCode)) then begin
+      CUr.Code = IPrw.CustCode;
+      if(readfirstmain(CUr,1,true))then begin
+        if(nonblank(CUr.Classification))then begin
+          if(setinset(custcat,CUr.Classification))then begin
+            res = true;
+            goto L999;
+          end;
+        end;
+      end;
+    end;
+  end;  
+L999:;  
+  CheckCustCatCode = res;
+  return;
+end;
+
+
 global
 procedure IPRn(record RcVc RepSpec)
 BEGIN
@@ -67,6 +97,7 @@ BEGIN
   record CheckVc Checkr;
   string 255 wrofacc;
   record IVVc IVr;
+  record CUVc CUr;// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 04 11 2021 y. at 1:54:41 PM
 
   BlockLoad(bascur);
   TrHs = false;
@@ -196,6 +227,12 @@ BEGIN
           testf = false;
         end;
       end;
+      if (nonblank(RepSpec.f16) and blank(RepSpec.AccStr)) then begin
+        if (CheckCustCatCode(RepSpec.f16,IPr)==false) then begin
+          testf = false;
+        end;
+      end;
+            
       //CUST-BEGIN
       if (nonblank(RepSpec.f15)) then begin
         if (CheckIPCredManNr(RepSpec.f15,IPr)==false) then begin
@@ -250,6 +287,14 @@ BEGIN
         if (nonblank(RepSpec.AccStr)) then begin
           if (RepSpec.AccStr<>IPrw.CustCode) then begin
             testf = false;
+          end;
+        end; 
+        if (nonblank(RepSpec.f16) and blank(RepSpec.AccStr)) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 04 11 2021 y. at 1:54:33 PM
+          CUr.Code = IPrw.CustCode;
+          if(readfirstmain(CUr,1,true))then begin
+            if(!setinset(RepSpec.f16,CUr.Classification))then begin
+              testf = false;
+            end;
           end;
         end;  
         if (nonblank(RepSpec.f15)) then begin

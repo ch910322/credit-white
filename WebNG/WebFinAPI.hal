@@ -1329,6 +1329,10 @@ begin
     LAr.ContacteMail = email;
     LAr.ContactMobile = phone;
     if (InsertContactName(LAr)) then begin end;
+    if(nonblank(phone) and LAr.ContactMobile!=phone)then begin
+      LAr.ContactMobile = phone;
+    end;
+    
     LAr.Sum = t;
     err = B2BLoanApplicationVcRecordCheck(LAr,fakeLAr,Rs_Insert,0);
     if (err==0) then begin //otherwise SerNr=-1

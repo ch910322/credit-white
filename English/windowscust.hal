@@ -114,7 +114,8 @@ begin
     RlColKey(310,310,"Cust.",CustCode,false,TypeCustCode);
     RlColKey(380,380,"Name",Addr0,false,TypeName);
     RlColKey(-270,-270,"Start",startDate,false,TypestartDate);
-    RlColKey(-180,-180,"End",endDate,false,TypeendDate);
+    //RlColKey(-180,-180,"End",endDate,false,TypeendDate);
+    CalculatedColumn(-180,-180,"End","CredManFinishColumn",false);
     RlColKey(-90,-90,"Sum",InvSum4,false,TypeInvSum4);
   end;
   if(ISb.AgreeListClassType==1)then begin//
@@ -124,7 +125,8 @@ begin
     RlColKey(210,210,"Cust.",CustCode,false,TypeCustCode);
     RlColKey(280,280,"Name",Addr0,false,TypeName);
     RlColKey(-340,-340,"Start",startDate,false,TypestartDate);
-    RlColKey(-270,-270,"End",endDate,false,TypeendDate);
+    //RlColKey(-270,-270,"End",endDate,false,TypeendDate);
+    CalculatedColumn(-270,-270,"End","CredManFinishColumn",false);
     RlColKey(-180,-180,"Sum",InvSum4,false,TypeInvSum4);
     CalculatedColumn(-90,-90,"Status","CredMangetStatusText",false);
   end;
@@ -724,24 +726,47 @@ end;
 
   WindowBegin("Register Agreement Changes",PauseCredManWClass,CGother,RcType);
   UseView(RcVc);
-  SetWRect(20,80,400,360);
+  SetWRect(20,80,470,660);
   AutoSizeWindow(false);  
   h = 150; h2 = 250; v=450;
   EditFieldTL(h,v=6,120,"Changes Start Date",M4Date,Normal,0,d1,false,PasteCurDate);
   EditFieldTL(h,v+=vs,120,"Pause Months",M4Qty,Normal,0,vals0,false,0);
   EditFieldTL(h,v+=vs,120,"Prolong Months",M4Qty,Normal,0,vals1,false,0);
   EditFieldTL(h,v+=vs,120,"New Rate",M4Rate,Normal,0,vals3,false,0);
-  EditFieldTL(h,v+=vs,120,"Extra Value",M4Rate,Normal,0,vals4,false,0);
+  EditField(h,v+=vs,100,"Balance",ViewOnly,ObjStr,false,0);//====================Balance
+  EditFieldTL(h,v+=vs,100,"Extra Value",M4Rate,Normal,0,vals4,false,0);
+  EditField(h,v+=vs,100,"Interest Amount",ViewOnly,Stext,false,0);//====================Interest Amount
+  EditField(h,v+=vs,100,"Current Period Interest",ViewOnly,FirstAcc,false,0);//====================Current Period Interest
+  EditField(h,v+=vs,100,"Credited Interest",ViewOnly,AccStr,false,0);//====================Credited Interest
+  CheckBox(h+140,v,0,"Credit Interest",Notation);//====================Credit Interest
+  EditField(h,v+=vs,100,"Overdue invoices",ViewOnly,TransStr,false,0);//====================Overdue invoices
+  EditField(h,v+=vs,100,"Added to New Balance",ViewOnly,f5,false,0);//====================Added to New Balance
+  EditField(h,v+=vs,100,"Added to Future Fees",ViewOnly,f6,false,0);//====================Added to Future Feesvals4  
+  EditField(h,v+=vs,100,"Future Fees Period",Normal,wholemonthf,false,0);//====================Future Fees Period
+  EditField(h,v+=vs,100,"Prolongation Fee",Normal,f9,false,0);//====================Future Fees Period
+  CheckBox(h+140,v,0,"Issue Prolong Invoice",flags[2]);
+  
+  
+  EditField(h,v+=vs,100,"Prepayments",ViewOnly,f7,false,0);//=====================Prepayments
+  CheckBox(h+140,v,0,"Reduce from Balance",Custf);//"Reduce from Balance"
+  EditField(h,v+=vs,100,"New Balance",Normal,f8,false,0);//=====================Prepayments
+  
   EditField(h,v+=vs,100,"Change Purpose",Normal,f1,false,AgrChangesPurpSClass);
-  CheckBox(h,v+=vs,0,"Re-sign Schedule",flags[1]);
-  CheckBox(h,v+=vs,0,"Issue Prolong Invoice",flags[2]);
+  
+  
   if (IsOmegaCustomer) then begin
     EditFieldTL(h,v+=vs,50,"Payment Term",M4Code,Normal,20,f2,false,PDSClass);
     EditFieldTL(h,v+=vs,50,"Salesman",M4Code,Normal,20,f3,false,UserSClass);
     EditFieldTL(h,v+=vs,120,"Description",M4Str,Normal,60,f4,false,0);
   end;
-  CheckBox(h,v+=vs,0,"Prolong only when Invoice is paid",flags[3]);
+  CheckBox(h,v+=vs,0,"Re-sign Schedule",flags[1]);
+  CheckBox(h,v+=vs,0,"Prolong only when Prolongation Invoice is paid",flags[3]);
+  
+  HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassRecalculate","Recalculate");
+  v = v+vs;
   HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassPause","Register Changes");
+  v = v+vs;
+  HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassSendMail","Send e-mail");
   EndWindow;
   
   WindowBegin("Email Offer",EmailOfferWClass,CGother,RcType);
@@ -772,6 +797,74 @@ end;
   HalPushButton(h,v+=vs,h+120,v+20,"ManualExtraFeeWClassCreate","Create");
   EndWindow;
 
+
+
+  WindowBegin("Refinance Agreement",RefinCredManWClass,CGother,-);
+    UseView(ORVc);
+    h = 660;//380;
+    if (ShowBuyOutFee) then begin
+      h = h + 20;
+    end;
+    if (UseBuyoutSummary) then begin
+      h = h + 40;
+    end;
+    SetWRect(20,80,450,h);
+    AutoSizeWindow(false);  
+    h = 150; h2 = 250; v=450;
+    EditField(h,v=6,120,"Refinance Date",Normal,OrdDate,false,PasteCurDate);
+    EditField(h,v+=vs,120,"Refinanced Agreement",ViewOnly,SerNr,true,0);
+    EditField(h,v+=vs,120,"Additional Agreements",Normal,OfficialSerNr,true,CredManSClass);
+    EditField(h,v+=vs,120,"Principle Amount",ViewOnly,Sum0,true,0);
+    EditField(h,v+=vs,120,"Interest Amount",ViewOnly,Sum1,true,0);
+    EditField(h,v+=vs,120,"Overdue Invoices",ViewOnly,Sum2,true,0);
+    EditField(h,v+=vs,120,"of which Interest",ViewOnly,Sum3,true,0);
+    EditFieldTL(h,v+=vs,120,"of which Principle",M4Val,ViewOnly,255,Sum4,true,0);
+    EditFieldTL(h,v+=vs,120,"Balance",M4Val,ViewOnly,255,BaseSum4,true,0);
+    EditFieldTL(h,v+=vs,120,"Current Period Interest",M4Val,ViewOnly,255,TotGP,true,0);
+    EditFieldTL(h,v+=vs,120,"Future Fees",M4Val,ViewOnly,255,DiscSum,true,0);
+    EditFieldTL(h,v+=vs,120,"Other Open Fees",M4Val,ViewOnly,255,TAX1Sum,true,0);
+    EditFieldTL(h,v+=vs,120,"Open Overdue Fee Invoices",M4Val,ViewOnly,255,DownPayRedcd,true,0);
+    EditFieldTL(h,v+=vs,120,"Credited Interest",M4Val,ViewOnly,255,DownPaySent,true,0);
+    CheckBox(h+140,v,0,"Credit Interest",InvMark);
+
+
+    EditFieldTL(h,v+=vs,120,"Letter of Demand",M4Val,ViewOnly,20,SumIncCom,true,0);
+    EditFieldTL(h,v+=vs,120,"Insurance Cost",M4Val,ViewOnly,20,RvrsVAT,true,0);
+
+    if (ShowBuyOutFee) then begin
+      EditFieldTL(h,v+=vs,120,"Premature Term. Fee",M4Val,ViewOnly,255,TAX2Sum,true,0);
+    end;
+    EditFieldTL(h,v+=vs,120,"Not invoiced Overdues",M4Val,ViewOnly,255,FrPrice,true,0);
+    EditFieldTL(h,v+=vs,120,"Prepayments",M4Val,ViewOnly,255,PrepaidAmount,true,0);
+    CheckBox(h+140,v,0,"Include Prepayments",ShipMark);
+    EditFieldTL(h,v+=vs,120,"Last Invoice Value",M4Val,ViewOnly,0,FrBase,true,0);
+    CheckBox(h+140,v,0,"Reconcile",HashKeyVersion);
+    EditField(h,v+=vs,120,"Extra Value",Normal,CustVal03,true,0);
+    EditField(h,v+=vs,120,"Remaining Value",Normal,CustVal05,true,0);
+    
+    EditField(h,v+=vs,120,"New Agreement Value",ViewOnly,OYDescription,true,0);
+    
+    EditField(h,v+=vs,120,"New Agreement Type",Normal,IntrastatTransCode,true,CredManTypeSClass);
+    EditField(h,v+=vs,120,"Months",Normal,SHShipSetToZero,true,0);
+    EditField(h,v+=vs,120,"New Customer",Normal,DelRecipientGLN,true,0);
+    EditField(h,v+=vs,120,"New Payment Day",Normal,AcceptanceStatus,true,PasteCurDate);
+    EditField(h,v+=vs,120,"New Monthly Rate",Normal,CustVal04,true,0);
+    
+  //  EditFieldTL(h,v+=vs,120,"Last Invoice Value",M4Val,ViewOnly,0,vals1,true,0);
+  //  EditFieldTL(h,v+=vs,120,"Expected Payment",M4Val,ViewOnly,0,vals2,true,0);
+   /* StaticText(20,v+=40,"Other Open Fees Details",false);
+    MatrixBegin(20,vm=(v+=vs),-50,-70,-,10);
+    MatColTL(t=1,32,"Item",0,-1,ViewOnly,0,ArtCode,false,0);
+    MatColTL(t,100,"Description",0,-1,ViewOnly,0,Spec,false,0);
+    MatColTL(t,280,"Total",0,-1,ViewOnly,0,Sum,true,0);
+    EndMatrix;*/
+    v=-60;
+    HalPushButton(h=20,v,h+120,v+20,"CalculateRefinanceDo","Calculate");
+    HalPushButton(h2=h+140,v,h2+120,v+20,"RefinanceButtonDo","Refinance");
+    HalPushButton(h2=h+140,v+24,h2+120,v+20+24,"ReportDo","Report");
+  EndWindow;
+
+/* Old Window
   WindowBegin("Refinance Agreement",RefinCredManWClass,CGother,RcType);
   UseView(RcVc);
   SetWRect(20,80,240,235);
@@ -782,6 +875,8 @@ end;
   HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassTransfer","Transfer to Surety Provider");
   HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassPartial","Partial Buy-out");
   EndWindow;
+ */ 
+  
 
   WindowBegin("Refinance Agreement",RefinCredMan2WClass,CGother,RcType);
   UseView(RcVc);
@@ -2181,7 +2276,7 @@ begin
 
   WindowBegin("Receipt Entry",ReceiptEntryWClass,CGother,-);
   UseView(SMVc);
-  SetWRect(20,80,580,621);
+  SetWRect(20,80,680,621);
   h = 120; v = 27; h2 = 300; h3 = 480;
   vs = 20;
 	EditField(h,v=6,82,"Date",Normal,RegDate,false,PasteCurDate);
@@ -2189,7 +2284,8 @@ begin
 
   MatrixBegin(10,v+=40,-30,-60,-,100);
   MatCol(1,34,"Customer",0,Objects,false,CUSClass);
-  MatCol(1,124,"Name",0,Comment,false,0);
+  MatCol(1,124,"Agreement No.",0,LongField01,false,CredManSClass);
+  MatCol(1,224,"Name",0,Comment,false,0);
   MatCol(1,-180,"Amount",0,DebVal,false,0);
   MatCol(1,-70,"Currency",0,CurncyCode,false,CurncyCodeSClass);
   EndMatrix;
@@ -2328,6 +2424,7 @@ begin
   AutoSizeWindow(false);
   vs=20; h=120; vs2=16; hm=-100; h2 = 350;
   EditField(h,v=6,120,"Agreement",ViewOnly,CredManNr,false,0);
+  CheckBox(-160,v,0,"Do not recalculate",DontRecalculate);
   EditField(h,v+=vs,90,"Customer",ViewOnly,CustCode,false,CUSClass);
   EditField(h2,v,-40,"Name",ViewOnly,CustName,false,0);
   EditField(h,v+=vs,90,"Date",ViewOnly,TransDate,false,0);
@@ -3533,12 +3630,21 @@ end;
 window CMInterfaceSetTClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  real h,v,vs,v2,vs2,hm,h2;
+  real h,v,vs,v2,vs2,hm,h2,tilenr;
 
   WindowBegin("Credit Management Settings",CMInterfaceSetTClass,CGSbl,-);
   SetBlid(CMInterfaceSetBlock);
   SetWRect(20,80,670,298);
   Sizeable(-1,-1,0,0);
+  
+  Tile(0,30,false,"",DefCredManLoanType);
+  tilenr = 1;
+  
+  TileButton(tilenr,"Main"); tilenr = tilenr + 1;//Bk
+  TileButton(tilenr,"Cred. Agreement"); tilenr = tilenr + 1;//Bk
+  
+  tilenr = 1;
+  Tile(tilenr,320,false,tilenr,DefCredManLoanType);  tilenr = tilenr + 1;
   h = 100;
   vs = 20;
   if (HasBalloonLoanType) then begin//stupid workaround because EndFrame doens't work here
@@ -3578,6 +3684,22 @@ begin
   CheckBox(h,v+=vs,0,"Show 'Int. based on Money Transfer'",ShowRealInterestFlag);
   CheckBox(h,v+=vs,0,"Use Days In Month in Agreement",UseCredManDaysInMonth);
   CheckBox(h,v+=vs,0,"Manual Agreement Date",ManualAgreeDate);
+  Tile(tilenr,320,false,tilenr,DefCredManLoanType);  tilenr = tilenr + 1;
+  v = 6;
+  EditField(h,v+=vs,-20,"Person Groups",Normal,AccGroups,false,AccessSClass);
+  
+  CheckBox(h,v+=16,0,"Allow Changing Salesman",AllovChngSalesman);
+  CheckBox(h,v+=16,0,"Allow Changing Surety information",AllovChngSuretyInf);
+  CheckBox(h,v+=16,0,"Allow Changing Force Payment Terms",AllovChngFrcPayTer);
+  CheckBox(h,v+=16,0,"Allow Changing Other Conditions",AllovChngOtherCond);
+  CheckBox(h,v+=16,0,"Allow Changing End Date",AllovChngEndDate);
+  CheckBox(h,v+=16,0,"Allow Changing Agreement Date",AllovChngAgrDate);
+  CheckBox(h,v+=16,0,"Allow Changing Order Class",AllovChngOrdClass);
+  CheckBox(h,v+=16,0,"Allow Changing Overdue Percentage",AllovChngOvrdPerc);
+  CheckBox(h,v+=16,0,"Allow Changing Premature Term. Months",AllovChngPremTermMon);
+  CheckBox(h,v+=16,0,"Allow Changing Premature Term. Fee %",AllovChngPremTermFee);
+  CheckBox(h,v+=16,0,"Allow Changing Std. Prolongation Fee",AllovChngStdProlFee);
+  CheckBox(h,v+=16,0,"Allow Changing Std. Prolongation Fee %",AllovChngStdProlFeePrc);
   
   EndWindow;
 end;
@@ -4289,7 +4411,7 @@ begin
   real h,v,vs,vs2,hm,h2,vm;
   Integer tilenr;
   vs = 20;
-  WindowBegin("Buy-out Settings",CMBuyOutTClass,CGSbl,SRType);
+  WindowBegin("Buy-out and Change Settings",CMBuyOutTClass,CGSbl,SRType);
   SetBlid(CMBuyOutBlock);
   SetWRect(20,80,670,298);
   Sizeable(-1,-1,0,0);
@@ -4297,9 +4419,11 @@ begin
   EditField(h=180,v=6,100,"Buyout Paym. Term",Normal,BuyOutPayDeal,false,PDSClass); 
   EditField(h,v+=vs,100,"Premature Term. Item",Normal,BuyOutItem,false,INSClass);   
   EditField(h,v+=vs,100,"Premature Term. Principle",Normal,PremTermPrincpl,false,INSClass);
+  EditField(h,v+=vs,100,"Future Fee Item Class",Normal,FutFeeItemClass,false,DISClass);
+  EditField(h,v+=vs,100,"Future Fee Item",Normal,FutFeeItem,false,INSClass);
   CheckBox(h,v+=20,0,"Calculate Interest for Buy-Out Day",CalcIntBOday);
   CheckBox(h,v+=20,0,"Calculate Overdues for Buy-Out Day",CalcOvdBOday);  
-  
+  CheckBox(h,v+=20,0,"Invoice future fees",InvFutFees);
 
   EndWindow;
   return;

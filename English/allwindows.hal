@@ -789,6 +789,7 @@ begin
     if (th==h) then begin
       v = v + 30;
     end;
+    v = v + 30;
     HalPushButton(th,v,th+120,v+20,"CredManDClassMoneyReceivers","Money Receivers");
   end;
 
@@ -811,6 +812,7 @@ begin
   end;
 //CUST-END
   EditField(h2,v+=vs,82,"End Date",ViewOnly,endDate,false,PasteCurDate);
+  EditField(h2,v+=vs,82,"Finished Date",ViewOnly,FinishDate,false,0);
 //CUST-BEGIN
   if (UseDisburseUntil) then begin
     EditField(h2,v+=vs,82,"Disburse Until",Normal,DisburseUntil,false,PasteCurDate);
@@ -829,13 +831,7 @@ begin
   v = vm-vs;
 //CUST-BEGIN
   EditField(h3,v+=vs,72,"Order Class",Normal,OrderClass,false,OrderClassSClass);
-  if(IsNovitiCustomer)then begin
-    EditField(h4,v,70,"Finished",ViewOnly,FinishDate,false,0);
-  end;
   EditField(h3,v+=vs,72,"Overdue percentage",Normal,OverduePercentage,false,0);
-  if(!IsNovitiCustomer)then begin
-    EditField(h3+150,v,70,"Finished",ViewOnly,FinishDate,false,0);
-  end;
   if (UseBuyOutMonths) then begin
     EditField(h3,v+=vs,72,"Premature Term. Months",Normal,BuyoutFeeMonths,true,0);
   end else begin
@@ -1051,6 +1047,7 @@ begin
   EditField(h2,v=vm-20,-40,"Bank Code",Normal,BankCode,false,BankSClass);
   EditField(h2,v+=vs,-40,"Bank Name",Normal,BankName,false,0);
   EditField(h2,v+=vs,-40,"Bank Account",Normal,BankAccount,false,BankAccountSClass);
+  EditField(h2,v+=vs,-40,"Refinanced Agreements",Normal,RefinancedAgreements,false,0);
   if (IsNovitiCustomer) then begin
     EditField(h2,v+=vs,80,"Documents Signer",Normal,DocumentSigner,false,UserSClass);
   end;
@@ -3667,16 +3664,18 @@ begin
   WindowBegin("Specify Receipt Journal",IPRClass,CGRcW,RcType);
   SetWRect(20,80,450,310);
   vs = 20;
-  PeriodField(h=125,v=6,"Period");
+  PeriodField(h=135,v=6,"Period");
   EditFieldTL(h,v+=vs,150,"Receipt No.",   M4Str,Normal,30,f1,false,0);
   EditFieldTL(h,v+=vs ,20,"Payment Mode",M4UStr,Normal,2,f3,false,PMSClass);
   if (IsEnterprise) then begin
     EditFieldTL(h,v+=vs ,100,"Customer",M4UStr,Normal,20,AccStr,false,CUSClass);
+    EditFieldTL(h,v+=vs,150,"Customer Classification",M4UStr,Normal,200,f16,false,CClassSClass);
     EditFieldTL(h,v+=vs ,100,"Reference",M4Str,Normal,20,TransStr,false,0);
     EditFieldTL(h,v+=vs ,50,"Sign",M4UStr,Normal,10,f4,false,UserSClass);
   end;
   //CUST-BEGIN
   EditFieldTL(h,v+=vs,150,"Agreement Nr.",M4UStr,Normal,200,f15,false,CredManSClass);
+  
   //CheckBox(h,v+=16,0,"Show Agreement number",flags[25]); TODO?
   //CUST-END
   if (IsEnterprise) then begin

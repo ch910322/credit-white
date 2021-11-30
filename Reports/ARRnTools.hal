@@ -3,6 +3,36 @@ external inner procedure InvVat(Integer,Integer,Integer,Integer,string,val,var v
 external inner function Boolean FindAccPeriod(Date,var record AccPeriodr);
 external inner function LongInt CalcARRnColumnSpacing(LongInt,Integer,var LongInt,var LongInt,var LongInt);
 
+global
+function val GetCredHistOpenValueOnDate(Longint sernr,Date td)
+begin
+  record CredHistVc CredHistr,CredPayr;
+  val res;
+  Boolean TrHs;
+
+  CredHistr.SerNr = sernr;
+  if (ReadFirstMain(CredHistr,1,true)) then begin
+    res = CredHistr.Sum;
+    TrHs = true;
+    CredPayr.PreviousNr = CredHistr.SerNr;
+    while (LoopKey("PreviousNr",CredPayr,1,TrHs)) begin
+      if (CredPayr.PreviousNr!=CredHistr.SerNr) then begin
+        TrHs = false;
+      end else begin
+        if (CredPayr.TransDate<=td or blank(td)) then begin
+          if (CredPayr.RecordType==1 or CredPayr.RecordType==2 or CredPayr.RecordType==3) then begin
+            res = res - CredPayr.Sum;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  GetCredHistOpenValueOnDate = res;
+  return;
+end;
+
+
 procedure AddInvoiceToItemAged(var vector val vval,val tval,record IVVc IVr,var vector Boolean vItems,var vector Boolean vCust)
 begin
   val tmpval;
@@ -10,7 +40,27 @@ begin
   val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
   Integer i,rwcnt;
   val sum;
-
+  record CredHistVc CredHistr,CredHist2r;
+  boolean TrHs,TrHs2;
+  val t,tt;
+  vector val itemdebt;
+  date blankd;
+  
+  
+  
+  CredHistr.RecordNr = IVr.SerNr;
+  CredHistr.RecordType = 0;
+  TrHs = true;
+  while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+    if ((CredHistr.RecordNr!=IVr.SerNr) or (CredHistr.RecordType!=0)) then begin
+      TrHs = false;
+    end;
+    if (TrHs) then begin
+      t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
+      itemdebt[CredHistr.ArtCode] = itemdebt[CredHistr.ArtCode] + t;
+    end;
+  end;
+  
   tmpval = tval; 
 
   vCust[IVr.CustCode] = true;
@@ -18,11 +68,12 @@ begin
   for (i=0;i<rwcnt and tmpval>0;i=i+1) begin
     MatRowGet(IVr,i,IVrw);
     if (nonblank(IVrw.ArtCode)) then begin
-      InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
-      sum = IVrw.Sum;
-      if (IVr.InclVAT==0) then begin
-        sum = sum + vatval;
-      end;
+      //InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
+      sum = itemdebt[IVrw.ArtCode];
+      itemdebt[IVrw.ArtCode] = 0;
+      /*if (IVr.InclVAT==0) then begin
+        sum = sum + itemdebt[IVrw.ArtCode];
+      end;*/
       tmpval = tmpval - sum;
       if (tmpval<0) then begin
         sum = sum + tmpval;
@@ -337,7 +388,7 @@ begin
           if (totcols>6) then begin
             PrintAgedValue(9,v_s7[aCust[j] & ":" & aItems[i]]);
           end;
-
+          OutVal(1,0,v_s0[aCust[j] & ":" & aItems[i]]+v_s1[aCust[j] & ":" & aItems[i]]+v_s2[aCust[j] & ":" & aItems[i]]+v_s3[aCust[j] & ":" & aItems[i]]+v_s4[aCust[j] & ":" & aItems[i]]+v_s5[aCust[j] & ":" & aItems[i]]+v_s6[aCust[j] & ":" & aItems[i]]+v_s7[aCust[j] & ":" & aItems[i]],m4val,true);
           EndFormat;
           tots0 = tots0 + v_s0[aCust[j] & ":" & aItems[i]];
           tots1 = tots1 + v_s1[aCust[j] & ":" & aItems[i]];
@@ -376,6 +427,7 @@ begin
       if (totcols>6) then begin
         PrintAgedValue(9,tots7);
       end;
+      OutVal(1,0,tots0+tots1+tots2+tots3+tots4+tots5+tots6+tots7,m4val,true);// Edit ************************** BPI Ukraine - KramarAlexandr - 01, 22 11 2021 y. at 11:17:25 AM
       EndFormat;
       StartFormat(1);
       Gray_divider(0,1);
@@ -401,6 +453,7 @@ begin
   if (totcols>6) then begin
     PrintAgedValue(9,tots7_2);
   end;
+  OutVal(1,0,tots0_2+tots1_2+tots2_2+tots3_2+tots4_2+tots5_2+tots6_2+tots7_2,m4val,true);// Edit ************************** BPI Ukraine - KramarAlexandr - 01, 22 11 2021 y. at 11:17:25 AM
   
   return;
 end;
@@ -417,34 +470,5 @@ begin
   end;
 
   GetCredHistOpenValue = res;
-  return;
-end;
-
-global
-function val GetCredHistOpenValueOnDate(Longint sernr,Date td)
-begin
-  record CredHistVc CredHistr,CredPayr;
-  val res;
-  Boolean TrHs;
-
-  CredHistr.SerNr = sernr;
-  if (ReadFirstMain(CredHistr,1,true)) then begin
-    res = CredHistr.Sum;
-    TrHs = true;
-    CredPayr.PreviousNr = CredHistr.SerNr;
-    while (LoopKey("PreviousNr",CredPayr,1,TrHs)) begin
-      if (CredPayr.PreviousNr!=CredHistr.SerNr) then begin
-        TrHs = false;
-      end else begin
-        if (CredPayr.TransDate<=td or blank(td)) then begin
-          if (CredPayr.RecordType==1 or CredPayr.RecordType==2 or CredPayr.RecordType==3) then begin
-            res = res - CredPayr.Sum;
-          end;
-        end;
-      end;
-    end;
-  end;
-
-  GetCredHistOpenValueOnDate = res;
   return;
 end;

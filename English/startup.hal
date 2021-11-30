@@ -21,7 +21,7 @@ begin
   Setting("Credit Management Settings",CMApplicationSetTClass,modCredMan);
   Setting("Invoicing Settings",CMInvoicingTClass,modCredMan);
   Setting("Company Status",LACompStatusLClass,modCredMan);
-  Setting("Buy-out Settings",CMBuyOutTClass,modCredMan);
+  Setting("Buy-out and Change Settings",CMBuyOutTClass,modCredMan);
   Setting("Application Interest Rates",AppInterestRateTClass,modCredMan);
   Setting("Scoring Support",ScoringSupLClass,modCredMan);
   Setting("Agreement Properties",CredManPropertiesLClass,modCredMan);
@@ -333,6 +333,8 @@ begin
 
   /*IVInfoRn*/
   SString(200310,"Item Total Incl VAT");
+  
+  SString(200311,"Disallowed to recalculate, check Agreement Schedule");
   
   
   StrSetAdd(584);
