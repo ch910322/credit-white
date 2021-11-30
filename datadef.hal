@@ -1179,6 +1179,7 @@ begin
   RecordField(Surety4InvCust,M4Int,0,0);   
   RecordField(Surety5InvCust,M4Int,0,0);   
   RecordField(Surety6InvCust,M4Int,0,0);   
+  RecordField(RefinancedAgreements,M4Str,255,0);
   
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -2103,6 +2104,7 @@ begin
     RecordField(CustVal02,M4Val,0,0);//Buy-out
     RecordField(CustVal03,M4Val,0,0);//Buy-out
     RecordField(CustVal04,M4Val,0,0);//Buy-out
+    RecordField(CustVal05,M4Val,0,0);//Refinance Remaining Value
   EndRecordAdd;
 
   RecordBegin(CMPropertyVc,-,"");

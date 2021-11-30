@@ -3905,14 +3905,14 @@ begin
   if(ORr.InvMark==0 and ORr.DownPaySent>0)then begin
     ORr.FrBase = ORr.FrBase - ORr.TotGP;
     //ORr.FrBase = ORr.FrBase - ORr.TotGP;
-    ORr.OYDescription = ORr.FrBase + ORr.Sum2 + ORr.DownPayRedcd + ORr.Sum1;
+    ORr.OYDescription = ORr.FrBase + ORr.Sum2 + ORr.DownPayRedcd - vcalcval["OVDOPENINVOICED:" & feesItem] + ORr.Sum1;
 
   end else begin
     if(ORr.TotGP>0)then begin
       if(ORr.ShipMark==0)then begin
-        ORr.OYDescription = ORr.FrBase + ORr.Sum2 + ORr.DownPayRedcd;
+        ORr.OYDescription = ORr.FrBase + ORr.Sum2 + ORr.DownPayRedcd - vcalcval["OVDOPENINVOICED:" & feesItem];
       end else begin
-        ORr.OYDescription = ORr.FrBase + ORr.Sum2 + ORr.DownPayRedcd - ORr.PrepaidAmount;
+        ORr.OYDescription = ORr.FrBase + ORr.Sum2 + ORr.DownPayRedcd - vcalcval["OVDOPENINVOICED:" & feesItem] - ORr.PrepaidAmount;
       end;
     end else begin
       if(ORr.ShipMark==0)then begin

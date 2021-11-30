@@ -673,6 +673,10 @@ begin
   record CredManVc oldCredManr;
   
   RecordNew(CredManr);
+  CredManr.RefinancedAgreements = ORr.SerNr;
+  if(nonblank(ORr.OfficialSerNr))then begin
+    CredManr.RefinancedAgreements = CredManr.RefinancedAgreements & "," & CredManr.RefinancedAgreements;
+  end;
   CredManr.TransDate = ORr.OrdDate;
   CredManr.startDate = ORr.OrdDate;
   CredManr.FirstInvDate = ORr.OrdDate;

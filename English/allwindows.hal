@@ -1047,6 +1047,7 @@ begin
   EditField(h2,v=vm-20,-40,"Bank Code",Normal,BankCode,false,BankSClass);
   EditField(h2,v+=vs,-40,"Bank Name",Normal,BankName,false,0);
   EditField(h2,v+=vs,-40,"Bank Account",Normal,BankAccount,false,BankAccountSClass);
+  EditField(h2,v+=vs,-40,"Refinanced Agreements",Normal,RefinancedAgreements,false,0);
   if (IsNovitiCustomer) then begin
     EditField(h2,v+=vs,80,"Documents Signer",Normal,DocumentSigner,false,UserSClass);
   end;
