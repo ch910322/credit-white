@@ -576,7 +576,7 @@ begin
        matrowget(SMr,i+1,SM2rw);
        if(SMrw.RowSimStat==0 or SMrw.RowSimStat==6)then begin
           if(SM2rw.RowSimStat==0 or SM2rw.RowSimStat==6)then begin
-            if(SM2rw.ExtraComment<SMrw.ExtraComment)then begin
+            if(SM2rw.ExtraComment<SMrw.ExtraComment and nonblank(SM2rw.ExtraComment))then begin
               matrowput(SMr,i+1,SMrw);
               matrowput(SMr,i,SM2rw);
             end;
