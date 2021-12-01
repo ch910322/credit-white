@@ -10,14 +10,33 @@ begin
   date blankd;
   record ItemPriorityBlock IPb;
   row ItemPriorityBlock IPrw;
+  record CMItemPriorityVc IPr;
+  row CMItemPriorityVc IPrw1;
   integer i;
   vector boolean vitems;  
+  vector string 100 CTYPEIP;
+  record CredManTypeVc CMTr;
+  record CredManVc CredManr;
   
+  while(loopmain(CMTr,1,true))begin
+    CTYPEIP[CMTr.Code] = CMTr.ItemPriorityCode;
+    if(blank(CMTr.ItemPriorityCode))then begin
+      CTYPEIP[CMTr.Code] = "BLOCK";
+    end;
+  end;
+   CTYPEIP[""] = "BLOCK";
   
   blockload(IPb);
   for(i=0;i<matrowcnt(IPb);i=i+1)begin
     matrowget(IPb,i,IPrw);
-    vitems[IPrw.ArtCode] = true;
+    vitems["BLOCK:" & IPrw.ArtCode] = true;
+  end;
+  
+  while(loopmain(IPr,1,true))begin
+    for(i=0;i<matrowcnt(IPr);i=i+1)begin
+       matrowget(IPr,i,IPrw1);
+       vitems[IPr.Code & ":" & IPrw1.ArtCode] = true;
+    end;
   end;
   
   startreportnoheaderjob("Search wrong payments by invoices");
@@ -37,8 +56,12 @@ begin
         testf = false;
       end;
       
-      if(testf)then begin
       
+      if(testf)then begin
+        CredManr.SerNr = IVr.CustCredManNr;
+        readfirstmain(CredManr,1,true);
+        
+        
         ARr.InvoiceNr = IVr.SerNr;
         if(readfirstmain(ARr,1,true))then begin
           if(ARr.BookRVal<0)then begin
@@ -57,7 +80,7 @@ begin
           end;
 
           if (TrHs) then begin
-            if(vitems[CredHistr.ArtCode])then begin
+            if(vitems[CTYPEIP[CredManr.Type] & ":" & CredHistr.ArtCode])then begin
               testitem = true;
               t = t + GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
             end;
