@@ -443,7 +443,7 @@ end;
 3. sort in priority and make payments history records
 */
 global
-updating procedure FindUnpaidCredHist(record IPVc IPr,row IPVc IPrw,var array val arrCredManr,Integer rectype)
+updating procedure FindUnpaidCredHist(record IPVc IPr,row IPVc IPrw,var vector val arrCredManr,Integer rectype)
 begin
   record CredHistVc CredHistr;
   Boolean TrHs;
@@ -561,7 +561,7 @@ begin
   Integer i,rwcnt;
   row IPVc IPrw;
   record IVVc IVr;
-  array val arrCredManr;
+  vector val arrCredManr;
   record CredHistVc CredHistr;
 
   rwcnt = MatRowCnt(IPr);
