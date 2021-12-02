@@ -9,6 +9,7 @@ remote procedure PayModeBankAccCustSClassArrayOnOpen(var Array string,var Array 
 external inner procedure PasteFromSysList(Integer ,Integer);
 external inner procedure In2Period(var string,var Date,var Date);
 remote updating procedure ChangeReceiptCustomerRemote(record RcVc);
+remote updating procedure SplitLoanPaymentsInReceipt(record IPVc,Boolean);
 
 
 global
@@ -703,4 +704,16 @@ begin
     
   ReceiptConnectionChangeCustWClassAfterEditField = res;
   return;
+end;
+
+
+global updating procedure FixCredHistIPDsm()
+begin
+  record IPVc IPr;
+  
+  getwindowrecord(curwindow,IPr);
+  SplitLoanPaymentsInReceipt(IPr,false);
+  SplitLoanPaymentsInReceipt(IPr,true);
+  
+return;
 end;
