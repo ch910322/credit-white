@@ -454,7 +454,7 @@ begin
   array record ORVc arrORr;
   Longint histnr,credmannr;
   val tmpval;
-  
+
   if (IPrw.CredHistNr>0) then begin
     CredHistr.SerNr = IPrw.CredHistNr;
     if (ReadFirstMain(CredHistr,1,true)) then begin

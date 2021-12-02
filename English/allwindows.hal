@@ -4209,7 +4209,11 @@ begin
     end;
   end;
   vs = 20;
-
+  
+  if(currentuser=="EBS")then begin
+    SpecialMenu("Fix Cred Hist",' ',2,"FixCredHistIPDsm");
+  end;
+  
   if (GuiType==kGuiMetro) then begin // Temporarily disabled on Windows 8
     if (HasAddFee) then begin
       SpecialMenu("Add Fee",' ',2,"NewFeeIPDsm");
