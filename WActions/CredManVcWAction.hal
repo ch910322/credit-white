@@ -75,7 +75,6 @@ external outer function Boolean IsOmegaCustomer;
 remote procedure CheckBuyOutAgreementOmega(record CredManVc,var record ORVc, Boolean);
 external procedure GetItemName(string,var string);
 remote function boolean CheckCsheduleLastBalance(record CredManVc);
-external inner procedure ExtractObj(string,var Integer,var string);
 remote function date CheckCsheduleLastStartPeriod(record CredManVc);
 external inner procedure ExtractObj(string,var Integer,var string);
 remote updating procedure newCreateRefinCredMan(record ORVc,record CredManVc,record CredManVc);
@@ -763,7 +762,7 @@ end;
 
 
 global
-updating procedure CalculateRefinanceDo()
+procedure CalculateRefinanceDo()
 begin
   Integer wn,mwn;
   record ORVc ORr,OR2r;
@@ -994,6 +993,7 @@ begin
   val sum,sendsum;
   boolean receiptf;
   string 255 wstr,ivno;
+  record RefinAgreementVc RefAgrr;
   
   
   wn = CurWindow;
@@ -1043,15 +1043,15 @@ begin
             goto lRefinanceButtonDo;
           end;
         end;
+        ExtractObj(ORr.OfficialSerNr,pos,tstr);
       end;
-      
       
       newCreateRefinCredMan(ORr,tCredManr,CredManr);
       if(tCredManr.SerNr>0)then begin
-        OpenWindow(nwn,1,0,"","",tCredManr);
-        if (CanCredManMakePayment(CredManr,errstr)) then begin
-          CredManMakePaymentRemote(CredManr,VIr,IV2r,ivno,sum,receiptf,sendsum);
-        end;
+        OpenWindow("CredManDClass",0,0,"","",tCredManr);
+        //if (CanCredManMakePayment(CredManr,errstr)) then begin
+          //CredManMakePaymentRemote(CredManr,VIr,IV2r,ivno,sum,receiptf,sendsum);
+        //end;
       end;
       
       /*OR2r.SerNr = ORr.SerNr;
@@ -4100,31 +4100,36 @@ begin
   record ORVc ORr,oldORr;
   Integer num;
   record CredManTypeVc CMTr;
+  val temapval;
   
  
   res = true;
   if(changed>0)then begin
+    if (fieldname=="OrdDate") begin
+      CalculateRefinanceDo;
+    end;
     if (fieldname=="RvrsVAT") begin
       getwindowrecord(wn,ORr);
       GetPrevWindowRecord(wn,oldORr);
       ORr.OYDescription = stringtoval(ORr.OYDescription,m4val) - oldORr.RvrsVAT + ORr.RvrsVAT;
       putwindowrecord(wn,ORr);
     end;
-    if (fieldname=="SumIncCom") begin
-      getwindowrecord(wn,ORr);
-      GetPrevWindowRecord(wn,oldORr);
-      ORr.OYDescription = stringtoval(ORr.OYDescription,m4val) - oldORr.SumIncCom + ORr.SumIncCom;
-      putwindowrecord(wn,ORr);
-    end;
     if (fieldname=="IntrastatTransCode") begin
       getwindowrecord(wn,ORr);
       CMTr.Code = ORr.IntrastatTransCode;
       if(readfirstmain(CMTr,1,true))then begin
-        ORr.CustVal04 = CMTr.IntRate;
+        if(ORr.CustVal04==blankval)then begin
+          ORr.CustVal04 = CMTr.IntRate;
+        end;
         //ORr.TREOExpDate = CMTr.MonthlyPaymentDay;
       end;
       putwindowrecord(wn,ORr);
     end;
+    if (fieldname=="CustVal03") begin
+      CalculateRefinanceDo;      
+    end;
+    
+    
   end;
   
 

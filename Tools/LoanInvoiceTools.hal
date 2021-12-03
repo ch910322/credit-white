@@ -200,6 +200,13 @@ begin
                 reslang = CredManAddLangrw.InvOverdLangCode;
               end;
             end;
+            if(type=="AgreChangeLangCode")then begin
+              if(nonblanK(CredManAddLangrw.AgreChangeLangCode))then begin
+                res = true;
+                reslang = CredManAddLangrw.AgreChangeLangCode;
+              end;
+            end;
+            
             if(type=="CompensLangCode")then begin
               if(nonblanK(CredManAddLangrw.CompensLangCode))then begin
                 res = true;
@@ -655,11 +662,13 @@ begin
   record CredManTypeVc CMTr;
   row IVVc IVrw;
   integer i,rwcnt;
-  boolean overflag,invwithovd;
+  boolean overflag,invwithovd,agrchanginv;
   record CredManSetBlock CMb;
   string 20 reslang;
+  record CMInvoicingBlock CIb;
   
   blockload(CMb);
+  blockload(CIb);
     
   rwcnt = matrowcnt(IVr);
   for(i=0;i<rwcnt;i=i+1)begin
@@ -669,6 +678,9 @@ begin
     end;
     if(nonblank(IVrw.ArtCode) and IVrw.ArtCode!=CMb.LateFeeItem and IVrw.stp==1 and IVrw.Sum>0)then begin
       invwithovd = true;
+    end;
+    if(nonblank(IVrw.ArtCode) and IVrw.ArtCode==CIb.ProlongItem)then begin
+      agrchanginv = true;
     end;
   end;
   
@@ -688,6 +700,14 @@ begin
             IVr.LangCode = CMTr.InvOverdLangCode;
           end;
           if(getAdditionalLangCode(CredManr,"InvOverdLangCode",reslang))then begin
+            IVr.LangCode = reslang;
+          end;
+        end;
+        if(agrchanginv)then begin
+          if(nonblank(CMTr.AgreChangeLangCode))then begin
+            IVr.LangCode = CMTr.AgreChangeLangCode;
+          end;
+          if(getAdditionalLangCode(CredManr,"AgreChangeLangCode",reslang))then begin
             IVr.LangCode = reslang;
           end;
         end;
