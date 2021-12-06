@@ -1047,6 +1047,7 @@ begin
   EditField(h2,v=vm-20,-40,"Bank Code",Normal,BankCode,false,BankSClass);
   EditField(h2,v+=vs,-40,"Bank Name",Normal,BankName,false,0);
   EditField(h2,v+=vs,-40,"Bank Account",Normal,BankAccount,false,BankAccountSClass);
+  EditField(h2,v+=vs,-40,"Refinanced Agreements",Normal,RefinancedAgreements,false,0);
   if (IsNovitiCustomer) then begin
     EditField(h2,v+=vs,80,"Documents Signer",Normal,DocumentSigner,false,UserSClass);
   end;
@@ -1792,11 +1793,13 @@ begin
     EditField(h6+60,v,40,"",Normal,VekselisLangCode2,false,LangSClass);
   end;
   HalPushButton(h2+110,v+30,h2+200,v+53,"CredManDClassAddLanguages","Add. Languages");   
-  EditField(h2,v+=40,60,"Language",Normal,LangCode,false,LangSClass);
+  h2 = h2 + 50;
+  EditField(h2,v+=80,60,"Language",Normal,LangCode,false,LangSClass);
   EditField(h2,v+=vs,60,"First Invoice Language",Normal,LangCode2,false,LangSClass);
   EditField(h2,v+=vs,60,"Overdue Language",Normal,OverdueLangCode,false,LangSClass);
   EditField(h2,v+=vs,60,"Buyout Language",Normal,BuyOutLangCode,false,LangSClass);
   EditField(h2,v+=vs,60,"Invoice With Overdues Language",Normal,InvOverdLangCode,false,LangSClass);
+  EditField(h2,v+=vs,60,"Agreement Change Invoice Language",Normal,AgreChangeLangCode,false,LangSClass);
   
   if (UseCompensationInvoices) then begin
     EditField(h2,v+=vs,60,"Compensation Language",Normal,CompensLangCode,false,LangSClass);
@@ -4208,7 +4211,11 @@ begin
     end;
   end;
   vs = 20;
-
+  
+  if(currentuser=="EBS")then begin
+    SpecialMenu("Fix Cred Hist",' ',2,"FixCredHistIPDsm");
+  end;
+  
   if (GuiType==kGuiMetro) then begin // Temporarily disabled on Windows 8
     if (HasAddFee) then begin
       SpecialMenu("Add Fee",' ',2,"NewFeeIPDsm");

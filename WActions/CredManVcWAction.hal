@@ -75,7 +75,6 @@ external outer function Boolean IsOmegaCustomer;
 remote procedure CheckBuyOutAgreementOmega(record CredManVc,var record ORVc, Boolean);
 external procedure GetItemName(string,var string);
 remote function boolean CheckCsheduleLastBalance(record CredManVc);
-external inner procedure ExtractObj(string,var Integer,var string);
 remote function date CheckCsheduleLastStartPeriod(record CredManVc);
 external inner procedure ExtractObj(string,var Integer,var string);
 remote updating procedure newCreateRefinCredMan(record ORVc,record CredManVc,record CredManVc);
@@ -763,7 +762,7 @@ end;
 
 
 global
-updating procedure CalculateRefinanceDo()
+procedure CalculateRefinanceDo()
 begin
   Integer wn,mwn;
   record ORVc ORr,OR2r;
@@ -994,6 +993,7 @@ begin
   val sum,sendsum;
   boolean receiptf;
   string 255 wstr,ivno;
+  record RefinAgreementVc RefAgrr;
   
   
   wn = CurWindow;
@@ -1031,10 +1031,35 @@ begin
   
     CredManr.SerNr = ORr.SerNr;
     if (ReadFirstMain(CredManr,1,true)) then begin
-      OR2r.SerNr = ORr.SerNr;
+      
+      pos = 0;
+      tstr = "";
+      ExtractObj(ORr.OfficialSerNr,pos,tstr);
+      while(nonblank(tstr))begin
+        if(nonblank(tstr))then begin
+          CredManr.SerNr = stringtolongint(tstr);
+          if (ReadFirstMain(CredManr,1,true)==false) then begin
+            messagebox(200265," #" & tstr);
+            goto lRefinanceButtonDo;
+          end;
+        end;
+        ExtractObj(ORr.OfficialSerNr,pos,tstr);
+      end;
+      
+      newCreateRefinCredMan(ORr,tCredManr,CredManr);
+      if(tCredManr.SerNr>0)then begin
+        OpenWindow("CredManDClass",0,0,"","",tCredManr);
+        //if (CanCredManMakePayment(CredManr,errstr)) then begin
+          //CredManMakePaymentRemote(CredManr,VIr,IV2r,ivno,sum,receiptf,sendsum);
+        //end;
+      end;
+      
+      /*OR2r.SerNr = ORr.SerNr;
       OR2r.OrdDate = ORr.OrdDate;
       threadremote.CheckBuyOutAgreementOmega(CredManr,OR2r,false);
       if (CanTerminateWithDate(CredManr,OR2r.OrdDate)) then begin
+        OR2r.SumIncCom = ORr.SumIncCom;
+        OR2r.RvrsVAT = ORr.RvrsVAT;
         DoBuyOutAgreement(CredManr,OR2r.OrdDate,false,IVr,OR2r);
         if (IVr.SerNr>0) then begin
           aIVnr[aIVnr.length] = IVr.SerNr;
@@ -1054,6 +1079,8 @@ begin
                 recordnew(IVr);
                 threadremote.CheckBuyOutAgreementOmega(CredManr,OR2r,false);
                 if (CanTerminateWithDate(CredManr,ORr.OrdDate)) then begin
+                  OR2r.SumIncCom = blankval;
+                  OR2r.RvrsVAT = blankval;
                   DoBuyOutAgreement(CredManr,ORr.OrdDate,false,IVr,OR2r);
                   if (IVr.SerNr>0) then begin
                     aIVnr[aIVnr.length] = IVr.SerNr;
@@ -1076,7 +1103,7 @@ begin
       
       end else begin
         MessageBox(200274,"");
-      end;
+      end;*/
     end;
 
 lRefinanceButtonDo:;
@@ -4070,21 +4097,39 @@ global
 function Boolean RefinCredManWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
 begin
   Boolean res;
-  record ORVc ORr;
+  record ORVc ORr,oldORr;
   Integer num;
   record CredManTypeVc CMTr;
+  val temapval;
+  
  
   res = true;
   if(changed>0)then begin
+    if (fieldname=="OrdDate") begin
+      CalculateRefinanceDo;
+    end;
+    if (fieldname=="RvrsVAT") begin
+      getwindowrecord(wn,ORr);
+      GetPrevWindowRecord(wn,oldORr);
+      ORr.OYDescription = stringtoval(ORr.OYDescription,m4val) - oldORr.RvrsVAT + ORr.RvrsVAT;
+      putwindowrecord(wn,ORr);
+    end;
     if (fieldname=="IntrastatTransCode") begin
       getwindowrecord(wn,ORr);
       CMTr.Code = ORr.IntrastatTransCode;
       if(readfirstmain(CMTr,1,true))then begin
-        ORr.CustVal04 = CMTr.IntRate;
+        if(ORr.CustVal04==blankval)then begin
+          ORr.CustVal04 = CMTr.IntRate;
+        end;
         //ORr.TREOExpDate = CMTr.MonthlyPaymentDay;
       end;
       putwindowrecord(wn,ORr);
     end;
+    if (fieldname=="CustVal03") begin
+      CalculateRefinanceDo;      
+    end;
+    
+    
   end;
   
 

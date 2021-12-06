@@ -1179,6 +1179,7 @@ begin
   RecordField(Surety4InvCust,M4Int,0,0);   
   RecordField(Surety5InvCust,M4Int,0,0);   
   RecordField(Surety6InvCust,M4Int,0,0);   
+  RecordField(RefinancedAgreements,M4Str,255,0);
   
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -1368,7 +1369,7 @@ begin
   RecordField(BuyOutLangCode,M4Code,10,0);
   RecordField(InvOverdLangCode,M4Code,10,0);
   RecordField(ScheduleNoFeesLangCode,M4Code,10,0);
-
+  RecordField(AgreChangeLangCode,M4Code,10,0);
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
   ChangeMatrixField(vRebate,M4Rate,0,0);
@@ -2103,6 +2104,7 @@ begin
     RecordField(CustVal02,M4Val,0,0);//Buy-out
     RecordField(CustVal03,M4Val,0,0);//Buy-out
     RecordField(CustVal04,M4Val,0,0);//Buy-out
+    RecordField(CustVal05,M4Val,0,0);//Refinance Remaining Value
   EndRecordAdd;
 
   RecordBegin(CMPropertyVc,-,"");
@@ -2690,6 +2692,7 @@ begin
   ArrayField(BuyOutLangCode,M4Code,20,0);
   ArrayField(InvOverdLangCode,M4Code,20,0);
   ArrayField(CompensLangCode,M4Code,20,0);
+  ArrayField(AgreChangeLangCode,M4Code,20,0);
   EndArray;
   MainKeyBegin(CredManTypeCode,0);
   KeySegment(CredManTypeCode);
@@ -2747,6 +2750,25 @@ begin
   KeySegment(MailBoxName);
   KeySegment(LangCode);
   KeySegment(SerNr);
+  EndRecord;
+  
+  RecordBegin(RefinAgreementVc,-,"");// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 02 12 2021 y. at 3:14:42 PM
+  RecordField(NewCredNr,M4Long,0,0);
+  RecordField(RefinCredNr,M4Long,0,0);
+  RecordField(IsMain,M4Mark,0,0);
+  RecordField(TransDate,M4Date,0,0);
+  
+  MainKeyBegin(NewCredNr,0);
+  KeySegment(NewCredNr);
+  KeySegment(RefinCredNr);
+  KeyBegin(RefinCredNr);
+  KeySegment(RefinCredNr);
+  KeySegment(NewCredNr);
+  KeyBegin(MainRefinCredNr);
+  KeySegment(RefinCredNr);
+  KeySegment(IsMain);
+  KeySegment(NewCredNr);
+  
   EndRecord;
   
   BlockBegin(CMBuyOutBlock,-,"");

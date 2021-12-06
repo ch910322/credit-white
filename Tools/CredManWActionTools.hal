@@ -87,6 +87,7 @@ external inner function string 255 StrReplace(string,string,string);
 external function boolean getAdditionalLangCode(record CredManVc,string,var string);
 external function string 20 getAdditionalCredManLangCode(record CredManVc);
 external updating procedure CreditOpenInvoices(record CredManVc,Date,record ORVc);
+external inner procedure ExtractObj(string,var Integer,var string);
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -671,8 +672,17 @@ global
 updating procedure newCreateRefinCredMan(record ORVc ORr,var record CredManVc CredManr,record CredManVc tCredManr)
 begin
   record CredManVc oldCredManr;
+  record RefinAgreementVc RefAgrr;
+  integer pos;
+  string 100 tstr;
+
+  
   
   RecordNew(CredManr);
+  CredManr.RefinancedAgreements = ORr.SerNr;
+  if(nonblank(ORr.OfficialSerNr))then begin
+    CredManr.RefinancedAgreements = CredManr.RefinancedAgreements & "," & CredManr.RefinancedAgreements;
+  end;
   CredManr.TransDate = ORr.OrdDate;
   CredManr.startDate = ORr.OrdDate;
   CredManr.FirstInvDate = ORr.OrdDate;
@@ -689,15 +699,37 @@ begin
   CopyCredManSurety(CredManr,tCredManr);
   CredManr.LoanApplication = tCredManr.LoanApplication;
   CredManr.SerNr = NextSerNr("CredManVc",CredManr.startDate,-1,false,"");
-  CredManr.OKFlag = 1;
-  CredManr.Approved = 1;
+  CredManr.OKFlag = 0;
+  CredManr.Approved = 0;
   RecordInsert(CredManr,true);
   if(CredManr.SerNr>-1)then begin
-    recordcopy(oldCredManr,CredManr);
+    /*recordcopy(oldCredManr,CredManr);
     CredManr.SignAgreement = 1;
     CredManr.SignSchedule = 1;
     CredManr.Status = 2;
-    recordupdate(oldCredManr,CredManr,true);
+    recordupdate(oldCredManr,CredManr,true);*/
+    recordnew(RefAgrr);
+    RefAgrr.NewCredNr = CredManr.SerNr;
+    RefAgrr.RefinCredNr = ORr.SerNr;
+    RefAgrr.IsMain = 1;
+    RefAgrr.TransDate = ORr.OrdDate;
+    recordstore(RefAgrr,true);
+    
+    pos = 0;
+    tstr = "";
+    ExtractObj(ORr.OfficialSerNr,pos,tstr);
+    while(nonblank(tstr))begin
+      if(nonblank(tstr))then begin
+        recordnew(RefAgrr);
+        RefAgrr.NewCredNr = CredManr.SerNr;
+        RefAgrr.RefinCredNr = stringtolongint(tstr);
+        RefAgrr.IsMain = 0;
+        RefAgrr.TransDate = ORr.OrdDate;
+        recordstore(RefAgrr,true);
+      end;
+      ExtractObj(ORr.OfficialSerNr,pos,tstr);
+    end;
+    
   end;
     
   return;

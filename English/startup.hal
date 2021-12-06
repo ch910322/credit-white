@@ -30,6 +30,7 @@ begin
   Setting("Item Priority",ItemPriorityTClass,modCredMan);
   Setting("Item Priority List",CMItemPriorityLClass,modCredMan);
   Setting("Agreement Interface Settings",CMInterfaceSetTClass,modCredMan);
+  Setting("Refinanced Agreements",RefinAgreementLClass,modCredMan);
   
   Setting("Credit History Support",CredHistLClass,modCredMan);
   Setting("Reminders",SMSReminderLClass,modCredMan);

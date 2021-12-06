@@ -828,11 +828,11 @@ end;
     CheckBox(h+140,v,0,"Credit Interest",InvMark);
 
 
-    EditFieldTL(h,v+=vs,120,"Letter of Demand",M4Val,Normal,20,SumIncCom,true,0);
-    EditFieldTL(h,v+=vs,120,"Insurance Cost",M4Val,Normal,20,RvrsVAT,true,0);
+    EditFieldTL(h,v+=vs,120,"Letter of Demand",M4Val,ViewOnly,20,SumIncCom,true,0);
+    EditFieldTL(h,v+=vs,120,"Insurance Cost",M4Val,ViewOnly,20,RvrsVAT,true,0);
 
     if (ShowBuyOutFee) then begin
-      EditFieldTL(h,v+=vs,120,"Premature Term. Fee",M4Val,Normal,255,TAX2Sum,true,0);
+      EditFieldTL(h,v+=vs,120,"Premature Term. Fee",M4Val,ViewOnly,255,TAX2Sum,true,0);
     end;
     EditFieldTL(h,v+=vs,120,"Not invoiced Overdues",M4Val,ViewOnly,255,FrPrice,true,0);
     EditFieldTL(h,v+=vs,120,"Prepayments",M4Val,ViewOnly,255,PrepaidAmount,true,0);
@@ -840,6 +840,8 @@ end;
     EditFieldTL(h,v+=vs,120,"Last Invoice Value",M4Val,ViewOnly,0,FrBase,true,0);
     CheckBox(h+140,v,0,"Reconcile",HashKeyVersion);
     EditField(h,v+=vs,120,"Extra Value",Normal,CustVal03,true,0);
+    EditField(h,v+=vs,120,"Remaining Value",Normal,CustVal05,true,0);
+    
     EditField(h,v+=vs,120,"New Agreement Value",ViewOnly,OYDescription,true,0);
     
     EditField(h,v+=vs,120,"New Agreement Type",Normal,IntrastatTransCode,true,CredManTypeSClass);
@@ -857,8 +859,9 @@ end;
     MatColTL(t,280,"Total",0,-1,ViewOnly,0,Sum,true,0);
     EndMatrix;*/
     v=-60;
-    HalPushButton(h=20,v,h+120,v+20,"CalculateRefinanceDo","Calculate");
+    //HalPushButton(h=20,v,h+120,v+20,"CalculateRefinanceDo","Calculate");
     HalPushButton(h2=h+140,v,h2+120,v+20,"RefinanceButtonDo","Refinance");
+    HalPushButton(h2=h+140,v+24,h2+120,v+20+24,"ReportDo","Report");
   EndWindow;
 
 /* Old Window
@@ -4147,7 +4150,8 @@ begin
   MatCol(1,324,"Overdue Lang.",0,OverdueLangCode,false,LangSClass);
   MatCol(1,424,"Buyout Lang.",0,BuyOutLangCode,false,LangSClass);
   MatCol(1,524,"Inv. w. Overdue Lang.",0,InvOverdLangCode,false,LangSClass);
-  MatCol(1,624,"Comp. Lang.",0,CompensLangCode,false,LangSClass);
+  MatCol(1,624,"Agr. Ch. Inv. Lang.",0,AgreChangeLangCode,false,LangSClass);
+  MatCol(1,724,"Comp. Lang.",0,CompensLangCode,false,LangSClass);
   EndMatrix;
   EndWindow;
 end;
@@ -4459,5 +4463,39 @@ begin
   SetWRect(20,80,440,150);
   
   
+  EndWindow;
+end;
+
+
+window RefinAgreementDClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,h2,h4,v,vs;
+  WindowBegin("Refinaced Agreement",RefinAgreementDClass,CGview,ConfSignView);
+  DynamicWindow;
+  UseView(RefinAgreementVc);
+  SetWRect(20,80,450,280);
+  vs = 20;h = 170;h2 =  330;h4 = 500; v = 6;
+  SetWRect(64,80,250,250);
+  EditField(h,v=6,70,"New Agreement",Normal,NewCredNr,false,0);
+  EditField(h,v+=vs,70,"Ref. Agreement",Normal,RefinCredNr,false,0);
+  EditField(h,v+=vs,70,"Date",Normal,TransDate,false,0);
+  EditField(h,v+=vs,70,"Is Main",Normal,IsMain,false,0);
+  EndWindow;
+end;
+
+window RefinAgreementLClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+  begin
+WindowBegin("Refinaced Agreements",RefinAgreementLClass,CGmList,-);
+  Sizeable(-1,-1,0,0);
+  SetWRect(64,80,600,298);
+  SpawnClass(RefinAgreementDClass);
+  UseView(RefinAgreementVc);
+  RecordList(4,17,-21,-39);
+  RlColKey(4,4,"New Agreement",NewCredNr,false,NewCredNr);
+  RlColKey(101,101,"Ref. Agreement",RefinCredNr,false,RefinCredNr);
+  RlCol(-140,-140,"Date",RefinCredNr,false);
+  RlColKey(-70,-70,"Main",IsMain,false,MainRefinCredNr);
   EndWindow;
 end;
