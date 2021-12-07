@@ -713,6 +713,30 @@ begin
     RefAgrr.RefinCredNr = ORr.SerNr;
     RefAgrr.IsMain = 1;
     RefAgrr.TransDate = ORr.OrdDate;
+    
+    RefAgrr.PrincpleAmount = ORr.Sum0;
+    RefAgrr.IntegerstAmmount = ORr.Sum1;
+    RefAgrr.OverdueInv = ORr.Sum2;
+    RefAgrr.ofInt = ORr.Sum3;
+    RefAgrr.ofPrinc = ORr.Sum4;
+    RefAgrr.Balance = ORr.BaseSum4;
+    RefAgrr.CurPerInt = ORr.TotGP;
+    RefAgrr.FuturFee = ORr.DiscSum;
+    RefAgrr.OthopFee = ORr.TAX1Sum;
+    RefAgrr.OpenOvdFee = ORr.DownPayRedcd;
+    RefAgrr.CreditedInt = ORr.DownPaySent;
+    RefAgrr.CredIntMark = ORr.InvMark;
+    RefAgrr.LetterOfDem = ORr.SumIncCom;
+    RefAgrr.InsurCost = ORr.RvrsVAT;
+    RefAgrr.PremTermFee = ORr.TAX2Sum;
+    RefAgrr.NotInvOvds = ORr.FrPrice;
+    RefAgrr.Prepaym = ORr.PrepaidAmount;
+    RefAgrr.InclPrepFlag = ORr.ShipMark;
+    RefAgrr.LastInvValue = ORr.FrBase;
+    RefAgrr.ReconcilateFlag = ORr.HashKeyVersion;
+    RefAgrr.ExtraVal = ORr.CustVal03;
+    RefAgrr.RemainVal = ORr.CustVal05;
+    
     recordstore(RefAgrr,true);
     
     pos = 0;

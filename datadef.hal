@@ -2758,6 +2758,30 @@ begin
   RecordField(IsMain,M4Mark,0,0);
   RecordField(TransDate,M4Date,0,0);
   
+  //refinanceWindowMenu
+  RecordField(PrincpleAmount,m4val,0,0);
+  RecordField(IntegerstAmmount,m4val,0,0);
+  RecordField(OverdueInv,m4val,0,0);
+  RecordField(ofInt,m4val,0,0);
+  RecordField(ofPrinc,m4val,0,0);
+  RecordField(Balance,m4val,0,0);
+  RecordField(CurPerInt,m4val,0,0);
+  RecordField(FuturFee,m4val,0,0);
+  RecordField(OthopFee,m4val,0,0);
+  RecordField(OpenOvdFee,m4val,0,0);
+  RecordField(CreditedInt,m4Val,0,0);
+  RecordField(CredIntMark,m4int,0,0);
+  RecordField(LetterOfDem,m4val,0,0);
+  RecordField(InsurCost,m4val,0,0);
+  RecordField(PremTermFee,m4val,0,0);
+  RecordField(NotInvOvds,m4val,0,0);
+  RecordField(Prepaym,m4val,0,0);
+  RecordField(InclPrepFlag,m4int,0,0);
+  RecordField(LastInvValue,m4val,0,0);
+  RecordField(ReconcilateFlag,m4int,0,0);
+  RecordField(ExtraVal,m4val,0,0);
+  RecordField(RemainVal,m4val,0,0);
+  
   MainKeyBegin(NewCredNr,0);
   KeySegment(NewCredNr);
   KeySegment(RefinCredNr);
