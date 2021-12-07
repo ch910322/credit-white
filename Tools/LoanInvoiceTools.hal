@@ -4316,6 +4316,9 @@ begin
     if (IVrw.stp==kInvoiceRowTypeNormal and nonblank(IVrw.ArtCode))then begin
       InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
       IVrw.SumWithVAT = IVrw.Sum + vatval;
+      if(IVrw.SumAfterPrepayment==0)then begin
+        IVrw.SumAfterPrepayment = IVrw.SumWithVAT;
+      end;
       MatRowPut(IVr,i,IVrw);
     end;
   end;
