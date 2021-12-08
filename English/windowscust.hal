@@ -733,6 +733,7 @@ end;
   EditFieldTL(h,v+=vs,120,"Pause Months",M4Qty,Normal,0,vals0,false,0);
   EditFieldTL(h,v+=vs,120,"Prolong Months",M4Qty,Normal,0,vals1,false,0);
   EditFieldTL(h,v+=vs,120,"New Rate",M4Rate,Normal,0,vals3,false,0);
+  EditField(h,v+=vs,120,"New Type",Normal,f10,false,CredManTypeSClass);//======NEW Type
   EditField(h,v+=vs,100,"Balance",ViewOnly,ObjStr,false,0);//====================Balance
   EditFieldTL(h,v+=vs,100,"Extra Value",M4Rate,Normal,0,vals4,false,0);
   EditField(h,v+=vs,100,"Interest Amount",ViewOnly,Stext,false,0);//====================Interest Amount
@@ -2729,6 +2730,7 @@ begin
   EditField(h,v+=vs,150,"CredManNr",Normal,CredManNr,false,0);
   EditField(h,v+=vs,150,"RecalcSchedule",Normal,RecalcSchedule,false,0);
   EditField(h,v+=vs,150,"Extra Value",Normal,AddVal,false,0);
+  EditField(h,v+=vs,150,"New Type",Normal,NewType,false,CredManTypeSClass);
   EndWindow;
 end;
 
@@ -3774,6 +3776,7 @@ begin
   EditField(h,v+=vs,100,"Overdue Percentage",Normal,OverduePercentage,false,0);
   EditField(h,v+=vs,100,"Max Late Days",Normal,LateFeeDays,false,0);
   EditField(h,v+=vs,100,"Change Purpose",Normal,ChangePurpose,false,AgrChangesPurpSClass);
+  EditField(h,v+=vs,100,"New Type",Normal,NewType,false,CredManTypeSClass);
   //EditField(h,v+=vs,100,"Monthly Payment Day",Normal,MonthlyPaymentDay,false,0);
   EndWindow;
 end;

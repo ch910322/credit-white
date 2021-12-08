@@ -1298,6 +1298,7 @@ begin
     end else begin
       threadremote.GetPauseCredManNextDate(CredManr,td);
       RepSpec.d1 = td;
+      RepSpec.long1 = CredManr.SerNr;
       calcPauseData(CredManr,RepSpec);      
       OpenWindow("PauseCredManWClass",0,wn,"","",RepSpec);
     end;
@@ -4001,6 +4002,43 @@ begin
 return;
 end;
 
+function boolean PauseCredManWClassf10AfterEditField(integer wn, integer changed)
+begin
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  record CredManTypeVc CMTr,newCMTr;
+  boolean res;
+    
+  if(changed>0)then begin
+    getwindowrecord(wn,RepSpec);
+    if(nonblank(RepSpec.f10))then begin
+      newCMTr.Code = RepSpec.f10;
+      if(readfirstmain(newCMTr,1,true))then begin
+        CredManr.SerNr = RepSpec.long1;
+        if(readfirstmain(CredManr,1,true))then begin
+          CMTr.Code = CredManr.Type;
+          if (ReadFirstMain(CMTr,1,true)) then begin
+            if(CMTr.LoanType!=newCMTr.LoanType)then begin
+               messagebox(200312,"");
+               RepSpec.f10 = "";
+               putwindowrecord(wn,RepSpec);
+               res = false;
+            end;
+          end;
+        end;
+      end else begin
+        messagebox(1290," " & RepSpec.f10);
+        RepSpec.f10 = "";
+        putwindowrecord(wn,RepSpec);
+        res = false;
+      end;
+    end;
+  end;
+  
+  PauseCredManWClassf10AfterEditField = res;
+  
+return;
+end;
 
 global
 function Boolean PauseCredManWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
@@ -4020,6 +4058,7 @@ begin
       GetWindowRecord(wn,RepSpec);
       RepSpec.f9 = stringtoval(RepSpec.f9,M4Val);
       PutWindowRecord(wn,RepSpec);
+      case "f10": res = PauseCredManWClassf10AfterEditField(wn,changed);
     end;
   end;
   PauseCredManWClassAfterEditField = res;

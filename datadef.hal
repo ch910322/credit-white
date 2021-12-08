@@ -2086,6 +2086,7 @@ begin
   RecordField(RecalcSchedule,M4Int,0,0);
   RecordField(IntRate,M4Rate,0,0);
   RecordField(AddVal,M4Val,0,0);
+  RecordField(NewType,M4Code,40,0);
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(CredManPaid);
@@ -2448,6 +2449,7 @@ begin
   RecordField(LateFeeDays,M4Long,0,0);
   RecordField(EndDate,M4Date,0,0);
   RecordField(ChangePurpose,M4Code,20,0);
+  RecordField(NewType,M4Code,20,0);
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(CredManDate);

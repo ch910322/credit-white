@@ -1282,7 +1282,10 @@ begin
   Date sd,ed;
   record CredManChangeVc Changer;
   Boolean TrHs;
-
+  record CredManTypeVc CMTr;
+  
+  logtext(0,"LoadAgreementChangesToDateLoadAgreementChangesToDateLoadAgreementChangesToDateLoadAgreementChangesToDate");
+  
   sd = CredManr.startDate;
   ed = AddMonth(CredManr.FirstInvDate,calculatedmonths-1);
 
@@ -1294,6 +1297,13 @@ begin
       TrHs = false;
     end else begin
       if (Changer.OKFlag==1) then begin
+        if(nonblank(Changer.NewType))then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 08 12 2021 y. at 10:46:12 AM
+          CredManr.Type = Changer.NewType;
+          CMTr.Code = CredManr.Type;
+          if(readfirstmain(CMTr,1,true))then begin
+            CredManr.InstalmentType = CMTr.InstalmentType;
+          end;
+        end;
         if (nonblank(Changer.IntRate)) then begin
           CredManr.IntRate = Changer.IntRate;
           CredManr.PrincipleDelayInterest = Changer.IntRate;
@@ -1394,7 +1404,10 @@ begin
   Date sd,ed;
   record CredManChangeVc Changer;
   Boolean TrHs;
-
+  record CredManTypeVc CMTr;
+  
+  logtext(0,"LoadAgreementChangesMonthlyLoadAgreementChangesMonthlyLoadAgreementChangesMonthly");
+  
   sd = AddMonth(invdat,-1);
   ed = invdat;
   
@@ -1406,6 +1419,13 @@ begin
       TrHs = false;
     end else begin
       if (Changer.OKFlag==1) then begin
+        if(nonblank(Changer.NewType))then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 08 12 2021 y. at 10:46:12 AM
+          CredManr.Type = Changer.NewType;
+          CMTr.Code = CredManr.Type;
+          if(readfirstmain(CMTr,1,true))then begin
+            CredManr.InstalmentType = CMTr.InstalmentType;
+          end;
+        end;
         if (nonblank(Changer.IntRate)) then begin
           CredManr.IntRate = Changer.IntRate;
           CredManr.PrincipleDelayInterest = Changer.IntRate;
