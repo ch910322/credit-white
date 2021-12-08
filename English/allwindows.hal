@@ -1438,6 +1438,7 @@ begin
   SpecialMenu("Customer Status",'e',7,"CUStatusCredManDsm");
   //SpecialMenu("Print Payment Schedule",' ',8,"PaymentScheduleCredManDsm");
   SpecialMenu("Register Agreement Changes",' ',8,"PauseCredManDsm");
+  SpecialMenu("Partial Buy-out",' ',8,"RefinCredManWClassPartialDsm");
   SpecialMenu("Credit Agreement Info",'I',0,"CredManInfoDsm");
   SpecialMenu("Refinance Agreement",' ',9,"RefinCredManDsm");
   SpecialMenu("Generate Schedule",' ',9,"CredManGenScheduleDsm");

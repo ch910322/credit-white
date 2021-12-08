@@ -486,7 +486,7 @@ begin
       CreditOpenInvoices(CredManr,td,ORr);
       //messagebox(0,"B");
     end;
-    
+    goto lDoPauseCredManEnd;
 //  if (nonblank(td)) then begin
     //RecordCopy(oldCredManr,CredManr);
     tprolongmonths = prolongmonths;
@@ -528,7 +528,7 @@ begin
     end;
     //RecordUpdate(oldCredManr,CredManr,true);
 //  end;
-
+lDoPauseCredManEnd:;
   return;
 end;
 

@@ -1242,6 +1242,7 @@ begin
   val newbal;
   
   ORr.OrdDate = RepSpec.d1;
+  ORr.InvMark = RepSpec.Notation;
   threadremote.CheckBuyOutAgreementOmega(CredManr,ORr,false);
   RepSpec.ObjStr = ORr.BaseSum4;//"Balance"
   RepSpec.Stext = ORr.Sum1;
@@ -1299,7 +1300,8 @@ begin
       threadremote.GetPauseCredManNextDate(CredManr,td);
       RepSpec.d1 = td;
       RepSpec.long1 = CredManr.SerNr;
-      calcPauseData(CredManr,RepSpec);      
+      RepSpec.Notation = 1; 
+      calcPauseData(CredManr,RepSpec);     
       OpenWindow("PauseCredManWClass",0,wn,"","",RepSpec);
     end;
   end;
@@ -1933,6 +1935,35 @@ begin
   OpenWindow("RefinCredManPartialWClass",0,0,"","",RepSpec);
   return;
 end;
+
+global
+procedure RefinCredManWClassPartialDsm()
+begin
+  Integer wn;
+  record RcVc RepSpec,RepSpec2;
+  record CredManVc CredManr;
+  
+  wn = CurWindow;
+  recordnew(RepSpec);
+  GetWindowRecord(wn,CredManr);
+  //GetWindowRecord(wn,RepSpec);
+  
+  //GetRefinCredManData(RepSpec.long1,type,RepSpec2,true);
+  
+  
+  RepSpec.d1 = currentdate;
+  RepSpec.long1 = CredManr.SerNr;
+  RepSpec.flags[1] = 1;
+  RepSpec.flags[2] = 1;
+  RepSpec.flags[29] = wn;
+
+  //CloseWindow(wn);
+  OpenWindow("RefinCredManPartialWClass",0,0,"","",RepSpec);
+  return;
+end;
+
+
+
 
 global
 procedure RefinCredManDsm()
