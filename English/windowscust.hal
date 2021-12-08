@@ -3696,7 +3696,7 @@ begin
   CheckBox(h,v+=16,0,"Allow Changing Surety information",AllovChngSuretyInf);
   CheckBox(h,v+=16,0,"Allow Changing Force Payment Terms",AllovChngFrcPayTer);
   CheckBox(h,v+=16,0,"Allow Changing Other Conditions",AllovChngOtherCond);
-  CheckBox(h,v+=16,0,"Allow Changing End Date",AllovChngEndDate);
+  CheckBox(h,v+=16,0,"Allow Changing Finished Date",AllovChngEndDate);
   CheckBox(h,v+=16,0,"Allow Changing Agreement Date",AllovChngAgrDate);
   CheckBox(h,v+=16,0,"Allow Changing Order Class",AllovChngOrdClass);
   CheckBox(h,v+=16,0,"Allow Changing Overdue Percentage",AllovChngOvrdPerc);

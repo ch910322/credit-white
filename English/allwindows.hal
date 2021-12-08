@@ -811,8 +811,8 @@ begin
     EditField(h2,v+=vs,82,"First Invoice Date",Normal,FirstInvDate,false,PasteCurDate);
   end;
 //CUST-END
-  EditField(h2,v+=vs,82,"End Date",Normal,endDate,false,PasteCurDate);
-  EditField(h2,v+=vs,82,"Finished Date",ViewOnly,FinishDate,false,0);
+  EditField(h2,v+=vs,82,"End Date",ViewOnly,endDate,false,PasteCurDate);
+  EditField(h2,v+=vs,82,"Finished Date",Normal,FinishDate,false,0);
 //CUST-BEGIN
   if (UseDisburseUntil) then begin
     EditField(h2,v+=vs,82,"Disburse Until",Normal,DisburseUntil,false,PasteCurDate);

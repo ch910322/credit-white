@@ -2871,7 +2871,7 @@ begin
         case "Surety....":
         case "ForcePayDeal": if(CMIb.AllovChngFrcPayTer==1)then begin res = true; end;
         case "OtherConditions": if(CMIb.AllovChngOtherCond==1)then begin res = true; end;
-        case "endDate": if(CMIb.AllovChngEndDate==1)then begin res = true; end;
+        case "FinishDate": if(CMIb.AllovChngEndDate==1)then begin res = true; end;
         case "TransDate": if(CMIb.AllovChngAgrDate==1)then begin res = true; end;
         case "OrderClass": if(CMIb.AllovChngOrdClass==1)then begin res = true; end;
         case "OverduePercentage": if(CMIb.AllovChngOvrdPerc==1)then begin res = true; end;
