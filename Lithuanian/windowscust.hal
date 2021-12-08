@@ -2029,6 +2029,7 @@ begin
   EditField(h,v+=vs,50,"PaidFlag",Normal,PaidFlag,false,0);
   EditField(h,v+=vs,50,"CredManNr",Normal,CredManNr,false,0);
   EditField(h,v+=vs,50,"RecalcSchedule",Normal,RecalcSchedule,false,0);
+  EditField(h,v+=vs,50,"New Type",Normal,NewType,false,CredManTypeSClass);
   EndWindow;
 end;
 

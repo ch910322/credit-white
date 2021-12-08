@@ -20,7 +20,7 @@ begin
 end; 
 
 global
-updating procedure CreatePauseRecord(Longint sernr,Date td,val months,val months2,val rate,val addval,Integer okflag,string purpose)
+updating procedure CreatePauseRecord(record RcVc RepSpec, Longint sernr,Date td,val months,val months2,val rate,val addval,Integer okflag,string purpose)
 begin
   record CredManChangeVc Changer;
   
@@ -34,6 +34,7 @@ begin
   Changer.OKFlag = okflag;
   Changer.CredManNr = sernr;
   Changer.ChangePurpose = purpose;
+  Changer.NewType = RepSpec.f10;
   RecordStore(Changer,true);
 
   return;

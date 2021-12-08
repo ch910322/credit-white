@@ -1243,6 +1243,7 @@ begin
   val newbal;
   
   ORr.OrdDate = RepSpec.d1;
+  ORr.InvMark = RepSpec.Notation;
   threadremote.CheckBuyOutAgreementOmega(CredManr,ORr,false);
   RepSpec.ObjStr = ORr.BaseSum4;//"Balance"
   RepSpec.Stext = ORr.Sum1;
@@ -1299,7 +1300,9 @@ begin
     end else begin
       threadremote.GetPauseCredManNextDate(CredManr,td);
       RepSpec.d1 = td;
-      calcPauseData(CredManr,RepSpec);      
+      RepSpec.long1 = CredManr.SerNr;
+      RepSpec.Notation = 1; 
+      calcPauseData(CredManr,RepSpec);     
       OpenWindow("PauseCredManWClass",0,wn,"","",RepSpec);
     end;
   end;
@@ -1933,6 +1936,35 @@ begin
   OpenWindow("RefinCredManPartialWClass",0,0,"","",RepSpec);
   return;
 end;
+
+global
+procedure RefinCredManWClassPartialDsm()
+begin
+  Integer wn;
+  record RcVc RepSpec,RepSpec2;
+  record CredManVc CredManr;
+  
+  wn = CurWindow;
+  recordnew(RepSpec);
+  GetWindowRecord(wn,CredManr);
+  //GetWindowRecord(wn,RepSpec);
+  
+  //GetRefinCredManData(RepSpec.long1,type,RepSpec2,true);
+  
+  
+  RepSpec.d1 = currentdate;
+  RepSpec.long1 = CredManr.SerNr;
+  RepSpec.flags[1] = 1;
+  RepSpec.flags[2] = 1;
+  RepSpec.flags[29] = wn;
+
+  //CloseWindow(wn);
+  OpenWindow("RefinCredManPartialWClass",0,0,"","",RepSpec);
+  return;
+end;
+
+
+
 
 global
 procedure RefinCredManDsm()
@@ -2872,7 +2904,7 @@ begin
         case "Surety....":
         case "ForcePayDeal": if(CMIb.AllovChngFrcPayTer==1)then begin res = true; end;
         case "OtherConditions": if(CMIb.AllovChngOtherCond==1)then begin res = true; end;
-        case "endDate": if(CMIb.AllovChngEndDate==1)then begin res = true; end;
+        case "FinishDate": if(CMIb.AllovChngEndDate==1)then begin res = true; end;
         case "TransDate": if(CMIb.AllovChngAgrDate==1)then begin res = true; end;
         case "OrderClass": if(CMIb.AllovChngOrdClass==1)then begin res = true; end;
         case "OverduePercentage": if(CMIb.AllovChngOvrdPerc==1)then begin res = true; end;
@@ -4002,6 +4034,43 @@ begin
 return;
 end;
 
+function boolean PauseCredManWClassf10AfterEditField(integer wn, integer changed)
+begin
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  record CredManTypeVc CMTr,newCMTr;
+  boolean res;
+    
+  if(changed>0)then begin
+    getwindowrecord(wn,RepSpec);
+    if(nonblank(RepSpec.f10))then begin
+      newCMTr.Code = RepSpec.f10;
+      if(readfirstmain(newCMTr,1,true))then begin
+        CredManr.SerNr = RepSpec.long1;
+        if(readfirstmain(CredManr,1,true))then begin
+          CMTr.Code = CredManr.Type;
+          if (ReadFirstMain(CMTr,1,true)) then begin
+            if(CMTr.LoanType!=newCMTr.LoanType)then begin
+               messagebox(200312,"");
+               RepSpec.f10 = "";
+               putwindowrecord(wn,RepSpec);
+               res = false;
+            end;
+          end;
+        end;
+      end else begin
+        messagebox(1290," " & RepSpec.f10);
+        RepSpec.f10 = "";
+        putwindowrecord(wn,RepSpec);
+        res = false;
+      end;
+    end;
+  end;
+  
+  PauseCredManWClassf10AfterEditField = res;
+  
+return;
+end;
 
 global
 function Boolean PauseCredManWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
@@ -4021,6 +4090,7 @@ begin
       GetWindowRecord(wn,RepSpec);
       RepSpec.f9 = stringtoval(RepSpec.f9,M4Val);
       PutWindowRecord(wn,RepSpec);
+      case "f10": res = PauseCredManWClassf10AfterEditField(wn,changed);
     end;
   end;
   PauseCredManWClassAfterEditField = res;

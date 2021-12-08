@@ -336,6 +336,7 @@ begin
   SString(200310,"Item Total Incl VAT");
   
   SString(200311,"Disallowed to recalculate, check Agreement Schedule");
+  SString(200312,"New Agreement Type must be same type as previous");
   
   
   StrSetAdd(584);
