@@ -711,6 +711,7 @@ begin
   DeselectWindow(wn,true);
   GetWindowRecord(wn,RepSpec);
   mwn = MotherWindow(wn);
+  CloseWindow(wn);
   if (mwn>0) then begin
     GetWindowRecord(mwn,CredManr);
     if (CanTerminateWithDate(CredManr,RepSpec.d1)) then begin
@@ -718,7 +719,7 @@ begin
       if (IVr.SerNr>0) then begin
         OpenWindow("IVDClass",1,0,"","",IVr);
       end;
-      CloseWindow(wn);
+      
     end else begin
       MessageBox(200274,"");
     end;
