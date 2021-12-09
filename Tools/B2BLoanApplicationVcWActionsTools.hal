@@ -22,6 +22,7 @@ external inner function Boolean FindCustomerRelation(string,string,var record CU
 external inner procedure MailTextRow(string,string,string,var row MailTextVc,var Integer);
 external inner updating function LongInt MailVcRecordCheck(var record MailVc,record MailVc,LongInt,LongInt);
 external inner procedure AddLineToCredMan(var record CredManVc,string,val,string,val,val,val,Integer,Integer,val,val);
+external inner procedure ExtractObjWithSeparator(string,string,Boolean,var Integer,var string);
 
 //copy-paste
 procedure RemoveDuplicateRecipients(var record MailVc Mailr)
@@ -1069,7 +1070,16 @@ end;
 global
 function string 255 InvLtxtVcReplaceToken(record LTxtVc LTxtr,record RcVc RepSpec,string token)
 begin
-  string 255 res;
+  string 255 res,OPENAMOUNT2,OPENAMOUNT3,TOPAY4,TOPAY5;
+  integer pos;
+  
+  pos = 0;    
+  ExtractObjWithSeparator(":",RepSpec.Stext,true,pos,OPENAMOUNT2);
+  ExtractObjWithSeparator(":",RepSpec.Stext,true,pos,OPENAMOUNT3);
+  
+  pos = 0;
+  ExtractObjWithSeparator(":",RepSpec.LastAcc,true,pos,TOPAY4);
+  ExtractObjWithSeparator(":",RepSpec.LastAcc,true,pos,TOPAY5);
     
   switch (token) begin
     case "F_DATUM": res = RepSpec.sStartDate;
@@ -1100,9 +1110,11 @@ begin
     case "F_FORFALLODATUM": res = RepSpec.f20;
     case "F_INVMONTH": res = RepSpec.Comment;
     case "F_LASTDAY2": res = RepSpec.ObjStr;
-    case "F_OPENAMOUNT2": res = RepSpec.Stext;
+    case "F_OPENAMOUNT2": res = OPENAMOUNT2;
+    case "F_OPENAMOUNT3": res = OPENAMOUNT3;
     case "F_TOPAY3": res = RepSpec.FirstAcc;
-    case "F_TOPAY4": res = RepSpec.LastAcc;
+    case "F_TOPAY4": res = TOPAY4;
+    case "F_TOPAY5": res = TOPAY5;
     otherwise
       res = LetVcReplaceTokenCust(RepSpec,token);
   end;

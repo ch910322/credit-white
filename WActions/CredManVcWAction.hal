@@ -719,7 +719,6 @@ begin
       if (IVr.SerNr>0) then begin
         OpenWindow("IVDClass",1,0,"","",IVr);
       end;
-      
     end else begin
       MessageBox(200274,"");
     end;
@@ -1267,7 +1266,7 @@ begin
     end;
   end;
   RepSpec.f8 = newbal;
-  RepSpec.wholemonthf = CalcMonthsBetween(RepSpec.d1,CredManr.endDate);
+  RepSpec.wholemonthf = CalcMonthsBetween(RepSpec.d1,CredManr.endDate) - 1;
   RepSpec.flags[2] = 1;
   
   RepSpec.flags[1] = 1;
