@@ -390,7 +390,7 @@ begin
   string 255 vatnr,del,regnr;
   record CUVc CUr;
   record CredManVc CredManr;
-  val topay2,topay3,openamount,openamount2,topay4,topay1;
+  val topay2,topay3,openamount,openamount2,openamount3,topay4,topay1,topay5;
   string 255 credivno;
   record IVVc IVCreditr;
   record UserVc Userr;
@@ -428,6 +428,10 @@ begin
   td = AddDay(IVr.InvDate,0);
   //CustAged(CUr,td,bd,td,ARSSumod,ARSsactod,ARSs0od,ARSs1od,ARSs16od,ARSs31od,ARSs61od,ARSs91od,ARSs121od,ARSs151od,0);
   //GetOnAccBalance(RepSpec,CUr.Code,CUr.CurncyCode,false,0,ARSOnAccBalB1,rval2,ARSOnAccBal,sumbooked,sumnow,sumcurncy,sumdiff,CurTotalsr,debaccs,debbal,debcnt);//ObjStr
+  RepSpec.d1 = addday(td,-1);
+  OneARSFormOpenOnDate(RepSpec,CUr,2,openamount3,custcnt,invcnt);
+  topay5 = openamount3 + IVr.Sum4;
+  
   RepSpec.d1 = td;
   OneARSFormOpenOnDate(RepSpec,CUr,2,ARSSumod,custcnt,invcnt);//Used this function to calc user balance
 
@@ -466,6 +470,7 @@ begin
   
   topay3 = topay3 + abovehiddenbase + abovehiddenvat;
   topay4 = topay3;
+  
   if (hiddenf) then begin
     topay3 = topay3 + GetCredManItemValue(IVr,CMb.InstalmentItem,true);
   end; 
@@ -487,9 +492,13 @@ begin
   vVals["F_OPENAMOUNT"] = openamount2;
   
   vVals["F_OPENAMOUNT1"] = openamount;
+  vVals["F_OPENAMOUNT3"] = openamount3;
   vVals["F_TOPAY1"] = topay1;
+  vVals["F_TOPAY5"] = topay5;
   ValToText(topay1,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
   vVals["F_TOPAY1_TEXT"] = tstr;
+  ValToText(topay5,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
+  vVals["F_TOPAY5_TEXT"] = topay5;
   
   vVals["F_TOPAY2"] = topay2;
   ValToText(topay2,M4Val,IVr.CurncyCode,IVr.LangCode,tstr);
