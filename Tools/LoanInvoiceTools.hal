@@ -2668,7 +2668,7 @@ begin
           if ((IVr.OKFlag!=0) and (IVr.InvType!=kInvoiceTypeCredit and IVr.InvType!=kInvoiceTypeCreditSpecialSales)) then begin
             res = CreateCreditNoteIV(IVr,kInvoiceTypeCredit,IVCreditr,"",false);
             if(IVCreditr.PayDate<IVCreditr.InvDate)then begin
-              IVCreditr.PayDate = IVCreditr.InvDate
+              IVCreditr.PayDate = IVCreditr.InvDate;
             end;
             IVCreditr.InvDate = todate;
             logforadmin(0,"res " & res & " cred SerNr " & IVCreditr.SerNr);
