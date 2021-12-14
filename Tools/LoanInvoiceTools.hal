@@ -4238,6 +4238,7 @@ begin
   record IVVc credIVr;
   date blankd;
   val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
+  vector boolean ifprepay;
     
   firstf = 1;
   if (IVr.InvType==kInvoiceTypeCredit) then begin
@@ -4302,6 +4303,7 @@ begin
           logforadmin(0,"i " & i & " IVrw.CredHistNr " & IVrw.CredHistNr);
           if (IVrw.stp==kInvoiceRowTypeNormal and nonblank(IVrw.ArtCode) and IVrw.CredHistNr>0) then begin
             IVrw.SumAfterPrepayment = GetCredHistOpenValueOnDate(IVrw.CredHistNr,blankd);
+            ifprepay[i] = true;
             MatRowPut(IVr,i,IVrw);
           end;
         end;
@@ -4316,7 +4318,7 @@ begin
     if (IVrw.stp==kInvoiceRowTypeNormal and nonblank(IVrw.ArtCode))then begin
       InvVat(1,IVr.InclVAT,IVr.NoTAXonVAT,IVr.ExportFlag,IVrw.VATCode,IVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
       IVrw.SumWithVAT = IVrw.Sum + vatval;
-      if(IVrw.SumAfterPrepayment==0)then begin
+      if(IVrw.SumAfterPrepayment==0 and ifprepay[i]==false)then begin
         IVrw.SumAfterPrepayment = IVrw.SumWithVAT;
       end;
       MatRowPut(IVr,i,IVrw);
