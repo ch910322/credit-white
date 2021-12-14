@@ -398,11 +398,21 @@ updating function LongInt CredManVcRecordSaveAfter(var record CredManVc CredManr
 BEGIN
   LongInt res;
   row CredLegalInvNrBlock LegalInvNrrw;
-
+  record CredManSchedVc CSr;
+  
   res = 0;
 
   if (nonblank(CredManr.OfficialSerNr)) then begin
     StoreCredOffSerNrIV(CredManr.SerNr,"CredManVc",CredManr.OfficialSerNr);
+  end;
+
+  if(IsNovitiCustomer)then begin
+    if(CredManr.OKFlag==1)then begin
+      CSr.CredManNr = CredManr.SerNr;
+      if (ReadFirstMain(CSr,1,true)==false) then begin
+        NewTimedTask2("CreateCredManSched" & CredManr.SerNr,"CreateCredManSched","CreateCredManSchedTask",CredManr.SerNr,CurrentDate,AddSeconds(CurrentTime,1),"","");
+      end;
+    end;
   end;
 
   res = inner.CredManVcRecordSaveAfter(CredManr,CredMan2r,stat,long4);
@@ -483,8 +493,20 @@ begin
       NewTimedTask2("CreateCredManSched" & CredManr.SerNr,"CreateCredManSched","CreateCredManSchedTask",CredManr.SerNr,CurrentDate,AddSeconds(CurrentTime,1),"","");
     end;
   end;
-
+  
+  
+  if(IsNovitiCustomer)then begin
+    if(CredManr.OKFlag==1 and CredMan2r.OKFlag==0)then begin
+      CSr.CredManNr = CredManr.SerNr;
+      if (ReadFirstMain(CSr,1,true)==false) then begin
+        NewTimedTask2("CreateCredManSched" & CredManr.SerNr,"CreateCredManSched","CreateCredManSchedTask",CredManr.SerNr,CurrentDate,AddSeconds(CurrentTime,1),"","");
+      end;
+    end;
+  end;
   res = inner.CredManVcRecordUpdateAfter(CredManr,CredMan2r,stat,long4);
+  
+  
+  
 
   CredManVcRecordUpdateAfter = res;
   return;
