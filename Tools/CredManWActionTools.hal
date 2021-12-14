@@ -473,10 +473,9 @@ begin
   boolean scenario;
   val tmonths,tprolongmonths,rate,addval;
   record ORVc ORr;
-  
-  res = false;
     
-    
+  res = false;  
+
     if((RepSpec.vals3==0 or RepSpec.vals3==blankval) and (RepSpec.vals4==0 or RepSpec.vals4==blankval))then begin
       //messagebox(0,"A");
       scenario = false;
@@ -484,9 +483,8 @@ begin
       scenario = true;
       ORr.InvMark = RepSpec.Notation;
       CreditOpenInvoices(CredManr,td,ORr);
-      //messagebox(0,"B");
     end;
-    goto lDoPauseCredManEnd;
+    //goto lDoPauseCredManEnd;///------------------ Delete after
 //  if (nonblank(td)) then begin
     //RecordCopy(oldCredManr,CredManr);
     tprolongmonths = prolongmonths;
@@ -515,6 +513,7 @@ begin
         end;
         CredManSetDatesCust(CredManr,false);
         if (addval>0) then begin
+          addval = addval + stringtoval(RepSpec.f5,m4val);
           CreateCredmanPurchaseInvoice(CredManr,0,VIr,addval,true,td);
           GenerateAgreementSchedule(CredManr,true,true);
         end;

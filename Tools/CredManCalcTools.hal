@@ -1245,6 +1245,33 @@ begin
   return;
 end;
 
+procedure AddRefFees(record CredManVc CredManr,var record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb,record CMInvoicingBlock CIb,Date invdat,Date frdate,Date todate,var val acumint,var val calcbal,val feesval)
+begin
+  Integer latedays;
+  val lateamount;
+  Date invdat2;
+  Date sd,ed;
+  array string 255 lateformula;
+  Boolean addf;
+  record CredManTypeVc CMTr;
+  string 255 item;
+  Date calcsd;
+  record CMBuyOutBlock CMBuyOutb;
+  
+  if(feesval>0)then begin
+  
+    blockload(CMBuyOutb);
+
+    item = CMBuyOutb.FutFeeItem;
+    if(nonblank(item))then begin
+      AddCredPayPlanLine(CredManPayPlanr,invdat,item,"",kEventTypeCalcFees,feesval,0,acumint,calcbal,frdate,todate,-1,-1,0);
+      logtext(0,"CredManPayPlanr " & matrowcnt(CredManPayPlanr));
+    end;
+  end;
+
+  return;
+end;
+
 function val GetBalanceOnDate(record CredManPayPlanVc CredManPayPlanr,Date invdat)
 begin
   Integer i,rwcnt;
@@ -1397,7 +1424,7 @@ begin
   return;
 end;
 
-procedure LoadAgreementChangesMonthly(record CredManVc CredManr,Date invdat)
+procedure LoadAgreementChangesMonthly(record CredManVc CredManr,Date invdat,var val refinfees,var integer futfeesmonths)
 begin
   Date sd,ed;
   record CredManChangeVc Changer;
@@ -1406,6 +1433,8 @@ begin
     
   sd = AddMonth(invdat,-1);
   ed = invdat;
+  
+  refinfees = blankval;
   
   Changer.CredManNr = CredManr.SerNr;
   Changer.TransDate = sd;
@@ -1422,6 +1451,10 @@ begin
             CredManr.InstalmentType = CMTr.InstalmentType;
           end;
         end;
+        
+        refinfees = Changer.FutureFees;
+        futfeesmonths = Changer.AddedFeesMonths;
+        
         if (nonblank(Changer.IntRate)) then begin
           CredManr.IntRate = Changer.IntRate;
           CredManr.PrincipleDelayInterest = Changer.IntRate;
@@ -1436,7 +1469,7 @@ begin
       end;
     end;
   end;  
-
+  
   return;
 end;
 
@@ -1610,10 +1643,11 @@ begin
   Boolean waspausedf,ispausedf;
   Date pausefrom,pauseuntil;
   val annuity_diff,vblank;
-  Integer tries,int_type;
+  Integer tries,int_type,futfeesmonths;
   record CredManVc tCredManr;
   val totint,addbal,int_calcbal;
   Date payoutdate;
+  val futfees,oneperfees,lastdelta;
 
 /*should we calculate VAT here?
   if CredManr.VATSum > 0 and nonblank(CredManr.VATAddMonths) then begin
@@ -1659,12 +1693,20 @@ LCalcSchedule:;
   basemonths = usemonths;
   substractmonths = delaymonths;
 //logtext(0,"start dev");
-
   LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths);
   for(i=calculatedmonths;i<months;i=i+1) begin
     if (calcbal>0 or int_type==2) then begin
       CalcCredManCurrentPeriod(inCredManr,CIb,i-1,payoutdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
-      LoadAgreementChangesMonthly(inCredManr,invdat);
+      LoadAgreementChangesMonthly(inCredManr,invdat,futfees,futfeesmonths);
+      if(futfees!=0)then begin
+        oneperfees = round(futfees/futfeesmonths,defaultcurroundoff);
+        lastdelta = futfees - oneperfees * futfeesmonths;          
+        futfees = blankval;
+      end;
+      if(oneperfees!=0 and lastdelta!=0 and i==months-1)then begin
+        oneperfees = oneperfees + lastdelta;
+      end;
+      
       //if (i!=0) then begin
         UpdateAgreementBalance(CredManPayPlanr,inCredManr,calcbal,acumint,frdat,todat,usesum,usemonths,months,int_type,addbal,payoutdate,i);
         if (nonblank(payoutdate)) then begin
@@ -1733,6 +1775,7 @@ LCalcSchedule:;
             AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat, acumint,addbal,int_frdat,int_todat,-1,false,int_type);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
+          AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
         case 1://linear with delay
           monthtype2 = monthtype;
           if (monthtype2==kMonthTypeLast) then begin
@@ -1752,6 +1795,7 @@ LCalcSchedule:;
             AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,addbal,int_frdat,int_todat,-1,false,int_type);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
+          AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
         case 3://Bullet
           AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype,invdat,acumint,calcbal,frdat,todat,-1,false);
           AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1,false);
@@ -1763,6 +1807,7 @@ LCalcSchedule:;
             AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,0,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths,vblank)
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
+          AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
         case 4://Factoring
           AddFactoringInvoices(inCredManr,CredManPayPlanr,CredManSetb,CurrentDate,acumint,calcbal,frdat,todat)
         case 5://Payment guarantee
@@ -1775,6 +1820,7 @@ LCalcSchedule:;
             AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,1,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths,vblank);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
+          AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
       end;
       AddExtraDeposit(inCredManr,CredManPayPlanr,CredManSetb,invdat,acumint,calcbal,frdat,todat,i+1);
       if (nonblank(inCredManr.CancelDate) and invdat==inCredManr.CancelDate) then begin

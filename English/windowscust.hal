@@ -3777,6 +3777,10 @@ begin
   EditField(h,v+=vs,100,"Max Late Days",Normal,LateFeeDays,false,0);
   EditField(h,v+=vs,100,"Change Purpose",Normal,ChangePurpose,false,AgrChangesPurpSClass);
   EditField(h,v+=vs,100,"New Type",Normal,NewType,false,CredManTypeSClass);
+  EditField(h,v+=vs,100,"Added to New Balance",Normal,AddedToNewBal,false,0);//====================Added to New Balance
+  EditField(h,v+=vs,100,"Added to Future Fees",Normal,FutureFees,false,0);//====================Added to Future Feesvals4  
+  EditField(h,v+=vs,100,"Future Fees Period",Normal,AddedFeesMonths,false,0);//====================Future Fees Period
+
   //EditField(h,v+=vs,100,"Monthly Payment Day",Normal,MonthlyPaymentDay,false,0);
   EndWindow;
 end;

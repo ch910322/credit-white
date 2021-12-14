@@ -1266,7 +1266,7 @@ begin
     end;
   end;
   RepSpec.f8 = newbal;
-  RepSpec.wholemonthf = CalcMonthsBetween(RepSpec.d1,CredManr.endDate) - 1;
+  RepSpec.wholemonthf = CalcMonthsBetween(RepSpec.d1,CredManr.endDate);
   RepSpec.flags[2] = 1;
   
   RepSpec.flags[1] = 1;
@@ -4151,7 +4151,6 @@ function string 255 CredManFinishColumn(record CredManVc CredManr)
 begin
   date res;
   
-  logtext(0,CredManr.SerNr);
   res = CredManr.endDate;
   if(nonblankdate(CredManr.FinishDate))then begin
     res = CredManr.FinishDate;

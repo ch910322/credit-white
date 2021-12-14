@@ -1531,6 +1531,7 @@ begin
   ArrayField(OpenAmount,M4Val,0,0);
   ArrayField(InvType,M4Int,0,0);
   ArrayField(SortString,M4Str,255,0);
+  ArrayField(RefAddFee,M4Val,0,0);
   EndRecordAdd;
 
   BlockBegin(ItemPriorityBlock,-,"");
@@ -2450,6 +2451,9 @@ begin
   RecordField(EndDate,M4Date,0,0);
   RecordField(ChangePurpose,M4Code,20,0);
   RecordField(NewType,M4Code,20,0);
+  RecordField(FutureFees,M4Val,0,0);
+  RecordField(AddedToNewBal,M4Val,0,0);
+  RecordField(AddedFeesMonths,M4Int,0,0);
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(CredManDate);

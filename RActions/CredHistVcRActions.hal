@@ -35,6 +35,9 @@ begin
   Changer.CredManNr = sernr;
   Changer.ChangePurpose = purpose;
   Changer.NewType = RepSpec.f10;
+  Changer.FutureFees = stringtoval(RepSpec.f6,m4val);
+  Changer.AddedToNewBal = stringtoval(RepSpec.f5,m4val);
+  Changer.AddedFeesMonths = RepSpec.wholemonthf;
   RecordStore(Changer,true);
 
   return;
