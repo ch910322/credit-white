@@ -482,7 +482,7 @@ begin
     end else begin
       scenario = true;
       ORr.InvMark = RepSpec.Notation;
-      CreditOpenInvoices(CredManr,td,ORr);
+      //CreditOpenInvoices(CredManr,td,ORr);
     end;
     //goto lDoPauseCredManEnd;///------------------ Delete after
 //  if (nonblank(td)) then begin
@@ -501,6 +501,7 @@ begin
     if (tmonths==0) then begin
       tmonths = blankval;
     end;
+    logtext(0,"CanPauseAgreement(CredManr,td,months,err) " & CanPauseAgreement(CredManr,td,months,err));
     if (CanPauseAgreement(CredManr,td,months,err)) then begin
       
       if (RepSpec.flags[2]==1) then begin
