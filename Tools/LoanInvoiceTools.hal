@@ -2430,7 +2430,7 @@ begin
 end;
 
 global
-updating procedure CreateProlongInvoice(record CredManVc CredManr,string paydeal,string salesman,string itemspec,var record IVVc nIVr)
+updating procedure CreateProlongInvoice(record CredManVc CredManr,string paydeal,string salesman,string itemspec,var record IVVc nIVr,record RcVc RepSpec)
 begin
   record CMInvoicingBlock CIb;
   record CredManSetBlock CMb;
@@ -2447,12 +2447,16 @@ begin
     pd = CIb.FirstInvPayDeal;
   end;
   SetupLoanInvoice3(CredManr,CMb,IVr,CurrentDate,"","",true,false,"",1,true,pd,salesman);
+  if(stringtoval(RepSpec.f9,m4val)==0)then begin
   rate = CredManr.StdProlongPrc;
   if (CredManr.AnnualRate==1) then begin
     rate = rate/12;
   end;
-  sum = (CredManr.InvSum4 - CredManr.DepositSum) *(rate/100);
-  sum = sum + CredManr.StdProlongFee;
+    sum = (CredManr.InvSum4 - CredManr.DepositSum) *(rate/100);
+    sum = sum + CredManr.StdProlongFee;
+  end else begin
+    sum = sum + stringtoval(RepSpec.f9,m4val);
+  end;
   spec = itemspec;
   if (blank(spec)) then begin
     GetItemName(CIb.ProlongItem,spec);
