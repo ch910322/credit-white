@@ -2673,9 +2673,11 @@ begin
   date blankd;
   vector val vIVItemOpenAmmount;
   record CredManSetBlock CMb;
+  record CMBuyOutBlock CMBuyOutb;
   
   
   blockload(CMb);
+  blockload(CMBuyOutb);
   
   princItem = CMb.InstalmentItem;
   intItem = CMb.RateItem;
@@ -2742,8 +2744,14 @@ begin
                   foundf = true;
                   logforadmin(0,"IV For Cred  " & IVr.SerNr & " todate " & todate);
                   t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
-                  if(IVr.PayDate>=todate and t>0 or creditanyvay)then begin
-                    creditthisinvoice = true;
+                  if(CMBuyOutb.DoNotCreditlastDayInvoices==0)then begin
+                    if(IVr.PayDate>=todate and t>0 or creditanyvay)then begin
+                      creditthisinvoice = true;
+                    end;
+                  end else begin
+                    if(IVr.PayDate>todate and t>0 or creditanyvay)then begin
+                      creditthisinvoice = true;
+                    end;
                   end;
                 end;
               end;
@@ -3666,21 +3674,26 @@ begin
               y = datediff(todate,CSrw.FromDate)-1;
             end;
             x = CSrw.Interest;
-            
+            logforadmin(0,"CSrw.ToDate " & CSrw.ToDate & " CSrw.FromDate " & CSrw.FromDate);
             fullperiod = datediff(CSrw.ToDate,CSrw.FromDate)+1;
-            dayval = CSrw.Interest / 30;
+            //dayval = CSrw.Interest / 30;
+            
             
             if(CMBOb.CalcIntBOday==0)then begin
-              spenddays = datediff(inputtodate,CSrw.FromDate);
+              spenddays = datediff(inputtodate,CSrw.FromDate)-1;
               leftdays = fullperiod - spenddays;
             end else begin
-              spenddays = datediff(inputtodate,CSrw.FromDate) + 1;
+              spenddays = datediff(inputtodate,CSrw.FromDate);
               leftdays = fullperiod - spenddays;
             end;
+            dayval = CSrw.Interest / fullperiod;
+            
+            
             if(spenddays>30)then begin
-              spenddays = 30;
+              //spenddays = 30;
             end;
             
+            logforadmin(0,"inputtodate " & inputtodate);
             logforadmin(0,"fullperiod " & fullperiod);
             logforadmin(0,"dayval " & dayval);
             logforadmin(0,"spenddays " & spenddays);
@@ -3696,6 +3709,11 @@ begin
             
             
             vvals1["INVOICEDCURRENTPERIOD"] = x - round(spenddays * dayval,defaultcurroundoff);
+            if(CMBOb.DoNotCreditlastDayInvoices)then begin
+              if(CSrw.ToDate==inputtodate)then begin
+                vvals1["INVOICEDCURRENTPERIOD"] = 0;
+              end;
+            end;
             vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(spenddays * dayval,defaultcurroundoff);
             logforadmin(0,"--------- " & CSrw.Interest);
             logforadmin(0,vvals1["CURRPERIODINTEREST"]);

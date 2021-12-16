@@ -4436,6 +4436,7 @@ begin
   CheckBox(h,v+=20,0,"Calculate Interest for Buy-Out Day",CalcIntBOday);
   CheckBox(h,v+=20,0,"Calculate Overdues for Buy-Out Day",CalcOvdBOday);  
   CheckBox(h,v+=20,0,"Invoice future fees",InvFutFees);
+  CheckBox(h,v+=20,0,"Do Dot Credit Last Day Invoices",DoNotCreditlastDayInvoices);
 
   EndWindow;
   return;

@@ -349,11 +349,16 @@ begin
 	string 50 keyname;
   Integer k;
 	transaction Boolean gPDRAfterReciept;
+	transaction Boolean gPaymentProcedure;
+	
 	record CMInvoicingBlock CIb;
 	
 	blockload(BCb);
 	blockload(BISb);
 		
+	
+	gPaymentProcedure = true;	
+	
 	if(blank(CurncyCode))then begin
 		CurncyCode = BCb.BaseCur1;
 	end;
