@@ -3809,10 +3809,10 @@ BEGIN
       res = false;
     end;
   end;
-  GetWindowRecord(wn,CredManr);
+  /*GetWindowRecord(wn,CredManr);
   if(HasCredManChanges(CredManr))then begin
     messagebox(0,"Agreement has Changes, NL Transaction has to be manually adjusted");
-  end;
+  end;*/
 
   CredManDClassOKFlagButtonAction = res;
   RETURN;
