@@ -2457,10 +2457,10 @@ begin
   end;
   SetupLoanInvoice3(CredManr,CMb,IVr,CurrentDate,"","",true,false,"",1,true,pd,salesman);
   if(stringtoval(RepSpec.f9,m4val)==0)then begin
-  rate = CredManr.StdProlongPrc;
-  if (CredManr.AnnualRate==1) then begin
-    rate = rate/12;
-  end;
+    rate = CredManr.StdProlongPrc;
+    if (CredManr.AnnualRate==1) then begin
+      rate = rate/12;
+    end;
     sum = (CredManr.InvSum4 - CredManr.DepositSum) *(rate/100);
     sum = sum + CredManr.StdProlongFee;
   end else begin
