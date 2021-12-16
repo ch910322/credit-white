@@ -2356,8 +2356,6 @@ begin
     end;
     
     AddInstalmentFixedBO(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td);
-    logtext(0,"1cumint " & cumint);
-    logtext(0,"1balance " & balance);
     RecordCopy(tCredManr,CredManr);
     tCredManr.InvSum4 = balance;
     tCredManr.DepositSum = 0;
@@ -2366,8 +2364,6 @@ begin
       cumint = ORr.TotGP;
       balance = ORr.TotGP;
     end;
-    
-   
     
     if(ORr.InvMark==1 or ORr.DownPaySent==0)then begin
       if(skipint==false)then begin
@@ -2422,13 +2418,11 @@ begin
     
     end;  
     
-//    AddPlannedFees(CredManr,CredManPayPlan2r,CMb,kPlannedFeesMonthly,kMonthTypeFirst,td,cumint,tval,lastinv,td,-1,false);
     rwcnt = MatRowCnt(CredManPayPlan2r);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CredManPayPlan2r,i,CredManPayPlanrw);
       SetupInvoiceRowAndAdd(CredManr,IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
     end;
-    
     
     for(i=0;i<matrowcnt(IVr);i=i+1)begin
       matrowget(IVr,i,IVrw);
@@ -2436,32 +2430,9 @@ begin
         lastusedrow = i;
       end;
     end;
-    
 
-    
-   /* if(nonblank(CIb.BuyOutItem))then begin
-      if(ORr.TAX2Sum>0)then begin
-        clearrow(IVr,IVrw,1);
-        IVrw.ArtCode = CIb.BuyOutItem;
-        MatRowinsert(IVr,lastusedrow+1,IVrw);
-        lastusedrow = lastusedrow + 1;
-        IVVc_PasteArtCode(IVr,lastusedrow,warning,warning,false,sernrf);
-        MatRowGet(IVr,lastusedrow,IVrw);
-        IVrw.Quant = 1;
-        MatRowPut(IVr,lastusedrow,IVrw);
-        IVVc_PasteQuantity(IVr,lastusedrow);
-        MatRowGet(IVr,lastusedrow,IVrw);
-        IVrw.Price = ORr.TAX2Sum;
-        MatRowPut(IVr,lastusedrow,IVrw);
-        IVVc_PasteQuantity(IVr,lastusedrow);
-      end;
-    end;*/
-    
     AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
- 
-    //AddBuyOutFee(CredManr,IVr,balance);
     AddInsuranceCost(CredManr,IVr,CIb);
-    //AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
   end;
 
   return;
@@ -2476,6 +2447,7 @@ begin
   val rate,sum;
   string 255 spec;
   string 20 pd;
+  integer cumint,balance;
   
   BlockLoad(CIb);
   BlockLoad(CMb);
@@ -2485,6 +2457,20 @@ begin
     pd = CIb.FirstInvPayDeal;
   end;
   SetupLoanInvoice3(CredManr,CMb,IVr,CurrentDate,"","",true,false,"",1,true,pd,salesman);
+  
+  if(RepSpec.vals3!=0 or RepSpec.vals4!=0)then begin
+    if(nonblankdate(RepSpec.d1))then begin
+      cumint = stringtoval(RepSpec.FirstAcc,m4val);
+      balance = stringtoval(RepSpec.FirstAcc,m4val);
+    end;
+  
+    if(stringtoval(RepSpec.FirstAcc,m4val)>0)then begin
+      GetItemName(CMb.RateItem,spec);
+      SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,stringtoval(RepSpec.FirstAcc,m4val),blankval,14,-1);
+      spec = "";
+    end;
+  end;
+  
   if(stringtoval(RepSpec.f9,m4val)==0)then begin
     rate = CredManr.StdProlongPrc;
     if (CredManr.AnnualRate==1) then begin

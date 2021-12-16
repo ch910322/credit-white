@@ -476,21 +476,26 @@ begin
   record ORVc ORr;
   string 100 itemclass;
   record CMBuyOutBlock CMBuyOutb;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  date lastinvperioddate;
+  integer rwcnt,i;
   
   blockload(CMBuyOutb);
   
   res = false;  
-
-    /*if((RepSpec.vals3==0 or RepSpec.vals3==blankval) and (RepSpec.vals4==0 or RepSpec.vals4==blankval))then begin
-      //messagebox(0,"A");
-      scenario = false;
-    end else begin
-      scenario = true;
-      ORr.InvMark = RepSpec.Notation;
-      //CMBuyOutb.FutFeeItemClass
-      CreditOpenInvoices(CredManr,td,ORr,"");
-      PayAllOpenInvoices(CredManr,td,ORr,"");
-    end;*/
+    
+    CSr.CredManNr = CredManr.SerNr;
+    if (ReadFirstMain(CSr,1,true)) then begin
+      rwcnt = MatRowCnt(CSr);
+      for (i=0;i<rwcnt;i=i+1) begin
+       MatRowGet(CSr,i,CSrw);
+        if (CSrw.Invoiced==1) then begin
+          lastinvperioddate = CSrw.ToDate;
+        end;
+      end;
+    end;
+    
 
     //goto lDoPauseCredManEnd;///------------------ Delete after
 //  if (nonblank(td)) then begin
@@ -511,6 +516,19 @@ begin
     end;
     logtext(0,"CanPauseAgreement(CredManr,td,months,err) " & CanPauseAgreement(CredManr,td,months,err));
     if (CanPauseAgreement(CredManr,td,months,err)) then begin
+      if((RepSpec.vals3==0 or RepSpec.vals3==blankval) and (RepSpec.vals4==0 or RepSpec.vals4==blankval))then begin
+        //messagebox(0,"A");
+        scenario = false;
+      end else begin
+        scenario = true;
+        if(td<lastinvperioddate)then begin
+          CreditOpenInvoices(CredManr,td,ORr,"");
+        end;
+        //ORr.InvMark = RepSpec.Notation;
+        //CMBuyOutb.FutFeeItemClass
+        //CreditOpenInvoices(CredManr,td,ORr,"");
+        //PayAllOpenInvoices(CredManr,td,ORr,"");
+      end;
       if (RepSpec.flags[2]==1) then begin
         CreateProlongSession(RepSpec,CredManr,td,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1],RepSpec.vals3,RepSpec.vals4);
         CreateProlongInvoice(CredManr,RepSpec.f2,RepSpec.f3,RepSpec.f4,IVr,RepSpec);
@@ -536,6 +554,168 @@ begin
     //RecordUpdate(oldCredManr,CredManr,true);
 //  end;
 lDoPauseCredManEnd:;
+  return;
+end;
+
+global
+updating procedure DoPauseCredManA(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res,var Boolean setf,record RcVc RepSpec,var record IVVc IVr,string purpose,var Integer err)
+begin
+  record AgreementDocVc ADr;
+  record VIVc VIr;
+  boolean scenario;
+  val tmonths,tprolongmonths,rate,addval;
+  record ORVc ORr;
+  string 100 itemclass;
+  record CMBuyOutBlock CMBuyOutb;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  date lastinvperioddate;
+  integer rwcnt,i;
+  date newtd;
+  
+  blockload(CMBuyOutb);
+  
+  res = false;  
+  
+  newtd = td;
+  
+  CSr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CSr,1,true)) then begin
+    rwcnt = MatRowCnt(CSr);
+    for (i=0;i<rwcnt;i=i+1) begin
+     MatRowGet(CSr,i,CSrw);
+      if (CSrw.Invoiced==1) then begin
+        lastinvperioddate = CSrw.ToDate;
+      end;
+    end;
+  end;
+  if(newtd<=lastinvperioddate)then begin
+    newtd = addday(lastinvperioddate,1);
+  end;
+  
+  tprolongmonths = prolongmonths;
+  tmonths = months;
+  if (tprolongmonths==0) then begin
+    tprolongmonths = blankval;
+  end;
+  if (nonblank(RepSpec.vals3)) then begin
+    rate = RepSpec.vals3;
+  end;
+  if (nonblank(RepSpec.vals4)) then begin
+    addval = RepSpec.vals4;
+  end;
+  if (tmonths==0) then begin
+    tmonths = blankval;
+  end;
+  logtext(0,"CanPauseAgreement(CredManr,td,months,err) " & CanPauseAgreement(CredManr,td,months,err));
+  if (CanPauseAgreement(CredManr,newtd,months,err)) then begin
+    if (RepSpec.flags[2]==1) then begin
+      CreateProlongSession(RepSpec,CredManr,newtd,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1],RepSpec.vals3,RepSpec.vals4);
+      CreateProlongInvoice(CredManr,RepSpec.f2,RepSpec.f3,RepSpec.f4,IVr,RepSpec);
+    end;
+    if (RepSpec.flags[3]==0) then begin
+      if (tmonths>0 or tprolongmonths>0 or rate>0 or addval>0) then begin
+        CreatePauseRecord(RepSpec,CredManr.SerNr,newtd,tmonths,tprolongmonths,rate,addval,1,purpose);
+      end;
+      CredManSetDatesCust(CredManr,false);
+      if (addval>0) then begin
+        addval = addval + stringtoval(RepSpec.f5,m4val);
+        GenerateAgreementSchedule(CredManr,true,true);
+      end;
+      setf = true;
+    end else begin
+      if (tmonths>0 or tprolongmonths>0 or rate>0 or addval>0) then begin
+        CreatePauseRecord(RepSpec,CredManr.SerNr,newtd,tmonths,tprolongmonths,rate,addval,0,purpose);
+      end;
+    end;
+    res = true;      
+  end;
+  return;
+end;
+
+global
+updating procedure DoPauseCredManB(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res,var Boolean setf,record RcVc RepSpec,var record IVVc IVr,string purpose,var Integer err)
+begin
+  record AgreementDocVc ADr;
+  record VIVc VIr;
+  boolean scenario;
+  val tmonths,tprolongmonths,rate,addval;
+  record ORVc ORr;
+  string 100 itemclass;
+  record CMBuyOutBlock CMBuyOutb;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  date lastinvperioddate;
+  integer rwcnt,i;
+  
+  blockload(CMBuyOutb);
+  
+  res = false;  
+    
+    CSr.CredManNr = CredManr.SerNr;
+    if (ReadFirstMain(CSr,1,true)) then begin
+      rwcnt = MatRowCnt(CSr);
+      for (i=0;i<rwcnt;i=i+1) begin
+       MatRowGet(CSr,i,CSrw);
+        if (CSrw.Invoiced==1) then begin
+          lastinvperioddate = CSrw.ToDate;
+        end;
+      end;
+    end;
+    
+    tprolongmonths = prolongmonths;
+    tmonths = months;
+    if (tprolongmonths==0) then begin
+      tprolongmonths = blankval;
+    end;
+    if (nonblank(RepSpec.vals3)) then begin
+      rate = RepSpec.vals3;
+    end;
+    if (nonblank(RepSpec.vals4)) then begin
+      addval = RepSpec.vals4;
+    end;
+    if (tmonths==0) then begin
+      tmonths = blankval;
+    end;
+    logtext(0,"CanPauseAgreement(CredManr,td,months,err) " & CanPauseAgreement(CredManr,td,months,err));
+    if (CanPauseAgreement(CredManr,td,months,err)) then begin
+      if((RepSpec.vals3==0 or RepSpec.vals3==blankval) and (RepSpec.vals4==0 or RepSpec.vals4==blankval))then begin
+        //messagebox(0,"A");
+        scenario = false;
+      end else begin
+        scenario = true;
+        if(td<lastinvperioddate)then begin
+          CreditOpenInvoices(CredManr,td,ORr,"");
+        end;
+        //ORr.InvMark = RepSpec.Notation;
+        //CMBuyOutb.FutFeeItemClass
+        //CreditOpenInvoices(CredManr,td,ORr,"");
+        //PayAllOpenInvoices(CredManr,td,ORr,"");
+      end;
+      if (RepSpec.flags[2]==1) then begin
+        CreateProlongSession(RepSpec,CredManr,td,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1],RepSpec.vals3,RepSpec.vals4);
+        CreateProlongInvoice(CredManr,RepSpec.f2,RepSpec.f3,RepSpec.f4,IVr,RepSpec);
+      end;
+      if (RepSpec.flags[3]==0) then begin
+        if (tmonths>0 or tprolongmonths>0 or rate>0 or addval>0) then begin
+          CreatePauseRecord(RepSpec,CredManr.SerNr,td,tmonths,tprolongmonths,rate,addval,1,purpose);
+        end;
+        CredManSetDatesCust(CredManr,false);
+        if (addval>0) then begin
+          addval = addval + stringtoval(RepSpec.f5,m4val);
+          CreateCredmanPurchaseInvoice(CredManr,0,VIr,addval,true,td);
+          GenerateAgreementSchedule(CredManr,true,true);
+        end;
+        setf = true;
+      end else begin
+        if (tmonths>0 or tprolongmonths>0 or rate>0 or addval>0) then begin
+          CreatePauseRecord(RepSpec,CredManr.SerNr,td,tmonths,tprolongmonths,rate,addval,0,purpose);
+        end;
+      end;
+      res = true;      
+    end;
+    //RecordUpdate(oldCredManr,CredManr,true);
+//  end;
   return;
 end;
 
