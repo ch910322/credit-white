@@ -2310,6 +2310,7 @@ begin
   row CredManSchedVc CSrw;
   record CredFeesMatrixVc FMr;
   row CredFeesMatrixVc FMrw;
+  boolean skipint;
   
 /*
 1. Get the last invoice date and the balance
@@ -2333,7 +2334,30 @@ begin
       pd = CIb.FirstInvPayDeal;
     end;
     SetupLoanInvoice2(CredManr,CMb,IVr,td,lastinv,td,true,false,"",1,true,pd);
+    
+    
+    CSr.CredManNr = CredManr.SerNr;
+    if (ReadFirstMain(CSr,1,true)) then begin
+      rwcnt = MatRowCnt(CSr);
+      for (i=0;i<rwcnt;i=i+1) begin
+       MatRowGet(CSr,i,CSrw);
+        if (CSrw.Invoiced==1) then begin
+          if(CSrw.ToDate==IVr.InvDate)then begin
+            if(CMBOb.DoNotCreditlastDayInvoices==1)then begin
+              skipint = true;
+              cumint = cumint - CSrw.Interest;
+              balance = balance - CSrw.Principle;
+              logtext(0,"cumint " & cumint);
+              logtext(0,"balance " & balance);
+            end;
+          end;
+        end;
+      end;
+    end;
+    
     AddInstalmentFixedBO(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td);
+    logtext(0,"1cumint " & cumint);
+    logtext(0,"1balance " & balance);
     RecordCopy(tCredManr,CredManr);
     tCredManr.InvSum4 = balance;
     tCredManr.DepositSum = 0;
@@ -2342,8 +2366,13 @@ begin
       cumint = ORr.TotGP;
       balance = ORr.TotGP;
     end;
+    
+   
+    
     if(ORr.InvMark==1 or ORr.DownPaySent==0)then begin
-      AddInterestBO(tCredManr,CredManPayPlan2r,CMb,kMonthTypeFirst,td,ORr.TotGP,balance,lastinv,td,-1,true);
+      if(skipint==false)then begin
+        AddInterestBO(tCredManr,CredManPayPlan2r,CMb,kMonthTypeFirst,td,ORr.TotGP,balance,lastinv,td,-1,true);
+      end;
     end;
     sd = GetLastInvoiceDate(CredManr,ORr.OrdDate);
     GetCredManOverdueInvoices2(CredManr,CMb,ORr.OrdDate,sd,latedays,lateamount,principlelateamount,interestlateamount,lateformula,false,false,calcsd);
