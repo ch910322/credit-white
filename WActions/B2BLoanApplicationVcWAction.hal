@@ -2154,20 +2154,15 @@ begin
   integer i;
   vector boolean vcutsign;
   
+  res = input;
   if(nonblank(cutsigns))then begin
-    for(i=0;i<len(cutsigns);i=i+1)begin
-      vcutsign[mid(cutsigns,i,1)] = true;
-    end;
-    for(i=0;i<len(input);i=i+1)begin
-      if(vcutsign[mid(input,i,1)]==false)then begin
-        res = res & mid(input,i,1);
-      end else begin 
-        res = res & mid(input,i,1);
-        i = len(input);
+    if(len(cutsigns)<len(input))then begin
+      for(i=0;i<len(input)-len(cutsigns);i=i+1)begin
+        if(mid(input,i,len(cutsigns))==cutsigns)then begin
+          res = left(input,i+len(cutsigns));
+        end;
       end;
     end;
-  end else begin
-    res = input;
   end;
   
   
