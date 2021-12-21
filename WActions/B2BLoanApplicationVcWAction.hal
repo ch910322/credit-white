@@ -2148,6 +2148,28 @@ begin
 return;
 end;
 
+function string 255 CutAfterStr(string input,string cutsigns)
+begin
+  string 255 res;
+  integer i;
+  vector boolean vcutsign;
+  
+  res = input;
+  if(nonblank(cutsigns))then begin
+    if(len(cutsigns)<len(input))then begin
+      for(i=0;i<len(input)-len(cutsigns);i=i+1)begin
+        if(mid(input,i,len(cutsigns))==cutsigns)then begin
+          res = left(input,i+len(cutsigns));
+        end;
+      end;
+    end;
+  end;
+  
+  
+  CutAfterStr = res;
+return;
+end;
+
 global updating procedure RA_B2BLoanAppEvaluateBuSettings(var record B2BLoanApplicationVc LAr,boolean openwcredman)
 begin
   record B2BLoanApplicationVc oldLAr;
@@ -2191,14 +2213,18 @@ begin
       foundf = true;
     end;
   end;
+  logtext(0,"RA_B2BLoanAppEvaluateBuSettings foundf " & foundf);
   if(foundf)then begin
     
+    logtext(0,"LAr.BankruptcyRatingCode " & LAr.BankruptcyRatingCode);
     if(nonblank(LAr.BankruptcyRatingCode))then begin
       blockload(AppIb);
       rwcnt = matrowcnt(AppIb);
+      logtext(0,"rwcnt " & rwcnt);
       for(i=0;i<rwcnt;i=i+1)begin
         matrowget(AppIb,i,AppIrw);
-        if(nonblank(AppIrw.BankruptRating) and AppIrw.BankruptRating==CutToStr(LAr.BankruptcyRatingCode,AppIrw.CutAfterSymbol))then begin
+        logtext(0,i & " AppIrw.BankruptRating " & AppIrw.BankruptRating & " AppIrw.BankruptRating " & AppIrw.BankruptRating & " CutAfterStr(LAr.BankruptcyRatingCode,AppIrw.CutAfterSymbol) " & CutAfterStr(LAr.BankruptcyRatingCode,AppIrw.CutAfterSymbol));
+        if(nonblank(AppIrw.BankruptRating) and AppIrw.BankruptRating==CutAfterStr(LAr.BankruptcyRatingCode,AppIrw.CutAfterSymbol))then begin
           if(LAr.EDSGuarant==1)then begin
             LAr.InterestRate = AppIrw.MonthRateWithEDS;
           end else begin
@@ -2261,11 +2287,13 @@ begin
               firstargval = vals;
             end else begin
               //logtext(0,"firstarg " & firstarg);
+              logtext(0,"1 try GetFieldValueByName " & firstarg);
               if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
                 if(LAErw.IgnoreIfBlank==1)then begin
                   goto lSkipRow;
                 end;
               end;
+              logtext(0,"2 try GetFieldValueByName " & firstarg);
               firstargval = stringtoval(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol),m4val);
             end;
           end else begin
@@ -2277,11 +2305,13 @@ begin
                 lastargval = vals;
               end else begin
                 //logtext(0,"lastarg " & lastarg);
-                if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
+                logtext(0,"3 try GetFieldValueByName " & lastarg);
+                if(blank(GetFieldValueByName(LAr,lastarg,-1)))then begin
                   if(LAErw.IgnoreIfBlank==1)then begin
                     goto lSkipRow;
                   end;
                 end;
+                logtext(0,"4 try GetFieldValueByName " & lastarg);
                 lastargval = stringtoval(CutToStr(GetFieldValueByName(LAr,lastarg,-1),LAErw.CutAfterSymbol),m4val);
               end;
             end else begin
@@ -2331,11 +2361,13 @@ begin
                 end;
               end;
             end else begin
+              logtext(0,"5 try GetFieldValueByName " & firstarg);
               if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
                 if(LAErw.IgnoreIfBlank==1)then begin
                   goto lSkipRow;
                 end;
               end;
+              logtext(0,"6 try GetFieldValueByName " & firstarg);
               firstargval = stringtoval(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol),m4val);
               if(LAErw.Type==0)then begin
                 if(blank(LAErw.StrValFrom) and blank(LAErw.StrValTo))then begin
@@ -2349,6 +2381,7 @@ begin
                 end;
                 nottrue = nottrue and resrow;
                 end else begin
+                  logtext(0,"7 try GetFieldValueByName " & firstarg);
                   firstarg = CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol);
                   if(nonblank(LAErw.StrValFrom) and nonblank(LAErw.StrValTo))then begin
                     if(firstarg>=LAErw.StrValFrom and firstarg<=LAErw.StrValTo)then begin
@@ -2379,14 +2412,17 @@ begin
             if(LowerCase(lastarg)=="currentdate")then begin
               lastarg = currentdate;
             end;
+            logtext(0,"8 try GetFieldValueByName " & firstarg);
             if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
               if(LAErw.IgnoreIfBlank==1)then begin
                 goto lSkipRow;
               end;
             end;
             if(sign=="-")then begin
+              logtext(0,"9 try GetFieldValueByName " & firstarg);
               calcdate = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
             end else begin
+              logtext(0,"10 try GetFieldValueByName " & firstarg);
               calcdate = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
             end;
           end;  
@@ -2398,14 +2434,17 @@ begin
             if(LowerCase(lastarg)=="currentdate")then begin
               lastarg = currentdate;
             end;
+            logtext(0,"11 try GetFieldValueByName " & firstarg);
             if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
               if(LAErw.IgnoreIfBlank==1)then begin
                 goto lSkipRow;
               end;
             end;
             if(sign=="-")then begin
+              logtext(0,"12 try GetFieldValueByName " & firstarg);
               calcdate = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
             end else begin
+              logtext(0,"13 try GetFieldValueByName " & firstarg);
               calcdate = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
             end;
           end;  
@@ -2417,14 +2456,17 @@ begin
             if(LowerCase(lastarg)=="currentdate")then begin
               lastarg = currentdate;
             end;
+            logtext(0,"14 try GetFieldValueByName " & firstarg);
             if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
               if(LAErw.IgnoreIfBlank==1)then begin
                 goto lSkipRow;
               end;
             end;
             if(sign=="-")then begin
+              logtext(0,"15 try GetFieldValueByName " & firstarg);
               calcdate = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
             end else begin
+              logtext(0,"16 try GetFieldValueByName " & firstarg);
               calcdate = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
             end;
           end; 
@@ -2443,14 +2485,17 @@ begin
                 if(LowerCase(lastarg)=="currentdate")then begin
                   lastarg = currentdate;
                 end;
+                logtext(0,"17 try GetFieldValueByName " & firstarg);
                 if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
                   if(LAErw.IgnoreIfBlank==1)then begin
                     goto lSkipRow;
                   end;
                 end;
                 if(sign=="-")then begin
+                  logtext(0,"18 try GetFieldValueByName " & firstarg);
                   checkdatefr = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
+                  logtext(0,"19 try GetFieldValueByName " & firstarg);
                   checkdatefr = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;  
@@ -2461,15 +2506,18 @@ begin
                 end;
                 if(LowerCase(lastarg)=="currentdate")then begin
                   lastarg = currentdate;
-                end;
+                end; 
+                logtext(0,"20 try GetFieldValueByName " & firstarg);
                 if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
                   if(LAErw.IgnoreIfBlank==1)then begin
                     goto lSkipRow;
                   end;
                 end;
                 if(sign=="-")then begin
+                  logtext(0,"21 try GetFieldValueByName " & firstarg);
                   checkdatefr = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
+                  logtext(0,"22 try GetFieldValueByName " & firstarg);
                   checkdatefr = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;  
@@ -2481,14 +2529,17 @@ begin
                 if(LowerCase(lastarg)=="currentdate")then begin
                   lastarg = currentdate;
                 end;
+                logtext(0,"23 try GetFieldValueByName " & firstarg);
                 if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
                   if(LAErw.IgnoreIfBlank==1)then begin
                     goto lSkipRow;
                   end;
                 end;
                 if(sign=="-")then begin
+                  logtext(0,"24 try GetFieldValueByName " & firstarg);
                   checkdatefr = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
+                  logtext(0,"25try GetFieldValueByName " & firstarg);
                   checkdatefr = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;
@@ -2510,12 +2561,14 @@ begin
                 end;
                 if(sign=="-")then begin
                   if(LAErw.IgnoreIfBlank==1)then begin
+                    logtext(0,"26 try GetFieldValueByName " & firstarg);
                     if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
                       if(LAErw.IgnoreIfBlank==1)then begin
                         goto lSkipRow;
                       end;
                     end;
                   end;
+                  logtext(0,"27 try GetFieldValueByName " & firstarg);
                   checkdateto = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
                   if(blank(GetFieldValueByName(LAr,firstarg,-1)))then begin
@@ -2523,6 +2576,7 @@ begin
                       goto lSkipRow;
                     end;
                   end;
+                  logtext(0,"28 try GetFieldValueByName " & firstarg);
                   checkdateto = addday(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;  
@@ -2536,8 +2590,10 @@ begin
                   lastarg = currentdate;
                 end;
                 if(sign=="-")then begin
+                  logtext(0,"29 try GetFieldValueByName " & firstarg);
                   checkdateto = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
+                  logtext(0,"30 try GetFieldValueByName " & firstarg);
                   checkdateto = addmonth(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;  
@@ -2550,8 +2606,10 @@ begin
                   lastarg = currentdate;
                 end;
                 if(sign=="-")then begin
+                  logtext(0,"31 try GetFieldValueByName " & firstarg);
                   checkdateto = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),-stringtoint(lastarg));
                 end else begin
+                  logtext(0,"32 try GetFieldValueByName " & firstarg);
                   checkdateto = addyear(stringtodate(CutToStr(GetFieldValueByName(LAr,firstarg,-1),LAErw.CutAfterSymbol)),stringtoint(lastarg));
                 end;
               end;
