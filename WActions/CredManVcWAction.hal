@@ -1315,6 +1315,7 @@ begin
       RepSpec.d1 = td;
       RepSpec.long1 = CredManr.SerNr;
       RepSpec.Notation = 1; 
+      RepSpec.flags[5] = 1;
       RepSpec.flags[4] = CMBOb.DebtsToFutureFees;
       calcPauseData(CredManr,RepSpec);     
       OpenWindow("PauseCredManWClass",0,wn,"","",RepSpec);

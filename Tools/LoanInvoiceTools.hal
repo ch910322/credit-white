@@ -2448,28 +2448,52 @@ begin
   string 255 spec;
   string 20 pd;
   integer cumint,balance;
+  record CMBuyOutBlock CMBOb;
+  date frdate,todate,invdate;
   
   BlockLoad(CIb);
   BlockLoad(CMb);
+  BlockLoad(CMBOb);
   
   pd = paydeal;
   if (blank(pd)) then begin
     pd = CIb.FirstInvPayDeal;
   end;
-  SetupLoanInvoice3(CredManr,CMb,IVr,CurrentDate,"","",true,false,"",1,true,pd,salesman);
+  
+  invdate = currentdate;
+  if(RepSpec.d1<RepSpec.sEndDate)then begin
+    frdate = RepSpec.sStartDate;
+    todate = addday(RepSpec.sEndDate,-1);
+    invdate = RepSpec.d1;
+  end;
+  
+  SetupLoanInvoice3(CredManr,CMb,IVr,invdate,frdate,addday(invdate,-1),true,false,"",1,true,pd,salesman);
   
   if(RepSpec.vals3!=0 or RepSpec.vals4!=0)then begin
     if(nonblankdate(RepSpec.d1))then begin
       cumint = stringtoval(RepSpec.FirstAcc,m4val);
       balance = stringtoval(RepSpec.FirstAcc,m4val);
     end;
-  
-    if(stringtoval(RepSpec.FirstAcc,m4val)>0)then begin
-      GetItemName(CMb.RateItem,spec);
-      SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,stringtoval(RepSpec.FirstAcc,m4val),blankval,14,-1);
-      spec = "";
+    if(IVr.InvDate<RepSpec.sEndDate)then begin
+      if(stringtoval(RepSpec.FirstAcc,m4val)>0)then begin
+        GetItemName(CMb.RateItem,spec);
+        SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,stringtoval(RepSpec.FirstAcc,m4val),blankval,kEventTypeCalcInterest,-1);
+        spec = "";
+      end;
     end;
   end;
+  
+  if(stringtoval(RepSpec.f6,m4val)>0)then begin
+    GetItemName(CMBOb.FutFeeItem,spec);
+    SetupInvoiceRowAndAdd(CredManr,IVr,CMBOb.FutFeeItem,spec,1,stringtoval(RepSpec.f6,m4val),blankval,kEventTypeCalcFees,-1);
+    spec = "";
+  end;
+  
+  /*if(stringtoval(RepSpec.f12,m4val)>0)then begin
+    GetItemName(CMBOb.FutFeeItem,spec);
+    SetupInvoiceRowAndAdd(CredManr,IVr,CMBOb.FutFeeItem,spec,1,stringtoval(RepSpec.f12,m4val),blankval,kEventTypeCalcFees,-1);
+    spec = "";
+  end;*/
   
   if(stringtoval(RepSpec.f9,m4val)==0)then begin
     rate = CredManr.StdProlongPrc;
@@ -2671,7 +2695,7 @@ end;
 
 
 
-global updating procedure CreditOpenInvoices(record CredManVc CredManr,Date todate,record ORVc ORr,string itemsclass)
+global updating procedure CreditOpenInvoices(record CredManVc CredManr,Date todate,record ORVc ORr,string itemsclass,var vector val nocreditsum)
 begin
   record IVVc IVr,setIVr,oldIVCreditr,IVCreditr;
   row IVVc IVrw,IV2rw;
@@ -2792,6 +2816,9 @@ begin
         for(i=0;i<mtrw;i=i+1)begin
           matrowget(setIVr,i,IVrw);
           if(IVrw.stp!=1 or blank(IVrw.ArtCode) or IVrw.Sum==0 or IVrw.Price==0 or !setinset(IVrw.ArtCode,itemtocredit))then begin
+            if(IVrw.stp==1 and nonblank(IVrw.ArtCode))then begin
+              nocreditsum[IVrw.ArtCode] = nocreditsum[IVrw.ArtCode] + IVrw.Sum;
+            end;
             matrowdelete(setIVr,i);
             i=i-1;
             mtrw = mtrw - 1;
@@ -2939,6 +2966,7 @@ begin
   Longint ivnr;
   vector val vCredVal;
   transaction Boolean gIsBuyOutInvoice; 
+  vector val tmpval;
   
   gIsBuyOutInvoice = true;
 
@@ -2946,7 +2974,7 @@ begin
     BlockLoad(CMb);
     BlockLoad(CIb);
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
-    CreditOpenInvoices(CredManr,td,ORr,"");// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 18 08 2021 y. at 2:26:56 PM
+    CreditOpenInvoices(CredManr,td,ORr,"",tmpval);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 18 08 2021 y. at 2:26:56 PM
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,td,IVr,false,sd,false,ORr);
     rwcnt = matrowcnt(IVr);
     if(ORr.ShipMark==1)then begin

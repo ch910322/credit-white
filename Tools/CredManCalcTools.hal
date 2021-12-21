@@ -1711,6 +1711,7 @@ LCalcSchedule:;
       
       //if (i!=0) then begin
         UpdateAgreementBalance(CredManPayPlanr,inCredManr,calcbal,acumint,frdat,todat,usesum,usemonths,months,int_type,addbal,payoutdate,i);
+        logtext(0,"UpdateAgreementBalance " & payoutdate);
         if (nonblank(payoutdate)) then begin
           frdat = payoutdate;
           int_todat = payoutdate;
