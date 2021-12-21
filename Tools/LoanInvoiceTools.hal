@@ -2875,6 +2875,52 @@ begin
 return;
 end;
 
+global updating procedure CreateSplitInvoice(record CredManVc CredManr,Date todate,record ORVc ORr,string itemsclass,date fromdate,date datetodate,longint lastinvnr)
+begin
+  record IVVc IVr,setIVr,oldIVCreditr,IVCreditr;
+  row IVVc IVrw,IV2rw;
+  integer i,rwcnt,rwcnt2,j,mtrw;
+  boolean TrHs,testf,isfullpayed,creditanyvay;
+  record ARVc ARr;
+  integer credflag;
+  record CredHistVc CredHistr,CredHist2r;
+  boolean TrHs2,foundf,creditthisinvoice;
+  record INVc INr;
+  string 255 tstr,princItem,itemtocredit,intItem,spec;
+  val t,tt,tot1,tot2,tot3,intcredsum;
+  longint t2,res;
+  date blankd;
+  vector val vIVItemOpenAmmount;
+  record CredManSetBlock CMb;
+  record CMBuyOutBlock CMBuyOutb;
+  
+  blockload(CMb);
+  blockload(CMBuyOutb);
+  
+  logtext(0,"ORr.TotGP " & ORr.TotGP);
+  
+  IVr.SerNr = lastinvnr;
+  if(readfirstmain(IVr,1,true))then begin
+    SetupLoanInvoice3(CredManr,CMb,setIVr,todate,fromdate,addday(todate,-1),true,false,"",1,true,IVr.PayDeal,IVr.SalesMan);
+    //recordcopy(setIVr,IVr);
+    
+    //setIVr.SerNr = NextSerNr("IVVc",CurrentDate,-1,false,"");
+    setIVr.CredToDate = addday(todate,-1);
+    logtext(0,"CreateSplitInvoice " & setIVr.SerNr);
+    rwcnt = matrowcnt(IVr);
+    logtext(0,"rwcnt " & rwcnt);
+   
+    GetItemName(CMb.RateItem,spec);
+    SetupInvoiceRowAndAdd(CredManr,setIVr,CMb.RateItem,spec,1,ORr.TotGP,blankval,14,-1);
+    spec = "";
+        
+    StoreLoanInvoice(setIVr,CredManr);
+  end;
+  
+  
+return;
+end;
+
 
 global
 updating procedure DoBuyOutAgreement(record CredManVc CredManr,Date td,Boolean creditf,var record IVVc firstIVr,record ORVc ORr)

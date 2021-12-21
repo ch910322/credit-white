@@ -89,7 +89,8 @@ external function string 20 getAdditionalCredManLangCode(record CredManVc);
 external updating procedure CreditOpenInvoices(record CredManVc,Date,record ORVc,string);
 external inner procedure ExtractObj(string,var Integer,var string);
 external updating procedure PayAllOpenInvoices(record CredManVc,Date,record ORVc,string);
-
+external updating procedure CreateSplitInvoice(record CredManVc,Date,record ORVc,string,date,date,longint);
+ 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
 begin
@@ -645,8 +646,9 @@ begin
   record CMBuyOutBlock CMBuyOutb;
   record CredManSchedVc CSr;
   row CredManSchedVc CSrw;
-  date lastinvperioddate;
+  date lastinvperioddate,lastinvperiodfromdate;
   integer rwcnt,i;
+  longint lastinvnr;
   
   blockload(CMBuyOutb);
   
@@ -657,8 +659,10 @@ begin
       rwcnt = MatRowCnt(CSr);
       for (i=0;i<rwcnt;i=i+1) begin
        MatRowGet(CSr,i,CSrw);
-        if (CSrw.Invoiced==1) then begin
+        if (CSrw.Invoiced==1 and stringtolongint(CSrw.InvoiceNr)>-1 and CSrw.Type==0) then begin
           lastinvperioddate = CSrw.ToDate;
+          lastinvperiodfromdate = CSrw.FromDate;
+          lastinvnr = stringtolongint(CSrw.InvoiceNr);
         end;
       end;
     end;
@@ -678,15 +682,21 @@ begin
       tmonths = blankval;
     end;
     logtext(0,"CanPauseAgreement(CredManr,td,months,err) " & CanPauseAgreement(CredManr,td,months,err));
-    if (CanPauseAgreement(CredManr,td,months,err)) then begin
+    //if (CanPauseAgreement(CredManr,td,months,err)) then begin
       if((RepSpec.vals3==0 or RepSpec.vals3==blankval) and (RepSpec.vals4==0 or RepSpec.vals4==blankval))then begin
         //messagebox(0,"A");
         scenario = false;
       end else begin
         scenario = true;
         if(td<lastinvperioddate)then begin
+          logtext(0,"CreditOpenInvoices++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+          ORr.InvMark = RepSpec.Notation;
           CreditOpenInvoices(CredManr,td,ORr,"");
+          logtext(0,"CreateSplitInvoice++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++lastinvnr");
+          ORr.TotGP = stringtoval(RepSpec.FirstAcc,m4val);
+          CreateSplitInvoice(CredManr,td,ORr,"",lastinvperiodfromdate,lastinvperioddate,lastinvnr);
         end;
+        
         //ORr.InvMark = RepSpec.Notation;
         //CMBuyOutb.FutFeeItemClass
         //CreditOpenInvoices(CredManr,td,ORr,"");
@@ -713,7 +723,7 @@ begin
         end;
       end;
       res = true;      
-    end;
+    //end;
     //RecordUpdate(oldCredManr,CredManr,true);
 //  end;
   return;

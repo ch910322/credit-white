@@ -1698,13 +1698,15 @@ LCalcSchedule:;
     if (calcbal>0 or int_type==2) then begin
       CalcCredManCurrentPeriod(inCredManr,CIb,i-1,payoutdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
       LoadAgreementChangesMonthly(inCredManr,invdat,futfees,futfeesmonths);
-      if(futfees!=0)then begin
-        oneperfees = round(futfees/futfeesmonths,defaultcurroundoff);
-        lastdelta = futfees - oneperfees * futfeesmonths;          
-        futfees = blankval;
-      end;
-      if(oneperfees!=0 and lastdelta!=0 and i==months-1)then begin
-        oneperfees = oneperfees + lastdelta;
+      if(tries==0)then begin
+        if(futfees!=0)then begin
+          oneperfees = round(futfees/futfeesmonths,defaultcurroundoff);
+          lastdelta = futfees - oneperfees * futfeesmonths;          
+          futfees = blankval;
+        end;
+        if(oneperfees!=0 and lastdelta!=0 and i==months-1)then begin
+          oneperfees = oneperfees + lastdelta;
+        end;
       end;
       
       //if (i!=0) then begin
@@ -1775,7 +1777,7 @@ LCalcSchedule:;
             AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat, acumint,addbal,int_frdat,int_todat,-1,false,int_type);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
-          AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
+          //AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
         case 1://linear with delay
           monthtype2 = monthtype;
           if (monthtype2==kMonthTypeLast) then begin
@@ -1795,7 +1797,7 @@ LCalcSchedule:;
             AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,addbal,int_frdat,int_todat,-1,false,int_type);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
-          AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
+          //AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
         case 3://Bullet
           AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype,invdat,acumint,calcbal,frdat,todat,-1,false);
           AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1,false);
@@ -1807,7 +1809,7 @@ LCalcSchedule:;
             AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,0,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths,vblank)
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
-          AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
+          //AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
         case 4://Factoring
           AddFactoringInvoices(inCredManr,CredManPayPlanr,CredManSetb,CurrentDate,acumint,calcbal,frdat,todat)
         case 5://Payment guarantee
@@ -1820,7 +1822,7 @@ LCalcSchedule:;
             AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,1,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths,vblank);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
-          AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
+          //AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
       end;
       AddExtraDeposit(inCredManr,CredManPayPlanr,CredManSetb,invdat,acumint,calcbal,frdat,todat,i+1);
       if (nonblank(inCredManr.CancelDate) and invdat==inCredManr.CancelDate) then begin
