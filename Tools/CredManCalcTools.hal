@@ -1716,7 +1716,7 @@ LCalcSchedule:;
       LoadAgreementChangesMonthly(inCredManr,invdat,futfees,futfeesmonths,foundf,chdate);
 lStepBack:;
 
-      foundf = false;
+      //foundf = false;
       if(foundf)then begin
         logtext(0,"foundffoundffoundffoundffoundffoundffoundffoundffoundffoundffoundffoundffoundf " & int_frdat & " == " & int_todat);
         CalcCredManCurrentPeriod(inCredManr,CIb,i-1,chdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
