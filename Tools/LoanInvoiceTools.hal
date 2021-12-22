@@ -3728,8 +3728,14 @@ begin
   integer intday,fullperiod;
   record CMBuyOutBlock CMBOb;
   date todate;
+  transaction boolean gBuyOutProcess;
+  transaction boolean gChangeProcess;
 
   blockload(CMBOb);
+  
+  if(!gChangeProcess)then begin
+    gBuyOutProcess = true;
+  end;
   
   CSr.CredManNr = CredManr.SerNr;
   if(readfirstmain(CSr,1,true))then begin
@@ -3749,10 +3755,19 @@ begin
         
         if(dateinrange(inputtodate,CSrw.FromDate,CSrw.ToDate))then begin
           todate = inputtodate;
-          if(CMBOb.CalcIntBOday==0)then begin
-            todate = addday(inputtodate,-1);
-          end else begin
+          if(gBuyOutProcess)then begin
+            if(CMBOb.CalcIntBOday==0)then begin
+              todate = addday(inputtodate,-1);
+            end else begin
 
+            end;
+          end;
+          if(gChangeProcess)then begin
+            if(CMBOb.CalcIntChangeDay==0)then begin
+              todate = addday(inputtodate,-1);
+            end else begin
+
+            end;
           end;
         
           if(CSrw.Invoiced==0)then begin
@@ -3917,7 +3932,13 @@ begin
   boolean testf;
   record CMBuyOutBlock CMBOb;
   record CMApplicationSetBlock CMAb;
+  transaction boolean gBuyOutProcess;
+  transaction boolean gChangeProcess;
   
+  if(!gChangeProcess)then begin
+    gBuyOutProcess = true;
+  end; 
+   
   blockload(CIb);
   BlockLoad(CMb);
   BlockLoad(CMBOb);
@@ -3949,8 +3970,15 @@ begin
   if(CMBOb.CalcOvdBOday==1)then begin
     invdateday = addday(invdateday,1);
   end;  
-  if(CMAb.BuyOutInclPaymDay==1)then begin
-    //invdateday = addday(invdateday,-1);
+  if(gBuyOutProcess)then begin
+    if(CMAb.BuyOutInclPaymDay==1)then begin
+      invdateday = addday(invdateday,-1);
+    end;
+  end;
+  if(gChangeProcess)then begin
+    if(CMAb.CalcOvdChangeDay==1)then begin
+      invdateday = addday(invdateday,-1);
+    end;
   end;
   GetCredManOverdueInvoices2(CredManr,CMb,invdateday,sd,latedays,lateamount,principlelateamount,interestlateamount,lateformula,false,false,calcsd);
   
@@ -4243,6 +4271,9 @@ procedure CheckBuyOutAgreementAsync(record CredManVc CredManr,Date td,Integer wn
 begin
   record RcVc RepSpec;
   record ORVc ORr;
+  transaction boolean gBuyOutProcess;
+
+  gBuyOutProcess = true;
 
   //CheckBuyOutAgreement(CredManr,RepSpec);
   if (true/*IsOmegaCustomer*/) then begin//enabled for all customers

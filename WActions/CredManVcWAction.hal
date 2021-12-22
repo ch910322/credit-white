@@ -774,6 +774,9 @@ begin
   integer pos,i,j,rwcnt,rwcnt2;
   string 50 tstr;
   boolean foundf;
+  transaction boolean gBuyOutProcess;
+  
+  gBuyOutProcess = true;
   
   wn = CurWindow;
   DeselectWindow(wn,true);
@@ -864,6 +867,9 @@ begin
   Integer wn,mwn;
   record ORVc ORr;
   record CredManVc CredManr;
+  transaction boolean gBuyOutProcess;
+  
+  gBuyOutProcess = true;
   
   wn = CurWindow;
   DeselectWindow(wn,true);
@@ -1243,6 +1249,9 @@ begin
   record CMInvoicingBlock CIb;
   record ORVc ORr;
   val newbal;
+  transaction boolean gChangeProcess;
+  
+  gChangeProcess = true;
   
   ORr.OrdDate = RepSpec.d1;
   ORr.InvMark = RepSpec.Notation;
