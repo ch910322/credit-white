@@ -2465,6 +2465,10 @@ begin
     frdate = RepSpec.sStartDate;
     todate = addday(RepSpec.sEndDate,-1);
     invdate = RepSpec.d1;
+  end else begin
+    frdate = addday(RepSpec.sEndDate,1);
+    todate = RepSpec.d1;
+    invdate = RepSpec.d1;
   end;
   
   SetupLoanInvoice3(CredManr,CMb,IVr,invdate,frdate,addday(invdate,-1),true,false,"",1,true,pd,salesman);
@@ -2474,20 +2478,20 @@ begin
       cumint = stringtoval(RepSpec.FirstAcc,m4val);
       balance = stringtoval(RepSpec.FirstAcc,m4val);
     end;
-    if(IVr.InvDate<RepSpec.sEndDate)then begin
+    //if(IVr.InvDate<RepSpec.sEndDate)then begin
       if(stringtoval(RepSpec.FirstAcc,m4val)>0)then begin
         GetItemName(CMb.RateItem,spec);
         SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,stringtoval(RepSpec.FirstAcc,m4val),blankval,kEventTypeCalcInterest,-1);
         spec = "";
       end;
-    end;
+    //end;
   end;
   
-  if(stringtoval(RepSpec.f6,m4val)>0)then begin
+  /*if(stringtoval(RepSpec.f6,m4val)>0)then begin
     GetItemName(CMBOb.FutFeeItem,spec);
     SetupInvoiceRowAndAdd(CredManr,IVr,CMBOb.FutFeeItem,spec,1,stringtoval(RepSpec.f6,m4val),blankval,kEventTypeCalcFees,-1);
     spec = "";
-  end;
+  end;*/
   
   /*if(stringtoval(RepSpec.f12,m4val)>0)then begin
     GetItemName(CMBOb.FutFeeItem,spec);

@@ -1265,7 +1265,6 @@ begin
     item = CMBuyOutb.FutFeeItem;
     if(nonblank(item))then begin
       AddCredPayPlanLine(CredManPayPlanr,invdat,item,"",kEventTypeCalcFees,feesval,0,acumint,calcbal,frdate,todate,-1,-1,0);
-      logtext(0,"CredManPayPlanr " & matrowcnt(CredManPayPlanr));
     end;
   end;
 
@@ -1304,7 +1303,7 @@ begin
   return;
 end;
 
-procedure LoadAgreementChangesToDate(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,Integer calculatedmonths,var Boolean prolongf,var Integer prolongstartmonths,var val prolongbal,var Integer months,var Integer usemonths,var val usesum,var Integer pausestartmonths,var Boolean waspausedf,var Date pausefrom,var Date pauseuntil,var Integer pausemonths)
+procedure LoadAgreementChangesToDate(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,Integer calculatedmonths,var Boolean prolongf,var Integer prolongstartmonths,var val prolongbal,var Integer months,var Integer usemonths,var val usesum,var Integer pausestartmonths,var Boolean waspausedf,var Date pausefrom,var Date pauseuntil,var Integer pausemonths,var val refinfees,var integer futfeesmonths,var boolean foundf,var date chdate)
 begin
   Date sd,ed;
   record CredManChangeVc Changer;
@@ -1317,6 +1316,8 @@ begin
   Changer.CredManNr = CredManr.SerNr;
   Changer.TransDate = sd;
   TrHs = true;
+  
+  logtext(0,"LoadAgreementChangesToDate  " & ed);
   while (LoopKey("CredManDate",Changer,2,TrHs)) begin
     if (CredManr.SerNr!=Changer.CredManNr or Changer.TransDate>ed) then begin
       TrHs = false;
@@ -1350,6 +1351,16 @@ begin
           usesum = GetBalanceOnDate(CredManPayPlanr,Changer.TransDate);
           prolongf = true;
         end;
+        
+        
+        refinfees = Changer.FutureFees;
+        logtext(0,"futfeesfutfeesfutfeesfutfees " & refinfees);
+        futfeesmonths = Changer.AddedFeesMonths;
+        if(Changer.IntRate!=blankval or Changer.AddValue!=0)then begin
+          foundf = true;
+          chdate = Changer.TransDate;
+        end;
+        
         if (Changer.PauseMonths>0) then begin
           pausestartmonths = MonthDiff(CredManr.FirstInvDate,Changer.TransDate);
           if (GetDay(Changer.TransDate)!=GetDay(CredManr.FirstInvDate)) then begin
@@ -1433,12 +1444,12 @@ begin
     
   sd = AddMonth(invdat,-1);
   ed = invdat;
-  
-  refinfees = blankval;
-  
+    
   Changer.CredManNr = CredManr.SerNr;
   Changer.TransDate = sd;
   TrHs = true;
+  
+  logtext(0,Changer.CredManNr & " ed " & ed);
   while (LoopKey("CredManDate",Changer,2,TrHs)) begin
     if (CredManr.SerNr!=Changer.CredManNr or Changer.TransDate>ed) then begin
       TrHs = false;
@@ -1452,9 +1463,6 @@ begin
           end;
         end;
         
-        refinfees = Changer.FutureFees;
-        futfeesmonths = Changer.AddedFeesMonths;
-        
         if (nonblank(Changer.IntRate)) then begin
           CredManr.IntRate = Changer.IntRate;
           CredManr.PrincipleDelayInterest = Changer.IntRate;
@@ -1467,6 +1475,9 @@ begin
           CredManr.MonthlyPaymentDay = Changer.MonthlyPaymentDay;
         end;
         
+        refinfees = Changer.FutureFees;
+        logtext(0,"futfeesfutfeesfutfeesfutfees " & refinfees);
+        futfeesmonths = Changer.AddedFeesMonths;
         if(Changer.IntRate!=blankval or Changer.AddValue!=0)then begin
           foundf = true;
           chdate = Changer.TransDate;
@@ -1698,27 +1709,28 @@ LCalcSchedule:;
   basemonths = usemonths;
   substractmonths = delaymonths;
 //logtext(0,"start dev");
-  LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths);
+  LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths,futfees,futfeesmonths,foundf,chdate);
   for(i=calculatedmonths;i<months;i=i+1) begin
     if (calcbal>0 or int_type==2) then begin
       CalcCredManCurrentPeriod(inCredManr,CIb,i-1,payoutdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
       LoadAgreementChangesMonthly(inCredManr,invdat,futfees,futfeesmonths,foundf,chdate);
 lStepBack:;
 
-  foundf = false;
+      foundf = false;
       if(foundf)then begin
         logtext(0,"foundffoundffoundffoundffoundffoundffoundffoundffoundffoundffoundffoundffoundf " & int_frdat & " == " & int_todat);
-        CalcCredManCurrentPeriod(inCredManr,CIb,-1,chdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
+        CalcCredManCurrentPeriod(inCredManr,CIb,i-1,chdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
         frdat = chdate;
         todat = addmonth(todat,-1);
         int_frdat = chdate;
         int_todat = addmonth(int_todat,-1);
         invdat = chdate;
         int_invdat = chdate;
-        //i=i-1;
+        i=i-1;
         logtext(0," " & int_frdat & " == " & int_todat);
       end;
-      if(tries==0)then begin
+      //if(tries==0)then begin
+        logtext(0,"===futfeesfutfeesfutfees " & futfees);
         if(futfees!=0)then begin
           oneperfees = round(futfees/futfeesmonths,defaultcurroundoff);
           lastdelta = futfees - oneperfees * futfeesmonths;          
@@ -1727,7 +1739,7 @@ lStepBack:;
         if(oneperfees!=0 and lastdelta!=0 and i==months-1)then begin
           oneperfees = oneperfees + lastdelta;
         end;
-      end;
+     // end;
       
       //if (i!=0) then begin
         UpdateAgreementBalance(CredManPayPlanr,inCredManr,calcbal,acumint,frdat,todat,usesum,usemonths,months,int_type,addbal,payoutdate,i);
@@ -1797,7 +1809,7 @@ lStepBack:;
             AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat, acumint,addbal,int_frdat,int_todat,-1,false,int_type);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
-          //AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
+            AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
         case 1://linear with delay
           monthtype2 = monthtype;
           if (monthtype2==kMonthTypeLast) then begin
@@ -1817,7 +1829,7 @@ lStepBack:;
             AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,addbal,int_frdat,int_todat,-1,false,int_type);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
-          //AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
+            AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
         case 3://Bullet
           AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype,invdat,acumint,calcbal,frdat,todat,-1,false);
           AddInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1,false);
@@ -1829,7 +1841,7 @@ lStepBack:;
             AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,0,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths,vblank)
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
-          //AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
+            AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
         case 4://Factoring
           AddFactoringInvoices(inCredManr,CredManPayPlanr,CredManSetb,CurrentDate,acumint,calcbal,frdat,todat)
         case 5://Payment guarantee
@@ -1842,7 +1854,7 @@ lStepBack:;
             AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,1,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths,vblank);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
-          //AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
+            AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
       end;
       
       AddExtraDeposit(inCredManr,CredManPayPlanr,CredManSetb,invdat,acumint,calcbal,frdat,todat,i+1);
@@ -1851,7 +1863,7 @@ lStepBack:;
       end;
       if(foundf)then begin
         foundf = false;
-        //i=i+1;
+        i=i+1;
         goto lStepBack;
       end;
       
