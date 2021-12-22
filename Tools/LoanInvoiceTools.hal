@@ -3967,18 +3967,18 @@ begin
   //lateamount=not invoiced overdues??? ->
   
   invdateday = ORr.OrdDate;
-  if(CMBOb.CalcOvdBOday==1)then begin
-    invdateday = addday(invdateday,1);
-  end;  
   if(gBuyOutProcess)then begin
+    if(CMBOb.CalcOvdBOday==1)then begin
+      invdateday = addday(invdateday,1);
+    end;  
     if(CMAb.BuyOutInclPaymDay==1)then begin
       invdateday = addday(invdateday,-1);
     end;
   end;
   if(gChangeProcess)then begin
-    //if(CMAb.CalcOvdChangeDay==1)then begin
-      ///invdateday = addday(invdateday,-1);
-    //end;
+    if(CMBOb.CalcOvdChangeDay==1)then begin
+      invdateday = addday(invdateday,1);
+    end; 
   end;
   GetCredManOverdueInvoices2(CredManr,CMb,invdateday,sd,latedays,lateamount,principlelateamount,interestlateamount,lateformula,false,false,calcsd);
   
