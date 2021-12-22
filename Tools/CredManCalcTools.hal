@@ -1708,7 +1708,7 @@ LCalcSchedule:;
 
   basemonths = usemonths;
   substractmonths = delaymonths;
-//logtext(0,"start dev");
+  logtext(0,"rows " & matrowcnt(CredManPayPlanr));
   LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths,futfees,futfeesmonths,foundf,chdate);
   for(i=calculatedmonths;i<months;i=i+1) begin
     if (calcbal>0 or int_type==2) then begin
@@ -1724,13 +1724,12 @@ lStepBack:;
         todat = addmonth(todat,-1);
         int_frdat = chdate;
         int_todat = addmonth(int_todat,-1);
-        invdat = chdate;
-        int_invdat = chdate;
+        invdat = addday(chdate,1);
+        int_invdat = addday(chdate,1);
         i=i-1;
         logtext(0," " & int_frdat & " == " & int_todat);
       end;
       //if(tries==0)then begin
-        logtext(0,"===futfeesfutfeesfutfees " & futfees);
         if(futfees!=0)then begin
           oneperfees = round(futfees/futfeesmonths,defaultcurroundoff);
           lastdelta = futfees - oneperfees * futfeesmonths;          
@@ -1749,7 +1748,7 @@ lStepBack:;
         end;
       //end;
       int_calcbal = calcbal - addbal;
-      if (GetDay(invdat)!=inCredManr.MonthlyPaymentDay) then begin
+      if (GetDay(invdat)!=inCredManr.MonthlyPaymentDay and !foundf) then begin
         CalcCredManCurrentPeriod(inCredManr,CIb,i-1,payoutdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates,   frdat, todat and invdat
       end;
 

@@ -712,7 +712,7 @@ begin
         end;
         
         payval = addval - payval;
-        CreateCredmanPurchaseInvoice(CredManr,0,VIr,payval,true,td);
+        CreateCredmanPurchaseInvoice(CredManr,0,VIr,addval,true,td);
         CM_CreatePaymentOrder(CredManr,VIr,payval);
         GenerateAgreementSchedule(CredManr,true,true);
       end;
