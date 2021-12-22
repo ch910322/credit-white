@@ -4881,6 +4881,9 @@ updating procedure StoreCredManSchedRecord(record CredManSchedVc CSr)
 begin
   record CredManSchedVc oldCSr;
 
+  logtext(0,"StoreCredManSchedRecord " & matrowcnt(CSr));
+  HALCALLSTACK;
+
   oldCSr.CredManNr = CSr.CredManNr;
   if (ReadFirstMain(oldCSr,1,true)) then begin
     RecordUpdate(oldCSr,CSr,false);
@@ -4955,7 +4958,6 @@ logforadmin(0,"GenerateAgreementSchedule1");
       CSrw.InvDate = SMrw.TransDate;
       CSrw.PayDate = SMrw.DueDate;
       CSrw.Type = SMrw.RowSimStat;
-      logforadmin(0,"SMrw.RowSimStat " & SMrw.RowSimStat);
       switch (CSrw.Type) begin
         case 4:
           CSrw.Total = SMrw.CurDebVal;
@@ -4993,6 +4995,7 @@ logforadmin(0,"GenerateAgreementSchedule1");
       rw = rw + 1;
     end;
   end;
+  logtext(0,"StoreCredManSchedRecord  " & matrowcnt(CSr));
   qupdating.StoreCredManSchedRecord(CSr);
 
 lout:;

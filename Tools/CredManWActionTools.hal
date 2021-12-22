@@ -635,6 +635,9 @@ begin
   longint lastinvnr;
   vector val nocreditsum;
   array string 20 anocreditsum;
+  transaction boolean gOffSeveralRecalc;
+  
+  gOffSeveralRecalc = true;
   
   blockload(CMBuyOutb);
   
