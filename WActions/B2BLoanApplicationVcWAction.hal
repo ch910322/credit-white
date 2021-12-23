@@ -2160,6 +2160,7 @@ begin
       for(i=0;i<len(input)-len(cutsigns);i=i+1)begin
         if(mid(input,i,len(cutsigns))==cutsigns)then begin
           res = left(input,i+len(cutsigns));
+          i = len(input);
         end;
       end;
     end;
