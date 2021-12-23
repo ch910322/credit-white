@@ -739,18 +739,19 @@ end;
   EditField(h,v+=vs,100,"Interest Amount",ViewOnly,Stext,false,0);//====================Interest Amount
   EditField(h,v+=vs,100,"Current Period Interest",ViewOnly,FirstAcc,false,0);//====================Current Period Interest
   EditField(h,v+=vs,100,"Credited Interest",ViewOnly,AccStr,false,0);//====================Credited Interest
-  CheckBox(h+140,v,0,"Credit Interest",Notation);//====================Credit Interest
+  CheckBox(h+110,v,0,"Credit Interest",Notation);//====================Credit Interest
   EditField(h,v+=vs,100,"Overdue invoices",ViewOnly,TransStr,false,0);//====================Overdue invoices
   EditField(h,v+=vs,100,"Added to New Balance",ViewOnly,f5,false,0);//====================Added to New Balance
   EditField(h,v+=vs,100,"Added to Future Fees",ViewOnly,f6,false,0);//====================Added to Future Feesvals4  
+  CheckBox(h+110,v,0,"Distribute Debts to Future Fees",flags[4]);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 21 12 2021 y. at 9:48:05 AM
   EditField(h,v+=vs,100,"Future Fees Period",Normal,wholemonthf,false,0);//====================Future Fees Period
   EditField(h,v+=vs,100,"Prolongation Fee",Normal,f9,false,0);//====================Future Fees Period
-  CheckBox(h+140,v,0,"Issue Prolong Invoice",flags[2]);
+  CheckBox(h+110,v,0,"Issue Prolong Invoice",flags[2]);
   EditFieldTL(h,v+=vs,100,"Not invoiced Overdues",M4Str,ViewOnly,255,f12,false,0);//// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 16 12 2021 y. at 10:57:47 PM
-  
+  CheckBox(h+110,v,0,"Issue Overdued Invoice",flags[5]);
   
   EditField(h,v+=vs,100,"Prepayments",ViewOnly,f7,false,0);//=====================Prepayments
-  CheckBox(h+140,v,0,"Reduce from Balance",Custf);//"Reduce from Balance"
+  CheckBox(h+110,v,0,"Reduce from Balance",Custf);//"Reduce from Balance"
   EditField(h,v+=vs,100,"New Balance",Normal,f8,false,0);//=====================Prepayments
   
   EditField(h,v+=vs,100,"Change Purpose",Normal,f1,false,AgrChangesPurpSClass);
@@ -4435,9 +4436,12 @@ begin
   EditField(h,v+=vs,100,"Future Fee Item Class",Normal,FutFeeItemClass,false,DISClass);
   EditField(h,v+=vs,100,"Future Fee Item",Normal,FutFeeItem,false,INSClass);
   CheckBox(h,v+=20,0,"Calculate Interest for Buy-Out Day",CalcIntBOday);
-  CheckBox(h,v+=20,0,"Calculate Overdues for Buy-Out Day",CalcOvdBOday);  
+  CheckBox(h,v+=20,0,"Calculate Overdues for Buy-Out Day",CalcOvdBOday); 
+  CheckBox(h,v+=20,0,"Calculate Interest for Change Day",CalcIntChangeDay);
+  CheckBox(h,v+=20,0,"Calculate Overdues for Change Day",CalcOvdChangeDay);  
   CheckBox(h,v+=20,0,"Invoice future fees",InvFutFees);
   CheckBox(h,v+=20,0,"Do Dot Credit Last Day Invoices",DoNotCreditlastDayInvoices);
+  CheckBox(h,v+=20,0,"By Default Distribute Debts to Future Fees",DebtsToFutureFees);
 
   EndWindow;
   return;

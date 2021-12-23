@@ -774,6 +774,9 @@ begin
   integer pos,i,j,rwcnt,rwcnt2;
   string 50 tstr;
   boolean foundf;
+  transaction boolean gBuyOutProcess;
+  
+  gBuyOutProcess = true;
   
   wn = CurWindow;
   DeselectWindow(wn,true);
@@ -864,6 +867,9 @@ begin
   Integer wn,mwn;
   record ORVc ORr;
   record CredManVc CredManr;
+  transaction boolean gBuyOutProcess;
+  
+  gBuyOutProcess = true;
   
   wn = CurWindow;
   DeselectWindow(wn,true);
@@ -1243,6 +1249,9 @@ begin
   record CMInvoicingBlock CIb;
   record ORVc ORr;
   val newbal;
+  transaction boolean gChangeProcess;
+  
+  gChangeProcess = true;
   
   ORr.OrdDate = RepSpec.d1;
   ORr.InvMark = RepSpec.Notation;
@@ -1253,10 +1262,18 @@ begin
   RepSpec.AccStr = ORr.DownPaySent;
   RepSpec.Notation = ORr.InvMark;
   RepSpec.TransStr = ORr.Sum2;
-  RepSpec.f5 = ORr.Sum2 - ORr.CustVal01;//"Added to New Balance"
+  if(RepSpec.flags[4]==1)then begin
+    RepSpec.f5 = ORr.Sum2 - ORr.CustVal01;//"Added to New Balance"
+  end else begin
+    RepSpec.f5 = blankval;
+  end;
   RepSpec.f9 = ORr.CustVal02;
   
-  RepSpec.f6 = ORr.CustVal01;
+  if(RepSpec.flags[4]==1)then begin
+    RepSpec.f6 = ORr.CustVal01;
+  end else begin
+    RepSpec.f6 = blankval;
+  end;
   
   RepSpec.f7 = ORr.PrepaidAmount;//prepayments
   
@@ -1294,7 +1311,9 @@ begin
   Date td;
   record CMInvoicingBlock CIb;
   record ORVc ORr;
+  record CMBuyOutBlock CMBOb;
   
+  blockload(CMBOb);
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
   if (WindowState(wn)==Rs_Normal) then begin
@@ -1305,6 +1324,8 @@ begin
       RepSpec.d1 = td;
       RepSpec.long1 = CredManr.SerNr;
       RepSpec.Notation = 1; 
+      RepSpec.flags[5] = 1;
+      RepSpec.flags[4] = CMBOb.DebtsToFutureFees;
       calcPauseData(CredManr,RepSpec);     
       OpenWindow("PauseCredManWClass",0,wn,"","",RepSpec);
     end;
