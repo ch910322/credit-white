@@ -700,6 +700,9 @@ begin
     tmpval = usemonths;
     tmpval = tmpval/100;
     res = Power(tmpval,2);
+    if (usemonths>200) then begin
+      res = 2;
+    end;
   end else begin
     res = 1;
   end;
