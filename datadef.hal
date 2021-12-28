@@ -2814,6 +2814,7 @@ begin
   RecordField(DebtsToFutureFees,M4Int,0,0);
   RecordField(CalcIntChangeDay,M4Int,0,0);
   RecordField(CalcOvdChangeDay,M4Int,0,0);
+  RecordField(InterestCredOrPay,M4Int,0,0);
   EndBlock;
   
   BlockBegin(AppInterestRateBlock,-,"");

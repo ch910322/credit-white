@@ -559,6 +559,7 @@ begin
   end else begin
     t = monthly_rate * (total_sum * power(1 + monthly_rate, payments)) / (power(1 + monthly_rate, payments) - 1);
   end;
+  //logtext(0,"FIN_PMT total_sum " & total_sum);
   FIN_PMT = t;
   return;
 end;
@@ -1357,7 +1358,6 @@ begin
         
         
         refinfees = Changer.FutureFees;
-        logtext(0,"futfeesfutfeesfutfeesfutfees " & refinfees);
         futfeesmonths = Changer.AddedFeesMonths;
         if(Changer.IntRate!=blankval or Changer.AddValue!=0)then begin
           foundf = true;
@@ -1452,7 +1452,6 @@ begin
   Changer.TransDate = sd;
   TrHs = true;
   
-  logtext(0,Changer.CredManNr & " ed " & ed);
   while (LoopKey("CredManDate",Changer,2,TrHs)) begin
     if (CredManr.SerNr!=Changer.CredManNr or Changer.TransDate>ed) then begin
       TrHs = false;
@@ -1479,7 +1478,6 @@ begin
         end;
         
         refinfees = Changer.FutureFees;
-        logtext(0,"futfeesfutfeesfutfeesfutfees " & refinfees);
         futfeesmonths = Changer.AddedFeesMonths;
         if(Changer.IntRate!=blankval or Changer.AddValue!=0)then begin
           foundf = true;
@@ -1711,27 +1709,30 @@ LCalcSchedule:;
 
   basemonths = usemonths;
   substractmonths = delaymonths;
-  logtext(0,"rows " & matrowcnt(CredManPayPlanr));
   LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths,futfees,futfeesmonths,foundf,chdate);
+  if(foundf)then begin
+    //calculatedmonths = calculatedmonths - 1;
+  end;
   for(i=calculatedmonths;i<months;i=i+1) begin
     if (calcbal>0 or int_type==2) then begin
+      
       CalcCredManCurrentPeriod(inCredManr,CIb,i-1,payoutdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
+      
       LoadAgreementChangesMonthly(inCredManr,invdat,futfees,futfeesmonths,foundf,chdate);
 lStepBack:;
 
-      //foundf = false;
+      /*foundf = false;//not work correct
       if(foundf)then begin
         logtext(0,"foundffoundffoundffoundffoundffoundffoundffoundffoundffoundffoundffoundffoundf " & int_frdat & " == " & int_todat);
-        CalcCredManCurrentPeriod(inCredManr,CIb,i-1,chdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
         frdat = chdate;
         todat = addmonth(todat,-1);
         int_frdat = chdate;
         int_todat = addmonth(int_todat,-1);
-        invdat = addday(chdate,1);
-        int_invdat = addday(chdate,1);
+        invdat = addmonth(invdat,0);
+        int_invdat =addmonth(invdat,0);
         i=i-1;
         logtext(0," " & int_frdat & " == " & int_todat);
-      end;
+      end;*/
       //if(tries==0)then begin
         if(futfees!=0)then begin
           oneperfees = round(futfees/futfeesmonths,defaultcurroundoff);

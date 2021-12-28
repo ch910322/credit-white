@@ -752,7 +752,7 @@ end;
   
   EditField(h,v+=vs,100,"Prepayments",ViewOnly,f7,false,0);//=====================Prepayments
   CheckBox(h+110,v,0,"Reduce from Balance",Custf);//"Reduce from Balance"
-  EditField(h,v+=vs,100,"New Balance",Normal,f8,false,0);//=====================Prepayments
+  EditField(h,v+=vs,100,"New Balance",ViewOnly,f8,false,0);//=====================New Balance
   
   EditField(h,v+=vs,100,"Change Purpose",Normal,f1,false,AgrChangesPurpSClass);
   
@@ -4442,6 +4442,9 @@ begin
   CheckBox(h,v+=20,0,"Invoice future fees",InvFutFees);
   CheckBox(h,v+=20,0,"Do Dot Credit Last Day Invoices",DoNotCreditlastDayInvoices);
   CheckBox(h,v+=20,0,"By Default Distribute Debts to Future Fees",DebtsToFutureFees);
+  ButtonFrame(h,v+=45,200,2,"Close Due Invoices");
+	RadioButton(h,v,0,0,"Credit Future Fees",InterestCredOrPay);
+	RadioButton(h,v+=vs,1,0,"Reconcile Future Fees",InterestCredOrPay);
 
   EndWindow;
   return;

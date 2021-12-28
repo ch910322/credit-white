@@ -2471,9 +2471,9 @@ begin
     invdate = RepSpec.d1;
   end;
   
-  SetupLoanInvoice3(CredManr,CMb,IVr,invdate,frdate,addday(invdate,-1),true,false,"",1,true,pd,salesman);
+  SetupLoanInvoice3(CredManr,CMb,IVr,invdate,frdate,invdate,true,false,"",1,true,pd,salesman);
   
-  if(RepSpec.vals3!=0 or RepSpec.vals4!=0)then begin
+  /*if(RepSpec.vals3!=0 or RepSpec.vals4!=0)then begin
     if(nonblankdate(RepSpec.d1))then begin
       cumint = stringtoval(RepSpec.FirstAcc,m4val);
       balance = stringtoval(RepSpec.FirstAcc,m4val);
@@ -2485,7 +2485,7 @@ begin
         spec = "";
       end;
     //end;
-  end;
+  end;*/
   
   /*if(stringtoval(RepSpec.f6,m4val)>0)then begin
     GetItemName(CMBOb.FutFeeItem,spec);
@@ -2725,20 +2725,24 @@ begin
   princItem = CMb.InstalmentItem;
   intItem = CMb.RateItem;
   itemtocredit = princItem;
-  
+    
   if(nonblank(itemsclass))then begin
     itemtocredit = "";
-    creditanyvay = true;
-    while(loopmain(INr,1,true))begin
-      if(setinset(itemsclass,INr.DispGroups))then begin
-        itemtocredit = itemtocredit & INr.Code & ","; 
+    if(CMBuyOutb.InterestCredOrPay==0)then begin
+      creditanyvay = true;
+      while(loopmain(INr,1,true))begin
+        if(setinset(itemsclass,INr.DispGroups))then begin
+          itemtocredit = itemtocredit & INr.Code & ","; 
+        end;
+      end;
+      if(ORr.InvMark==1)then begin
+        itemtocredit = itemtocredit & "," & intItem;
       end;
     end;
-  end;
-  
-  if(ORr.InvMark==1)then begin
-    itemtocredit = itemtocredit & "," & intItem;
-    //intcredsum = ORr.DownPaySent; //creditet full interest always
+  end else begin
+    if(ORr.InvMark==1)then begin
+      itemtocredit = itemtocredit & "," & intItem;
+    end;
   end;
   
   logforadmin(0,"CreditOpenInvoices");
