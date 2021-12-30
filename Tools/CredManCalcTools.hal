@@ -1157,7 +1157,7 @@ begin
             if (CredHistr.ChargeType==kEventTypeIssueInstalment or CredHistr.ChargeType==kEventTypeIssueInterest) then begin//invoice
               if (CredHistr.PayDate>=CredManr.FirstInvDate) then begin//trans date is not correct, but pay date is not ideal as well
                 skip = false;
-                if(CMBuyOutb.UseRedesignedByuOut)then begin
+                if(CMBuyOutb.UseRedesignedByuOut==1)then begin
                   if(getmonth(CredHistr.TransDate)==getmonth(CredHistr.CredFromDate) and getmonth(CredHistr.TransDate)==getmonth(CredHistr.CredToDate))then begin
                     skip = true;
                   end;
