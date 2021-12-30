@@ -313,6 +313,7 @@ begin
         matrowget(CredManPayPlanr,i,CredManPayPlan2rw);
         if(CredManPayPlan2rw.PlanType==type and CredManPayPlan2rw.IssuedNr==histnr)then begin
           skip = false;
+          logtext(0,"AddCredPayPlanLine2 skip");
         end;
       end;
     end;
@@ -1159,7 +1160,7 @@ begin
                 skip = false;
                 if(CMBuyOutb.UseRedesignedByuOut==1)then begin
                   if(getmonth(CredHistr.TransDate)==getmonth(CredHistr.CredFromDate) and getmonth(CredHistr.TransDate)==getmonth(CredHistr.CredToDate))then begin
-                    skip = true;
+                    //skip = true;
                   end;
                 end;
                 if(!skip)then begin
@@ -1173,7 +1174,6 @@ begin
       end;
       if (CredHistr.RecordType==5 and ((CredHistr.TransDate<=lastinvdate and nonblank(lastinvdate)) or planf==false)) then begin
         calcbal = calcbal + CredHistr.Sum;
-        logtext(0,"Paymnets!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,"","",kEventTypePayout,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,openamount);
         prevusesum = usesum;
         usesum = calcbal;
@@ -1763,8 +1763,8 @@ lStepBack:;
         end;
 
         if(foundf)then begin
-          frdat = chdate;
-          int_frdat = chdate;
+          //frdat = chdate;
+          //int_frdat = chdate;
         end;
       end;
       
@@ -1778,13 +1778,13 @@ lStepBack:;
         CalcCredManCurrentPeriod(inCredManr,CIb,i-1,payoutdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates,   frdat, todat and invdat
       end;
       
-      if(CMBuyOutb.UseRedesignedByuOut==1)then begin
+      /*if(CMBuyOutb.UseRedesignedByuOut==1)then begin
         if(foundf)then begin
           frdat = chdate;
           int_frdat = chdate;
           foundf = false;
         end;
-      end;
+      end;*/
 
 
       if (i==0 and firstinvf==false and inCredManr.InstalmentType!=4) then begin//Not for factoring
@@ -1906,8 +1906,8 @@ lStepBack:;
       if(CMBuyOutb.UseRedesignedByuOut==1)then begin
         if(foundf)then begin
           foundf = false;
-          i=i+1;
-          goto lStepBack;
+          //i=i+1;
+          //goto lStepBack;
         end;
       end;
       
