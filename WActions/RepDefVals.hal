@@ -131,3 +131,27 @@ begin
   MailTextDClassAfterEditField = res;
   return;
 end;
+
+global
+function Boolean CreditAgreementsRClassOnOKWindow(Integer wn)
+begin
+  record RcVc RepSpec;
+  boolean res;
+
+  GetWindowRecord(wn, RepSpec);
+  LogText(1,"CreditAgreementsRClassOnOKWindow");
+  res = true;
+
+  if (RepSpec.ArtMode == 1) then begin
+    RepSpec.BaseWidth = 1400;
+  end else begin
+    RepSpec.BaseWidth = 750;
+  end;
+
+  PutWindowRecord(wn,RepSpec);
+
+  LogText(1,"onok RepSpec.BaseWidth " & RepSpec.BaseWidth);
+
+  CreditAgreementsRClassOnOKWindow = res;
+  return;
+end;

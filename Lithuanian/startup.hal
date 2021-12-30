@@ -246,6 +246,12 @@ begin
   SString(200306,"Classification");
   SString(200307,"Legal No.");
 
+  SString(200312,"Customer Code");
+  SString(200313,"Customer Name");
+  SString(200314,"Agreement No.");
+  SString(200315,"Exposure");
+  SString(200316,"Trade Debt");
+
   StrSetAdd(584);
   StrSetText(CredManVc,"Credit Agreements");
   StrSetText(B2BLoanApplicationVc,"Loan Applications");

@@ -4164,7 +4164,7 @@ begin
           CMTr.Code = CredManr.Type;
           if (ReadFirstMain(CMTr,1,true)) then begin
             if(CMTr.LoanType!=newCMTr.LoanType)then begin
-               messagebox(200312,"");
+               messagebox(200317,"");
                RepSpec.f10 = "";
                putwindowrecord(wn,RepSpec);
                res = false;
