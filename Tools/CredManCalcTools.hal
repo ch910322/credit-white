@@ -307,7 +307,7 @@ begin
   
   skip = true;
   
-  if(CMBuyOutb.UseRedesignedByuOut)then begin
+  if(CMBuyOutb.UseRedesignedByuOut==1)then begin
     if(histnr>-1)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 29 12 2021 y. at 4:13:14 PM
       for(i=0;i<matrowcnt(CredManPayPlanr);i=i+1)begin
         matrowget(CredManPayPlanr,i,CredManPayPlan2rw);
@@ -1758,7 +1758,7 @@ LCalcSchedule:;
       LoadAgreementChangesMonthly(inCredManr,invdat,futfees,futfeesmonths,foundf,chdate);
 lStepBack:;
 
-      if(CMBuyOutb.UseRedesignedByuOut)then begin
+      if(CMBuyOutb.UseRedesignedByuOut==1)then begin
         if(futfees!=0)then begin
           oneperfees = round(futfees/futfeesmonths,defaultcurroundoff);
           lastdelta = futfees - oneperfees * futfeesmonths;          
@@ -1784,7 +1784,7 @@ lStepBack:;
         CalcCredManCurrentPeriod(inCredManr,CIb,i-1,payoutdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates,   frdat, todat and invdat
       end;
       
-      if(CMBuyOutb.UseRedesignedByuOut)then begin
+      if(CMBuyOutb.UseRedesignedByuOut==1)then begin
         if(foundf)then begin
           frdat = chdate;
           int_frdat = chdate;
@@ -1849,7 +1849,7 @@ lStepBack:;
             AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat, acumint,addbal,int_frdat,int_todat,-1,false,int_type);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
-          if(CMBuyOutb.UseRedesignedByuOut)then begin
+          if(CMBuyOutb.UseRedesignedByuOut==1)then begin
             AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
           end;
         case 1://linear with delay
@@ -1871,7 +1871,7 @@ lStepBack:;
             AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,addbal,int_frdat,int_todat,-1,false,int_type);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
-          if(CMBuyOutb.UseRedesignedByuOut)then begin
+          if(CMBuyOutb.UseRedesignedByuOut==1)then begin
             AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
           end;
         case 3://Bullet
@@ -1885,7 +1885,7 @@ lStepBack:;
             AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,0,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths,vblank)
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
-          if(CMBuyOutb.UseRedesignedByuOut)then begin  
+          if(CMBuyOutb.UseRedesignedByuOut==1)then begin  
             AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
           end;
         case 4://Factoring
@@ -1900,7 +1900,7 @@ lStepBack:;
             AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,1,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths,vblank);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
-          if(CMBuyOutb.UseRedesignedByuOut)then begin  
+          if(CMBuyOutb.UseRedesignedByuOut==1)then begin  
             AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
           end;
       end;
