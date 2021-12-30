@@ -1111,7 +1111,7 @@ begin
   Date lastinvdate;
   val prevusesum;
   record CMBuyOutBlock CMBuyOutb;
-  
+    
   blockload(CMBuyOutb);
 
   firstinvf = false;
@@ -1173,6 +1173,7 @@ begin
       end;
       if (CredHistr.RecordType==5 and ((CredHistr.TransDate<=lastinvdate and nonblank(lastinvdate)) or planf==false)) then begin
         calcbal = calcbal + CredHistr.Sum;
+        logtext(0,"Paymnets!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,"","",kEventTypePayout,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,openamount);
         prevusesum = usesum;
         usesum = calcbal;
@@ -1353,7 +1354,6 @@ begin
   Changer.TransDate = sd;
   TrHs = true;
   
-  logtext(0,"LoadAgreementChangesToDate  " & ed);
   while (LoopKey("CredManDate",Changer,2,TrHs)) begin
     if (CredManr.SerNr!=Changer.CredManNr or Changer.TransDate>ed) then begin
       TrHs = false;
@@ -1450,15 +1450,13 @@ begin
     BlockLoad(CredManSetb);
     BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
     rwcnt = MatRowCnt(SMr);
-    if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0 and rwcnt>2) then begin
+    if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
       MatRowGet(SMr,rwcnt-2,lastSMrw);
       MatRowGet(SMr,rwcnt-3,lastSM2rw);
       tmonthdiff = 1;
     end else begin  
-      if(rwcnt>2)then begin
-        MatRowGet(SMr,rwcnt-1,lastSMrw);
-        MatRowGet(SMr,rwcnt-2,lastSM2rw);
-      end;
+      MatRowGet(SMr,rwcnt-1,lastSMrw);
+      MatRowGet(SMr,rwcnt-2,lastSM2rw);
     end;
     if (blank(lastSM2rw.ExtraComment)) then begin
       if (TotalsDifferTooMuch(lastSM2rw.ToRateB2,lastSMrw.ToRateB2,diff,CredManr,usemonths-tmonthdiff)) then begin//funny name :)
@@ -1746,9 +1744,6 @@ LCalcSchedule:;
   basemonths = usemonths;
   substractmonths = delaymonths;
   LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths,futfees,futfeesmonths,foundf,chdate);
-  if(foundf)then begin
-    //calculatedmonths = calculatedmonths - 1;
-  end;
   for(i=calculatedmonths;i<months;i=i+1) begin
     if (calcbal>0 or int_type==2) then begin
       
@@ -1779,7 +1774,7 @@ lStepBack:;
         int_todat = payoutdate;
       end;
       int_calcbal = calcbal - addbal;
-      if (GetDay(invdat)!=inCredManr.MonthlyPaymentDay and !foundf) then begin
+      if (GetDay(invdat)!=inCredManr.MonthlyPaymentDay) then begin
         CalcCredManCurrentPeriod(inCredManr,CIb,i-1,payoutdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates,   frdat, todat and invdat
       end;
       
@@ -1908,10 +1903,12 @@ lStepBack:;
       if (nonblank(inCredManr.CancelDate) and invdat==inCredManr.CancelDate) then begin
         goto LBuildCredManPayPlanCust;
       end;
-      if(foundf)then begin
-        foundf = false;
-        i=i+1;
-        goto lStepBack;
+      if(CMBuyOutb.UseRedesignedByuOut==1)then begin
+        if(foundf)then begin
+          foundf = false;
+          i=i+1;
+          goto lStepBack;
+        end;
       end;
       
       //if (i==0) then begin
