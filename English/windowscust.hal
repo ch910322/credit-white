@@ -4453,8 +4453,8 @@ begin
   SetWRect(20,80,670,298);
   Sizeable(-1,-1,0,0);
   
-  RadioButton(h,v+=vs,1,0,"Use Redesigned Buy-Out",UseRedesignedByuOut);
-  EditField(h=180,v=6,100,"Buyout Paym. Term",Normal,BuyOutPayDeal,false,PDSClass); 
+  CheckBox(h=180,v=6,0,"Use Redesigned Buy-Out",UseRedesignedByuOut); 
+  EditField(h,v+=20,100,"Buyout Paym. Term",Normal,BuyOutPayDeal,false,PDSClass); 
   EditField(h,v+=vs,100,"Premature Term. Item",Normal,BuyOutItem,false,INSClass);   
   EditField(h,v+=vs,100,"Premature Term. Principle",Normal,PremTermPrincpl,false,INSClass);
   EditField(h,v+=vs,100,"Future Fee Item Class",Normal,FutFeeItemClass,false,DISClass);
