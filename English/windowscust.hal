@@ -723,8 +723,31 @@ end;
   EditFieldTL(h=160,v=6,120,"Loan Application",M4Long,Normal,0,long1,false,B2BLoanApplicationSClass);
   EditFieldTL(h,v+=vs,120,"Surety (1,2,3)",M4Int,Normal,0,flags[0],false,0);
   EndWindow;
-
+  
+  
   WindowBegin("Register Agreement Changes",PauseCredManWClass,CGother,RcType);
+  UseView(RcVc);
+  SetWRect(20,80,400,360);
+  AutoSizeWindow(false);  
+  h = 150; h2 = 250; v=450;
+  EditFieldTL(h,v=6,120,"Changes Start Date",M4Date,Normal,0,d1,false,PasteCurDate);
+  EditFieldTL(h,v+=vs,120,"Pause Months",M4Qty,Normal,0,vals0,false,0);
+  EditFieldTL(h,v+=vs,120,"Prolong Months",M4Qty,Normal,0,vals1,false,0);
+  EditFieldTL(h,v+=vs,120,"New Rate",M4Rate,Normal,0,vals3,false,0);
+  EditFieldTL(h,v+=vs,120,"Extra Value",M4Rate,Normal,0,vals4,false,0);
+  EditField(h,v+=vs,100,"Change Purpose",Normal,f1,false,AgrChangesPurpSClass);
+  CheckBox(h,v+=vs,0,"Re-sign Schedule",flags[1]);
+  CheckBox(h,v+=vs,0,"Issue Prolong Invoice",flags[2]);
+  if (IsOmegaCustomer) then begin
+    EditFieldTL(h,v+=vs,50,"Payment Term",M4Code,Normal,20,f2,false,PDSClass);
+    EditFieldTL(h,v+=vs,50,"Salesman",M4Code,Normal,20,f3,false,UserSClass);
+    EditFieldTL(h,v+=vs,120,"Description",M4Str,Normal,60,f4,false,0);
+  end;
+  CheckBox(h,v+=vs,0,"Prolong only when Invoice is paid",flags[3]);
+  HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassPause","Register Changes");
+  EndWindow;
+  
+  WindowBegin("Register Agreement Changes",NewPauseCredManWClass,CGother,RcType);
   UseView(RcVc);
   SetWRect(20,80,470,660);
   AutoSizeWindow(false);  
@@ -767,7 +790,7 @@ end;
   
   HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassRecalculate","Recalculate");
   v = v+vs;
-  HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassPause","Register Changes");
+  HalPushButton(h,v+=vs,h+120,v+20,"NewPauseCredManWClassPause","Register Changes");
   v = v+vs;
   HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassSendMail","Send e-mail");
   EndWindow;
@@ -4430,6 +4453,7 @@ begin
   SetWRect(20,80,670,298);
   Sizeable(-1,-1,0,0);
   
+  RadioButton(h,v+=vs,1,0,"Use Redesigned Buy-Out",UseRedesignedByuOut);
   EditField(h=180,v=6,100,"Buyout Paym. Term",Normal,BuyOutPayDeal,false,PDSClass); 
   EditField(h,v+=vs,100,"Premature Term. Item",Normal,BuyOutItem,false,INSClass);   
   EditField(h,v+=vs,100,"Premature Term. Principle",Normal,PremTermPrincpl,false,INSClass);

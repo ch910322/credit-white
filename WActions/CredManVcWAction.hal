@@ -1327,13 +1327,20 @@ begin
       MessageBox(200233,"");
     end else begin
       threadremote.GetPauseCredManNextDate(CredManr,td);
-      RepSpec.d1 = td;
-      RepSpec.long1 = CredManr.SerNr;
-      RepSpec.Notation = 1; 
-      RepSpec.flags[5] = 1;
-      RepSpec.flags[4] = CMBOb.DebtsToFutureFees;
-      calcPauseData(CredManr,RepSpec);     
-      OpenWindow("PauseCredManWClass",0,wn,"","",RepSpec);
+      if(CMBOb.UseRedesignedByuOut==1)then begin//New Cgreement changes
+        RepSpec.d1 = td;
+        RepSpec.long1 = CredManr.SerNr;
+        RepSpec.Notation = 1; 
+        RepSpec.flags[5] = 1;
+        RepSpec.flags[4] = CMBOb.DebtsToFutureFees;
+        calcPauseData(CredManr,RepSpec);     
+        OpenWindow("NewPauseCredManWClass",0,wn,"","",RepSpec);
+      end else begin//old agreement changes
+        threadremote.GetPauseCredManNextDate(CredManr,td);
+        RepSpec.d1 = td;
+        calcPauseData(CredManr,RepSpec);      
+        OpenWindow("PauseCredManWClass",0,wn,"","",RepSpec);
+      end;
     end;
   end;
 
@@ -1402,12 +1409,10 @@ begin
   Boolean res,setf,closedf;
   record IVVc IVr;
   Integer err;
-  boolean scenario;
 
   wn = CurWindow;
   DeselectWindow(wn,true);
   GetWindowRecord(wn,RepSpec);
-  
   //if (RepSpec.long1>0) then begin
     mwn = MotherWindow(wn);
     if (WindowState(mwn)==Rs_Normal) then begin
@@ -1415,40 +1420,8 @@ begin
         MessageBox(200264,"");
         goto LPauseCredManWClassPause;
       end;
-      if(RepSpec.vals3==0 and RepSpec.vals4==0 and nonblank(RepSpec.f6))then begin
-        if(RepSpec.wholemonthf==0)then begin
-          MessageBox(1058,"");
-          WindowFieldGoto(wn,RepSpec,-1,"wholemonthf",true);
-          goto LPauseCredManWClassPause;
-        end;
-      end;
-      if(RepSpec.flags[2]==1)then begin
-        if(blank(RepSpec.f9) or stringtoval(RepSpec.f9,m4val)==0)then begin
-          MessageBox(1058,"");
-          WindowFieldGoto(wn,RepSpec,-1,"f9",true);
-          goto LPauseCredManWClassPause;
-        end;
-      end;
-      
-      if((RepSpec.vals3==0 or RepSpec.vals3==blankval) and (RepSpec.vals4==0 or RepSpec.vals4==blankval))then begin
-        if(RepSpec.vals0==0 and RepSpec.vals1==0)then begin
-          MessageBox(1058," one of the changed value");
-          WindowFieldGoto(wn,RepSpec,-1,"vals0",true);
-          goto LPauseCredManWClassPause;
-        end;
-      end;
-      
       GetWindowRecord(mwn,CredManr);
-      if(true)then begin//return all to first version
-        DoPauseCredMan(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr,RepSpec.f1,err);
-      end else begin
-        if((RepSpec.vals3==0 or RepSpec.vals3==blankval) and (RepSpec.vals4==0 or RepSpec.vals4==blankval))then begin
-          DoPauseCredManA(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr,RepSpec.f1,err);
-          res = true;
-        end else begin
-          DoPauseCredManB(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr,RepSpec.f1,err);
-        end;
-      end;
+      DoPauseCredMan(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr,RepSpec.f1,err);
       if (res) then begin
         PutWindowRecord(mwn,CredManr);
         if (WindowDoOK(mwn,0)) then begin
@@ -1482,6 +1455,94 @@ begin
     end;
   //end;
 LPauseCredManWClassPause:;
+  return;
+end;
+
+global
+updating procedure NewPauseCredManWClassPause()
+begin
+  Integer wn,mwn,iwn;
+  record CredManVc CredManr;
+  record RcVc RepSpec;
+  Boolean res,setf,closedf;
+  record IVVc IVr;
+  Integer err;
+  boolean scenario;
+
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  
+  //if (RepSpec.long1>0) then begin
+    mwn = MotherWindow(wn);
+    if (WindowState(mwn)==Rs_Normal) then begin
+      if (RepSpec.flags[2]==0 and RepSpec.flags[3]==1) then begin
+        MessageBox(200264,"");
+        goto LNewPauseCredManWClassPause;
+      end;
+      if(RepSpec.vals3==0 and RepSpec.vals4==0 and nonblank(RepSpec.f6))then begin
+        if(RepSpec.wholemonthf==0)then begin
+          MessageBox(1058,"");
+          WindowFieldGoto(wn,RepSpec,-1,"wholemonthf",true);
+          goto LNewPauseCredManWClassPause;
+        end;
+      end;
+      if(RepSpec.flags[2]==1)then begin
+        if(blank(RepSpec.f9) or stringtoval(RepSpec.f9,m4val)==0)then begin
+          MessageBox(1058,"");
+          WindowFieldGoto(wn,RepSpec,-1,"f9",true);
+          goto LNewPauseCredManWClassPause;
+        end;
+      end;
+      
+      if((RepSpec.vals3==0 or RepSpec.vals3==blankval) and (RepSpec.vals4==0 or RepSpec.vals4==blankval))then begin
+        if(RepSpec.vals0==0 and RepSpec.vals1==0)then begin
+          MessageBox(1058," one of the changed value");
+          WindowFieldGoto(wn,RepSpec,-1,"vals0",true);
+          goto LNewPauseCredManWClassPause;
+        end;
+      end;
+      
+      GetWindowRecord(mwn,CredManr);
+      if((RepSpec.vals3==0 or RepSpec.vals3==blankval) and (RepSpec.vals4==0 or RepSpec.vals4==blankval))then begin
+        DoPauseCredManA(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr,RepSpec.f1,err);
+        res = true;
+      end else begin
+        DoPauseCredManB(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr,RepSpec.f1,err);
+      end;
+      if (res) then begin
+        PutWindowRecord(mwn,CredManr);
+        if (WindowDoOK(mwn,0)) then begin
+          if (setf and RepSpec.flags[1]==1) then begin
+            asyncremote.RecreateAgreementSchedule3(CredManr,true,mwn);
+          end else begin
+            asyncremote.RecreateAgreementSchedule3(CredManr,false,mwn);
+          end;
+        end;
+        if (IVr.SerNr>0 and IVr.Sum4>0) then begin
+          UpdateBrowses("CredHistVc");
+          iwn = OpenWindow("IVDClass",1,0,"","",IVr);
+          SelectWindow(iwn);
+        end;
+      end else begin
+        //CredManCreditBeforePartialBuyout
+        switch (err) begin
+          case 3: 
+            closedf = true;
+            MessageBox(200117,"");
+          otherwise
+            closedf = true;
+            OpenWindow("PauseCredManForceWClass",1,wn,"","",RepSpec);
+        end;
+        //MessageBox(200109,"");
+      end;
+      //SetWindowState(mwn,Rs_Normal);
+    end;
+    if (!closedf) then begin
+      CloseWindow(wn);
+    end;
+  //end;
+LNewPauseCredManWClassPause:;
   return;
 end;
 
@@ -4046,7 +4107,7 @@ end;
 
 
 
-function boolean PauseCredManWClassd1EFAfter(integer wn,integer changed)
+function boolean NewPauseCredManWClassd1EFAfter(integer wn,integer changed)
 begin
   record RcVc RepSpec;
   integer mwn;
@@ -4064,7 +4125,7 @@ begin
     calcPauseData(CredManr,RepSpec);
     putwindowrecord(wn,RepSpec);
   end;
-  PauseCredManWClassd1EFAfter = true;
+  NewPauseCredManWClassd1EFAfter = true;
 return;
 end;
 
@@ -4086,7 +4147,7 @@ begin
 return;
 end;
 
-function boolean PauseCredManWClassf10AfterEditField(integer wn, integer changed)
+function boolean NewPauseCredManWClassf10AfterEditField(integer wn, integer changed)
 begin
   record RcVc RepSpec;
   record CredManVc CredManr;
@@ -4119,13 +4180,13 @@ begin
     end;
   end;
   
-  PauseCredManWClassf10AfterEditField = res;
+  NewPauseCredManWClassf10AfterEditField = res;
   
 return;
 end;
 
 global
-function Boolean PauseCredManWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+function Boolean NewPauseCredManWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
 begin
   Boolean res;
   record RcVc RepSpec;
@@ -4133,7 +4194,7 @@ begin
   res = true;
   if (changed!=0) then begin
     switch (fieldname) begin
-      case "d1": res = PauseCredManWClassd1EFAfter(wn,changed);//"Letter of Demand"
+      case "d1": res = NewPauseCredManWClassd1EFAfter(wn,changed);//"Letter of Demand"
       case "vals3": res = recalcPause(wn,changed);
       case "vals4": res = recalcPause(wn,changed);
       case "vals1": res = recalcPause(wn,changed);
@@ -4142,16 +4203,16 @@ begin
       GetWindowRecord(wn,RepSpec);
       RepSpec.f9 = stringtoval(RepSpec.f9,M4Val);
       PutWindowRecord(wn,RepSpec);
-      case "f10": res = PauseCredManWClassf10AfterEditField(wn,changed);
+      case "f10": res = NewPauseCredManWClassf10AfterEditField(wn,changed);
     end;
   end;
-  PauseCredManWClassAfterEditField = res;
+  NewPauseCredManWClassAfterEditField = res;
   return;
 end;
 
 
 
-global procedure PauseCredManWClassRecalculate()
+global procedure NewPauseCredManWClassRecalculate()
 begin
   integer wn;
   
@@ -4161,6 +4222,26 @@ begin
   
 return;
 end;
+
+
+global
+function Boolean PauseCredManWClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
+begin
+  Boolean res;
+  record RcVc RepSpec;
+
+  switch (fieldname) begin
+    case "vals0":
+      DeselectWindow(wn,true);
+      GetWindowRecord(wn,RepSpec);
+      RepSpec.vals1 = RepSpec.vals0;
+      PutWindowRecord(wn,RepSpec);
+  end;
+
+  PauseCredManWClassAfterEditField = res;
+  return;
+end;
+
 
 
 

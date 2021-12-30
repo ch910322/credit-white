@@ -2473,31 +2473,27 @@ begin
   
   SetupLoanInvoice3(CredManr,CMb,IVr,invdate,frdate,invdate,true,false,"",1,true,pd,salesman);
   
-  /*if(RepSpec.vals3!=0 or RepSpec.vals4!=0)then begin
-    if(nonblankdate(RepSpec.d1))then begin
-      cumint = stringtoval(RepSpec.FirstAcc,m4val);
-      balance = stringtoval(RepSpec.FirstAcc,m4val);
-    end;
-    //if(IVr.InvDate<RepSpec.sEndDate)then begin
+  if(CMBOb.UseRedesignedByuOut==1)then begin
+    if(RepSpec.vals3!=0 or RepSpec.vals4!=0)then begin
       if(stringtoval(RepSpec.FirstAcc,m4val)>0)then begin
         GetItemName(CMb.RateItem,spec);
         SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,stringtoval(RepSpec.FirstAcc,m4val),blankval,kEventTypeCalcInterest,-1);
         spec = "";
       end;
-    //end;
-  end;*/
+    end;
   
-  /*if(stringtoval(RepSpec.f6,m4val)>0)then begin
-    GetItemName(CMBOb.FutFeeItem,spec);
-    SetupInvoiceRowAndAdd(CredManr,IVr,CMBOb.FutFeeItem,spec,1,stringtoval(RepSpec.f6,m4val),blankval,kEventTypeCalcFees,-1);
-    spec = "";
-  end;*/
+    /*if(stringtoval(RepSpec.f6,m4val)>0)then begin
+      GetItemName(CMBOb.FutFeeItem,spec);
+      SetupInvoiceRowAndAdd(CredManr,IVr,CMBOb.FutFeeItem,spec,1,stringtoval(RepSpec.f6,m4val),blankval,kEventTypeCalcFees,-1);
+      spec = "";
+    end;*/
   
-  /*if(stringtoval(RepSpec.f12,m4val)>0)then begin
-    GetItemName(CMBOb.FutFeeItem,spec);
-    SetupInvoiceRowAndAdd(CredManr,IVr,CMBOb.FutFeeItem,spec,1,stringtoval(RepSpec.f12,m4val),blankval,kEventTypeCalcFees,-1);
-    spec = "";
-  end;*/
+    /*if(stringtoval(RepSpec.f12,m4val)>0)then begin
+      GetItemName(CMBOb.FutFeeItem,spec);
+      SetupInvoiceRowAndAdd(CredManr,IVr,CMBOb.FutFeeItem,spec,1,stringtoval(RepSpec.f12,m4val),blankval,kEventTypeCalcFees,-1);
+      spec = "";
+    end;*/
+  end;
   
   if(stringtoval(RepSpec.f9,m4val)==0)then begin
     rate = CredManr.StdProlongPrc;

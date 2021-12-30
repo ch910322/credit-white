@@ -524,7 +524,6 @@ begin
         end;
         CredManSetDatesCust(CredManr,false);
         if (addval>0) then begin
-          addval = addval + stringtoval(RepSpec.f5,m4val);
           CreateCredmanPurchaseInvoice(CredManr,0,VIr,addval,true,td);
           GenerateAgreementSchedule(CredManr,true,true);
         end;
