@@ -1569,10 +1569,12 @@ end;
 window CreditAgreementsRClass:1
   wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
 begin
-  real h,v;
+  real h,h2,h3,v;
+  h2=30; h3=160;
   WindowBegin("Specify Credit Agreements report",CreditAgreementsRClass,CGRcW,RcType);
   SetWRect(20,80,440,150);
   PeriodField(h=140,v=6,"Period");
+  EditFieldTL(h,v+=20,150,"Agreement",M4Long,Normal,40,long1,false,CredManSClass);
   EditFieldTL(h,v+=20,150,"Client",M4UStr,Normal,40,f1,false,CUSClass);
   EditFieldTL(h,v+=20,150,"Type",M4UStr,Normal,40,f2,false,CredManTypeSClass);
   EditFieldTL(h,v+=20,150,"Class",M4Code,Normal,40,f3,false,OrderClassSClass);
@@ -1581,11 +1583,14 @@ begin
   EditFieldTL(h,v+=20,150,"Manager",M4UStr,Normal,255,f5,false,UserSClass);
   EditField(h,v+=20,150,"First Invoice Period",Normal,Period2Str2,false,PerSClass);
   EditFieldTL(h,v+=20,150,"End Period",M4UStr,Normal,21,Stext,false,PerSClass);
-  CheckBox(h,v+=30,0,"Include unapproved",flags[3]);
-  CheckBox(h,v+=30,0,"Not OK'ed",flags[4]);
-  CheckBox(h,v+=30,0,"Only Not OK'ed",flags[7]);
-  CheckBox(h,v+=30,0,"Include Completed",flags[5]);
-  CheckBox(h,v+=30,0,"Show Email address",flags[6]);
+  ButtonFrame(h2,v+46,100,2,"View");
+  RadioButton(h2,v+46,0,0,"Exposure",ArtMode);
+  RadioButton(h2,v+62,1,0,"Detailed",ArtMode);
+  CheckBox(h3,v+=30,0,"Include unapproved",flags[3]);
+  CheckBox(h3,v+=30,0,"Not OK'ed",flags[4]);
+  CheckBox(h3,v+=30,0,"Only Not OK'ed",flags[7]);
+  CheckBox(h3,v+=30,0,"Include Completed",flags[5]);
+  CheckBox(h3,v+=30,0,"Show Email address",flags[6]);
   
   EndWindow;
 end;
