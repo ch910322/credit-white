@@ -1165,7 +1165,6 @@ begin
                 if(!skip)then begin
                   calculatedmonths = MonthDiff(CredManr.FirstInvDate,CredHistr.TransDate)+1;
                 end;
-                logtext(0,"calculatedmonths " & calculatedmonths);
               end;
             end;
           end;
