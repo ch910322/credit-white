@@ -1743,7 +1743,7 @@ lout:;
 end;
 
 global
-procedure TestCredManInvoicesFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date ed,var array record IVVc aIVr)
+procedure TestCredManInvoicesFromPlan2(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date sd,Date ed,var array record IVVc aIVr)
 begin
   Integer i,rwcnt;
   row CredManPayPlanVc CredManPayPlanrw;
@@ -1760,7 +1760,7 @@ begin
   rwcnt = MatRowCnt(CredManPayPlanr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
-    if (CredManPayPlanrw.PlanType<=4) then begin// and CredManPayPlanrw.TransDate<=ed
+    if (CredManPayPlanrw.PlanType<=4 and (blank(sd) or CredManPayPlanrw.TransDate>=sd)) then begin// and CredManPayPlanrw.TransDate<=ed
       if (lastd!=CredManPayPlanrw.TransDate) then begin
         //Setup new invoice
         if (nonblank(lastd)) then begin
@@ -1785,6 +1785,15 @@ begin
     aIVr[aIVr.length] = IVr;
   end;
   gSilenceIVOpenPrepExists = false;
+
+  return;
+end;
+
+global
+procedure TestCredManInvoicesFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date ed,var array record IVVc aIVr)
+begin
+
+  TestCredManInvoicesFromPlan2(CredManr,CMb,CredManPayPlanr,"",ed,aIVr);
 
   return;
 end;
