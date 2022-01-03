@@ -85,6 +85,7 @@ begin
   Maintenance("Create Payment Guarantee Invoices",PmtGrntInvoiceVClass,PmtGrntInvoiceMn,modCredMan);
   Maintenance("Create Overdue Invoices",GenOverdueInvVClass,GenOverdueInvMn,modCredMan);
   Maintenance("Fix Credit History",CredManRedoCredHistVClass,CredManRedoCredHistMn,modCredMan);
+  Maintenance("Fix Credit History For Receipts",CredManRedoCredHistVClass,ReFixAllPaymentsMn,modSL);
   Maintenance("Generate Agreement Schedules",CreateCredManScheduleVClass,CreateCredManScheduleMn,modCredMan);
   Maintenance("Create Mails from Schedules",SendScheduleEmailsVClass,SendScheduleEmailsMn,modCredMan);
   Maintenance("Generate Agreement Changes",CreateCredManChangeVClass,CreateCredManChangeMn,modCredMan);
