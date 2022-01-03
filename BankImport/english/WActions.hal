@@ -10,7 +10,31 @@ external inner procedure PasteFromSysList(Integer ,Integer);
 external inner procedure In2Period(var string,var Date,var Date);
 remote updating procedure ChangeReceiptCustomerRemote(record RcVc);
 remote updating procedure SplitLoanPaymentsInReceipt(record IPVc,Boolean);
+external inner procedure CheckFlush(var Integer,Integer);
 
+function Longint GetCredHistNrWithItem(Longint ivnr,string item)
+begin
+  Boolean TrHs;
+  Longint res;
+  record CredHistVc CredHistr;
+
+  TrHs = true;
+  CredHistr.RecordNr = ivnr;
+  CredHistr.RecordType = 0;
+  while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+    if (CredHistr.RecordNr!=ivnr or CredHistr.RecordType!=0) then begin
+      TrHs = false;
+    end else begin
+      if (item==CredHistr.ArtCode) then begin
+        res = CredHistr.SerNr;
+        TrHs = false;
+      end;
+    end;
+  end;
+
+  GetCredHistNrWithItem = res;
+  return;
+end;
 
 global
 procedure LitBankImportIClassReportDefaults(Integer wn)
@@ -710,8 +734,24 @@ end;
 global updating procedure FixCredHistIPDsm()
 begin
   record IPVc IPr;
+  row IPVc IPrw;
+  integer i,rwcnt;
+  boolean updatef;
   
   getwindowrecord(curwindow,IPr);
+  rwcnt = matrowcnt(IPr);
+  updatef = false;
+  for(i=0;i<rwcnt;i=i+1)begin
+    matrowget(IPr,i,IPrw);
+    if(IPrw.CredHistNr>0 and nonblank(IPrw.CredHistItem))then begin
+      IPrw.CredHistNr = GetCredHistNrWithItem(IPrw.InvoiceNr,IPrw.CredHistItem);
+      matrowput(IPr,i,IPrw);
+      updatef = true;
+    end;
+  end;
+  if(updatef)then begin
+    recordstore(IPr,true);
+  end;
   SplitLoanPaymentsInReceipt(IPr,false);
   SplitLoanPaymentsInReceipt(IPr,true);
   
@@ -722,11 +762,35 @@ end;
 global updating procedure ReFixAllPaymentsMn(record RcVc RepSpec)
 begin
   record IPVc IPr;
+  row IPVc IPrw;
+  integer i,rwcnt,counter;
+  boolean updatef;
+  longint oldnr;
   
   while(loopmain(IPr,1,true))begin
     if(IPr.OKFlag==1)then begin
-      SplitLoanPaymentsInReceipt(IPr,false);
-      SplitLoanPaymentsInReceipt(IPr,true);
+      
+      rwcnt = matrowcnt(IPr);
+      updatef = false;
+      for(i=0;i<rwcnt;i=i+1)begin
+        matrowget(IPr,i,IPrw);
+        if(IPrw.CredHistNr>0 and nonblank(IPrw.CredHistItem) and IPrw.InvoiceNr>-1 and IPrw.stp==1)then begin
+          oldnr = IPrw.CredHistNr;
+          IPrw.CredHistNr = GetCredHistNrWithItem(IPrw.InvoiceNr,IPrw.CredHistItem);
+          matrowput(IPr,i,IPrw);
+          if(oldnr!=IPrw.CredHistNr)then begin
+            updatef = true;
+          end;
+        end;
+      end;
+      if(updatef)then begin
+        logtext(0,IPr.SerNr);
+        recordstore(IPr,true);
+        SplitLoanPaymentsInReceipt(IPr,false);
+        SplitLoanPaymentsInReceipt(IPr,true);
+        CheckFlush(counter,1000);
+      end;
+      
     end;
   end;
 
