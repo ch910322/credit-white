@@ -15,6 +15,7 @@ external procedure GetFullCurncyRate(var string,Date,var val,var val,var val,var
 external function val GetCredManRate(Integer,string,val,Date);
 external outer function boolean getAdditionalLangCode(record CredManVc,string,var string);
 external outer function string 20 getAdditionalCredManLangCode(record CredManVc);
+external outer function Boolean IsOmegaCustomer();
 
 global
 procedure CredManVc_PasteCurncyCode(var record CredManVc CredManr)
@@ -289,8 +290,10 @@ begin
       CredManr.SalesMan = USr.Code;
     end;
     
-    if(blank(CredManr.OfficialSerNr))then begin
-      CredManr.OfficialSerNr = CUr.Code;
+    if(IsOmegaCustomer)then begin
+      if(blank(CredManr.OfficialSerNr))then begin
+        CredManr.OfficialSerNr = CUr.Code;
+      end;
     end;
   //CUST-BEGIN
     if (nonblank(CUr.LangCode)) then begin

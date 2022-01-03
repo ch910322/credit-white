@@ -9,7 +9,7 @@ external inner procedure CalcCredManSums(record CredManVc,record CredManPayPlanV
                                    var val,var val,var val,var val,var val,var val,var val,var val,var val,var val,var val,var val,
                                    var val,var Date,var val,var val,var LongInt);
 external inner function LongInt DateDiff(Date,Date);
-external procedure TestCredManInvoicesFromPlan(record CredManVc,record CredManSetBlock,record CredManPayPlanVc,Date,var array record IVVc);
+external procedure TestCredManInvoicesFromPlan2(record CredManVc,record CredManSetBlock,record CredManPayPlanVc,Date,Date,var array record IVVc);
 external procedure CheckBuyOutAgreement(record CredManVc,var record RcVc);
 external procedure TestInvoiceBasedOnSchedule(record CredManVc,record CredManSchedVc,Date,var array record IVVc);
 external function Boolean CMShowVATColumn();
@@ -508,7 +508,7 @@ begin
 end;
 
 global
-procedure BuildCredManInfoMatrix(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,var record SMVc SMr)
+procedure BuildCredManInfoMatrix2(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,var record SMVc SMr,Date sd)
 begin
   Integer i,rwcnt;
   array record IVVc aIVr;
@@ -562,7 +562,7 @@ begin
       end;
     end;
   end;
-  TestCredManInvoicesFromPlan(CredManr,CMb,CredManPayPlanr,CredManr.endDate,aIVr);
+  TestCredManInvoicesFromPlan2(CredManr,CMb,CredManPayPlanr,sd,CredManr.endDate,aIVr);
   for (i=0;i<aIVr.length;i=i+1) begin
     IVr = aIVr[i];
     IVr.SerNr = -1;
@@ -585,6 +585,15 @@ begin
     end;
   end;
   
+  return;
+end;
+
+global
+procedure BuildCredManInfoMatrix(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,var record SMVc SMr)
+begin
+
+  BuildCredManInfoMatrix2(CredManr,CredManPayPlanr,CMb,SMr,"");
+
   return;
 end;
 

@@ -8,6 +8,14 @@ external function string 255 AddCredManInvoiceMailRecipients(record CUVc,var str
 external outer function Boolean IsNovitiCustomer();
 external procedure GetCredManLateAmounts2(record CredManVc,Date,Date,Integer,var Longint,var val,var val,var Date);
 external procedure CheckBuyOutAgreementOmega(record CredManVc,var record ORVc, Boolean);
+external inner function Boolean ARInvoiceTest(record RcVc,record IVVc,Boolean);
+external inner procedure ARRnGetInvBalance(record IVVc,var Date,Integer,var val,var val,var LongInt);
+external inner procedure SubPrePayments(record IVVc,var val,var val);
+external inner procedure SubCashRows_IVVc(record IVVc,Boolean,var val,var val);
+external inner function LongInt CalculateLateDays(Date,Date,Date,Boolean,Boolean);
+external inner function val MulRateToBase1(var string,val,val,val,val,val,val,roundmode);
+external inner procedure GetOnAccBalance(record RcVc,string,string,Boolean,Integer,var val,var val,var val,var val,var val,var val,var val,record SMVc,Array string,Array val,var Integer);
+
 
 function string 10 Checkbocout(boolean in)
 begin
@@ -122,6 +130,102 @@ begin
   return;
 end;
 
+function val GetTradeDebt(record RcVc RepSpec,record CUVc CUr)
+begin
+  record IPrsVc IPrsr;
+  record IVVc IVr;
+  record RcVc dummyRepSpec;
+  record SMVc OnAccCurTotalsr;
+  row IVVc IVrw;
+  boolean TrHs,testf,test2f,backdatf;
+  integer i,rwcnt,debcnt;
+  val rval,rvalb1,res,sum,sum2,onaccsumbooked,onaccsumnow,onaccsumcurncy,onaccsumdiff;
+  LongInt latedays;
+  Array string 10 debaccs;
+  Array val debbal;
+
+
+  IPrsr.CustCode = CUr.Code;
+  IPrsr.TransType = kIPrsTransTypeInvoice;
+  TrHs = true;
+
+  while (LoopKey("CustType",IPrsr,2,TrHs)) begin    
+    if (CUr.Code<>IPrsr.CustCode) then begin TrHs = false; end;
+    if (IPrsr.TransType!=kIPrsTransTypeInvoice) then begin TrHs = false; end;
+    if (TrHs) then begin
+      IVr.SerNr = IPrsr.TransNr;
+      if (ReadFirstMain(IVr,1,true)) then begin
+        if (ARInvoiceTest(dummyRepSpec,IVr,true)) then begin
+          latedays = CalculateLateDays(IVr.InvDate,IVr.PayDate,RepSpec.d1,false,true);
+          rvalb1 = blankval;
+          if ((IVr.InvType<>kInvoiceTypeCredit and IVr.InvType!=kInvoiceTypeCreditSpecialSales) and (IVr.InvType<>kInvoiceTypeCash and IVr.InvType<>kInvoiceTypeCashInvoiceReceiptPRT)) then begin
+            rval = IVr.Sum4;
+            if (nonblank(IVr.CurncyCode)) then begin
+              rvalb1 = IVr.BaseSum4;
+            end;
+            if (rvalb1==0) then begin
+              rvalb1 = MulRateToBase1(IVr.CurncyCode,rval,IVr.FrRate,IVr.ToRateB1,IVr.ToRateB2,IVr.BaseRate1,IVr.BaseRate2,DefaultCurRoundOff);                
+            end;
+          end;
+          if (IVr.InvType==kInvoiceTypeCredit or IVr.InvType==kInvoiceTypeCreditSpecialSales) then begin
+            test2f = false;
+            if (IVr.CredInv==-1) then begin test2f = true; end;
+            if (test2f==false) then begin
+              rwcnt = MatRowCnt(IVr);
+              for (i=0;i<rwcnt;i=i+1) begin
+                MatRowGet(IVr,i,IVrw);
+                if (IVrw.stp==kInvoiceRowTypeGiftVoucherPayment or IVrw.stp==kInvoiceRowTypeCashPayment or IVrw.stp==kInvoiceRowTypeCreditCardPayment or IVrw.stp==kInvoiceRowTypeSwishPayment/* or IVrw.stp==kInvoiceRowTypeMPesaPayment*/ or IVrw.stp==kInvoiceRowTypeQRPayment or IVrw.stp==kInvoiceRowTypeLoyaltyPointsPayment or IVrw.stp==kInvoiceRowTypeChequePayment) then begin//CUST
+                  test2f = true;
+                  i = rwcnt;
+                end;
+              end;
+            end;
+            if (test2f) then begin
+              rval = -IVr.Sum4;
+              if (nonblank(IVr.CurncyCode)) then begin
+                rvalb1 = -IVr.BaseSum4;
+              end;
+              if (rvalb1==0) then begin
+                rvalb1 = MulRateToBase1(IVr.CurncyCode,rval,IVr.FrRate,IVr.ToRateB1,IVr.ToRateB2,IVr.BaseRate1,IVr.BaseRate2,DefaultCurRoundOff);
+              end;
+            end else begin
+              rval = blankval;
+              rvalb1 = blankval;
+            end;    
+          end;
+          if (IVr.InvType==kInvoiceTypeCash or IVr.InvType==kInvoiceTypeCashInvoiceReceiptPRT or IVr.InvType==kInvoiceTypeCreditSpecialSales) then begin
+            rval = blankval;
+            rvalb1 = blankval;
+          end;       
+          if (IVr.TransDate>RepSpec.d1) then begin          
+            rval = blankval;
+            rvalb1 = blankval;          
+          end else begin
+            ARRnGetInvBalance(IVr,RepSpec.d1,IVr.InvType,rval,rvalb1,latedays);
+            SubPrePayments(IVr,rval,rvalb1);
+            if (IVr.InvType!=kInvoiceTypeCash and IVr.InvType!=kInvoiceTypeCashInvoiceReceiptPRT) then begin
+              SubCashRows_IVVc(IVr,false,rval,rvalb1);
+            end;
+            res = res + rvalb1;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  rval = 0;  
+  GetOnAccBalance(dummyRepSpec,CUr.Code,CUr.CurncyCode,backdatf,0,sum,sum2,rval,onaccsumbooked,onaccsumnow,onaccsumcurncy,onaccsumdiff,OnAccCurTotalsr,debaccs,debbal,debcnt);
+
+  if (blank(CUr.CurncyCode)) then begin //or (CUr.CurncyCode==bcur.BaseCur1) ? 
+    if (rval==0) then begin
+      sum = 0;
+    end;
+  end;
+  res = res + sum;
+
+  GetTradeDebt = res;
+end;
+
 global procedure CreditAgreementsRn(record RcVc RepSpec)
 begin
 	record CredManVc CredManr;
@@ -147,7 +251,7 @@ begin
 	
 	endheader;
 
-  if (blank(RepSpec.d1)) then begin
+  if (BlankDate(RepSpec.d1)) then begin
     RepSpec.d1 = CurrentDate;
   end;
   rp[124] = 45;
@@ -170,46 +274,56 @@ begin
   rp[17] = 1250;
   rp[18] = 1300;
   rp[19] = 1350;
-  
-	
+
 	StartFormat(15);
-		OutString(0,0,USetStr(200281),false);
-		OutString(rp[124],0,USetStr(200307),false);
-		OutString(rp[2],0,USetStr(200282),false);
-		if(RepSpec.Media==mtExcel)then begin
-			OutString(70,0,USetStr(200285),false);
-			OutString(70,0,USetStr(200286),false);
-			OutString(70,0,USetStr(200287),false);
-		end;
-		OutString(rp[125],0,USetStr(200288),false);
-		OutString(rp[3],0,USetStr(200289),false);
-//		OutString(35,0,"Klientas",false);
-		OutString(rp[4],0,USetStr(200290),false);
-		OutString(rp[5],0,USetStr(200291),false);
-		OutString(rp[6],0,USetStr(200292),false);
-		OutString(rp[7],0,USetStr(200293),false);//totoals
-    if (RepSpec.flags[6]==1) then begin
-		  OutString(rp[8],0,USetStr(200294),false);//totoals
+    if (RepSpec.ArtMode == 1) then begin      
+      OutString(0,0,USetStr(200281),false);
+      OutString(rp[124],0,USetStr(200307),false);
+      OutString(rp[2],0,USetStr(200282),false);
+      if(RepSpec.Media==mtExcel)then begin
+        OutString(70,0,USetStr(200285),false);
+        OutString(70,0,USetStr(200286),false);
+        OutString(70,0,USetStr(200287),false);
+      end;
+      OutString(rp[125],0,USetStr(200288),false);
+      OutString(rp[3],0,USetStr(200289),false);
+  //		OutString(35,0,"Klientas",false);
+      OutString(rp[4],0,USetStr(200290),false);
+      OutString(rp[5],0,USetStr(200291),false);
+      OutString(rp[6],0,USetStr(200292),false);
+      OutString(rp[7],0,USetStr(200293),false);//totoals
+      if (RepSpec.flags[6]==1) then begin
+        OutString(rp[8],0,USetStr(200294),false);//totoals
+      end else begin
+        OutString(rp[8],0,USetStr(200295),false);//totals
+        OutString(rp[9],0,USetStr(200296),false);
+      end;
+      OutString(rp[10],0,USetStr(200297),false);//months
+      OutString(rp[11],0,USetStr(200302),false);//real months
+      OutString(rp[12],0,USetStr(200298),false);//rate
+      OutString(rp[13],0,USetStr(200303),false);//real rate
+      OutString(rp[14],0,USetStr(200304),false);//rate date
+      OutString(rp[15],0,USetStr(200299),true);//totals
+      OutString(rp[16],0,USetStr(200300),true);//totals
+      OutString(rp[17],0,USetStr(200301),true);//buyout value
+      OutString(rp[18],0,USetStr(200305),true);//order class
+      OutString(rp[19],0,USetStr(200306),true);//classifications
     end else begin
-  		OutString(rp[8],0,USetStr(200295),false);//totals
-  		OutString(rp[9],0,USetStr(200296),false);
+      //ASS: HAL-2603
+      OutString(0,0,USetStr(200312),false);
+      OutString(rp[2],0,USetStr(200313),false);
+      OutString(rp[5],0,USetStr(200314),false);
+      OutString(rp[8],0,USetStr(200315),true);
+      OutString(rp[10],0,USetStr(200316),true);
+      //:ASS
     end;
-		OutString(rp[10],0,USetStr(200297),false);//months
-		OutString(rp[11],0,USetStr(200302),false);//real months
-		OutString(rp[12],0,USetStr(200298),false);//rate
-		OutString(rp[13],0,USetStr(200303),false);//real rate
-		OutString(rp[14],0,USetStr(200304),false);//rate date
-		OutString(rp[15],0,USetStr(200299),true);//totals
-		OutString(rp[16],0,USetStr(200300),true);//totals
-		OutString(rp[17],0,USetStr(200301),true);//buyout value
-		OutString(rp[18],0,USetStr(200305),true);//order class
-		OutString(rp[19],0,USetStr(200306),true);//classifications
 	EndFormat;
 	
 	TrHs = true;
 	CredManr.startDate = RepSpec.sStartDate;
 	while(loopkey("startDate",CredManr,1,TrHs))begin
 		testf = true;
+    if(RepSpec.long1>0 and CredManr.SerNr!=RepSpec.long1)then begin testf = false; end;
 		if(nonblank(RepSpec.f1) and CredManr.CustCode!=RepSpec.f1)then begin testf = false; end;
 		if(nonblank(RepSpec.f2) and CredManr.Type!=RepSpec.f2)then begin testf = false; end;
 		if(nonblank(RepSpec.f3) and CredManr.OrderClass!=RepSpec.f3)then begin testf = false; end;
@@ -265,74 +379,89 @@ begin
 
 		  ReadFirstMain(CUr,1,true);
 			StartFormat(15);
-      OutString(0,"DblCredManVc",CredManr.SerNr,false);
-      OutString(rp[124],0,CredManr.OfficialSerNr,false);
-      OutString(rp[2],"DblCredManTypeVc",CredManr.Type,false);
-      if(RepSpec.Media==mtExcel)then begin
-        OutString(70,0,Checkbocout(CredManr.Approved==0),false);
-        OutString(70,0,Checkbocout(CredManr.OKFlag==0),false);
-        OutString(70,0,Checkbocout(curbal==0),false);
-      end;
-      OutString(rp[125],"DblCUVc",CUr.Code,false);
-      OutStringID(rp[3],"DblCUVc",CUr.RegNr1,false,CUr.Code);
-//      OutString(35,"DblCUVc",CredManr.CustCode,false);
-      OutString(rp[4],0,CredManr.Addr0,false);
-      OutString(rp[5],0,CredManr.startDate,false);
-      OutString(rp[6],0,CredManr.endDate,false);
-      OutString(rp[7],0,CredManr.InvSum4,false);
-      if (RepSpec.flags[6]==1) then begin
-        OutString(rp[8],0,GetCustomerInvoicingEmails(CUr),false);//totoals
+      if (RepSpec.ArtMode == 1) then begin
+        OutString(0,"DblCredManVc",CredManr.SerNr,false);
+        OutString(rp[124],0,CredManr.OfficialSerNr,false);
+        OutString(rp[2],"DblCredManTypeVc",CredManr.Type,false);
+        if(RepSpec.Media==mtExcel)then begin
+          OutString(70,0,Checkbocout(CredManr.Approved==0),false);
+          OutString(70,0,Checkbocout(CredManr.OKFlag==0),false);
+          OutString(70,0,Checkbocout(curbal==0),false);
+        end;
+        OutString(rp[125],"DblCUVc",CUr.Code,false);
+        OutStringID(rp[3],"DblCUVc",CUr.RegNr1,false,CUr.Code);
+  //      OutString(35,"DblCUVc",CredManr.CustCode,false);
+        OutString(rp[4],0,CredManr.Addr0,false);
+        OutString(rp[5],0,CredManr.startDate,false);
+        OutString(rp[6],0,CredManr.endDate,false);
+        OutString(rp[7],0,CredManr.InvSum4,false);
+        if (RepSpec.flags[6]==1) then begin
+          OutString(rp[8],0,GetCustomerInvoicingEmails(CUr),false);//totoals
+        end else begin
+          OutString(rp[8],0,CredManr.DepositSum,false);
+          OutString(rp[9],0,CredManr.DepositPrc,false);
+        end;
+        OutString(rp[10],0,CredManr.InstalmentMonths,false);
+        OutString(rp[11],0,realmonths,false);
+        OutString(rp[12],0,CredManr.IntRate,false);
+        OutString(rp[13],0,realrate,false);
+        OutString(rp[14],0,ratedate,false);
+        
+        OutString(rp[15],0,CredManr.MonthlySum,true);
+        OutString(rp[16],0,curbal,true);
+        OutString(rp[17],0,tRepSpec.vals2,true);
+        OutString(rp[18],0,CredManr.OrderClass,true);
+        OutString(rp[19],0,classifications,true);
+        totamount = totamount + CredManr.InvSum4;
+        totdep = totdep + CredManr.DepositSum;
+        totmonth = totmonth + CredManr.MonthlySum;
+        totbal = totbal + curbal;
+        totalbuyout = totalbuyout + tRepSpec.vals2;
       end else begin
-        OutString(rp[8],0,CredManr.DepositSum,false);
-        OutString(rp[9],0,CredManr.DepositPrc,false);
+        OutString(0,"DblCUVc",CUr.Code,false);
+        OutString(rp[2],0,CredManr.Addr0,false);
+        if (CredManr.OfficialSerNr != "") then begin
+          OutStringID(rp[5],"DblCredManVc",CredManr.OfficialSerNr,false,CredManr.SerNr);
+        end else begin
+          OutString(rp[5],"DblCredManVc",CredManr.SerNr,false);
+        end;
+        OutString(rp[8],0,curbal,true);
+        OutString(rp[10],0,GetTradeDebt(RepSpec,CUr),true);
       end;
-      OutString(rp[10],0,CredManr.InstalmentMonths,false);
-      OutString(rp[11],0,realmonths,false);
-      OutString(rp[12],0,CredManr.IntRate,false);
-      OutString(rp[13],0,realrate,false);
-      OutString(rp[14],0,ratedate,false);
-      
-      OutString(rp[15],0,CredManr.MonthlySum,true);
-      OutString(rp[16],0,curbal,true);
-      OutString(rp[17],0,tRepSpec.vals2,true);
-      OutString(rp[18],0,CredManr.OrderClass,true);
-      OutString(rp[19],0,classifications,true);
-      totamount = totamount + CredManr.InvSum4;
-      totdep = totdep + CredManr.DepositSum;
-      totmonth = totmonth + CredManr.MonthlySum;
-      totbal = totbal + curbal;
-      totalbuyout = totalbuyout + tRepSpec.vals2;
 			EndFormat;
 		end;
 	end;
   StartFormat(1);
-  Gray_divider(0,1);
-  EndFormat;
-  StartFormat(15);
-  OutString(0,0,"",false);
-  OutString(rp[124],0,"",false);
-  OutString(rp[2],0,"",false);
-  if(RepSpec.Media==mtExcel)then begin
-    OutString(70,0,"",false);
-    OutString(70,0,"",false);
-    OutString(70,0,"",false);
+  if (RepSpec.ArtMode == 1) then begin
+    Gray_divider(0,1);
+    EndFormat;
+    StartFormat(15);
+    OutString(0,0,"",false);
+    OutString(rp[124],0,"",false);
+    OutString(rp[2],0,"",false);
+    if(RepSpec.Media==mtExcel)then begin
+      OutString(70,0,"",false);
+      OutString(70,0,"",false);
+      OutString(70,0,"",false);
+    end;
+    OutString(rp[125],0,"",false);
+    OutString(rp[3],0,"",false);
+    OutString(rp[4],0,"",false);
+    OutString(rp[5],0,"",false);
+    OutString(rp[6],0,"",false);
+    OutString(rp[7],0,totamount,false);
+    OutString(rp[8],0,totdep,false);
+    OutString(rp[9],0,"",false);
+    OutString(rp[10],0,"",false);
+    OutString(rp[11],0,"",false);
+    OutString(rp[12],0,"",false);
+    OutString(rp[13],0,"",false);
+    OutString(rp[14],0,"",false);
+    OutString(rp[15],0,totmonth,true);
+    OutString(rp[16],0,totbal,true);
+    OutString(rp[17],0,totalbuyout,true);
+  end else begin    
   end;
-  OutString(rp[125],0,"",false);
-  OutString(rp[3],0,"",false);
-  OutString(rp[4],0,"",false);
-  OutString(rp[5],0,"",false);
-  OutString(rp[6],0,"",false);
-  OutString(rp[7],0,totamount,false);
-  OutString(rp[8],0,totdep,false);
-  OutString(rp[9],0,"",false);
-  OutString(rp[10],0,"",false);
-  OutString(rp[11],0,"",false);
-  OutString(rp[12],0,"",false);
-  OutString(rp[13],0,"",false);
-  OutString(rp[14],0,"",false);
-  OutString(rp[15],0,totmonth,true);
-  OutString(rp[16],0,totbal,true);
-  OutString(rp[17],0,totalbuyout,true);
   EndFormat;
 	
 	endjob;

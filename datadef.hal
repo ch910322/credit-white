@@ -1369,7 +1369,7 @@ begin
   RecordField(BuyOutLangCode,M4Code,10,0);
   RecordField(InvOverdLangCode,M4Code,10,0);
   RecordField(ScheduleNoFeesLangCode,M4Code,10,0);
-
+  RecordField(AgreChangeLangCode,M4Code,10,0);
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
   ChangeMatrixField(vRebate,M4Rate,0,0);
@@ -1531,6 +1531,7 @@ begin
   ArrayField(OpenAmount,M4Val,0,0);
   ArrayField(InvType,M4Int,0,0);
   ArrayField(SortString,M4Str,255,0);
+  ArrayField(RefAddFee,M4Val,0,0);
   EndRecordAdd;
 
   BlockBegin(ItemPriorityBlock,-,"");
@@ -2086,6 +2087,7 @@ begin
   RecordField(RecalcSchedule,M4Int,0,0);
   RecordField(IntRate,M4Rate,0,0);
   RecordField(AddVal,M4Val,0,0);
+  RecordField(NewType,M4Code,40,0);
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(CredManPaid);
@@ -2448,6 +2450,10 @@ begin
   RecordField(LateFeeDays,M4Long,0,0);
   RecordField(EndDate,M4Date,0,0);
   RecordField(ChangePurpose,M4Code,20,0);
+  RecordField(NewType,M4Code,20,0);
+  RecordField(FutureFees,M4Val,0,0);
+  RecordField(AddedToNewBal,M4Val,0,0);
+  RecordField(AddedFeesMonths,M4Int,0,0);
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(CredManDate);
@@ -2692,6 +2698,7 @@ begin
   ArrayField(BuyOutLangCode,M4Code,20,0);
   ArrayField(InvOverdLangCode,M4Code,20,0);
   ArrayField(CompensLangCode,M4Code,20,0);
+  ArrayField(AgreChangeLangCode,M4Code,20,0);
   EndArray;
   MainKeyBegin(CredManTypeCode,0);
   KeySegment(CredManTypeCode);
@@ -2751,6 +2758,49 @@ begin
   KeySegment(SerNr);
   EndRecord;
   
+  RecordBegin(RefinAgreementVc,-,"");// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 02 12 2021 y. at 3:14:42 PM
+  RecordField(NewCredNr,M4Long,0,0);
+  RecordField(RefinCredNr,M4Long,0,0);
+  RecordField(IsMain,M4Mark,0,0);
+  RecordField(TransDate,M4Date,0,0);
+  
+  //refinanceWindowMenu
+  RecordField(PrincpleAmount,m4val,0,0);
+  RecordField(IntegerstAmmount,m4val,0,0);
+  RecordField(OverdueInv,m4val,0,0);
+  RecordField(ofInt,m4val,0,0);
+  RecordField(ofPrinc,m4val,0,0);
+  RecordField(Balance,m4val,0,0);
+  RecordField(CurPerInt,m4val,0,0);
+  RecordField(FuturFee,m4val,0,0);
+  RecordField(OthopFee,m4val,0,0);
+  RecordField(OpenOvdFee,m4val,0,0);
+  RecordField(CreditedInt,m4Val,0,0);
+  RecordField(CredIntMark,m4int,0,0);
+  RecordField(LetterOfDem,m4val,0,0);
+  RecordField(InsurCost,m4val,0,0);
+  RecordField(PremTermFee,m4val,0,0);
+  RecordField(NotInvOvds,m4val,0,0);
+  RecordField(Prepaym,m4val,0,0);
+  RecordField(InclPrepFlag,m4int,0,0);
+  RecordField(LastInvValue,m4val,0,0);
+  RecordField(ReconcilateFlag,m4int,0,0);
+  RecordField(ExtraVal,m4val,0,0);
+  RecordField(RemainVal,m4val,0,0);
+  
+  MainKeyBegin(NewCredNr,0);
+  KeySegment(NewCredNr);
+  KeySegment(RefinCredNr);
+  KeyBegin(RefinCredNr);
+  KeySegment(RefinCredNr);
+  KeySegment(NewCredNr);
+  KeyBegin(MainRefinCredNr);
+  KeySegment(RefinCredNr);
+  KeySegment(IsMain);
+  KeySegment(NewCredNr);
+  
+  EndRecord;
+  
   BlockBegin(CMBuyOutBlock,-,"");
   RecordField(BuyOutPayDeal,M4Code,5,PDVc);
   RecordField(BuyOutItem,M4Code,20,INVc);
@@ -2760,6 +2810,13 @@ begin
   RecordField(FutFeeItem,M4Code,20,0);
   RecordField(InvFutFees,M4Int,0,0);
   RecordField(FutFeeItemClass,M4Code,20,0);
+  RecordField(DoNotCreditlastDayInvoices,M4Int,0,0);
+  RecordField(DebtsToFutureFees,M4Int,0,0);
+  RecordField(CalcIntChangeDay,M4Int,0,0);
+  RecordField(CalcOvdChangeDay,M4Int,0,0);
+  RecordField(InterestCredOrPay,M4Int,0,0);
+  RecordField(UseRedesignedByuOut,M4Int,0,0);
+  
   EndBlock;
   
   BlockBegin(AppInterestRateBlock,-,"");

@@ -60,6 +60,7 @@ external function Boolean IsOmegaCustomer;
 external procedure InsertCredHistInArray(record CredHistVc,array record ORVc,Integer,Date);
 external function Integer GetItemPriority(Longint,string);
 external inner function roundmode SetRoundModeD(Integer);
+external updating procedure ReceiptEntryCreateReceipts(record SMVc,Boolean,var val);
 
 
 enum begin
@@ -200,6 +201,13 @@ begin
                 reslang = CredManAddLangrw.InvOverdLangCode;
               end;
             end;
+            if(type=="AgreChangeLangCode")then begin
+              if(nonblanK(CredManAddLangrw.AgreChangeLangCode))then begin
+                res = true;
+                reslang = CredManAddLangrw.AgreChangeLangCode;
+              end;
+            end;
+            
             if(type=="CompensLangCode")then begin
               if(nonblanK(CredManAddLangrw.CompensLangCode))then begin
                 res = true;
@@ -559,9 +567,7 @@ begin
   val bval;
   record CredManAccVc CMAr;
   row CredManAccVc CMArw;
-  Integer i,rwcnt;
-  
-
+  Integer i,rwcnt;  
   
   if (price>0 and nonblank(item)) then begin
     rw = MatRowCnt(IVr);
@@ -655,11 +661,13 @@ begin
   record CredManTypeVc CMTr;
   row IVVc IVrw;
   integer i,rwcnt;
-  boolean overflag,invwithovd;
+  boolean overflag,invwithovd,agrchanginv;
   record CredManSetBlock CMb;
   string 20 reslang;
+  record CMInvoicingBlock CIb;
   
   blockload(CMb);
+  blockload(CIb);
     
   rwcnt = matrowcnt(IVr);
   for(i=0;i<rwcnt;i=i+1)begin
@@ -669,6 +677,9 @@ begin
     end;
     if(nonblank(IVrw.ArtCode) and IVrw.ArtCode!=CMb.LateFeeItem and IVrw.stp==1 and IVrw.Sum>0)then begin
       invwithovd = true;
+    end;
+    if(nonblank(IVrw.ArtCode) and IVrw.ArtCode==CIb.ProlongItem)then begin
+      agrchanginv = true;
     end;
   end;
   
@@ -688,6 +699,14 @@ begin
             IVr.LangCode = CMTr.InvOverdLangCode;
           end;
           if(getAdditionalLangCode(CredManr,"InvOverdLangCode",reslang))then begin
+            IVr.LangCode = reslang;
+          end;
+        end;
+        if(agrchanginv)then begin
+          if(nonblank(CMTr.AgreChangeLangCode))then begin
+            IVr.LangCode = CMTr.AgreChangeLangCode;
+          end;
+          if(getAdditionalLangCode(CredManr,"AgreChangeLangCode",reslang))then begin
             IVr.LangCode = reslang;
           end;
         end;
@@ -845,7 +864,9 @@ begin
   date ed,df;
   string 100 newperiod;
   record IVVc IVr;
-   record CMApplicationSetBlock CMAb
+  record CMApplicationSetBlock CMAb;
+  transaction Boolean gPaymentProcedure;
+  transaction Boolean gIsBuyOutInvoice; 
   
   blockload(CMIb);
   blockload(CMAb);
@@ -857,11 +878,14 @@ begin
     end;
   end;*/
   
-  if(CMAb.BuyOutInclPaymDay==0)then begin
-    ed = addday(ed,-1);
-  end;
-  if(CMAb.OvdInclInvDay==0)then begin
-    ed = addday(ed,-1);
+  if(gPaymentProcedure or gIsBuyOutInvoice)then begin
+    if(CMAb.BuyOutInclPaymDay==1)then begin
+      ed = addday(ed,1);
+    end;
+  end else begin
+    if(CMAb.OvdInclInvDay==0)then begin
+      ed = addday(ed,-1);
+    end;
   end;
   
   
@@ -1202,6 +1226,7 @@ begin
   Boolean TrHs;
   Date td,td1;
   record CMApplicationSetBlock CMAb;
+  transaction Boolean gPaymentProcedure;
   
   blockload(CMAb);
 
@@ -1222,12 +1247,14 @@ begin
     end;
   end;
   
-  if(CMAb.BuyOutInclPaymDay==1)then begin
-    if (nonblank(res)) then begin
-      res = AddDay(res,1);
-    end;
-    if (nonblank(intres)) then begin
-      intres = AddDay(intres,1);
+  if(!gPaymentProcedure)then begin
+    if(CMAb.OvdInclInvDay==1)then begin
+      if (nonblank(res)) then begin
+        res = AddDay(res,1);
+      end;
+      if (nonblank(intres)) then begin
+        intres = AddDay(intres,1);
+      end;
     end;
   end;
 
@@ -1716,7 +1743,7 @@ lout:;
 end;
 
 global
-procedure TestCredManInvoicesFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date ed,var array record IVVc aIVr)
+procedure TestCredManInvoicesFromPlan2(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date sd,Date ed,var array record IVVc aIVr)
 begin
   Integer i,rwcnt;
   row CredManPayPlanVc CredManPayPlanrw;
@@ -1727,13 +1754,13 @@ begin
   val lateamount;
   array string 255 lateformula;
   transaction Boolean gSilenceIVOpenPrepExists;
-
+  
   gSilenceIVOpenPrepExists = true;
   lastd2 = CredManr.FirstInvDate;
   rwcnt = MatRowCnt(CredManPayPlanr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
-    if (CredManPayPlanrw.PlanType<=4) then begin// and CredManPayPlanrw.TransDate<=ed
+    if (CredManPayPlanrw.PlanType<=4 and (blank(sd) or CredManPayPlanrw.TransDate>=sd)) then begin// and CredManPayPlanrw.TransDate<=ed
       if (lastd!=CredManPayPlanrw.TransDate) then begin
         //Setup new invoice
         if (nonblank(lastd)) then begin
@@ -1758,6 +1785,15 @@ begin
     aIVr[aIVr.length] = IVr;
   end;
   gSilenceIVOpenPrepExists = false;
+
+  return;
+end;
+
+global
+procedure TestCredManInvoicesFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date ed,var array record IVVc aIVr)
+begin
+
+  TestCredManInvoicesFromPlan2(CredManr,CMb,CredManPayPlanr,"",ed,aIVr);
 
   return;
 end;
@@ -2283,6 +2319,7 @@ begin
   row CredManSchedVc CSrw;
   record CredFeesMatrixVc FMr;
   row CredFeesMatrixVc FMrw;
+  boolean skipint;
   
 /*
 1. Get the last invoice date and the balance
@@ -2306,6 +2343,27 @@ begin
       pd = CIb.FirstInvPayDeal;
     end;
     SetupLoanInvoice2(CredManr,CMb,IVr,td,lastinv,td,true,false,"",1,true,pd);
+    
+    
+    CSr.CredManNr = CredManr.SerNr;
+    if (ReadFirstMain(CSr,1,true)) then begin
+      rwcnt = MatRowCnt(CSr);
+      for (i=0;i<rwcnt;i=i+1) begin
+       MatRowGet(CSr,i,CSrw);
+        if (CSrw.Invoiced==1) then begin
+          if(CSrw.ToDate==IVr.InvDate)then begin
+            if(CMBOb.DoNotCreditlastDayInvoices==1)then begin
+              skipint = true;
+              cumint = cumint - CSrw.Interest;
+              balance = balance - CSrw.Principle;
+              logtext(0,"cumint " & cumint);
+              logtext(0,"balance " & balance);
+            end;
+          end;
+        end;
+      end;
+    end;
+    
     AddInstalmentFixedBO(CredManr,CredManPayPlan2r,CMb,balance,td,cumint,calcbal,lastinv,td);
     RecordCopy(tCredManr,CredManr);
     tCredManr.InvSum4 = balance;
@@ -2315,8 +2373,11 @@ begin
       cumint = ORr.TotGP;
       balance = ORr.TotGP;
     end;
+    
     if(ORr.InvMark==1 or ORr.DownPaySent==0)then begin
-      AddInterestBO(tCredManr,CredManPayPlan2r,CMb,kMonthTypeFirst,td,ORr.TotGP,balance,lastinv,td,-1,true);
+      if(skipint==false)then begin
+        AddInterestBO(tCredManr,CredManPayPlan2r,CMb,kMonthTypeFirst,td,ORr.TotGP,balance,lastinv,td,-1,true);
+      end;
     end;
     sd = GetLastInvoiceDate(CredManr,ORr.OrdDate);
     GetCredManOverdueInvoices2(CredManr,CMb,ORr.OrdDate,sd,latedays,lateamount,principlelateamount,interestlateamount,lateformula,false,false,calcsd);
@@ -2366,13 +2427,11 @@ begin
     
     end;  
     
-//    AddPlannedFees(CredManr,CredManPayPlan2r,CMb,kPlannedFeesMonthly,kMonthTypeFirst,td,cumint,tval,lastinv,td,-1,false);
     rwcnt = MatRowCnt(CredManPayPlan2r);
     for (i=0;i<rwcnt;i=i+1) begin
       MatRowGet(CredManPayPlan2r,i,CredManPayPlanrw);
       SetupInvoiceRowAndAdd(CredManr,IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
     end;
-    
     
     for(i=0;i<matrowcnt(IVr);i=i+1)begin
       matrowget(IVr,i,IVrw);
@@ -2380,39 +2439,16 @@ begin
         lastusedrow = i;
       end;
     end;
-    
 
-    
-   /* if(nonblank(CIb.BuyOutItem))then begin
-      if(ORr.TAX2Sum>0)then begin
-        clearrow(IVr,IVrw,1);
-        IVrw.ArtCode = CIb.BuyOutItem;
-        MatRowinsert(IVr,lastusedrow+1,IVrw);
-        lastusedrow = lastusedrow + 1;
-        IVVc_PasteArtCode(IVr,lastusedrow,warning,warning,false,sernrf);
-        MatRowGet(IVr,lastusedrow,IVrw);
-        IVrw.Quant = 1;
-        MatRowPut(IVr,lastusedrow,IVrw);
-        IVVc_PasteQuantity(IVr,lastusedrow);
-        MatRowGet(IVr,lastusedrow,IVrw);
-        IVrw.Price = ORr.TAX2Sum;
-        MatRowPut(IVr,lastusedrow,IVrw);
-        IVVc_PasteQuantity(IVr,lastusedrow);
-      end;
-    end;*/
-    
     AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
- 
-    //AddBuyOutFee(CredManr,IVr,balance);
     AddInsuranceCost(CredManr,IVr,CIb);
-    //AddLateFees(CredManr,CMb,IVr,latedays,lateamount,lateformula);
   end;
 
   return;
 end;
 
 global
-updating procedure CreateProlongInvoice(record CredManVc CredManr,string paydeal,string salesman,string itemspec,var record IVVc nIVr)
+updating procedure CreateProlongInvoice(record CredManVc CredManr,string paydeal,string salesman,string itemspec,var record IVVc nIVr,record RcVc RepSpec)
 begin
   record CMInvoicingBlock CIb;
   record CredManSetBlock CMb;
@@ -2420,21 +2456,64 @@ begin
   val rate,sum;
   string 255 spec;
   string 20 pd;
+  integer cumint,balance;
+  record CMBuyOutBlock CMBOb;
+  date frdate,todate,invdate;
   
   BlockLoad(CIb);
   BlockLoad(CMb);
+  BlockLoad(CMBOb);
   
   pd = paydeal;
   if (blank(pd)) then begin
     pd = CIb.FirstInvPayDeal;
   end;
-  SetupLoanInvoice3(CredManr,CMb,IVr,CurrentDate,"","",true,false,"",1,true,pd,salesman);
-  rate = CredManr.StdProlongPrc;
-  if (CredManr.AnnualRate==1) then begin
-    rate = rate/12;
+  
+  invdate = currentdate;
+  if(RepSpec.d1<RepSpec.sEndDate)then begin
+    frdate = RepSpec.sStartDate;
+    todate = addday(RepSpec.sEndDate,-1);
+    invdate = RepSpec.d1;
+  end else begin
+    frdate = addday(RepSpec.sEndDate,1);
+    todate = RepSpec.d1;
+    invdate = RepSpec.d1;
   end;
-  sum = (CredManr.InvSum4 - CredManr.DepositSum) *(rate/100);
-  sum = sum + CredManr.StdProlongFee;
+  
+  SetupLoanInvoice3(CredManr,CMb,IVr,invdate,frdate,invdate,true,false,"",1,true,pd,salesman);
+  
+  if(CMBOb.UseRedesignedByuOut==1)then begin
+    if(RepSpec.vals3!=0 or RepSpec.vals4!=0)then begin
+      if(stringtoval(RepSpec.FirstAcc,m4val)>0)then begin
+        GetItemName(CMb.RateItem,spec);
+        SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,stringtoval(RepSpec.FirstAcc,m4val),blankval,kEventTypeCalcInterest,-1);
+        spec = "";
+      end;
+    end;
+  
+    /*if(stringtoval(RepSpec.f6,m4val)>0)then begin
+      GetItemName(CMBOb.FutFeeItem,spec);
+      SetupInvoiceRowAndAdd(CredManr,IVr,CMBOb.FutFeeItem,spec,1,stringtoval(RepSpec.f6,m4val),blankval,kEventTypeCalcFees,-1);
+      spec = "";
+    end;*/
+  
+    /*if(stringtoval(RepSpec.f12,m4val)>0)then begin
+      GetItemName(CMBOb.FutFeeItem,spec);
+      SetupInvoiceRowAndAdd(CredManr,IVr,CMBOb.FutFeeItem,spec,1,stringtoval(RepSpec.f12,m4val),blankval,kEventTypeCalcFees,-1);
+      spec = "";
+    end;*/
+  end;
+  
+  if(stringtoval(RepSpec.f9,m4val)==0)then begin
+    rate = CredManr.StdProlongPrc;
+    if (CredManr.AnnualRate==1) then begin
+      rate = rate/12;
+    end;
+    sum = (CredManr.InvSum4 - CredManr.DepositSum) *(rate/100);
+    sum = sum + CredManr.StdProlongFee;
+  end else begin
+    sum = sum + stringtoval(RepSpec.f9,m4val);
+  end;
   spec = itemspec;
   if (blank(spec)) then begin
     GetItemName(CIb.ProlongItem,spec);
@@ -2522,7 +2601,7 @@ begin
   return;
 end;
 
-global updating procedure CreditOpenInvoices(record CredManVc CredManr,Date todate,record ORVc ORr)
+global updating procedure PayAllOpenInvoices(record CredManVc CredManr,Date todate,record ORVc ORr,string itemsclass)
 begin
   record IVVc IVr,setIVr,oldIVCreditr,IVCreditr;
   row IVVc IVrw,IV2rw;
@@ -2534,20 +2613,141 @@ begin
   boolean TrHs2,foundf,creditthisinvoice;
   record INVc INr;
   string 255 tstr,princItem,itemtocredit,intItem;
+  val t,tt,tot1,tot2,tot3,intcredsum,Sum,tval;
+  longint t2,res;
+  date blankd;
+  vector val vIVItemOpenAmmount;
+  record CredManSetBlock CMb;
+  record SMVc SMr;
+  row SMVc SMrw;
+  record CMInvoicingBlock CMIb;
+  
+  blockload(CMb);
+  
+  Sum = 0;
+  
+  logforadmin(0,"PayAllOpenInvoices");
+  
+  IVr.CustCode = CredManr.CustCode;
+  TrHs = true;
+  while(loopkey("CustCode",IVr,1,TrHs))begin
+    testf = true;
+    if(IVr.CustCode!=CredManr.CustCode)then begin TrHs = false; testf = false; end;
+    if(IVr.CustCredManNr!=CredManr.SerNr)then begin testf = false; end;
+    if(IVr.OKFlag==0)then begin testf = false; end;
+    if(IVr.Invalid==1)then begin testf = false; end;
+    if(IVr.InvType==kInvoiceTypeCredit)then begin testf = false; end;
+    
+    
+    if(testf)then begin
+      creditthisinvoice = false;
+      isfullpayed = false;
+      ARr.InvoiceNr = IVr.SerNr;
+      if(!readfirstmain(ARr,1,true))then begin
+        isfullpayed = true;
+      end;
+      credflag = 1;
+      if(IVr.InvType==kInvoiceTypeCredit)then begin
+        credflag = -1;
+      end;
+      
+      rwcnt = matrowcnt(IVr);
+      for(i=0;i<rwcnt;i=i+1)begin
+        matrowget(IVr,i,IVrw);
+        if(IVrw.stp==kInvoiceRowTypeNormal and nonblank(IVrw.ArtCode))then begin
+          if(isfullpayed)then begin
+
+          end else begin
+            if(IVr.InvType!=kInvoiceTypeCredit)then begin
+              resetloop(CredHistr);
+              CredHistr.RecordNr = IVr.SerNr;
+              CredHistr.RecordType = 0;
+              TrHs2 = true;
+              foundf = false;
+              while (LoopKey("RecordNr",CredHistr,2,TrHs2)) begin
+                if ((CredHistr.RecordNr!=IVr.SerNr) or (CredHistr.RecordType!=0)) then begin
+                  TrHs2 = false;
+                end;
+                if (TrHs2 and CredHistr.ArtCode==IVrw.ArtCode) then begin
+                  foundf = true;
+                  logforadmin(0,"IV For Cred  " & IVr.SerNr & " todate " & todate);
+                  t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
+                  Sum = Sum + t;
+                end;
+              end;
+            end;
+          end;
+        end;
+      end;
+    end;    
+  end;
+  
+  logtext(0,"SUM " & Sum);
+  
+  if(Sum>0)then begin
+    blockload(CMIb);
+    recordnew(SMr);
+    SMr.RegDate = todate;
+    SMr.Sign = CMIb.PaymentMode;
+    SMrw.Objects = CredManr.CustCode;
+    SMrw.DebVal = Sum;
+    SMrw.CurncyCode = CredManr.CurncyCode;
+    SMrw.LongField01 = CredManr.SerNr;
+    matrowput(SMr,0,SMrw);
+    ReceiptEntryCreateReceipts(SMr,true,tval);
+  end;
+  
+return;
+end;
+
+
+
+
+
+global updating procedure CreditOpenInvoices(record CredManVc CredManr,Date todate,record ORVc ORr,string itemsclass,var vector val nocreditsum)
+begin
+  record IVVc IVr,setIVr,oldIVCreditr,IVCreditr;
+  row IVVc IVrw,IV2rw;
+  integer i,rwcnt,rwcnt2,j,mtrw;
+  boolean TrHs,testf,isfullpayed,creditanyvay;
+  record ARVc ARr;
+  integer credflag;
+  record CredHistVc CredHistr,CredHist2r;
+  boolean TrHs2,foundf,creditthisinvoice;
+  record INVc INr;
+  string 255 tstr,princItem,itemtocredit,intItem;
   val t,tt,tot1,tot2,tot3,intcredsum;
   longint t2,res;
   date blankd;
   vector val vIVItemOpenAmmount;
   record CredManSetBlock CMb;
+  record CMBuyOutBlock CMBuyOutb;
+  
   
   blockload(CMb);
+  blockload(CMBuyOutb);
   
   princItem = CMb.InstalmentItem;
   intItem = CMb.RateItem;
   itemtocredit = princItem;
-  if(ORr.InvMark==1)then begin
-    itemtocredit = itemtocredit & "," & intItem;
-    //intcredsum = ORr.DownPaySent; //creditet full interest always
+    
+  if(nonblank(itemsclass))then begin
+    itemtocredit = "";
+    if(CMBuyOutb.InterestCredOrPay==0)then begin
+      creditanyvay = true;
+      while(loopmain(INr,1,true))begin
+        if(setinset(itemsclass,INr.DispGroups))then begin
+          itemtocredit = itemtocredit & INr.Code & ","; 
+        end;
+      end;
+      if(ORr.InvMark==1)then begin
+        itemtocredit = itemtocredit & "," & intItem;
+      end;
+    end;
+  end else begin
+    if(ORr.InvMark==1)then begin
+      itemtocredit = itemtocredit & "," & intItem;
+    end;
   end;
   
   logforadmin(0,"CreditOpenInvoices");
@@ -2596,8 +2796,14 @@ begin
                   foundf = true;
                   logforadmin(0,"IV For Cred  " & IVr.SerNr & " todate " & todate);
                   t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
-                  if(IVr.PayDate>=todate and t>0)then begin
-                    creditthisinvoice = true;
+                  if(CMBuyOutb.DoNotCreditlastDayInvoices==0)then begin
+                    if(IVr.PayDate>=todate and t>0 or creditanyvay)then begin
+                      creditthisinvoice = true;
+                    end;
+                  end else begin
+                    if(IVr.PayDate>todate and t>0 or creditanyvay)then begin
+                      creditthisinvoice = true;
+                    end;
                   end;
                 end;
               end;
@@ -2623,6 +2829,9 @@ begin
         for(i=0;i<mtrw;i=i+1)begin
           matrowget(setIVr,i,IVrw);
           if(IVrw.stp!=1 or blank(IVrw.ArtCode) or IVrw.Sum==0 or IVrw.Price==0 or !setinset(IVrw.ArtCode,itemtocredit))then begin
+            if(IVrw.stp==1 and nonblank(IVrw.ArtCode))then begin
+              nocreditsum[IVrw.ArtCode] = nocreditsum[IVrw.ArtCode] + IVrw.Sum;
+            end;
             matrowdelete(setIVr,i);
             i=i-1;
             mtrw = mtrw - 1;
@@ -2649,6 +2858,9 @@ begin
         if (foundf) then begin
           if ((IVr.OKFlag!=0) and (IVr.InvType!=kInvoiceTypeCredit and IVr.InvType!=kInvoiceTypeCreditSpecialSales)) then begin
             res = CreateCreditNoteIV(IVr,kInvoiceTypeCredit,IVCreditr,"",false);
+            if(IVCreditr.PayDate<IVCreditr.InvDate)then begin
+              IVCreditr.PayDate = IVCreditr.InvDate;
+            end;
             IVCreditr.InvDate = todate;
             logforadmin(0,"res " & res & " cred SerNr " & IVCreditr.SerNr);
             if (res==0) then begin
@@ -2703,6 +2915,52 @@ begin
 return;
 end;
 
+global updating procedure CreateSplitInvoice(record CredManVc CredManr,Date todate,record ORVc ORr,string itemsclass,date fromdate,date datetodate,longint lastinvnr)
+begin
+  record IVVc IVr,setIVr,oldIVCreditr,IVCreditr;
+  row IVVc IVrw,IV2rw;
+  integer i,rwcnt,rwcnt2,j,mtrw;
+  boolean TrHs,testf,isfullpayed,creditanyvay;
+  record ARVc ARr;
+  integer credflag;
+  record CredHistVc CredHistr,CredHist2r;
+  boolean TrHs2,foundf,creditthisinvoice;
+  record INVc INr;
+  string 255 tstr,princItem,itemtocredit,intItem,spec;
+  val t,tt,tot1,tot2,tot3,intcredsum;
+  longint t2,res;
+  date blankd;
+  vector val vIVItemOpenAmmount;
+  record CredManSetBlock CMb;
+  record CMBuyOutBlock CMBuyOutb;
+  
+  blockload(CMb);
+  blockload(CMBuyOutb);
+  
+  logtext(0,"ORr.TotGP " & ORr.TotGP);
+  
+  IVr.SerNr = lastinvnr;
+  if(readfirstmain(IVr,1,true))then begin
+    SetupLoanInvoice3(CredManr,CMb,setIVr,todate,fromdate,addday(todate,-1),true,false,"",1,true,IVr.PayDeal,IVr.SalesMan);
+    //recordcopy(setIVr,IVr);
+    
+    //setIVr.SerNr = NextSerNr("IVVc",CurrentDate,-1,false,"");
+    setIVr.CredToDate = addday(todate,-1);
+    logtext(0,"CreateSplitInvoice " & setIVr.SerNr);
+    rwcnt = matrowcnt(IVr);
+    logtext(0,"rwcnt " & rwcnt);
+   
+    GetItemName(CMb.RateItem,spec);
+    SetupInvoiceRowAndAdd(CredManr,setIVr,CMb.RateItem,spec,1,ORr.TotGP,blankval,14,-1);
+    spec = "";
+        
+    StoreLoanInvoice(setIVr,CredManr);
+  end;
+  
+  
+return;
+end;
+
 
 global
 updating procedure DoBuyOutAgreement(record CredManVc CredManr,Date td,Boolean creditf,var record IVVc firstIVr,record ORVc ORr)
@@ -2721,6 +2979,7 @@ begin
   Longint ivnr;
   vector val vCredVal;
   transaction Boolean gIsBuyOutInvoice; 
+  vector val tmpval;
   
   gIsBuyOutInvoice = true;
 
@@ -2728,7 +2987,7 @@ begin
     BlockLoad(CMb);
     BlockLoad(CIb);
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
-    CreditOpenInvoices(CredManr,td,ORr);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 18 08 2021 y. at 2:26:56 PM
+    CreditOpenInvoices(CredManr,td,ORr,"",tmpval);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 18 08 2021 y. at 2:26:56 PM
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,td,IVr,false,sd,false,ORr);
     rwcnt = matrowcnt(IVr);
     if(ORr.ShipMark==1)then begin
@@ -3478,8 +3737,14 @@ begin
   integer intday,fullperiod;
   record CMBuyOutBlock CMBOb;
   date todate;
+  transaction boolean gBuyOutProcess;
+  transaction boolean gChangeProcess;
 
   blockload(CMBOb);
+  
+  if(!gChangeProcess)then begin
+    gBuyOutProcess = true;
+  end;
   
   CSr.CredManNr = CredManr.SerNr;
   if(readfirstmain(CSr,1,true))then begin
@@ -3499,10 +3764,19 @@ begin
         
         if(dateinrange(inputtodate,CSrw.FromDate,CSrw.ToDate))then begin
           todate = inputtodate;
-          if(CMBOb.CalcIntBOday==0)then begin
-            todate = addday(inputtodate,-1);
-          end else begin
+          if(gBuyOutProcess)then begin
+            if(CMBOb.CalcIntBOday==0)then begin
+              todate = addday(inputtodate,-1);
+            end else begin
 
+            end;
+          end;
+          if(gChangeProcess)then begin
+            if(CMBOb.CalcIntChangeDay==0)then begin
+              todate = addday(inputtodate,-1);
+            end else begin
+
+            end;
           end;
         
           if(CSrw.Invoiced==0)then begin
@@ -3517,21 +3791,26 @@ begin
               y = datediff(todate,CSrw.FromDate)-1;
             end;
             x = CSrw.Interest;
-            
+            logforadmin(0,"CSrw.ToDate " & CSrw.ToDate & " CSrw.FromDate " & CSrw.FromDate);
             fullperiod = datediff(CSrw.ToDate,CSrw.FromDate)+1;
-            dayval = CSrw.Interest / 30;
+            //dayval = CSrw.Interest / 30;
+            
             
             if(CMBOb.CalcIntBOday==0)then begin
-              spenddays = datediff(inputtodate,CSrw.FromDate);
+              spenddays = datediff(inputtodate,CSrw.FromDate)-1;
               leftdays = fullperiod - spenddays;
             end else begin
-              spenddays = datediff(inputtodate,CSrw.FromDate) + 1;
+              spenddays = datediff(inputtodate,CSrw.FromDate);
               leftdays = fullperiod - spenddays;
             end;
+            dayval = CSrw.Interest / fullperiod;
+            
+            
             if(spenddays>30)then begin
-              spenddays = 30;
+              //spenddays = 30;
             end;
             
+            logforadmin(0,"inputtodate " & inputtodate);
             logforadmin(0,"fullperiod " & fullperiod);
             logforadmin(0,"dayval " & dayval);
             logforadmin(0,"spenddays " & spenddays);
@@ -3547,6 +3826,11 @@ begin
             
             
             vvals1["INVOICEDCURRENTPERIOD"] = x - round(spenddays * dayval,defaultcurroundoff);
+            if(CMBOb.DoNotCreditlastDayInvoices)then begin
+              if(CSrw.ToDate==inputtodate)then begin
+                vvals1["INVOICEDCURRENTPERIOD"] = 0;
+              end;
+            end;
             vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(spenddays * dayval,defaultcurroundoff);
             logforadmin(0,"--------- " & CSrw.Interest);
             logforadmin(0,vvals1["CURRPERIODINTEREST"]);
@@ -3657,7 +3941,13 @@ begin
   boolean testf;
   record CMBuyOutBlock CMBOb;
   record CMApplicationSetBlock CMAb;
+  transaction boolean gBuyOutProcess;
+  transaction boolean gChangeProcess;
   
+  if(!gChangeProcess)then begin
+    gBuyOutProcess = true;
+  end; 
+   
   blockload(CIb);
   BlockLoad(CMb);
   BlockLoad(CMBOb);
@@ -3686,11 +3976,18 @@ begin
   //lateamount=not invoiced overdues??? ->
   
   invdateday = ORr.OrdDate;
-  if(CMBOb.CalcOvdBOday==1)then begin
-    invdateday = addday(invdateday,1);
-  end;  
-  if(CMAb.BuyOutInclPaymDay==1)then begin
-    //invdateday = addday(invdateday,-1);
+  if(gBuyOutProcess)then begin
+    if(CMBOb.CalcOvdBOday==1)then begin
+      invdateday = addday(invdateday,1);
+    end;  
+    if(CMAb.BuyOutInclPaymDay==1)then begin
+      invdateday = addday(invdateday,-1);
+    end;
+  end;
+  if(gChangeProcess)then begin
+    if(CMBOb.CalcOvdChangeDay==1)then begin
+      invdateday = addday(invdateday,1);
+    end; 
   end;
   GetCredManOverdueInvoices2(CredManr,CMb,invdateday,sd,latedays,lateamount,principlelateamount,interestlateamount,lateformula,false,false,calcsd);
   
@@ -3793,13 +4090,13 @@ begin
   intItem = CMb.RateItem;
   feesItem = CMb.LateRateItem;
   princItem = CMb.InstalmentItem;
-  futurefeesitem = CMBOb.FutFeeItem;
+  //futurefeesitem = CMBOb.FutFeeItem;
   
   if(nonblank(CMBOb.FutFeeItemClass))then begin
     resetloop(INr);
     INr.Code = "";
     while(loopmain(INr,1,true))begin
-      if(setinset(CMBOb.FutFeeItemClass,INr.DispGroups) and INr.Code!=CMBOb.FutFeeItem)then begin
+      if(setinset(CMBOb.FutFeeItemClass,INr.DispGroups))then begin
         afutfeeclassitem[afutfeeclassitem.length] = INr.Code;
       end;
     end;
@@ -3840,8 +4137,8 @@ begin
   logforadmin(0,"interestammount " & interestammount);
   logforadmin(0,"vcalcval1[\"INVOICEDCURRENTPERIOD\"] " & vcalcval1["INVOICEDCURRENTPERIOD"]);
   
-  ORr.CustVal01 = vcalcval["OVDOPENINVOICED:" & futurefeesitem];
-  logforadmin(0,"ORr.CustVal01 " & futurefeesitem & " " & ORr.CustVal01);
+  //ORr.CustVal01 = vcalcval["OVDOPENINVOICED:" & futurefeesitem];
+  //logforadmin(0,"ORr.CustVal01 " & futurefeesitem & " " & ORr.CustVal01);
   if(afutfeeclassitem.length>0)then begin
     for(i=0;i<afutfeeclassitem.length;i=i+1)begin
       ORr.CustVal01 = ORr.CustVal01 + vcalcval["OVDOPENINVOICED:" & afutfeeclassitem[i]];
@@ -3983,6 +4280,9 @@ procedure CheckBuyOutAgreementAsync(record CredManVc CredManr,Date td,Integer wn
 begin
   record RcVc RepSpec;
   record ORVc ORr;
+  transaction boolean gBuyOutProcess;
+
+  gBuyOutProcess = true;
 
   //CheckBuyOutAgreement(CredManr,RepSpec);
   if (true/*IsOmegaCustomer*/) then begin//enabled for all customers
@@ -4625,6 +4925,9 @@ updating procedure StoreCredManSchedRecord(record CredManSchedVc CSr)
 begin
   record CredManSchedVc oldCSr;
 
+  logtext(0,"StoreCredManSchedRecord " & matrowcnt(CSr));
+  HALCALLSTACK;
+
   oldCSr.CredManNr = CSr.CredManNr;
   if (ReadFirstMain(oldCSr,1,true)) then begin
     RecordUpdate(oldCSr,CSr,false);
@@ -4699,7 +5002,6 @@ logforadmin(0,"GenerateAgreementSchedule1");
       CSrw.InvDate = SMrw.TransDate;
       CSrw.PayDate = SMrw.DueDate;
       CSrw.Type = SMrw.RowSimStat;
-      logforadmin(0,"SMrw.RowSimStat " & SMrw.RowSimStat);
       switch (CSrw.Type) begin
         case 4:
           CSrw.Total = SMrw.CurDebVal;
@@ -4737,6 +5039,7 @@ logforadmin(0,"GenerateAgreementSchedule1");
       rw = rw + 1;
     end;
   end;
+  logtext(0,"StoreCredManSchedRecord  " & matrowcnt(CSr));
   qupdating.StoreCredManSchedRecord(CSr);
 
 lout:;
