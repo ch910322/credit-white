@@ -717,3 +717,18 @@ begin
   
 return;
 end;
+
+
+global updating procedure ReFixAllPaymentsMn(record RcVc RepSpec)
+begin
+  record IPVc IPr;
+  
+  while(loopmain(IPr,1,true))begin
+    if(IPr.OKFlag==1)then begin
+      SplitLoanPaymentsInReceipt(IPr,false);
+      SplitLoanPaymentsInReceipt(IPr,true);
+    end;
+  end;
+
+return;
+end;
