@@ -727,9 +727,9 @@ begin
     tmpval = usemonths;
     tmpval = tmpval/100;
     res = Power(tmpval,2);
-    if (usemonths>200) then begin
-      res = 2;
-    end;
+    //if (usemonths>200) then begin//Disabled after Kristaps update
+      //res = 2;
+    //end;
   end else begin
     res = 1;
   end;
@@ -1682,6 +1682,20 @@ begin
   GetMonthlyRate = res;
   return;
 end;
+
+
+procedure AddExtraPlanInvoice(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Integer type,Integer monthtypef,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,Longint factinv,Boolean ContractFeef)
+begin
+  integer sendcurmonth,usemonths;
+  val usesum,bval;
+  
+  AddInterest(CredManr,CredManPayPlanr,CMb,monthtypef,invdate,acumint,calcbal,frdate,todate,-1,false);
+  AddInstalment(CredManr,CredManPayPlanr,CMb,1,monthtypef,invdate,acumint,calcbal,frdate,todate,sendcurmonth,usesum,usemonths,bval);
+
+return;
+end;
+
+
 
 global
 procedure BuildCredManPayPlanCust2(record CredManVc inCredManr,var record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb,Boolean withactuals,Boolean recalculatef,Boolean planf)
