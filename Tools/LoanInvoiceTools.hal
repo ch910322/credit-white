@@ -2472,7 +2472,7 @@ begin
   invdate = currentdate;
   if(RepSpec.d1<RepSpec.sEndDate)then begin
     frdate = RepSpec.sStartDate;
-    todate = addday(RepSpec.sEndDate,-1);
+    todate = RepSpec.sEndDate;
     invdate = RepSpec.d1;
   end else begin
     frdate = addday(RepSpec.sEndDate,1);
@@ -2480,13 +2480,21 @@ begin
     invdate = RepSpec.d1;
   end;
   
-  SetupLoanInvoice3(CredManr,CMb,IVr,invdate,frdate,invdate,true,false,"",1,true,pd,salesman);
+  
+  
+  SetupLoanInvoice3(CredManr,CMb,IVr,invdate,frdate,todate,true,false,"",1,true,pd,salesman);
   
   if(CMBOb.UseRedesignedByuOut==1)then begin
     if(RepSpec.vals3!=0 or RepSpec.vals4!=0)then begin
       if(stringtoval(RepSpec.FirstAcc,m4val)>0)then begin
         GetItemName(CMb.RateItem,spec);
+        spec = spec  & " " & frdate & ":" & addday(invdate,-1);
         SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,stringtoval(RepSpec.FirstAcc,m4val),blankval,kEventTypeCalcInterest,-1);
+        spec = "";
+        
+        GetItemName(CMb.RateItem,spec);
+        spec = spec  & " " & invdate & ":" & todate;
+        SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,333,blankval,kEventTypeCalcInterest,-1);
         spec = "";
       end;
     end;
@@ -2835,6 +2843,12 @@ begin
             matrowdelete(setIVr,i);
             i=i-1;
             mtrw = mtrw - 1;
+          end else begin
+            if(IVrw.ArtCode==princItem)then begin
+              if(IVrw.stp==1 and nonblank(IVrw.ArtCode))then begin
+                nocreditsum[IVrw.ArtCode] = nocreditsum[IVrw.ArtCode] + IVrw.Sum;
+              end;
+            end;
           end;
         end;
         setIVr.SerNr = -1;
@@ -3793,8 +3807,9 @@ begin
             x = CSrw.Interest;
             logforadmin(0,"CSrw.ToDate " & CSrw.ToDate & " CSrw.FromDate " & CSrw.FromDate);
             fullperiod = datediff(CSrw.ToDate,CSrw.FromDate)+1;
-            //dayval = CSrw.Interest / 30;
-            
+            if(CMBOb.FactOrFixedDaysBO==1)then begin
+              dayval = CSrw.Interest / 30;
+            end;
             
             if(CMBOb.CalcIntBOday==0)then begin
               spenddays = datediff(inputtodate,CSrw.FromDate)-1;
@@ -3805,9 +3820,10 @@ begin
             end;
             dayval = CSrw.Interest / fullperiod;
             
-            
-            if(spenddays>30)then begin
-              //spenddays = 30;
+            if(CMBOb.FactOrFixedDaysBO==1)then begin
+              if(spenddays>30)then begin
+                spenddays = 30;
+              end;
             end;
             
             logforadmin(0,"inputtodate " & inputtodate);
