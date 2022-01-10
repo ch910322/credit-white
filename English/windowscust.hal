@@ -4464,7 +4464,12 @@ begin
   EditField(h,v+=vs,100,"Premature Term. Principle",Normal,PremTermPrincpl,false,INSClass);
   EditField(h,v+=vs,100,"Future Fee Item Class",Normal,FutFeeItemClass,false,DISClass);
   EditField(h,v+=vs,100,"Future Fee Item",Normal,FutFeeItem,false,INSClass);
-  CheckBox(h,v+=20,0,"Use 30 days in a month - not actual",FactOrFixedDaysBO);
+  
+  ButtonFrame(h,v+=45,200,3,"Days in month");
+	RadioButton(h,v,0,0,"30",FactOrFixedDaysBO);
+	RadioButton(h,v+=16,1,0,"Actual",FactOrFixedDaysBO);
+	RadioButton(h,v+=16,2,0,"From Credit Agreement",FactOrFixedDaysBO);
+  
   CheckBox(h,v+=20,0,"Calculate Interest for Buy-Out Day",CalcIntBOday);
   CheckBox(h,v+=20,0,"Calculate Overdues for Buy-Out Day",CalcOvdBOday); 
   CheckBox(h,v+=20,0,"Calculate Interest for Change Day",CalcIntChangeDay);

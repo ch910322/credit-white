@@ -3753,8 +3753,26 @@ begin
   date todate;
   transaction boolean gBuyOutProcess;
   transaction boolean gChangeProcess;
+  boolean daysinmonth30;
+  record CMApplicationSetBlock CMASb;
 
   blockload(CMBOb);
+  
+  
+  if(CMBOb.FactOrFixedDaysBO==0)then begin
+    daysinmonth30 = true;
+  end;
+  if(CMBOb.FactOrFixedDaysBO==2)then begin
+    if(CredManr.DaysInMonth==1)then begin
+      daysinmonth30 = true;
+    end;
+    if(CredManr.DaysInMonth==0)then begin
+      blockload(CMASb);
+      if(CMASb.DaysInMonth==0)then begin
+        daysinmonth30 = true;
+      end;
+    end;
+  end;
   
   if(!gChangeProcess)then begin
     gBuyOutProcess = true;
@@ -3792,9 +3810,14 @@ begin
 
             end;
           end;
-        
+
+          fullperiod = datediff(CSrw.ToDate,CSrw.FromDate)+1;
           if(CSrw.Invoiced==0)then begin
-            vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(CSrw.Interest * (datediff(todate,CSrw.FromDate)+1) / 30,defaultcurroundoff);
+            if(daysinmonth30)then begin
+              vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(CSrw.Interest * (datediff(todate,CSrw.FromDate)+1) / 30,defaultcurroundoff);
+            end else begin
+              vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(CSrw.Interest * (datediff(todate,CSrw.FromDate)+1) / fullperiod,defaultcurroundoff);
+            end;
             //logforadmin(0,CSrw.Interest & " vvals1[\"CURRPERIODINTEREST\"] " & vvals1["CURRPERIODINTEREST"]);
           end else begin
             todate = inputtodate;
@@ -3806,10 +3829,7 @@ begin
             end;
             x = CSrw.Interest;
             logforadmin(0,"CSrw.ToDate " & CSrw.ToDate & " CSrw.FromDate " & CSrw.FromDate);
-            fullperiod = datediff(CSrw.ToDate,CSrw.FromDate)+1;
-            if(CMBOb.FactOrFixedDaysBO==1)then begin
-              dayval = CSrw.Interest / 30;
-            end;
+            
             
             if(CMBOb.CalcIntBOday==0)then begin
               spenddays = datediff(inputtodate,CSrw.FromDate)-1;
@@ -3818,13 +3838,17 @@ begin
               spenddays = datediff(inputtodate,CSrw.FromDate);
               leftdays = fullperiod - spenddays;
             end;
-            dayval = CSrw.Interest / fullperiod;
             
-            if(CMBOb.FactOrFixedDaysBO==1)then begin
+            if(daysinmonth30)then begin
+              dayval = CSrw.Interest / 30;
               if(spenddays>30)then begin
                 spenddays = 30;
               end;
+            end else begin
+              dayval = CSrw.Interest / fullperiod;
             end;
+            
+            
             
             logforadmin(0,"inputtodate " & inputtodate);
             logforadmin(0,"fullperiod " & fullperiod);
@@ -3832,10 +3856,7 @@ begin
             logforadmin(0,"spenddays " & spenddays);
             logforadmin(0,"leftdays " & leftdays);
             
-            if(y>30)then begin
-              y = 30;
-            end;
-            z = 30;
+ 
             logforadmin(0,"x " & x);
             logforadmin(0,"y " & y);
             logforadmin(0,"z " & z);
