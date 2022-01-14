@@ -4,7 +4,7 @@ external inner function roundmode SetRoundModeD(Integer);
 external inner function LongInt MonthDiff(Date,Date);
 external procedure GetCredManOverdueInvoices(record CredManVc,record CredManSetBlock,Date,Date,var Integer,var val,var array string,Boolean,Boolean,var Date);
 external inner function val AbsoluteVal(val);
-external procedure BuildCredManInfoMatrix(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc);
+external procedure BuildCredManInfoMatrix2(record CredManVc,record CredManPayPlanVc,record CredManSetBlock,var record SMVc,Date);
 forward procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
 external function Integer GetInterestPaymentType(record CredManVc);
 external function Boolean PartiaBuyoutShortensPeriod();
@@ -636,30 +636,36 @@ end;
 function val CalculateAnnuityDiff(record CredManVc CredManr,val diff,Integer usemonths)
 begin
   val res;
-  val rate,ndiff,mdiff,tdiff;
-  Integer i;
+  val rate,ndiff,mdiff,tdiff,coef;
+  Integer i,sign,tmp,lengthcoef,ratecoef;
 
   res = 0;
   rate = CredManr.IntRate;
   if (CredManr.AnnualRate==1) then begin
     rate = rate/12;
   end;
+  //both period length and rate impact the precision.
+  ratecoef = Round(rate,SetRoundModeD(2));
+  if (ratecoef==0) then begin
+    ratecoef = 1;
+  end;
+  lengthcoef = Round(usemonths/100,SetRoundModeD(2));
+  if (lengthcoef==0) then begin
+    lengthcoef = 1;
+  end;
+  if (lengthcoef==1 and ratecoef>1) then begin
+    ratecoef = ratecoef - 1;
+  end;
+  if (lengthcoef==1) then begin
+    coef = 0.1;//this is default for all loans up to 129 months
+  end else begin
+    ratecoef = ratecoef - 1;
+    tmp = ratecoef + lengthcoef;
+    coef = Power(0.1,tmp);
+  end;
   rate = rate/100;
-  mdiff = diff/(usemonths);
-  ndiff = mdiff - (mdiff/(1+rate));
-  tdiff = ndiff;
-  for (i=0;i<usemonths;i=i+1) begin
-    tdiff = tdiff + ((i+1)*ndiff);
-  end;
-  //rate = 0.00001;
-  res = rate * (diff * power(1 + rate, usemonths)) / (power(1 + rate, usemonths) - 1);
-/*
-  for (i=0;i<usemonths;i=i+1) begin
-    res = res - FIN_PPMT(rate, usemonths, diff, i+1);
-  end;
-*/
-  //res = diff - tdiff;//(diff*0.31855);//(ndiff*usemonths);//(diff*0.31855);// - (diff*0.1);// - (diff*0.1);//0.42
-
+  //rate = 0.0095 vs 0.032 (small vs large)
+  res = FIN_PMT(rate, usemonths-1, diff*coef);//0.1 is so that we add/remove more diff by little fraction. Makes it a lot more precise
   CalculateAnnuityDiff = res;
   return;
 end;
@@ -721,9 +727,9 @@ begin
     tmpval = usemonths;
     tmpval = tmpval/100;
     res = Power(tmpval,2);
-    if (usemonths>200) then begin
-      res = 2;
-    end;
+    //if (usemonths>200) then begin//Disabled after Kristaps update
+      //res = 2;
+    //end;
   end else begin
     res = 1;
   end;
@@ -814,28 +820,17 @@ begin
           end;
           sum = tsum - tint;
         end else begin
-          if (month==1 and extra_diff==0) then begin
+          if (month==0 and extra_diff==0) then begin
             tsum = FIN_PMT(rate, tusemonths, tusesum);
-            tint = GetCurMonthInterest(CredManPayPlanr,invdate);
-            tsum = tsum - tint;
-            extra_diff = CalculateAnnuityDiff(CredManr,tsum-sum,tusemonths);
-            sum = tsum;
-            //extra_diff = 0;
-            if (AbsoluteVal(extra_diff)>GetAnnuityDiffLimit(usemonths)) then begin
-              sum = tsum - (extra_diff/(tusemonths/5));
-            end else begin
-              extra_diff = 0;
-            end;
+            tint = Round(GetCurMonthInterest(CredManPayPlanr,invdate),SetRoundModeD(2));
+            //tsum = tsum - tint;
+            extra_diff = FIN_PMT(rate, tusemonths-1, (sum - (tsum - tint)));
+            //um = Round(tsum + extra_diff,SetRoundModeD(2)) - tint;
+            sum = tsum + extra_diff - tint;
           end else begin
-            if (extra_diff!=0) then begin
-              tint = GetCurMonthInterest(CredManPayPlanr,invdate);
-              sum = FIN_PMT(rate, tusemonths, tusesum);
-              sum = sum - (extra_diff/(tusemonths/5)) - tint;
-            end else begin
-              tsum = FIN_PMT(rate, tusemonths, tusesum);
-              tint = GetCurMonthInterest(CredManPayPlanr,invdate);
-              sum = tsum - tint;
-            end;
+            tsum = FIN_PMT(rate, tusemonths, tusesum);
+            tint = Round(GetCurMonthInterest(CredManPayPlanr,invdate),SetRoundModeD(2));
+            sum = tsum + extra_diff - tint;
           end;
         end;
 
@@ -1415,22 +1410,23 @@ begin
   return;
 end;
 
-function Boolean TotalsDifferTooMuch(val v1,val v2,var val diff,record CredManVc CredManr,Integer usemonths)
+function Boolean TotalsDifferTooMuch(val v2,val v1,var val diff,record CredManVc CredManr,Integer usemonths)
 begin
   Boolean res;
   val origdiff,limit,tmpval;
   origdiff = diff;
 
-  diff = v1-v2;//2nd last - 
+  diff = v1-v2;// last - 2nd to last
   limit = GetAnnuityDiffLimit(usemonths);
   if (AbsoluteVal(diff)>limit) then begin
-    res = true;
     diff = CalculateAnnuityDiff(CredManr,diff,usemonths);
   end else begin
     diff = 0;
   end;
+  if (diff!=0) then begin
+    res = true;
+  end;
   diff = origdiff + diff;
-  
   TotalsDifferTooMuch = res;
   return;
 end;
@@ -1448,7 +1444,7 @@ begin
 
   if (true) then begin//GetDaysInMonth(CMb,CredManr)==1
     BlockLoad(CredManSetb);
-    BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+    BuildCredManInfoMatrix2(CredManr,CredManPayPlanr,CredManSetb,SMr,AddMonth(CredManr.endDate,-3));
     rwcnt = MatRowCnt(SMr);
     if (CredManr.LastMonthPrinc>0 and CredManr.MaxMonthlyPayment==0) then begin
       MatRowGet(SMr,rwcnt-2,lastSMrw);
@@ -1674,6 +1670,32 @@ begin
   return;
 end;
 
+function val GetMonthlyRate(record CredManVc inCredManr)
+begin
+  val res;
+
+  res = inCredManr.IntRate;
+  if (inCredManr.AnnualRate==1) then begin
+    res = res/12;
+  end;
+
+  GetMonthlyRate = res;
+  return;
+end;
+
+
+procedure AddExtraPlanInvoice(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Integer type,Integer monthtypef,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,Longint factinv,Boolean ContractFeef)
+begin
+  integer sendcurmonth,usemonths;
+  val usesum,bval;
+  
+  AddInterest(CredManr,CredManPayPlanr,CMb,monthtypef,invdate,acumint,calcbal,frdate,todate,-1,false);
+  AddInstalment(CredManr,CredManPayPlanr,CMb,1,monthtypef,invdate,acumint,calcbal,frdate,todate,sendcurmonth,usesum,usemonths,bval);
+
+return;
+end;
+
+
 
 global
 procedure BuildCredManPayPlanCust2(record CredManVc inCredManr,var record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CredManSetb,Boolean withactuals,Boolean recalculatef,Boolean planf)
@@ -1698,7 +1720,6 @@ begin
   record CMBuyOutBlock CMBuyOutb;
   
   blockload(CMBuyOutb);
-  
 
 /*should we calculate VAT here?
   if CredManr.VATSum > 0 and nonblank(CredManr.VATAddMonths) then begin
@@ -1919,7 +1940,7 @@ lStepBack:;
 
 logtext(0,"BuildCredManPayPlanCust end1 retry=" & tries);
   if (recalculatef) then begin
-    if (inCredManr.InstalmentType==0 and tries<25 and inCredManr.MaxMonthlyPayment==0) then begin//annuity
+    if (inCredManr.InstalmentType==0 and tries<30 and inCredManr.MaxMonthlyPayment==0) then begin//annuity
       if (ShouldRecalculateAnnuitySchedule(inCredManr,CredManPayPlanr,usemonths,annuity_diff)) then begin
         RecordClear(CredManPayPlanr);
         tries = tries + 1;
@@ -1927,8 +1948,6 @@ logtext(0,"BuildCredManPayPlanCust end1 retry=" & tries);
       end;
     end;
   end;
-
-logtext(0,"BuildCredManPayPlanCust end2");
 
 LBuildCredManPayPlanCust:;
   SortRows(CredManPayPlanr,"SortString",true);

@@ -2816,6 +2816,7 @@ begin
   RecordField(CalcOvdChangeDay,M4Int,0,0);
   RecordField(InterestCredOrPay,M4Int,0,0);
   RecordField(UseRedesignedByuOut,M4Int,0,0);
+  RecordField(FactOrFixedDaysBO,M4Int,0,0);
   
   EndBlock;
   

@@ -1743,7 +1743,7 @@ lout:;
 end;
 
 global
-procedure TestCredManInvoicesFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date ed,var array record IVVc aIVr)
+procedure TestCredManInvoicesFromPlan2(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date sd,Date ed,var array record IVVc aIVr)
 begin
   Integer i,rwcnt;
   row CredManPayPlanVc CredManPayPlanrw;
@@ -1760,7 +1760,7 @@ begin
   rwcnt = MatRowCnt(CredManPayPlanr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
-    if (CredManPayPlanrw.PlanType<=4) then begin// and CredManPayPlanrw.TransDate<=ed
+    if (CredManPayPlanrw.PlanType<=4 and (blank(sd) or CredManPayPlanrw.TransDate>=sd)) then begin// and CredManPayPlanrw.TransDate<=ed
       if (lastd!=CredManPayPlanrw.TransDate) then begin
         //Setup new invoice
         if (nonblank(lastd)) then begin
@@ -1785,6 +1785,15 @@ begin
     aIVr[aIVr.length] = IVr;
   end;
   gSilenceIVOpenPrepExists = false;
+
+  return;
+end;
+
+global
+procedure TestCredManInvoicesFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date ed,var array record IVVc aIVr)
+begin
+
+  TestCredManInvoicesFromPlan2(CredManr,CMb,CredManPayPlanr,"",ed,aIVr);
 
   return;
 end;
@@ -2463,7 +2472,7 @@ begin
   invdate = currentdate;
   if(RepSpec.d1<RepSpec.sEndDate)then begin
     frdate = RepSpec.sStartDate;
-    todate = addday(RepSpec.sEndDate,-1);
+    todate = RepSpec.sEndDate;
     invdate = RepSpec.d1;
   end else begin
     frdate = addday(RepSpec.sEndDate,1);
@@ -2471,13 +2480,21 @@ begin
     invdate = RepSpec.d1;
   end;
   
-  SetupLoanInvoice3(CredManr,CMb,IVr,invdate,frdate,invdate,true,false,"",1,true,pd,salesman);
+  
+  
+  SetupLoanInvoice3(CredManr,CMb,IVr,invdate,frdate,todate,true,false,"",1,true,pd,salesman);
   
   if(CMBOb.UseRedesignedByuOut==1)then begin
     if(RepSpec.vals3!=0 or RepSpec.vals4!=0)then begin
       if(stringtoval(RepSpec.FirstAcc,m4val)>0)then begin
         GetItemName(CMb.RateItem,spec);
+        spec = spec  & " " & frdate & ":" & addday(invdate,-1);
         SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,stringtoval(RepSpec.FirstAcc,m4val),blankval,kEventTypeCalcInterest,-1);
+        spec = "";
+        
+        GetItemName(CMb.RateItem,spec);
+        spec = spec  & " " & invdate & ":" & todate;
+        SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,333,blankval,kEventTypeCalcInterest,-1);
         spec = "";
       end;
     end;
@@ -2826,6 +2843,12 @@ begin
             matrowdelete(setIVr,i);
             i=i-1;
             mtrw = mtrw - 1;
+          end else begin
+            if(IVrw.ArtCode==princItem)then begin
+              if(IVrw.stp==1 and nonblank(IVrw.ArtCode))then begin
+                nocreditsum[IVrw.ArtCode] = nocreditsum[IVrw.ArtCode] + IVrw.Sum;
+              end;
+            end;
           end;
         end;
         setIVr.SerNr = -1;
@@ -3730,8 +3753,26 @@ begin
   date todate;
   transaction boolean gBuyOutProcess;
   transaction boolean gChangeProcess;
+  boolean daysinmonth30;
+  record CMApplicationSetBlock CMASb;
 
   blockload(CMBOb);
+  
+  
+  if(CMBOb.FactOrFixedDaysBO==0)then begin
+    daysinmonth30 = true;
+  end;
+  if(CMBOb.FactOrFixedDaysBO==2)then begin
+    if(CredManr.DaysInMonth==1)then begin
+      daysinmonth30 = true;
+    end;
+    if(CredManr.DaysInMonth==0)then begin
+      blockload(CMASb);
+      if(CMASb.DaysInMonth==0)then begin
+        daysinmonth30 = true;
+      end;
+    end;
+  end;
   
   if(!gChangeProcess)then begin
     gBuyOutProcess = true;
@@ -3769,9 +3810,14 @@ begin
 
             end;
           end;
-        
+
+          fullperiod = datediff(CSrw.ToDate,CSrw.FromDate)+1;
           if(CSrw.Invoiced==0)then begin
-            vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(CSrw.Interest * (datediff(todate,CSrw.FromDate)+1) / 30,defaultcurroundoff);
+            if(daysinmonth30)then begin
+              vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(CSrw.Interest * (datediff(todate,CSrw.FromDate)+1) / 30,defaultcurroundoff);
+            end else begin
+              vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(CSrw.Interest * (datediff(todate,CSrw.FromDate)+1) / fullperiod,defaultcurroundoff);
+            end;
             //logforadmin(0,CSrw.Interest & " vvals1[\"CURRPERIODINTEREST\"] " & vvals1["CURRPERIODINTEREST"]);
           end else begin
             todate = inputtodate;
@@ -3783,8 +3829,6 @@ begin
             end;
             x = CSrw.Interest;
             logforadmin(0,"CSrw.ToDate " & CSrw.ToDate & " CSrw.FromDate " & CSrw.FromDate);
-            fullperiod = datediff(CSrw.ToDate,CSrw.FromDate)+1;
-            //dayval = CSrw.Interest / 30;
             
             
             if(CMBOb.CalcIntBOday==0)then begin
@@ -3794,12 +3838,17 @@ begin
               spenddays = datediff(inputtodate,CSrw.FromDate);
               leftdays = fullperiod - spenddays;
             end;
-            dayval = CSrw.Interest / fullperiod;
             
-            
-            if(spenddays>30)then begin
-              //spenddays = 30;
+            if(daysinmonth30)then begin
+              dayval = CSrw.Interest / 30;
+              if(spenddays>30)then begin
+                spenddays = 30;
+              end;
+            end else begin
+              dayval = CSrw.Interest / fullperiod;
             end;
+            
+            
             
             logforadmin(0,"inputtodate " & inputtodate);
             logforadmin(0,"fullperiod " & fullperiod);
@@ -3807,10 +3856,7 @@ begin
             logforadmin(0,"spenddays " & spenddays);
             logforadmin(0,"leftdays " & leftdays);
             
-            if(y>30)then begin
-              y = 30;
-            end;
-            z = 30;
+ 
             logforadmin(0,"x " & x);
             logforadmin(0,"y " & y);
             logforadmin(0,"z " & z);
