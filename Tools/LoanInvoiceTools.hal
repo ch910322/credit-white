@@ -2448,7 +2448,7 @@ begin
 end;
 
 global
-updating procedure CreateProlongInvoice(record CredManVc CredManr,string paydeal,string salesman,string itemspec,var record IVVc nIVr,record RcVc RepSpec)
+updating procedure CreateProlongInvoice(record CredManVc CredManr,string paydeal,string salesman,string itemspec,var record IVVc nIVr,record RcVc RepSpec,vector val nocreditsum)
 begin
   record CMInvoicingBlock CIb;
   record CredManSetBlock CMb;
@@ -2459,10 +2459,14 @@ begin
   integer cumint,balance;
   record CMBuyOutBlock CMBOb;
   date frdate,todate,invdate;
+  string 20 princItem;
   
   BlockLoad(CIb);
   BlockLoad(CMb);
   BlockLoad(CMBOb);
+  
+
+  princItem = CMb.InstalmentItem;
   
   pd = paydeal;
   if (blank(pd)) then begin
@@ -2487,6 +2491,8 @@ begin
   if(CMBOb.UseRedesignedByuOut==1)then begin
     if(RepSpec.vals3!=0 or RepSpec.vals4!=0)then begin
       if(stringtoval(RepSpec.FirstAcc,m4val)>0)then begin
+      
+        logtext(0,"RepSpec.FirstAcc " & RepSpec.FirstAcc);
         GetItemName(CMb.RateItem,spec);
         spec = spec  & " " & frdate & ":" & addday(invdate,-1);
         SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,stringtoval(RepSpec.FirstAcc,m4val),blankval,kEventTypeCalcInterest,-1);
@@ -2497,6 +2503,17 @@ begin
         SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,333,blankval,kEventTypeCalcInterest,-1);
         spec = "";
       end;
+      
+      if(nonblank(princItem))then begin
+        if(nocreditsum[princItem]>0)then begin
+          logtext(0,"nocreditsum[princItem] " & nocreditsum[princItem]);
+          GetItemName(princItem,spec);
+          spec = spec  & " " & frdate & ":" & addday(invdate,-1);
+          SetupInvoiceRowAndAdd(CredManr,IVr,princItem,spec,1,nocreditsum[princItem],blankval,kEventTypeCalcInstalment,-1);
+          spec = "";
+        end;
+      end;
+      
     end;
   
     /*if(stringtoval(RepSpec.f6,m4val)>0)then begin
@@ -2872,6 +2889,7 @@ begin
         if (foundf) then begin
           if ((IVr.OKFlag!=0) and (IVr.InvType!=kInvoiceTypeCredit and IVr.InvType!=kInvoiceTypeCreditSpecialSales)) then begin
             res = CreateCreditNoteIV(IVr,kInvoiceTypeCredit,IVCreditr,"",false);
+            IVCreditr.IsChangeAgrInvoice = 1;
             if(IVCreditr.PayDate<IVCreditr.InvDate)then begin
               IVCreditr.PayDate = IVCreditr.InvDate;
             end;
@@ -3657,7 +3675,7 @@ procedure FindAllInvoicesAndPrepayments(record CredManVc CredManr,var vector val
 begin
   record IVVc IVr;
   row IVVc IVrw;
-  integer i,rwcnt;
+  integer i,rwcnt,j,rwcnt1;
   boolean TrHs,testf,isfullpayed;
   record ARVc ARr;
   integer credflag;
@@ -3668,7 +3686,12 @@ begin
   val t,tt,tot1,tot2,tot3;
   longint t2;
   date blankd;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
   
+  CSr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CSr,1,true)) then begin end;
+  rwcnt1 = matrowcnt(CSr);
   
   IVr.CustCode = CredManr.CustCode;
   TrHs = true;
@@ -3721,6 +3744,14 @@ begin
                   vcalcval["OPENINVOICED:" & IVrw.ArtCode] = vcalcval["OPENINVOICED:" & IVrw.ArtCode] + t; 
                   vcalcval["OPENINVOICED"] = vcalcval["OPENINVOICED"] + t; 
                   logforadmin(0,IVr.SerNr & " OPENINVOICED:" & IVrw.ArtCode & " " & t);
+                  for(j=0;j<rwcnt1;j=j+1)begin
+                    matrowget(CSr,j,CSrw);
+                    if(CSrw.InvDate==IVr.InvDate)then begin
+                      if(IVr.PayDate>CSrw.ToDate)then begin
+                        IVr.PayDate = CSrw.ToDate;
+                      end;
+                    end;
+                  end;
                   if(IVr.PayDate<todate)then begin
                     vcalcval["OVDOPENINVOICED:" & IVrw.ArtCode] = vcalcval["OVDOPENINVOICED:" & IVrw.ArtCode] + t; 
                     vcalcval["OVDOPENINVOICED"] = vcalcval["OVDOPENINVOICED"] + t; 
@@ -4711,7 +4742,7 @@ begin
             instalmentSum = instalmentSum + IVrw.Sum;
           end;
           if(IVrw.stp==1 and IVrw.ArtCode==CMb.RateItem)then begin
-            rateItemSum = rateItemSum + IVrw.Sum;
+            // rateItemSum = rateItemSum + IVrw.Sum;//Interes no need to add to future periods// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 13 01 2022 y. at 12:09:26 PM
           end;
         end;
         if (ReadFirstMain(CSr,1,true)) then begin

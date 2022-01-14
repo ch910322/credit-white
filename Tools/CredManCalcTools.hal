@@ -305,6 +305,7 @@ begin
   
   blockload(CMBuyOutb);
   
+  
   skip = true;
   
   if(CMBuyOutb.UseRedesignedByuOut==1)then begin
@@ -349,6 +350,7 @@ begin
       MatRowPut(CredManPayPlanr,MatRowCnt(CredManPayPlanr),CredManPayPlanrw);
       acumint = CredManPayPlanrw.AcumulatedInt;
       calcbal = CredManPayPlanrw.Bal;
+  
     end;
   end;
 
@@ -566,6 +568,17 @@ begin
       AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.DepositItem,"",kEventTypeCalcInstalment,extradep,0,acumint,calcbal,frdate,todate,-1,-1,0);//kEventTypeCalcDeposit>>kEventTypeCalcInstalment
     end;
   end;
+  return;
+end;
+
+procedure AddExtraPrinciple(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,record CredManSetBlock CMb,Date invdate,var val acumint,var val calcbal,Date frdate,Date todate,Integer month,val extradeposit)
+begin
+  val extradep;
+  Integer totmonths,lastmonth;
+  
+  extradep = extradeposit;
+  AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.InstalmentItem,"",kEventTypeCalcInstalment,extradep,0,acumint,calcbal,frdate,todate,-1,-1,0);//kEventTypeCalcDeposit>>kEventTypeCalcInstalment
+
   return;
 end;
 
@@ -1095,21 +1108,24 @@ begin
   return;
 end;
 
-procedure AddActualsToPlan(record CredManVc CredManr,var record CredmanPayPlanVc CredManPayPlanr,var Integer calculatedmonths,var val acumint,var val calcbal,var Boolean firstinvf,record CredManSetBlock CredManSetb,var Integer months,var val buyoutamount,var val pausebal,var val prolongbal,Integer int_type,var val usesum,var Integer usemonths,Boolean planf)
+procedure AddActualsToPlan(record CredManVc CredManr,var record CredmanPayPlanVc CredManPayPlanr,var Integer calculatedmonths,var val acumint,var val calcbal,var Boolean firstinvf,record CredManSetBlock CredManSetb,var Integer months,var val buyoutamount,var val pausebal,var val prolongbal,Integer int_type,var val usesum,var Integer usemonths,Boolean planf,vector val addinterestval)
 begin
   record CredHistVc CredHistr,PrevCredHistr;
   Boolean TrHs,skip;
-  Integer type;
+  Integer type,i,j;
   Longint lastrecnr;
   vector Boolean vFirstInv;
   val monthlypayment,openamount;
   Integer reducemonths;
   Date lastinvdate;
-  val prevusesum;
+  val prevusesum,intpart,delta;
   record CMBuyOutBlock CMBuyOutb;
+  record IVVc IVr;
     
   blockload(CMBuyOutb);
-
+  
+  clearvector(addinterestval);
+  
   firstinvf = false;
   lastinvdate = GetLastInvDate(CredManr);
   calculatedmonths = 0;
@@ -1165,6 +1181,31 @@ begin
             end;
           end;
           lastrecnr = CredHistr.RecordNr;
+        end;
+      end;
+      if (CredHistr.RecordType==3)then begin
+        type = GetCredHistType(PrevCredHistr.ArtCode,-1,true);     
+        if(type==kEventTypePaidInstalment)then begin
+          logtext(0,"months " & months & " calculatedmonths " & calculatedmonths);
+          IVr.SerNr = CredHistr.RecordNr;
+          readfirstmain(IVr,1,true);
+          if(IVr.IsChangeAgrInvoice==1)then begin
+            if(IVr.CreditPrincipleRule==0)then begin
+              intpart = round(CredHistr.Sum/(months-calculatedmonths),defaultcurroundoff);
+              for(i=calculatedmonths;i<months;i=i+1)begin
+                addinterestval[i] = addinterestval[i] + intpart;
+                delta = delta + intpart;
+              end;
+              delta = CredHistr.Sum - delta;
+              addinterestval[months] = intpart + delta;
+              for(i=calculatedmonths;i<months;i=i+1)begin
+                logtext(0,"addinterest-" & i & " " & addinterestval[i]);
+              end;
+            end else begin
+              //addinterestval[months] = addinterestval[months] + CredHistr.Sum;
+            end;
+          end;
+          
         end;
       end;
       if (CredHistr.RecordType==5 and ((CredHistr.TransDate<=lastinvdate and nonblank(lastinvdate)) or planf==false)) then begin
@@ -1716,8 +1757,9 @@ begin
   record CredManVc tCredManr;
   val totint,addbal,int_calcbal;
   Date payoutdate,chdate;
-  val futfees,oneperfees,lastdelta;
+  val futfees,oneperfees,lastdelta,acumint1,calcbal1;
   record CMBuyOutBlock CMBuyOutb;
+  vector val addinterestval;
   
   blockload(CMBuyOutb);
 
@@ -1749,7 +1791,7 @@ LCalcSchedule:;
   delaymonths = inCredManr.PrincipleDelayMonths;
 
   if (withactuals) then begin
-    AddActualsToPlan(inCredManr,CredManPayPlanr,calculatedmonths,acumint,calcbal,firstinvf,CredManSetb,months,buyoutamount,pausebal,prolongbal,int_type,usesum,usemonths,planf);
+    AddActualsToPlan(inCredManr,CredManPayPlanr,calculatedmonths,acumint,calcbal,firstinvf,CredManSetb,months,buyoutamount,pausebal,prolongbal,int_type,usesum,usemonths,planf,addinterestval);
   end;
   if (tCredManr.Status==5 or planf==false) then begin//if cancelled or we just want to get the actuals
     goto LBuildCredManPayPlanCust;
@@ -1897,7 +1939,7 @@ lStepBack:;
             AddUnusedInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1,false);
           end;
           if (i==months-1) then begin
-            AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,0,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths,vblank)
+            AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,0,monthtype,invdat,acumint,calcbal,frdat,todat,curmonth,usesum,usemonths,vblank);
           end;
           AddLateFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal);
           if(CMBuyOutb.UseRedesignedByuOut==1)then begin  
@@ -1919,6 +1961,9 @@ lStepBack:;
             AddRefFees(inCredManr,CredManPayPlanr,CredManSetb,CIb,invdat,int_frdat,int_todat,acumint,calcbal,oneperfees);
           end;
       end;
+      
+      logtext(0,"AddExtraPrinciple " & invdat & " i " & i & " " & addinterestval[i]);
+      AddExtraPrinciple(inCredManr,CredManPayPlanr,CredManSetb,invdat,acumint1,calcbal1,frdat,todat,i,addinterestval[i]);////// Edit ************************** BPI Ukraine - KramarAlexandr - 05, 14 01 2022 y. at 10:37:59 AM
       
       AddExtraDeposit(inCredManr,CredManPayPlanr,CredManSetb,invdat,acumint,calcbal,frdat,todat,i+1);
       if (nonblank(inCredManr.CancelDate) and invdat==inCredManr.CancelDate) then begin
