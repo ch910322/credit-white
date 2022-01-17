@@ -3688,6 +3688,9 @@ begin
   date blankd;
   record CredManSchedVc CSr;
   row CredManSchedVc CSrw;
+  record CMBuyOutBlock CMBOb;
+  
+  blockload(CMBOb);
   
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin end;
@@ -3752,10 +3755,13 @@ begin
                       end;
                     end;
                   end;
-                  if(IVr.PayDate<todate)then begin
+                  if(IVr.PayDate<todate or (CMBOb.DoNotCreditlastDayInvoices==1 and IVr.PayDate==todate))then begin
                     vcalcval["OVDOPENINVOICED:" & IVrw.ArtCode] = vcalcval["OVDOPENINVOICED:" & IVrw.ArtCode] + t; 
                     vcalcval["OVDOPENINVOICED"] = vcalcval["OVDOPENINVOICED"] + t; 
                     logforadmin(0,IVr.SerNr & " OVDOPENINVOICED:" & IVrw.ArtCode & " " & t);//overdued
+                    if((CMBOb.DoNotCreditlastDayInvoices==1 and IVr.PayDate==todate))then begin
+                      vcalcval["OVDOPENINVOICEDLAST"] = vcalcval["OVDOPENINVOICEDLAST"] + t; 
+                    end;
                   end;
                 end;
               end;
@@ -4128,7 +4134,7 @@ begin
   ORr.RvrsVAT = GetOpenInsuranceValue(CredManr.SerNr,ORr.OrdDate);
   t = GetOpenOverdueFeesValue(CredManr.SerNr,ORr.OrdDate);
   
-  ORr.FrBase = ORr.Sum2+ORr.BaseSum4+ORr.TotGP+ORr.DiscSum+otheropenfees+lateamount+t;//total debt
+  ORr.FrBase = ORr.Sum2+ORr.BaseSum4+ORr.TotGP+ORr.DiscSum+otheropenfees+lateamount+t;
   
   t = GetOpenLetterOfDemandValue(CredManr.SerNr,ORr.OrdDate);
   ORr.SumIncCom = t;
@@ -4286,6 +4292,10 @@ begin
         ORr.OYDescription = ORr.FrBase + ORr.Sum2 - ORr.PrepaidAmount;
       end;
     end;
+  end;
+  
+  if(CMBOb.DoNotCreditlastDayInvoices==1)then begin
+    ORr.FrBase = ORr.FrBase - vcalcval["OVDOPENINVOICEDLAST"];
   end;
     
   getvectortags(vcalcval,acalcval);

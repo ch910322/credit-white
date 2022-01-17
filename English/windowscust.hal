@@ -4475,7 +4475,7 @@ begin
   CheckBox(h,v+=20,0,"Calculate Interest for Change Day",CalcIntChangeDay);
   CheckBox(h,v+=20,0,"Calculate Overdues for Change Day",CalcOvdChangeDay);  
   CheckBox(h,v+=20,0,"Invoice future fees",InvFutFees);
-  CheckBox(h,v+=20,0,"Do Dot Credit Last Day Invoices",DoNotCreditlastDayInvoices);
+  CheckBox(h,v+=20,0,"Do Not Credit Last Day Invoices",DoNotCreditlastDayInvoices);
   CheckBox(h,v+=20,0,"By Default Distribute Debts to Future Fees",DebtsToFutureFees);
   ButtonFrame(h,v+=45,200,2,"Close Due Invoices");
 	RadioButton(h,v,0,0,"Credit Future Fees",InterestCredOrPay);
