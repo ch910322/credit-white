@@ -2460,6 +2460,10 @@ begin
   record CMBuyOutBlock CMBOb;
   date frdate,todate,invdate;
   string 20 princItem;
+  val calcbal,newint;
+  record CredManVc tmpCredManr;
+  
+  recordcopy(tmpCredManr,CredManr);
   
   BlockLoad(CIb);
   BlockLoad(CMb);
@@ -2497,20 +2501,33 @@ begin
         spec = spec  & " " & frdate & ":" & addday(invdate,-1);
         SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,stringtoval(RepSpec.FirstAcc,m4val),blankval,kEventTypeCalcInterest,-1);
         spec = "";
-        
-        GetItemName(CMb.RateItem,spec);
-        spec = spec  & " " & invdate & ":" & todate;
-        SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,333,blankval,kEventTypeCalcInterest,-1);
-        spec = "";
+
       end;
       
       if(nonblank(princItem))then begin
         if(nocreditsum[princItem]>0)then begin
-          logtext(0,"nocreditsum[princItem] " & nocreditsum[princItem]);
+          
+          tmpCredManr.InvSum4 = nocreditsum[princItem];
+          tmpCredManr.DepositSum = blankval;
+          tmpCredManr.ExtraDepositSum = blankval;
+          calcbal = stringtoval(RepSpec.ObjStr,m4Val);
+          if(RepSpec.vals3!=0)then begin
+            tmpCredManr.IntRate = RepSpec.vals3;
+          end;
+          newint = GetRateAmount(tmpCredManr,tmpCredManr.IntRate,kMonthTypeFirst,invdate,todate,calcbal,false,false);
+          logtext(0,"newint " & newint);
+        
+          GetItemName(CMb.RateItem,spec);
+          spec = spec  & " " & invdate & ":" & todate;
+          SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,newint,blankval,kEventTypeCalcInterest,-1);
+          spec = "";
+        
+          
+          /*logtext(0,"nocreditsum[princItem] " & nocreditsum[princItem]);
           GetItemName(princItem,spec);
           spec = spec  & " " & frdate & ":" & addday(invdate,-1);
           SetupInvoiceRowAndAdd(CredManr,IVr,princItem,spec,1,nocreditsum[princItem],blankval,kEventTypeCalcInstalment,-1);
-          spec = "";
+          spec = "";*/
         end;
       end;
       
