@@ -712,6 +712,15 @@ begin
         end;
       end;
     end;
+  end else begin
+    if(agrchanginv)then begin
+      if(nonblank(CMTr.AgreChangeLangCode))then begin
+        IVr.LangCode = CMTr.AgreChangeLangCode;
+      end;
+      if(getAdditionalLangCode(CredManr,"AgreChangeLangCode",reslang))then begin
+        IVr.LangCode = reslang;
+      end;
+    end;
   end;
     
 return;
@@ -2454,7 +2463,7 @@ begin
   record CredManSetBlock CMb;
   record IVVc IVr,oldIVr;
   val rate,sum;
-  string 255 spec;
+  string 255 spec,reslang;
   string 20 pd;
   integer cumint,balance;
   record CMBuyOutBlock CMBOb;
@@ -2462,6 +2471,8 @@ begin
   string 20 princItem;
   val calcbal,newint;
   record CredManVc tmpCredManr;
+  record CredManTypeVc CMTr;
+  
   
   recordcopy(tmpCredManr,CredManr);
   
@@ -2562,8 +2573,22 @@ begin
   end;
   SetupInvoiceRowAndAdd(CredManr,IVr,CIb.ProlongItem,spec,1,sum,blankval,14,-1);
   CM_AddPrepayments(IVr,CredManr,CIb);
-
+  
+  
+  CMTr.Code = CredManr.Type;
+  if (ReadFirstMain(CMTr,1,true)) then begin
+    if(nonblank(CMTr.AgreChangeLangCode))then begin
+      IVr.LangCode = CMTr.AgreChangeLangCode;
+    end;
+  end;
+  if(getAdditionalLangCode(CredManr,"AgreChangeLangCode",reslang))then begin
+    IVr.LangCode = reslang;
+  end;
+  
   StoreLoanInvoice(IVr,CredManr);
+  
+  
+  
   if (IVr.SerNr>0) then begin
     RecordCopy(nIVr,IVr);
   end;
