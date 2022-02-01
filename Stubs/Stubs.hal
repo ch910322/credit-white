@@ -58,6 +58,13 @@ begin
 end;
 
 global
+function Boolean IsSMECustomer()
+begin
+  IsSMECustomer = false;
+  return;
+end;
+
+global
 function Boolean CheckCredManSchedule()
 begin
   

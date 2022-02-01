@@ -8,6 +8,9 @@ external inner function string 255 CredManOwnBankAccount(Longint,var string,var 
 external inner function LongInt DateDiff(Date,Date);
 external inner function string 255 StrReplace(string,string,string);
 external function string 255 GetCredManNr(Longint);
+external inner function Boolean FindCustomerRelation(string,string,var record CUVc);
+external inner function boolean AddEMailRecipients(var record MailVc,string,string,integer);
+external outer function Boolean IsSMECustomer;
 
 enum begin
   kMaxCheckDays = 3
@@ -324,6 +327,118 @@ begin
   return;
 end;
 
+
+procedure AddSingleRecipient(var record MailVc Mailr,string email)
+begin
+  row MailVc Mailrw;
+  Integer i,rwcnt;
+  Boolean foundf;
+  
+  if (nonblank(email)) then begin 
+    rwcnt = MatRowCnt(Mailr);
+    for (i=1;i<rwcnt;i=i+1) begin
+      MatRowGet(Mailr,i,Mailrw);
+      if (Mailrw.AddrCode==email) then begin
+        foundf = true;
+        i = rwcnt;
+      end;
+    end;
+    if (!foundf) then begin
+      ClearRow(Mailr,Mailrw,1);
+      Mailrw.RowTyp = 0;
+      Mailrw.AddrCode = email;
+      MatRowPut(Mailr,MatRowCnt(Mailr),Mailrw);
+    end;
+  end; 
+
+  return;
+end;
+
+
+procedure RemoveDuplicateRecipients(var record MailVc Mailr)
+begin
+  row MailVc Mailrw,Mail2rw;
+  Integer i,j,rwcnt;
+
+  rwcnt = MatRowCnt(Mailr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(Mailr,i,Mailrw);
+    for (j=i+1;j<rwcnt;j=j+1) begin
+      MatRowGet(Mailr,j,Mail2rw);
+      if (Mail2rw.AddrCode==Mailrw.AddrCode and Mailrw.RowTyp==0 and Mail2rw.RowTyp==0) then begin
+        MatRowDelete(Mailr,j);
+        j = j - 1;
+        rwcnt = rwcnt - 1;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+procedure AddContactsByJobDescription(record MailVc Mailr,record CUVc CUr,string jobdescr)
+begin
+  record CUVc ContactCUr;
+  record ContactRelVc CRr;
+  while (LoopKey("CustContactCode:" & CUr.Code,CRr,1,true)) begin
+    if (CRr.Invalid==0) then begin
+      ContactCUr.Code = CRr.ContactCode;
+      if (ReadFirstMain(ContactCUr,1,true)) then begin
+        if(nonblank(ContactCUr.JobDesc))then begin
+          if (SetInSet(ContactCUr.JobDesc,jobdescr)) then begin
+            AddSingleRecipient(Mailr,ContactCUr.eMail);
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  return;
+end;
+
+function Boolean AddCredManInvoiceMailRecipients(string custcode,var record MailVc Mailr)
+begin
+  record CMInvoicingBlock CIb;
+  record CUVc CUr;
+  record CUVc ContactCUr;
+  Boolean res;
+
+  res = false;
+  BlockLoad(CIb);
+  CUr.Code = custcode;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    if (CIb.SendToMainContact==1) then begin
+      if (nonblank(CUr.Person)) then begin
+        if (FindCustomerRelation(CUr.Code,CUr.Person,ContactCUr)) then begin
+          if (nonblank(ContactCUr.eMail)) then begin
+            AddSingleRecipient(Mailr,ContactCUr.eMail);
+            res = true;
+          end;
+        end;
+      end;
+    end;
+    if (CIb.SendToCompany==1) then begin
+      if ((CIb.SendToCompNoContact==0) or (blank(CUr.Person))) then begin
+        AddSingleRecipient(Mailr,Cur.eMail);
+        res = true;
+      end;
+    end;
+    if (CIb.SendToAddRecip==1) then begin
+      AddEMailRecipients(Mailr,CUr.Code,"",kMailInvoice); 
+      res = true;
+    end;
+    if (nonblank(CIb.SendToJobDescr)) then begin
+      AddContactsByJobDescription(Mailr,CUr,CIb.SendToJobDescr);
+      res = true;
+    end;
+    RemoveDuplicateRecipients(Mailr);
+  end;
+  
+  AddCredManInvoiceMailRecipients = res;
+  return;
+end;
+
+
 global
 updating function Boolean DoSendEmailReminder(record SMSReminderVc SMSReminder,record RcVc RepSpec,string custcode)
 begin
@@ -334,6 +449,8 @@ begin
   record CUVc CUr;
   record EMailQueVc emqrp;
   row EMailQueVc emarw;
+  record MailVc Mailr;
+  row MailVc Mailrw;
   record CYBlock CYb;
   record ARVc ARr;
   record LTxtVc LTxtr,Ltxt2r;
@@ -342,14 +459,20 @@ begin
   area htmlarea,reshtml;
   record Attach2Vc Attachr;
   record RLinkVc RLr;
-  
+    
   CUr.Code = custcode;
   if (ReadFirstMain(CUr,1,true)) then begin
     if (CUr.NoLetterPosting!=0) then begin
       goto LSendSMSReminder;
     end;
     email = GetContactEmail(CUr);
-    if (blank(email)) then begin
+    
+    if(IsSMECustomer)then begin
+      AddCredManInvoiceMailRecipients(CUr.Code,Mailr);
+      RemoveDuplicateRecipients(Mailr);
+    end;
+    
+    if (blank(email) and matrowcnt(Mailr)==0) then begin
       LogText(0,"Skipping Email reminder for contact " & CUr.Code & " - " & CUr.Name & ". No Email specified");
       goto LSendSMSReminder;
     end;
@@ -359,9 +482,21 @@ begin
     emarw.AddrCode = NovitiGetEmailSender;
     MatRowPut(emqrp,MatRowCnt(emqrp),emarw);
 
-    emarw.RowTyp = 0;
-    emarw.AddrCode = email;
-    MatRowPut(emqrp,MatRowCnt(emqrp),emarw);
+    
+    if(matrowcnt(Mailr)==0)then begin
+      emarw.RowTyp = 0;
+      emarw.AddrCode = email;
+      MatRowPut(emqrp,MatRowCnt(emqrp),emarw);
+    end else begin
+      for(i=0;i<matrowcnt(Mailr);i=i+1)begin
+        matrowget(Mailr,i,Mailrw);
+        emarw.RowTyp = 0;
+        emarw.AddrCode = Mailrw.AddrCode;
+        MatRowPut(emqrp,MatRowCnt(emqrp),emarw);
+      end;
+    end;
+    
+    
     emqrp.Header = SMSReminder.Subject;
 
     if (nonblank(SMSReminder.StdText)) then begin
