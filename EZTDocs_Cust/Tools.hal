@@ -432,6 +432,10 @@ begin
   OneARSFormOpenOnDate(RepSpec,CUr,2,openamount3,custcnt,invcnt);
   topay5 = openamount3 + IVr.Sum4;
   
+  if(topay5<0)then begin
+    topay5 = 0;
+  end;
+  
   RepSpec.d1 = td;
   OneARSFormOpenOnDate(RepSpec,CUr,2,ARSSumod,custcnt,invcnt);//Used this function to calc user balance
 
