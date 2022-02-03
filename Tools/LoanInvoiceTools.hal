@@ -2457,7 +2457,61 @@ begin
 end;
 
 global
-updating procedure CreateProlongInvoice(record CredManVc CredManr,string paydeal,string salesman,string itemspec,var record IVVc nIVr,record RcVc RepSpec,vector val nocreditsum)
+updating procedure CreateProlongInvoice(record CredManVc CredManr,string paydeal,string salesman,string itemspec,var record IVVc nIVr)
+begin
+  record CMInvoicingBlock CIb;
+  record CredManSetBlock CMb;
+  record IVVc IVr,oldIVr;
+  val rate,sum;
+  string 255 spec,reslang;
+  string 20 pd;
+  record CredManTypeVc CMTr;
+    
+  BlockLoad(CIb);
+  BlockLoad(CMb);
+
+  pd = paydeal;
+  if (blank(pd)) then begin
+    pd = CIb.FirstInvPayDeal;
+  end;
+
+  SetupLoanInvoice3(CredManr,CMb,IVr,CurrentDate,"","",true,false,"",1,true,pd,salesman);
+  rate = CredManr.StdProlongPrc;
+  if (CredManr.AnnualRate==1) then begin
+    rate = rate/12;
+  end;
+  sum = (CredManr.InvSum4 - CredManr.DepositSum) *(rate/100);
+  sum = sum + CredManr.StdProlongFee;
+ 
+  spec = itemspec;
+  if (blank(spec)) then begin
+    GetItemName(CIb.ProlongItem,spec);
+  end;
+  SetupInvoiceRowAndAdd(CredManr,IVr,CIb.ProlongItem,spec,1,sum,blankval,14,-1);
+  CM_AddPrepayments(IVr,CredManr,CIb);
+  
+  CMTr.Code = CredManr.Type;
+  if (ReadFirstMain(CMTr,1,true)) then begin
+    if(nonblank(CMTr.AgreChangeLangCode))then begin
+      IVr.LangCode = CMTr.AgreChangeLangCode;
+    end;
+  end;
+  if(getAdditionalLangCode(CredManr,"AgreChangeLangCode",reslang))then begin
+    IVr.LangCode = reslang;
+  end;
+  
+  StoreLoanInvoice(IVr,CredManr);
+  
+  if(IVr.SerNr>0)then begin
+    RecordCopy(nIVr,IVr);
+  end;
+
+  return;
+end;
+
+
+global
+updating procedure CreateChangesInvoice(record CredManVc CredManr,string paydeal,string salesman,string itemspec,var record IVVc nIVr,record RcVc RepSpec,vector val nocreditsum)
 begin
   record CMInvoicingBlock CIb;
   record CredManSetBlock CMb;
@@ -2472,7 +2526,6 @@ begin
   val calcbal,newint;
   record CredManVc tmpCredManr;
   record CredManTypeVc CMTr;
-  
   
   recordcopy(tmpCredManr,CredManr);
   
@@ -2499,79 +2552,76 @@ begin
     invdate = RepSpec.d1;
   end;
   
-  
-  
   SetupLoanInvoice3(CredManr,CMb,IVr,invdate,frdate,todate,true,false,"",1,true,pd,salesman);
   
-  if(CMBOb.UseRedesignedByuOut==1)then begin
-    if(RepSpec.vals3!=0 or RepSpec.vals4!=0)then begin
-      if(stringtoval(RepSpec.FirstAcc,m4val)>0)then begin
+  if(RepSpec.vals3!=0 or RepSpec.vals4!=0)then begin
+    if(stringtoval(RepSpec.FirstAcc,m4val)>0)then begin
+    
+      logtext(0,"RepSpec.FirstAcc " & RepSpec.FirstAcc);
+      GetItemName(CMb.RateItem,spec);
+      spec = spec  & " " & frdate & ":" & addday(invdate,-1);
+      SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,stringtoval(RepSpec.FirstAcc,m4val),blankval,kEventTypeCalcInterest,-1);
+      spec = "";
+
+    end;
+    
+    if(nonblank(princItem))then begin
+      if(nocreditsum[princItem]>0)then begin
+        
+        tmpCredManr.InvSum4 = nocreditsum[princItem];
+        tmpCredManr.DepositSum = blankval;
+        tmpCredManr.ExtraDepositSum = blankval;
+        calcbal = stringtoval(RepSpec.ObjStr,m4Val);
+        if(RepSpec.vals3!=0)then begin
+          tmpCredManr.IntRate = RepSpec.vals3;
+        end;
+        newint = GetRateAmount(tmpCredManr,tmpCredManr.IntRate,kMonthTypeFirst,invdate,todate,calcbal,false,false);
+        logtext(0,"newint " & newint);
       
-        logtext(0,"RepSpec.FirstAcc " & RepSpec.FirstAcc);
         GetItemName(CMb.RateItem,spec);
-        spec = spec  & " " & frdate & ":" & addday(invdate,-1);
-        SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,stringtoval(RepSpec.FirstAcc,m4val),blankval,kEventTypeCalcInterest,-1);
+        spec = spec  & " " & invdate & ":" & todate;
+        SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,newint,blankval,kEventTypeCalcInterest,-1);
         spec = "";
 
+        /*logtext(0,"nocreditsum[princItem] " & nocreditsum[princItem]);
+        GetItemName(princItem,spec);
+        spec = spec  & " " & frdate & ":" & addday(invdate,-1);
+        SetupInvoiceRowAndAdd(CredManr,IVr,princItem,spec,1,nocreditsum[princItem],blankval,kEventTypeCalcInstalment,-1);
+        spec = "";*/
       end;
-      
-      if(nonblank(princItem))then begin
-        if(nocreditsum[princItem]>0)then begin
-          
-          tmpCredManr.InvSum4 = nocreditsum[princItem];
-          tmpCredManr.DepositSum = blankval;
-          tmpCredManr.ExtraDepositSum = blankval;
-          calcbal = stringtoval(RepSpec.ObjStr,m4Val);
-          if(RepSpec.vals3!=0)then begin
-            tmpCredManr.IntRate = RepSpec.vals3;
-          end;
-          newint = GetRateAmount(tmpCredManr,tmpCredManr.IntRate,kMonthTypeFirst,invdate,todate,calcbal,false,false);
-          logtext(0,"newint " & newint);
-        
-          GetItemName(CMb.RateItem,spec);
-          spec = spec  & " " & invdate & ":" & todate;
-          SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,newint,blankval,kEventTypeCalcInterest,-1);
-          spec = "";
-        
-          
-          /*logtext(0,"nocreditsum[princItem] " & nocreditsum[princItem]);
-          GetItemName(princItem,spec);
-          spec = spec  & " " & frdate & ":" & addday(invdate,-1);
-          SetupInvoiceRowAndAdd(CredManr,IVr,princItem,spec,1,nocreditsum[princItem],blankval,kEventTypeCalcInstalment,-1);
-          spec = "";*/
-        end;
+    end;
+    
+  end;
+
+  /*if(stringtoval(RepSpec.f6,m4val)>0)then begin
+    GetItemName(CMBOb.FutFeeItem,spec);
+    SetupInvoiceRowAndAdd(CredManr,IVr,CMBOb.FutFeeItem,spec,1,stringtoval(RepSpec.f6,m4val),blankval,kEventTypeCalcFees,-1);
+    spec = "";
+  end;*/
+
+  /*if(stringtoval(RepSpec.f12,m4val)>0)then begin
+    GetItemName(CMBOb.FutFeeItem,spec);
+    SetupInvoiceRowAndAdd(CredManr,IVr,CMBOb.FutFeeItem,spec,1,stringtoval(RepSpec.f12,m4val),blankval,kEventTypeCalcFees,-1);
+    spec = "";
+  end;*/
+  
+  if (RepSpec.flags[2]==1) then begin//Issue Prolong Invoice
+    if(stringtoval(RepSpec.f9,m4val)==0)then begin
+      rate = CredManr.StdProlongPrc;
+      if (CredManr.AnnualRate==1) then begin
+        rate = rate/12;
       end;
-      
+      sum = (CredManr.InvSum4 - CredManr.DepositSum) *(rate/100);
+      sum = sum + CredManr.StdProlongFee;
+    end else begin
+      sum = sum + stringtoval(RepSpec.f9,m4val);
     end;
-  
-    /*if(stringtoval(RepSpec.f6,m4val)>0)then begin
-      GetItemName(CMBOb.FutFeeItem,spec);
-      SetupInvoiceRowAndAdd(CredManr,IVr,CMBOb.FutFeeItem,spec,1,stringtoval(RepSpec.f6,m4val),blankval,kEventTypeCalcFees,-1);
-      spec = "";
-    end;*/
-  
-    /*if(stringtoval(RepSpec.f12,m4val)>0)then begin
-      GetItemName(CMBOb.FutFeeItem,spec);
-      SetupInvoiceRowAndAdd(CredManr,IVr,CMBOb.FutFeeItem,spec,1,stringtoval(RepSpec.f12,m4val),blankval,kEventTypeCalcFees,-1);
-      spec = "";
-    end;*/
-  end;
-  
-  if(stringtoval(RepSpec.f9,m4val)==0)then begin
-    rate = CredManr.StdProlongPrc;
-    if (CredManr.AnnualRate==1) then begin
-      rate = rate/12;
+    spec = itemspec;
+    if (blank(spec)) then begin
+      GetItemName(CIb.ProlongItem,spec);
     end;
-    sum = (CredManr.InvSum4 - CredManr.DepositSum) *(rate/100);
-    sum = sum + CredManr.StdProlongFee;
-  end else begin
-    sum = sum + stringtoval(RepSpec.f9,m4val);
+    SetupInvoiceRowAndAdd(CredManr,IVr,CIb.ProlongItem,spec,1,sum,blankval,14,-1);
   end;
-  spec = itemspec;
-  if (blank(spec)) then begin
-    GetItemName(CIb.ProlongItem,spec);
-  end;
-  SetupInvoiceRowAndAdd(CredManr,IVr,CIb.ProlongItem,spec,1,sum,blankval,14,-1);
   CM_AddPrepayments(IVr,CredManr,CIb);
   
   
@@ -2586,8 +2636,6 @@ begin
   end;
   
   StoreLoanInvoice(IVr,CredManr);
-  
-  
   
   if (IVr.SerNr>0) then begin
     RecordCopy(nIVr,IVr);
