@@ -33,7 +33,8 @@ external procedure GenerateAgreementSchedule(record CredManVc,Boolean,Boolean);
 external inner function Boolean ExternalDocumentEnabled(string);
 external updating procedure PrintCredManDocument(string,string,record CredManVc,Integer,Boolean,string);
 external inner procedure GetCurUser(var record UserVc);
-external updating procedure CreateProlongInvoice(record CredManVc,string,string,string,var record IVVc,record RcVc,vector val);
+external updating procedure CreateProlongInvoice(record CredManVc,string,string,string,var record IVVc);
+external updating procedure CreateChangesInvoice(record CredManVc,string,string,string,var record IVVc,record RcVc,vector val);
 external inner function string 50 NextLegalSerNr(string,LongInt,Date,string,string,string);
 external function Boolean GetCredLegalNrLine(string,string,Date,string,string,var row CredLegalInvNrBlock,Integer);
 external procedure FindListCredLegalSerNr(string,string,string,string,string,Integer,var array string);
@@ -516,7 +517,7 @@ begin
     if (CanPauseAgreement(CredManr,td,months,err)) then begin
       if (RepSpec.flags[2]==1) then begin
         CreateProlongSession(RepSpec,CredManr,td,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1],RepSpec.vals3,RepSpec.vals4);
-        CreateProlongInvoice(CredManr,RepSpec.f2,RepSpec.f3,RepSpec.f4,IVr,RepSpec,tmpval);
+        CreateProlongInvoice(CredManr,RepSpec.f2,RepSpec.f3,RepSpec.f4,IVr);
       end;
       if (RepSpec.flags[3]==0) then begin
         if (tmonths>0 or tprolongmonths>0 or rate>0 or addval>0) then begin
@@ -595,8 +596,9 @@ begin
   if (CanPauseAgreement(CredManr,newtd,months,err)) then begin
     if (RepSpec.flags[2]==1) then begin
       CreateProlongSession(RepSpec,CredManr,newtd,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1],RepSpec.vals3,RepSpec.vals4);
-      CreateProlongInvoice(CredManr,RepSpec.f2,RepSpec.f3,RepSpec.f4,IVr,RepSpec,tmpval);
     end;
+    CreateChangesInvoice(CredManr,RepSpec.f2,RepSpec.f3,RepSpec.f4,IVr,RepSpec,tmpval);
+    
     if (RepSpec.flags[3]==0) then begin
       if (tmonths>0 or tprolongmonths>0 or rate>0 or addval>0) then begin
         CreatePauseRecord(RepSpec,CredManr.SerNr,newtd,tmonths,tprolongmonths,rate,addval,1,purpose);
@@ -689,8 +691,9 @@ begin
       //PayAllOpenInvoices(CredManr,td,ORr,"");
     if (RepSpec.flags[2]==1) then begin//Issue Prolong Invoice
       CreateProlongSession(RepSpec,CredManr,td,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1],RepSpec.vals3,RepSpec.vals4);
-      CreateProlongInvoice(CredManr,RepSpec.f2,RepSpec.f3,RepSpec.f4,IVr,RepSpec,nocreditsum);
     end;
+    CreateChangesInvoice(CredManr,RepSpec.f2,RepSpec.f3,RepSpec.f4,IVr,RepSpec,nocreditsum);
+
     PayAllOpenInvoices(CredManr,td,ORr,"");
     if (RepSpec.flags[3]==0) then begin
       if (tmonths>0 or tprolongmonths>0 or rate>0 or addval>0) then begin

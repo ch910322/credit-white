@@ -314,7 +314,6 @@ begin
         matrowget(CredManPayPlanr,i,CredManPayPlan2rw);
         if(CredManPayPlan2rw.PlanType==type and CredManPayPlan2rw.IssuedNr==histnr)then begin
           skip = false;
-          logtext(0,"AddCredPayPlanLine2 skip");
         end;
       end;
     end;
@@ -740,9 +739,6 @@ begin
     tmpval = usemonths;
     tmpval = tmpval/100;
     res = Power(tmpval,2);
-    //if (usemonths>200) then begin//Disabled after Kristaps update
-      //res = 2;
-    //end;
   end else begin
     res = 1;
   end;
@@ -758,8 +754,6 @@ begin
   record CMApplicationSetBlock CMAb;
   row CredManPayPlanVc CredManPayPlanrw;
   val tsum,tint,nint;
-  
-  
   
   switch (type) begin
     case 0:
@@ -1187,13 +1181,13 @@ begin
           lastrecnr = CredHistr.RecordNr;
         end;
       end;
-      if (CredHistr.RecordType==3)then begin
+      
+      if (CredHistr.RecordType==3)then begin//Recalc schedule for credit invoices.// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 03 02 2022 y. at 12:03:30 PM
         type = GetCredHistType(PrevCredHistr.ArtCode,-1,true);     
         if(type==kEventTypePaidInstalment)then begin
-          logtext(0,"months " & months & " calculatedmonths " & calculatedmonths);
           IVr.SerNr = CredHistr.RecordNr;
           readfirstmain(IVr,1,true);
-          if(IVr.IsChangeAgrInvoice==0)then begin
+          if(IVr.IsChangeAgrInvoice==0)then begin//Calculations only for normal credit invoices. Not for invoices created via agreement changes
             if(IVr.CreditPrincipleRule==0)then begin
               intpart = round(CredHistr.Sum/(months-calculatedmonths),defaultcurroundoff);
               delta = blankval;
@@ -1201,18 +1195,12 @@ begin
                 addinterestval[i] = addinterestval[i] + intpart;
                 delta = delta + intpart;
               end;
-              logtext(0,"delta  " & delta);
               delta = CredHistr.Sum - delta;
-              
               addinterestval[months-1] = intpart + delta;
             end else begin
               addinterestval[months-1] = addinterestval[months] + CredHistr.Sum;
             end;
           end else begin
-            //calcbal = calcbal + CredHistr.Sum;
-            //prevusesum = usesum;
-            //usesum = calcbal;
-            
             logtext(0,"usesum " & usesum);
           end;
           
@@ -1223,7 +1211,6 @@ begin
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,"","",kEventTypePayout,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,openamount);
         prevusesum = usesum;
         usesum = calcbal;
-        logtext(0,"payment usesum " & usesum);
       end;
     end;
 LAddActualsToPlan_Next:;
