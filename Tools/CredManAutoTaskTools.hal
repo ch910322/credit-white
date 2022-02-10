@@ -830,8 +830,7 @@ begin
     if (tt<CurrentTime) then begin
       td = AddDay(td,1);
     end;
-    RemoveTask("CredManAutoInvoiceTask_comp" & CurrentCompany);
-    NewTimedTask2("CredManAutoInvoiceTask_comp" & CurrentCompany,"CredManAutoInvoiceTask","CredManAutoInvoiceTask",CurrentCompany,td,tt,"","");
+    NewTimedTask2("CredManAutoInvoiceTask_" & GetCurTick & "_comp" & CurrentCompany,"CredManAutoInvoiceTask","CredManAutoInvoiceTask",CurrentCompany,td,tt,"","");
   end;
   if (CurrentCompany!=oldcomp) then begin
     logtext(0,currentcompany & " " & oldcomp & " resetcompany 24 before " & currentdate);
