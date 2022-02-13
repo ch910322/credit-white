@@ -637,6 +637,7 @@ begin
   vector val nocreditsum;
   array string 20 anocreditsum;
   transaction boolean gOffSeveralRecalc;
+  record IVVc IV2r;
   
   gOffSeveralRecalc = true;
   
@@ -694,7 +695,7 @@ begin
     end;
     CreateChangesInvoice(CredManr,RepSpec.f2,RepSpec.f3,RepSpec.f4,IVr,RepSpec,nocreditsum);
 
-    PayAllOpenInvoices(CredManr,td,ORr,"");
+    //PayAllOpenInvoices(CredManr,td,ORr,""); KSZ 2022-02-13:: EBS said that this is not needed??
     if (RepSpec.flags[3]==0) then begin
       if (tmonths>0 or tprolongmonths>0 or rate>0 or addval>0) then begin
         CreatePauseRecord(RepSpec,CredManr.SerNr,td,tmonths,tprolongmonths,rate,addval,1,purpose);
@@ -714,8 +715,18 @@ begin
         
         payval = addval - payval;
         CreateCredmanPurchaseInvoice(CredManr,0,VIr,addval,true,td);
-        if(payval>0)then begin
-          CM_CreatePaymentOrder(CredManr,VIr,payval);
+        //if(payval>0)then begin
+          CM_CreatePaymentOrder(CredManr,VIr,addval);//KSZ 2022-02-13:: EBS said to make full payout
+        //end;
+        
+        //removing the schedule so that we can create "good-looking" invoices. Otherwise schedule has only totals for interest
+        CSr.CredManNr = CredManr.SerNr;
+        if (ReadFirstMain(CSr,1,true)) then begin
+          RecordRemove(CSr);
+        end;
+
+        if (td<lastinvperioddate) then begin
+          CreateSingleAgreementInvoice2(CredManr,lastinvperioddate,IV2r,"",false,true);
         end;
         GenerateAgreementSchedule(CredManr,true,true);
       end;

@@ -1,3 +1,4 @@
+external function val GetBalanceOnDate(record CredManPayPlanVc,Date);
 external procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean);
 external procedure BuildCredManPayPlanCust2(record CredManVc,var record CredManPayPlanVc,record CredManSetBlock,Boolean,Boolean,Boolean);
 external inner function Boolean PasteCust2InInv(var record IVVc,record LocalMachineBlock,string,Boolean,var string,var string,var string,var string,var string);
@@ -1396,14 +1397,16 @@ begin
   array string 255 arr;
   val quant,reb;
   Longint pos,factinv;
-  string 255 index,tstr,item;
+  string 255 index,tstr,item,spec;
+  vector string 255 vSpec;
 
   
   rwcnt = MatRowCnt(IVr);
   for (i=rwcnt-1;i>=0;i=i-1) begin
     MatRowGet(IVr,i,IVrw);
     if (nonblank(IVrw.ArtCode)) then begin
-      index = IVrw.ArtCode & ":" & IVrw.Quant & ":" & IVrw.vRebate & ":" & IVrw.ChargeType & ":" & IVrw.FactoringInvoice;
+      index = IVrw.ArtCode & "|" & IVrw.Quant & "|" & IVrw.vRebate & "|" & IVrw.ChargeType & "|" & IVrw.FactoringInvoice & "|" & IVrw.Spec;
+      vSpec[IVrw.Spec] = IVrw.Spec;
       vRows[index] = vRows[index] + IVrw.Price;
       MatRowDelete(IVr,i);
     end;
@@ -1411,16 +1414,17 @@ begin
   GetVectorTags(vRows,arr);
   for (i=0;i<arr.length;i=i+1) begin
     pos = -1;
-    GetNextSubstring(arr[i],pos,":",item);
-    GetNextSubstring(arr[i],pos,":",tstr);
+    GetNextSubstring(arr[i],pos,"|",item);
+    GetNextSubstring(arr[i],pos,"|",tstr);
     quant = StringToVal(tstr,M4Val);
-    GetNextSubstring(arr[i],pos,":",tstr);
+    GetNextSubstring(arr[i],pos,"|",tstr);
     reb = StringToVal(tstr,M4Val);
-    GetNextSubstring(arr[i],pos,":",tstr);
+    GetNextSubstring(arr[i],pos,"|",tstr);
     chargetype = StringToInt(tstr);
-    GetNextSubstring(arr[i],pos,":",tstr);
+    GetNextSubstring(arr[i],pos,"|",tstr);
     factinv = StringToLongint(tstr);
-    SetupInvoiceRowAndAdd(CredManr,IVr,item,"",quant,vRows[arr[i]],reb,chargetype,factinv);
+    GetNextSubstring(arr[i],pos,"|",spec);
+    SetupInvoiceRowAndAdd(CredManr,IVr,item,vSpec[spec],quant,vRows[arr[i]],reb,chargetype,factinv);
   end;
 
   return;
@@ -1640,10 +1644,11 @@ end;
 
 updating procedure CreateInvoicesFromPlan(record CredManVc CredManr,record CredManSetBlock CMb,record CredManPayPlanVc CredManPayPlanr,Date ed,var record IVVc firstIVr,string ivno,Boolean manualf,Boolean allf)
 begin
-  Integer i,rwcnt;
+  Integer i,rwcnt,rwcnt2,j;
   row CredManPayPlanVc CredManPayPlanrw;
   Date lastd,lastd2;
-  record IVVc IVr,oldIVr,oIVr;
+  record IVVc IVr,oldIVr,oIVr,tmpIVr;
+  row IVVc IVrw;
   Boolean firstf,startfullf;
   Integer latedays;
   val lateamount;
@@ -1712,6 +1717,17 @@ begin
         end;
       end;
 */
+      if (CredManPayPlanrw.ToDate>IVr.CredToDate) then begin
+        RecordCopy(tmpIVr,IVr);
+        SetupLoanInvoice(CredManr,CMb,IVr,lastd,IVr.CredFromDate,CredManPayPlanrw.ToDate,true,false,ivno,GetInvoiceType(CredManr,lastd),true);
+        rwcnt2 = MatRowCnt(tmpIVr);
+        for (j=0;j<rwcnt2;j=j+1) begin
+          MatRowGet(tmpIVr,j,IVrw);
+          if (IVrw.Quant>0) then begin
+            MatRowPut(IVr,MatRowCnt(IVr),IVrw);
+          end;
+        end;
+      end;
       SetupInvoiceRowAndAdd(CredManr,IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
 
     end;
@@ -2553,18 +2569,16 @@ begin
   end;
   
   SetupLoanInvoice3(CredManr,CMb,IVr,invdate,frdate,todate,true,false,"",1,true,pd,salesman);
-  
   if(RepSpec.vals3!=0 or RepSpec.vals4!=0)then begin
+/*  
     if(stringtoval(RepSpec.FirstAcc,m4val)>0)then begin
-    
       logtext(0,"RepSpec.FirstAcc " & RepSpec.FirstAcc);
       GetItemName(CMb.RateItem,spec);
       spec = spec  & " " & frdate & ":" & addday(invdate,-1);
       SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,stringtoval(RepSpec.FirstAcc,m4val),blankval,kEventTypeCalcInterest,-1);
       spec = "";
-
     end;
-    
+*/
     if(nonblank(princItem))then begin
       if(nocreditsum[princItem]>0)then begin
         
