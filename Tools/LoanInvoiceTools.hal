@@ -2568,7 +2568,7 @@ begin
     invdate = RepSpec.d1;
   end;
   
-  SetupLoanInvoice3(CredManr,CMb,IVr,invdate,frdate,todate,true,false,"",1,true,pd,salesman);
+  SetupLoanInvoice3(CredManr,CMb,IVr,invdate,"","",true,false,"",1,true,pd,salesman);
   if(RepSpec.vals3!=0 or RepSpec.vals4!=0)then begin
 /*  
     if(stringtoval(RepSpec.FirstAcc,m4val)>0)then begin
@@ -3879,6 +3879,34 @@ begin
 return;
 end;
 
+global
+function Boolean GetAgreementChangeDaysType(record CredManVc CredManr)
+begin
+  Boolean res;
+  record CMBuyOutBlock CMBOb;
+  record CMApplicationSetBlock CMASb;
+
+  BlockLoad(CMBOb);
+
+  if(CMBOb.FactOrFixedDaysBO==0)then begin
+    res = true;
+  end;
+  if(CMBOb.FactOrFixedDaysBO==2)then begin
+    if(CredManr.DaysInMonth==1)then begin
+      res = true;
+    end;
+    if(CredManr.DaysInMonth==0)then begin
+      BlockLoad(CMASb);
+      if(CMASb.DaysInMonth==0)then begin
+        res = true;
+      end;
+    end;
+  end;
+
+  GetAgreementChangeDaysType = res;
+  return;
+end;
+
 
 global
 function val GetOpenPrinciples(record CredManVc CredManr,var vector val vvals1,date inputtodate)
@@ -3899,22 +3927,8 @@ begin
 
   blockload(CMBOb);
   
-  
-  if(CMBOb.FactOrFixedDaysBO==0)then begin
-    daysinmonth30 = true;
-  end;
-  if(CMBOb.FactOrFixedDaysBO==2)then begin
-    if(CredManr.DaysInMonth==1)then begin
-      daysinmonth30 = true;
-    end;
-    if(CredManr.DaysInMonth==0)then begin
-      blockload(CMASb);
-      if(CMASb.DaysInMonth==0)then begin
-        daysinmonth30 = true;
-      end;
-    end;
-  end;
-  
+  daysinmonth30 = GetAgreementChangeDaysType(CredManr);
+
   if(!gChangeProcess)then begin
     gBuyOutProcess = true;
   end;

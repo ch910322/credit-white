@@ -10,6 +10,7 @@ forward procedure BuildCredManPayPlanCust(record CredManVc,var record CredManPay
 external function Integer GetInterestPaymentType(record CredManVc);
 external function Boolean PartiaBuyoutShortensPeriod();
 external function Boolean HasMoneyTransferDate();
+external function Boolean GetAgreementChangeDaysType(record CredManVc);
 
 enum begin
   kEventTypeNone = 0,
@@ -241,6 +242,26 @@ begin
   return;
 end;
 
+global
+function val GetRateAmountChange(record CredManVc CredManr,val trate,Integer monthtypef,Date frdate,Date todate,Date frdate2,Date todate2,val calcbal,Boolean daysinmonth30)
+begin
+  val res,tmp;
+  Integer days;
+
+  if (daysinmonth30) then begin
+    tmp = GetRateAmount(CredManr,trate,monthtypef,frdate,todate,calcbal,false,false);
+    days = DateDiff(todate2,frdate2)+1;
+    res = tmp*days;
+    res = res/30;
+  end else begin
+    res = GetRateAmount(CredManr,trate,monthtypef,frdate2,todate2,calcbal,false,false);
+  end;
+  GetRateAmountChange = res;
+  return;
+end;
+
+
+
 function Boolean MonthlyChargeType(Integer chargetype)
 begin
   Boolean res;
@@ -374,6 +395,7 @@ begin
   val tmpbal,tmprate;
   Integer i,rwcnt;
   string 255 spec;
+  Boolean daysinmonth30;
   
   if (nonblank(frdate) and frdate<=todate) then begin
     sendmonthtypef = monthtypef;
@@ -385,6 +407,7 @@ begin
     end;
     rwcnt = MatRowCnt(ChangeORr);
     if (rwcnt>0) then begin
+      daysinmonth30 = GetAgreementChangeDaysType(CredManr);
       GetItemName(CMb.RateItem,spec);
       for (i=0;i<rwcnt;i=i+1) begin
         MatRowGet(ChangeORr,i,ORrw);
@@ -399,7 +422,7 @@ begin
           if (tmprate<=0) then begin
             tmprate = CredManr.IntRate;
           end;
-          AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,spec & " " & tmpsd & ":" & tmped,kEventTypeCalcInterest,GetRateAmount(CredManr,tmprate,sendmonthtypef,tmpsd,tmped,tmpbal,false,false),0,acumint,tmpbal,tmpsd,tmped,-1,factinv,0);
+          AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,spec & " " & tmpsd & ":" & tmped,kEventTypeCalcInterest,GetRateAmountChange(CredManr,tmprate,sendmonthtypef,frdate,todate,tmpsd,tmped,tmpbal,daysinmonth30),0,acumint,tmpbal,tmpsd,tmped,-1,factinv,0);
         end;
         tmpsd = ORrw.PickingDate;
         if (i==(rwcnt-1)) then begin
@@ -416,7 +439,7 @@ begin
         if (tmprate<=0) then begin
           tmprate = CredManr.IntRate;
         end;
-        AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,spec & " " & tmpsd & ":" & tmped,kEventTypeCalcInterest,GetRateAmount(CredManr,tmprate,sendmonthtypef,tmpsd,tmped,tmpbal,false,false),0,acumint,tmpbal,tmpsd,tmped,-1,factinv,0);
+        AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,spec & " " & tmpsd & ":" & tmped,kEventTypeCalcInterest,GetRateAmountChange(CredManr,tmprate,sendmonthtypef,frdate,todate,tmpsd,tmped,tmpbal,daysinmonth30),0,acumint,tmpbal,tmpsd,tmped,-1,factinv,0);
       end;
     end else begin
       AddCredPayPlanLine(CredManPayPlanr,invdate,CMb.RateItem,"",kEventTypeCalcInterest,GetRateAmount(CredManr,CredManr.IntRate,sendmonthtypef,frdate,todate,calcbal,false,false),0,acumint,calcbal,frdate,todate,-1,factinv,0);
