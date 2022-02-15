@@ -1601,35 +1601,39 @@ begin
   Integer i,rwcnt;
   Boolean foundf;
   row ORVc ORrw;
+  record CMBuyOutBlock CMBuyOutb;
   
-  rwcnt = MatRowCnt(ChangeORr);
-  for (i=0;i<rwcnt;i=i+1) begin
-    MatRowGet(ChangeORr,i,ORrw);
-    if (ORrw.PickingDate==td) then begin
-      if (start_bal>0) then begin
-        ORrw.Price = start_bal;
+  BlockLoad(CMBuyOutb);
+
+  if (CMBuyOutb.UseRedesignedByuOut==1) then begin
+    rwcnt = MatRowCnt(ChangeORr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(ChangeORr,i,ORrw);
+      if (ORrw.PickingDate==td) then begin
+        if (start_bal>0) then begin
+          ORrw.Price = start_bal;
+        end;
+        if (end_bal>0) then begin
+          ORrw.Sum = end_bal;
+        end;
+        if (intrate>0) then begin
+          ORrw.BasePrice = intrate;
+        end;
+        MatRowPut(ChangeORr,i,ORrw);
+        foundf = true;
+        i = rwcnt;
       end;
-      if (end_bal>0) then begin
-        ORrw.Sum = end_bal;
-      end;
-      if (intrate>0) then begin
-        ORrw.BasePrice = intrate;
-      end;
-      MatRowPut(ChangeORr,i,ORrw);
-      foundf = true;
-      i = rwcnt;
+    end;
+
+    if (!foundf) then begin
+      ClearRow(ChangeORr,ORrw,1);
+      ORrw.Price = start_bal;
+      ORrw.Sum = end_bal;
+      ORrw.BasePrice = intrate;
+      ORrw.PickingDate = td;
+      MatRowPut(ChangeORr,MatRowCnt(ChangeORr),ORrw);
     end;
   end;
-
-  if (!foundf) then begin
-    ClearRow(ChangeORr,ORrw,1);
-    ORrw.Price = start_bal;
-    ORrw.Sum = end_bal;
-    ORrw.BasePrice = intrate;
-    ORrw.PickingDate = td;
-    MatRowPut(ChangeORr,MatRowCnt(ChangeORr),ORrw);
-  end;
-
 
   return;
 end;
