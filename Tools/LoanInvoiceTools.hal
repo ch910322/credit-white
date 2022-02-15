@@ -4463,27 +4463,13 @@ logforadmin(0,"CheckBuyOutAgreementOmega end");
   return;
 end;
 
-
 global
 procedure CheckBuyOutAgreement(record CredManVc CredManr,var record RcVc RepSpec)
 begin
-  record ORVc ORr;
-  
-  CheckBuyOutAgreement2(CredManr,RepSpec,false);
-  
-  ORr.OrdDate = CurrentDate;
-  CheckBuyOutAgreementOmega(CredManr,ORr,false);
-  RepSpec.vals2 = stringtoval(ORr.OYDescription,m4val);//buyoutvalue//ok
-  RepSpec.f13 = ORr.BaseSum4 + ORr.Sum4;//remainingprinciple//ok
-  RepSpec.vals4 = ORr.Sum2;//totaldue//ok
-  RepSpec.f12 = ORr.FrPrice;//acumpenalty
-  RepSpec.f10 = ORr.Sum3;//lateprincipal
-  RepSpec.f11 = ORr.Sum4;//lateinterest
 
+  CheckBuyOutAgreement2(CredManr,RepSpec,false);
   return;
 end;
-
-
 
 global
 procedure CheckBuyOutAgreementAsync(record CredManVc CredManr,Date td,Integer wn)
