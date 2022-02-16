@@ -1974,7 +1974,7 @@ lStepBack:;
         frdat = payoutdate;
         //int_todat = payoutdate;
       end;
-      payoutdate = "";
+      //payoutdate = "";
       int_calcbal = calcbal - addbal;
       if (GetDay(invdat)!=inCredManr.MonthlyPaymentDay) then begin
         CalcCredManCurrentPeriod(inCredManr,CIb,i-1,payoutdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates,   frdat, todat and invdat
