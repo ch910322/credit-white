@@ -1517,6 +1517,7 @@ begin
   record IVVc oldIVr;
   transaction Boolean gPDRAfterReciept;
   
+  logtext(0,"StoreLoanInvoice " & IVr.SerNr);
   SetOverdueLangCode(IVr,CredManr);
   
   if (IVr.Sum4>0) then begin
@@ -1525,6 +1526,7 @@ begin
       RecordCopy(oldIVr,IVr);
       IVr.OKFlag = 1;
       LinkCredManAndInvoice(IVr,CredManr);
+      logtext(0,"StoreLoanInvoice oked " & IVr.SerNr);
       if (RecordUpdate(oldIVr,IVr,true)==0) then begin
         if(gPDRAfterReciept==false)then begin
           CreateInvoicePdfFile(IVr);
@@ -5333,14 +5335,20 @@ begin
   record RcVc RepSpec;
   Integer int_type;
   val paidout;
-
+  
+  logtext(0,"CheckCredManFinished " & credmannr);
+  
   CredManr.SerNr = credmannr;
   if (ReadFirstMain(CredManr,1,true)) then begin
+    logtext(0,"CheckCredManFinished 1");
     RepSpec.d1 = CurrentDate;
     int_type = GetInterestPaymentType(CredManr);
     if (int_type!=2 or AgreementPaidOut(CredManr,paidout)) then begin
+      
       CheckBuyOutAgreement2(CredManr,RepSpec,true);
+      logtext(0,"CheckCredManFinished RepSpec.vals2 " & RepSpec.vals2);
       if (RepSpec.vals2==0) then begin
+        logtext(0,"CheckCredManFinished 3");
         BlockLoad(OCb);
         RecordCopy(oldCredManr,CredManr);
         CredManr.OrderClass = OCb.FinishCredOrderClass;
