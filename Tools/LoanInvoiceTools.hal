@@ -62,6 +62,7 @@ external procedure InsertCredHistInArray(record CredHistVc,array record ORVc,Int
 external function Integer GetItemPriority(Longint,string);
 external inner function roundmode SetRoundModeD(Integer);
 external updating procedure ReceiptEntryCreateReceipts(record SMVc,Boolean,var val);
+forward updating procedure CheckCredManFinished(Longint,date);
 
 
 enum begin
@@ -3161,7 +3162,10 @@ begin
       logforadmin(0,"Failed to store Invoice. No Serial Number. Check Number Series");
     end;
   end;
-
+  
+  logtext(0,"CheckCredManFinished from DoBuyOutAgreement");
+  CheckCredManFinished(CredManr.SerNr,ORr.OrdDate);
+  
   return;
 end;
 
