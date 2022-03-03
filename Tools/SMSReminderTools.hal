@@ -11,6 +11,7 @@ external function string 255 GetCredManNr(Longint);
 external inner function Boolean FindCustomerRelation(string,string,var record CUVc);
 external inner function boolean AddEMailRecipients(var record MailVc,string,string,integer);
 external outer function Boolean IsSMECustomer;
+external inner function string 255 DateToStr(Date);
 
 enum begin
   kMaxCheckDays = 3
@@ -733,7 +734,7 @@ begin
       ARr.InvoiceNr = IVr.SerNr;
       if (ReadFirstMain(ARr,1,true)) then begin
         days = DateDiff(CurrentDate,IVr.PayDate);
-        res = res & "<tr><td>" & GetInvoiceNumber(IVr) & "</td><td>" & IVr.InvDate & "</td><td>" & IVr.Sum4 & "</td><td>" & IVr.PayDate & "</td><td>" & days & "</td><td>" & ARr.RVal & "</td></tr>";
+        res = res & "<tr><td>" & GetInvoiceNumber(IVr) & "</td><td>" & DateToStr(IVr.InvDate) & "</td><td>" & IVr.Sum4 & "</td><td>" & DateToStr(IVr.PayDate) & "</td><td>" & days & "</td><td>" & ARr.RVal & "</td></tr>";
         if (IVr.CustCredManNr>0) then begin
           credmannr = GetCredManNr(IVr.CustCredManNr);
           if (SetInSet(credmannr,agreementlist)==false) then begin
