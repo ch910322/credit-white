@@ -907,7 +907,8 @@ begin
             tsum = FIN_PMT(rate, tusemonths, tusesum);
             tint = Round(GetCurMonthInterest(CredManPayPlanr,invdate),SetRoundModeD(2));
             //tsum = tsum - tint;
-            extra_diff = FIN_PMT(rate, tusemonths-1, (sum - (tsum - tint)));
+            //extra_diff = FIN_PMT(rate, tusemonths-1, (sum - (tsum - tint)));
+            extra_diff = CalculateAnnuityDiff(CredManr,(sum - (tsum - tint)),tusemonths-1);
             //um = Round(tsum + extra_diff,SetRoundModeD(2)) - tint;
             sum = tsum + extra_diff - tint;
           end else begin
