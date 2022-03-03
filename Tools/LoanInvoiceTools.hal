@@ -1216,13 +1216,27 @@ end;
 procedure GetInvoiceEndPeriod(Longint ivnr, var date res, var date intres)
 begin
   record IVVc IVr;
-
+  row IVVc IVrw;
+  integer rwcnt,i;
+  boolean foundf;
+  record CredHistVc CredHistr;
+  
   IVr.SerNr = ivnr;
   if (ReadFirstMain(IVr,1,true)) then begin
     res = IVr.CredToDate;
     intres = IVr.InvDate;
   end;
-
+  
+  rwcnt = matrowcnt(IVr);
+  
+  CredHistr.RecordNr = IVr.SerNr;
+  CredHistr.RecordType = 0;
+  if(readfirstkey("RecordNr",CredHistr,2,true))then begin
+    if(nonblankdate(CredHistr.CredToDate))then begin
+      intres = CredHistr.CredToDate;
+    end;
+  end;
+  
   if (blank(res)) then begin
     res = IVr.InvDate;
   end;
