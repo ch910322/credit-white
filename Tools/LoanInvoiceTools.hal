@@ -983,7 +983,7 @@ begin
       end;   
     end; 
     
-    if (latefeedays<daydiff2) then begin
+    if (latefeedays<=daydiff2) then begin// Changed < to <=  // Edit ************************** BPI Ukraine - KramarAlexandr - 05, 04 03 2022 y. at 12:22:27 PM
       for (i=0;i<daydiff3;i=i+1) begin
         amounts[amounts.length] = paysum;
         daycnt[daycnt.length] = GetMonthDays(AddDay(tempsd,i));
