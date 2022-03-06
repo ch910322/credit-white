@@ -1301,6 +1301,8 @@ begin
   end;
   //RepSpec.f4 = "";
   RepSpec.f12 = ORr.FrPrice;
+  RepSpec.f13 = ORr.Sum0;
+  RepSpec.f14 = ORr.CustVal06;
   GetItemName(CIb.ProlongItem,RepSpec.f4);
   
   
@@ -4339,3 +4341,22 @@ begin
   RefinCredManWClassAfterEditField = res;
   return;
 end;
+
+
+global
+procedure OpenTRFromCredManChange()
+BEGIN  
+  record CredManChangeVc Changer;
+  record TRVc TRr;
+  integer nwn;
+  
+  GetWindowRecord(CurWindow,Changer);
+  
+  TRr.Number = Changer.SerNr;
+  TRr.IntYc = 300;//CredManChangeVc
+  if (ReadFirstMain(TRr,2,true)) then begin
+    nwn = OpenWindow("TRDClass",1,0,"","",TRr);
+  end;
+  
+  RETURN;
+END;

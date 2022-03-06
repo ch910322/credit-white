@@ -3810,8 +3810,12 @@ begin
   EditField(h,v+=vs,100,"Added to New Balance",Normal,AddedToNewBal,false,0);//====================Added to New Balance
   EditField(h,v+=vs,100,"Added to Future Fees",Normal,FutureFees,false,0);//====================Added to Future Feesvals4  
   EditField(h,v+=vs,100,"Future Fees Period",Normal,AddedFeesMonths,false,0);//====================Future Fees Period
+  EditField(h,v+=vs,100,"Remaining Principle Part",Normal,RemPrincPart,false,0);
+  EditField(h,v+=vs,100,"Short Remaining Principle Part",Normal,ShortRemPrincPart,false,0);
+
 
   //EditField(h,v+=vs,100,"Monthly Payment Day",Normal,MonthlyPaymentDay,false,0);
+  SpecialMenu("Open #NL# Transaction",'t',8,"OpenTRFromCredManChange");
   EndWindow;
 end;
 
@@ -4480,6 +4484,8 @@ begin
   ButtonFrame(h,v+=45,200,2,"Close Due Invoices");
 	RadioButton(h,v,0,0,"Credit Future Fees",InterestCredOrPay);
 	RadioButton(h,v+=vs,1,0,"Reconcile Future Fees",InterestCredOrPay);
+	CheckBox(h,v+=20,0,"Create Transactions from Cred.Man.Changes",CredManChangeTran);
+
 
   EndWindow;
   return;

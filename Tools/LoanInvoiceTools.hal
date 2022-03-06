@@ -63,6 +63,7 @@ external function Integer GetItemPriority(Longint,string);
 external inner function roundmode SetRoundModeD(Integer);
 external updating procedure ReceiptEntryCreateReceipts(record SMVc,Boolean,var val);
 forward updating procedure CheckCredManFinished(Longint,date);
+external inner procedure FindFiscalYear(Date,var Date,var Date);
 
 
 enum begin
@@ -3929,7 +3930,7 @@ end;
 
 
 global
-function val GetOpenPrinciples(record CredManVc CredManr,var vector val vvals1,date inputtodate)
+function val GetOpenPrinciples(record CredManVc CredManr,var vector val vvals1,date inputtodate,var val shortprinc)
 begin
   val res,curbal;
   Integer rwcnt,i,spenddays,leftdays;
@@ -3944,6 +3945,9 @@ begin
   transaction boolean gChangeProcess;
   boolean daysinmonth30;
   record CMApplicationSetBlock CMASb;
+  date fissd,fised;
+  
+  FindFiscalYear(inputtodate,fissd,fised);
 
   blockload(CMBOb);
   
@@ -3960,6 +3964,9 @@ begin
       matrowget(CSr,i,CSrw);
       if(CSrw.Invoiced==0)then begin
         curbal = curbal + CSrw.Principle;
+        if(dateinrange(CSrw.InvDate,fissd,fised))then begin
+          shortprinc = shortprinc + CSrw.Principle;
+        end;
       end;
       if(nonblankdate(CSrw.FromDate) and nonblankdate(CSrw.ToDate))then begin
         
@@ -4139,7 +4146,7 @@ begin
   val t,t2,totallate,totalnotlate;
   val notlateprinciple,notlateinterest;
   val currperiodinterest,futurefees,totopeninvoices,otheropenfees;
-  val actualbalance;
+  val actualbalance,shortprinc;
   vector val vItemVals;
   array string 255 aitems;
   integer i,rwcnt;
@@ -4316,10 +4323,9 @@ begin
   
   FindAllInvoicesAndPrepayments(CredManr,vcalcval,ORr.OrdDate);
   vcalcval1["OPENNOTOVERDUEINT"] = vcalcval["OPENINVOICED:" & intItem] - vcalcval["OVDOPENINVOICED:" & intItem];
-  t = GetOpenPrinciples(CredManr,vcalcval1,ORr.OrdDate);
   
-  
-  
+  t = GetOpenPrinciples(CredManr,vcalcval1,ORr.OrdDate,shortprinc);
+    
   //getvectortags(vcalcval,acalcval);
   //Interest Ammount
   logforadmin(0,"Interest Ammount All " & intItem & " " & vcalcval["INVOICED:" & intItem]);
@@ -4335,6 +4341,7 @@ begin
   logforadmin(0,"Fees Ammount Open Overdued " & feesItem & " " & vcalcval["OVDOPENINVOICED:" & feesItem]);
   
   ORr.Sum0 = t;
+  ORr.CustVal06 = shortprinc;
   logforadmin(0,"------Interest Ammount" & intItem & " " & vcalcval["OPENINVOICED:" & intItem] - vcalcval["OVDOPENINVOICED:" & intItem]);
   ORr.Sum1 = vcalcval["OPENINVOICED:" & intItem] - vcalcval["OVDOPENINVOICED:" & intItem];
   interestammount = vcalcval["OPENINVOICED:" & intItem] - vcalcval["OVDOPENINVOICED:" & intItem];
