@@ -1871,7 +1871,7 @@ begin
   RecordNew(IVr);
   SetupLoanInvoice(CredManr,CMb,IVr,CSrw.InvDate,CSrw.FromDate,CSrw.ToDate,true,false,"",GetInvoiceType(CredManr,CSrw.InvDate),updf);
   if (CSrw.Principle>0) then begin
-    GetItemName(CMb.RateItem,spec);
+    GetItemName(CMb.InstalmentItem,spec);
     SetupInvoiceRowAndAdd(CredManr,IVr,CMb.InstalmentItem,spec,1,CSrw.Principle,blankval,kEventTypeCalcInstalment,-1);
   end;
   if (CSrw.Deposit>0) then begin
