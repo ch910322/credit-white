@@ -4045,14 +4045,19 @@ begin
             
             
             vvals1["INVOICEDCURRENTPERIOD"] = x - round(spenddays * dayval,defaultcurroundoff);
-            if(CMBOb.DoNotCreditlastDayInvoices)then begin
+            if(CMBOb.DoNotCreditlastDayInvoices==1)then begin
               if(CSrw.ToDate==inputtodate)then begin
                 vvals1["INVOICEDCURRENTPERIOD"] = 0;
+              end else begin
+                vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(spenddays * dayval,defaultcurroundoff);
+                logforadmin(0,"--------- " & CSrw.Interest);
+                logforadmin(0,vvals1["CURRPERIODINTEREST"]);
               end;
+            end else begin
+              vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(spenddays * dayval,defaultcurroundoff);
+              logforadmin(0,"--------- " & CSrw.Interest);
+              logforadmin(0,vvals1["CURRPERIODINTEREST"]);
             end;
-            vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(spenddays * dayval,defaultcurroundoff);
-            logforadmin(0,"--------- " & CSrw.Interest);
-            logforadmin(0,vvals1["CURRPERIODINTEREST"]);
           end;
         end else begin
           if(CSrw.Invoiced==0)then begin
