@@ -689,7 +689,7 @@ begin
     res = false;
   end else begin
     lastinvdate = GetLastInvoiceDate(CredManr,AddYear(CurrentDate,1));
-    if (lastinvdate>=td) then begin
+    if (lastinvdate>td) then begin
       res = false;
     end;
     if(res)then begin
