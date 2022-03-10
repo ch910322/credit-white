@@ -876,12 +876,14 @@ begin
   string 100 newperiod;
   record IVVc IVr;
   record CMApplicationSetBlock CMAb;
+  record CMBuyOutBlock CMBOb;
   transaction Boolean gPaymentProcedure;
   transaction Boolean gIsBuyOutInvoice; 
   
   blockload(CMIb);
   blockload(CMAb);
-  
+  blockload(CMBOb);
+    
   ed = temped;
   /*if(CMIb.NewCalcForGrace==1)then begin
     if(ed>=currentdate)then begin
@@ -890,16 +892,22 @@ begin
   end;*/
   
   if(gPaymentProcedure or gIsBuyOutInvoice)then begin
-    if(CMAb.BuyOutInclPaymDay==1)then begin
-      ed = addday(ed,1);
+    if(gPaymentProcedure)then begin
+      if(CMAb.BuyOutInclPaymDay==1)then begin
+        ed = addday(ed,1);
+      end;
+    end;
+    if(gIsBuyOutInvoice)then begin
+      if(CMBOb.CalcOvdBOday==0)then begin
+        ed = addday(ed,-1);
+      end;
     end;
   end else begin
     if(CMAb.OvdInclInvDay==0)then begin
       ed = addday(ed,-1);
     end;
   end;
-  
-  
+    
   paysum = CredHistr.Sum;
   tempsd = sd;//this is the start date when this item should have been paid since
   if (nonblank(overduetd)) then begin
@@ -1532,7 +1540,6 @@ begin
   record IVVc oldIVr;
   transaction Boolean gPDRAfterReciept;
   
-  logtext(0,"StoreLoanInvoice " & IVr.SerNr);
   SetOverdueLangCode(IVr,CredManr);
   
   if (IVr.Sum4>0) then begin
@@ -1541,7 +1548,6 @@ begin
       RecordCopy(oldIVr,IVr);
       IVr.OKFlag = 1;
       LinkCredManAndInvoice(IVr,CredManr);
-      logtext(0,"StoreLoanInvoice oked " & IVr.SerNr);
       if (RecordUpdate(oldIVr,IVr,true)==0) then begin
         if(gPDRAfterReciept==false)then begin
           CreateInvoicePdfFile(IVr);
@@ -2398,8 +2404,6 @@ begin
               skipint = true;
               cumint = cumint - CSrw.Interest;
               balance = balance - CSrw.Principle;
-              logtext(0,"cumint " & cumint);
-              logtext(0,"balance " & balance);
             end;
           end;
         end;
@@ -2606,9 +2610,7 @@ begin
         if(RepSpec.vals3!=0)then begin
           tmpCredManr.IntRate = RepSpec.vals3;
         end;
-        newint = GetRateAmount(tmpCredManr,tmpCredManr.IntRate,kMonthTypeFirst,invdate,todate,calcbal,false,false);
-        logtext(0,"newint " & newint);
-      
+        newint = GetRateAmount(tmpCredManr,tmpCredManr.IntRate,kMonthTypeFirst,invdate,todate,calcbal,false,false);      
         GetItemName(CMb.RateItem,spec);
         spec = spec  & " " & invdate & ":" & todate;
         SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,newint,blankval,kEventTypeCalcInterest,-1);
@@ -2827,9 +2829,7 @@ begin
       end;
     end;    
   end;
-  
-  logtext(0,"SUM " & Sum);
-  
+    
   if(Sum>0)then begin
     blockload(CMIb);
     recordnew(SMr);
@@ -3089,9 +3089,7 @@ begin
   
   blockload(CMb);
   blockload(CMBuyOutb);
-  
-  logtext(0,"ORr.TotGP " & ORr.TotGP);
-  
+    
   IVr.SerNr = lastinvnr;
   if(readfirstmain(IVr,1,true))then begin
     SetupLoanInvoice3(CredManr,CMb,setIVr,todate,fromdate,addday(todate,-1),true,false,"",1,true,IVr.PayDeal,IVr.SalesMan);
@@ -3099,10 +3097,7 @@ begin
     
     //setIVr.SerNr = NextSerNr("IVVc",CurrentDate,-1,false,"");
     setIVr.CredToDate = addday(todate,-1);
-    logtext(0,"CreateSplitInvoice " & setIVr.SerNr);
-    rwcnt = matrowcnt(IVr);
-    logtext(0,"rwcnt " & rwcnt);
-   
+    rwcnt = matrowcnt(IVr);   
     GetItemName(CMb.RateItem,spec);
     SetupInvoiceRowAndAdd(CredManr,setIVr,CMb.RateItem,spec,1,ORr.TotGP,blankval,14,-1);
     spec = "";
@@ -3133,14 +3128,19 @@ begin
   vector val vCredVal;
   transaction Boolean gIsBuyOutInvoice; 
   vector val tmpval;
-  
+  record CMBuyOutBlock CMBOb;
+    
   gIsBuyOutInvoice = true;
 
   if (CredManr.OKFlag==1 and CredManr.Approved==1) then begin
     BlockLoad(CMb);
     BlockLoad(CIb);
+     BlockLoad(CMBOb);
     BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CMb,true,true);
     CreditOpenInvoices(CredManr,td,ORr,"",tmpval);// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 18 08 2021 y. at 2:26:56 PM
+    
+    
+    
     CreateBuyOutInvoiceFromPlan(CredManr,CMb,CredManPayPlanr,td,IVr,false,sd,false,ORr);
     rwcnt = matrowcnt(IVr);
     if(ORr.ShipMark==1)then begin
@@ -5358,15 +5358,12 @@ begin
   
   CredManr.SerNr = credmannr;
   if (ReadFirstMain(CredManr,1,true)) then begin
-    logtext(0,"CheckCredManFinished 1");
     RepSpec.d1 = CurrentDate;
     int_type = GetInterestPaymentType(CredManr);
     if (int_type!=2 or AgreementPaidOut(CredManr,paidout)) then begin
       
       CheckBuyOutAgreement2(CredManr,RepSpec,true);
-      logtext(0,"CheckCredManFinished RepSpec.vals2 " & RepSpec.vals2);
       if (RepSpec.vals2==0) then begin
-        logtext(0,"CheckCredManFinished 3");
         BlockLoad(OCb);
         RecordCopy(oldCredManr,CredManr);
         CredManr.OrderClass = OCb.FinishCredOrderClass;
