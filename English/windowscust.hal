@@ -765,6 +765,7 @@ end;
   CheckBox(h+110,v,0,"Credit Interest",Notation);//====================Credit Interest
   EditField(h,v+=vs,100,"Overdue invoices",ViewOnly,TransStr,false,0);//====================Overdue invoices
   EditField(h,v+=vs,100,"Added to New Balance",ViewOnly,f5,false,0);//====================Added to New Balance
+  CheckBox(h+110,v,0,"Added to New Balance",flags[6]);
   EditField(h,v+=vs,100,"Added to Future Fees",ViewOnly,f6,false,0);//====================Added to Future Feesvals4  
   CheckBox(h+110,v,0,"Distribute Debts to Future Fees",flags[4]);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 21 12 2021 y. at 9:48:05 AM
   EditField(h,v+=vs,100,"Future Fees Period",Normal,wholemonthf,false,0);//====================Future Fees Period
@@ -788,7 +789,7 @@ end;
   CheckBox(h,v+=vs,0,"Re-sign Schedule",flags[1]);
   CheckBox(h,v+=vs,0,"Prolong only when Prolongation Invoice is paid",flags[3]);
   
-  HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassRecalculate","Recalculate");
+  HalPushButton(h,v+=vs,h+120,v+20,"NewPauseCredManWClassRecalculate","Recalculate");
   v = v+vs;
   HalPushButton(h,v+=vs,h+120,v+20,"NewPauseCredManWClassPause","Register Changes");
   v = v+vs;

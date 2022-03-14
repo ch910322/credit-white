@@ -1250,7 +1250,7 @@ begin
   record ORVc ORr;
   val newbal;
   transaction boolean gChangeProcess;
-  
+    
   gChangeProcess = true;
   
   ORr.OrdDate = RepSpec.d1;
@@ -1262,7 +1262,7 @@ begin
   RepSpec.AccStr = ORr.DownPaySent;
   RepSpec.Notation = ORr.InvMark;
   RepSpec.TransStr = ORr.Sum2;
-  if(RepSpec.flags[4]==1)then begin
+  if(RepSpec.flags[6]==1)then begin
     RepSpec.f5 = ORr.Sum2 - ORr.CustVal01;//"Added to New Balance"
   end else begin
     RepSpec.f5 = blankval;
@@ -1282,7 +1282,10 @@ begin
   if(RepSpec.vals3==0 and RepSpec.vals4==0)then begin
     newbal = ORr.BaseSum4;
   end else begin
-    newbal = ORr.BaseSum4 + RepSpec.vals4 + (ORr.Sum2 - ORr.CustVal01);
+    newbal = ORr.BaseSum4 + RepSpec.vals4;
+    if(RepSpec.flags[6]==1)then begin
+      newbal = newbal + (ORr.Sum2 - ORr.CustVal01);
+    end;
     if(RepSpec.Custf==1)then begin//Revert flag value - if ticked!!!
       newbal = newbal - ORr.PrepaidAmount;
     end;
@@ -1334,6 +1337,7 @@ begin
         RepSpec.long1 = CredManr.SerNr;
         RepSpec.Notation = 1; 
         RepSpec.flags[5] = 1;
+        RepSpec.flags[6] = 1;
         RepSpec.flags[4] = CMBOb.DebtsToFutureFees;
         calcPauseData(CredManr,RepSpec);     
         OpenWindow("NewPauseCredManWClass",0,wn,"","",RepSpec);
