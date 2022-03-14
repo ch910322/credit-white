@@ -2640,7 +2640,7 @@ begin
   end;*/
   
   if (RepSpec.flags[2]==1) then begin//Issue Prolong Invoice
-    if(stringtoval(RepSpec.f9,m4val)==0)then begin
+    if(blank(RepSpec.f9)/*stringtoval(RepSpec.f9,m4val)==0*/)then begin
       rate = CredManr.StdProlongPrc;
       if (CredManr.AnnualRate==1) then begin
         rate = rate/12;

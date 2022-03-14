@@ -769,7 +769,7 @@ end;
   CheckBox(h+110,v,0,"Distribute Debts to Future Fees",flags[4]);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 21 12 2021 y. at 9:48:05 AM
   EditField(h,v+=vs,100,"Future Fees Period",Normal,wholemonthf,false,0);//====================Future Fees Period
   EditField(h,v+=vs,100,"Prolongation Fee",Normal,f9,false,0);//====================Future Fees Period
-  CheckBox(h+110,v,0,"Issue Prolong Invoice",flags[2]);
+  //CheckBox(h+110,v,0,"Issue Prolong Invoice",flags[2]);
   EditFieldTL(h,v+=vs,100,"Not invoiced Overdues",M4Str,ViewOnly,255,f12,false,0);//// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 16 12 2021 y. at 10:57:47 PM
   CheckBox(h+110,v,0,"Issue Overdued Invoice",flags[5]);
   
