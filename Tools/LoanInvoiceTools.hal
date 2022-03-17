@@ -3384,7 +3384,7 @@ begin
           end;
         end else begin
           if(aFutFeesSums.length>0 or aToBal.length>0)then begin
-            CreditThisInvoiceFutureFees(IVr,vFutFeesSums,vBlank,todate);//Credit future fees and instaltment
+            CreditThisInvoiceFutureFees(IVr,vFutFeesSums,vToBal,todate);//Credit future fees and instaltment
           end;
         end;
         
