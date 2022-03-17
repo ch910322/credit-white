@@ -165,7 +165,7 @@ begin
   TestInvoiceBasedOnScheduleRow(CSr,CSrw,IVr);
 
   CSrw.Total = IVr.Sum4;
-  if(CSrw.Type==6)then begin
+  if(CSrw.Type==6 and IVr.IsChangeAgrInvoice==0)then begin
     CSrw.Total = CSrw.Principle + CSrw.Interest;
   end;
   MatRowPut(CSr,rowno,CSrw);

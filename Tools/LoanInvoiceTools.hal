@@ -5786,6 +5786,15 @@ logforadmin(0,"GenerateAgreementSchedule1");
           bal = bal + CSrw.Principle;
           CSrw.Invoiced = 1;
           CSrw.Balance = bal;
+        case 6:
+          CSrw.Principle = SMrw.DebVal;
+          CSrw.Invoiced = 1;
+          CSrw.Balance = bal;
+          CSrw.Interest = SMrw.CredVal;
+          if (nonblank(SMrw.ExtraComment)) then begin
+            CSrw.Invoiced = 1;
+            CSrw.InvoiceNr = SMrw.ExtraComment;
+          end;
         otherwise
           CSrw.FromDate = SMrw.Objects;
           CSrw.Principle = SMrw.DebVal - SMrw.ToRateB1;
