@@ -82,6 +82,7 @@ remote function date CheckCsheduleLastStartPeriod(record CredManVc);
 external inner procedure ExtractObj(string,var Integer,var string);
 remote updating procedure newCreateRefinCredMan(record ORVc,record CredManVc,record CredManVc);
 external updating procedure CredManMakePaymentDsm;
+remote updating procedure CMTestRA(var record CredManVc,val,val,Date,var Boolean,var Boolean,record RcVc,var record IVVc,string,var Integer);
 
 
 procedure UpdateCredManSoftFields(Integer wn,record CredManVc CredManr,Boolean allf)
@@ -1290,8 +1291,15 @@ begin
       newbal = newbal - ORr.PrepaidAmount;
     end;
   end;
+  RepSpec.f12 = ORr.FrPrice;
+  if(RepSpec.flags[5]==1)then begin
+    newbal = newbal + ORr.FrPrice;
+  end;
   RepSpec.f8 = newbal;
   RepSpec.wholemonthf = CalcMonthsBetween(RepSpec.d1,CredManr.endDate);
+  if(nonblank(RepSpec.FirstAcc))then begin
+    RepSpec.wholemonthf = RepSpec.wholemonthf - 1;
+  end;
   RepSpec.flags[2] = 1;
   
   RepSpec.flags[1] = 1;
@@ -1303,7 +1311,7 @@ begin
     RepSpec.f3 = CurrentUser;
   end;
   //RepSpec.f4 = "";
-  RepSpec.f12 = ORr.FrPrice;
+  
   RepSpec.f13 = ORr.Sum0;
   RepSpec.f14 = ORr.CustVal06;
   GetItemName(CIb.ProlongItem,RepSpec.f4);
@@ -1323,10 +1331,20 @@ begin
   record CMInvoicingBlock CIb;
   record ORVc ORr;
   record CMBuyOutBlock CMBOb;
+  record CredManSchedVc CSr;
   
   blockload(CMBOb);
   wn = CurWindow;
   GetWindowRecord(wn,CredManr);
+  
+  CSr.CredManNr = CredManr.SerNr;
+  if (ReadFirstMain(CSr,1,true)) then begin
+    if(CSr.DontRecalculate==1)then begin
+      messagebox(200311,"");
+      goto lPauseCredManDsm;
+    end;
+  end;
+  
   if (WindowState(wn)==Rs_Normal) then begin
     if (ProlongInProgress(CredManr)) then begin
       MessageBox(200233,"");
@@ -1349,6 +1367,8 @@ begin
       end;
     end;
   end;
+
+lPauseCredManDsm:;
 
   return;
 end;
@@ -1463,6 +1483,30 @@ begin
 LPauseCredManWClassPause:;
   return;
 end;
+
+
+global
+updating procedure CMATest()
+begin
+  Integer wn,mwn,iwn;
+  record CredManVc CredManr;
+  record RcVc RepSpec;
+  Boolean res,setf,closedf;
+  record IVVc IVr;
+  Integer err;
+  boolean scenario;
+  
+  wn = CurWindow;
+  DeselectWindow(wn,true);
+  GetWindowRecord(wn,RepSpec);
+  
+  mwn = MotherWindow(wn);
+  GetWindowRecord(mwn,CredManr);
+  CMTestRA(CredManr,RepSpec.vals0,RepSpec.vals1,RepSpec.d1,res,setf,RepSpec,IVr,RepSpec.f1,err);
+  
+return
+end;
+
 
 global
 updating procedure NewPauseCredManWClassPause()

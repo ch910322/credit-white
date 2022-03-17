@@ -92,6 +92,8 @@ external inner procedure ExtractObj(string,var Integer,var string);
 external updating procedure PayAllOpenInvoices(record CredManVc,Date,record ORVc,string);
 external updating procedure CreateSplitInvoice(record CredManVc,Date,record ORVc,string,date,date,longint);
 external updating procedure CM_CreatePaymentOrder(record CredManVc,record VIVc,val);
+external updating procedure AgrChangeCloseOldInvoices(record RcVc,record CredManVc,Date,record ORVc,string,var vector val);
+
 
 global
 updating function Boolean ArchiveExistingDocument(record AgreementDocVc ADr,var string oldname)
@@ -622,6 +624,33 @@ begin
 end;
 
 global
+updating procedure CMTestRA(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res,var Boolean setf,record RcVc RepSpec,var record IVVc IVr,string purpose,var Integer err)
+begin
+  record AgreementDocVc ADr;
+  record VIVc VIr;
+  boolean scenario;
+  val tmonths,tprolongmonths,rate,addval,payval;
+  record ORVc ORr;
+  string 100 itemclass;
+  record CMBuyOutBlock CMBuyOutb;
+  record CredManSchedVc CSr;
+  row CredManSchedVc CSrw;
+  date lastinvperioddate,lastinvperiodfromdate;
+  integer rwcnt,i;
+  longint lastinvnr;
+  vector val nocreditsum;
+  array string 20 anocreditsum;
+  transaction boolean gOffSeveralRecalc;
+  
+  blockload(CMBuyOutb);
+  
+  AgrChangeCloseOldInvoices(RepSpec,CredManr,td,ORr,CMBuyOutb.FutFeeItemClass,nocreditsum);
+  
+return;
+end;
+
+
+global
 updating procedure DoPauseCredManB(var record CredManVc CredManr,val months,val prolongmonths,Date td,var Boolean res,var Boolean setf,record RcVc RepSpec,var record IVVc IVr,string purpose,var Integer err)
 begin
   record AgreementDocVc ADr;
@@ -676,22 +705,18 @@ begin
     end;
 
     scenario = true;
-    if(td<lastinvperioddate)then begin
+    /*if(td<lastinvperioddate)then begin
       logtext(0,"CreditOpenInvoices++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
       ORr.InvMark = RepSpec.Notation;
       CreditOpenInvoices(CredManr,td,ORr,CMBuyOutb.FutFeeItemClass,nocreditsum);
-      //logtext(0,"CreateSplitInvoice++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++lastinvnr");
-      //ORr.TotGP = stringtoval(RepSpec.FirstAcc,m4val);
-      //CreateSplitInvoice(CredManr,td,ORr,"",lastinvperiodfromdate,lastinvperioddate,lastinvnr);
-    end;
+    end;*/
+    logtext(0,"AgrChangeCloseOldInvoices++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    AgrChangeCloseOldInvoices(RepSpec,CredManr,td,ORr,CMBuyOutb.FutFeeItemClass,nocreditsum);
+    
+    
     RepSpec.sStartDate = lastinvperiodfromdate;
     RepSpec.sEndDate = lastinvperioddate;
-    
-    
-      //ORr.InvMark = RepSpec.Notation;
-      //CMBuyOutb.FutFeeItemClass
-      //CreditOpenInvoices(CredManr,td,ORr,"");
-      //PayAllOpenInvoices(CredManr,td,ORr,"");
+        
     if (RepSpec.flags[2]==1 and stringtoval(RepSpec.f9,m4val)>0) then begin//Issue Prolong Invoice
       CreateProlongSession(RepSpec,CredManr,td,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1],RepSpec.vals3,RepSpec.vals4);
     end;

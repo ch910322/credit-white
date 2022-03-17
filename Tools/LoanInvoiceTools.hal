@@ -64,6 +64,8 @@ external inner function roundmode SetRoundModeD(Integer);
 external updating procedure ReceiptEntryCreateReceipts(record SMVc,Boolean,var val);
 forward updating procedure CheckCredManFinished(Longint,date);
 external inner procedure FindFiscalYear(Date,var Date,var Date);
+external procedure DistributeCredHistValues(var record IPVc,Integer);
+external inner procedure IPSumup(var record IPVc);
 
 
 enum begin
@@ -2850,6 +2852,549 @@ end;
 
 
 
+global updating procedure ReconcileOpenInvoices(record CredManVc CredManr,Date todate,record ORVc ORr,string itemsclass,var vector val nocreditsum)
+begin
+  record IVVc IVr,setIVr,oldIVCreditr,IVCreditr;
+  row IVVc IVrw,IV2rw;
+  integer i,rwcnt,rwcnt2,j,mtrw;
+  boolean TrHs,testf,isfullpayed,creditanyvay;
+  record ARVc ARr;
+  integer credflag;
+  record CredHistVc CredHistr,CredHist2r;
+  boolean TrHs2,foundf,creditthisinvoice,installmentf;
+  record INVc INr;
+  string 255 tstr,princItem,itemtocredit,intItem;
+  val t,tt,tot1,tot2,tot3,intcredsum,chk;
+  longint t2,res;
+  date blankd;
+  vector val vIVItemOpenAmmount,vItemsToPay;
+  record CredManSetBlock CMb;
+  record CMBuyOutBlock CMBuyOutb;
+  record IPVc IPr,oldIPr;
+  row IPVc IPrw;
+  record CMInvoicingBlock CIb;
+  
+  
+  
+  blockload(CMb);
+  blockload(CMBuyOutb);
+  blockload(CIb);
+  
+  princItem = CMb.InstalmentItem;
+  intItem = CMb.RateItem;
+  itemtocredit = princItem;
+    
+  if(nonblank(itemsclass))then begin
+    itemtocredit = "";
+    creditanyvay = true;
+    while(loopmain(INr,1,true))begin
+      if(setinset(itemsclass,INr.DispGroups))then begin
+        itemtocredit = itemtocredit & INr.Code & ","; 
+      end;
+    end;
+    if(ORr.InvMark==1)then begin
+      itemtocredit = itemtocredit & "," & intItem;
+    end;
+  end else begin
+    if(ORr.InvMark==1)then begin
+      itemtocredit = itemtocredit & "," & intItem;
+    end;
+  end;
+  
+  
+  IVr.CustCode = CredManr.CustCode;
+  TrHs = true;
+  while(loopkey("CustCode",IVr,1,TrHs))begin
+    testf = true;
+    if(IVr.CustCode!=CredManr.CustCode)then begin TrHs = false; testf = false; end;
+    if(IVr.CustCredManNr!=CredManr.SerNr)then begin testf = false; end;
+    if(IVr.OKFlag==0)then begin testf = false; end;
+    if(IVr.Invalid==1)then begin testf = false; end;
+    if(IVr.InvType==kInvoiceTypeCredit)then begin testf = false; end;
+    
+    
+    if(testf)then begin
+      creditthisinvoice = false;
+      isfullpayed = false;
+      ARr.InvoiceNr = IVr.SerNr;
+      if(!readfirstmain(ARr,1,true))then begin
+        isfullpayed = true;
+      end;
+      credflag = 1;
+      if(IVr.InvType==kInvoiceTypeCredit)then begin
+        credflag = -1;
+      end;
+      
+      rwcnt = matrowcnt(IVr);
+      for(i=0;i<rwcnt;i=i+1)begin
+        matrowget(IVr,i,IVrw);
+        if(IVrw.stp==kInvoiceRowTypeNormal and nonblank(IVrw.ArtCode))then begin
+          if(isfullpayed)then begin
+
+          end else begin
+            if(IVr.InvType!=kInvoiceTypeCredit)then begin
+              resetloop(CredHistr);
+              CredHistr.RecordNr = IVr.SerNr;
+              CredHistr.RecordType = 0;
+              TrHs2 = true;
+              foundf = false;
+              while (LoopKey("RecordNr",CredHistr,2,TrHs2)) begin
+                if ((CredHistr.RecordNr!=IVr.SerNr) or (CredHistr.RecordType!=0)) then begin
+                  TrHs2 = false;
+                end;
+                if (TrHs2 and CredHistr.ArtCode==IVrw.ArtCode) then begin
+                  foundf = true;
+                  logforadmin(0,"IV For Cred  " & IVr.SerNr & " todate " & todate);
+                  t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
+                  if(CMBuyOutb.DoNotCreditlastDayInvoices==0)then begin
+                    if(IVr.PayDate>=todate and t>0 or creditanyvay)then begin
+                      creditthisinvoice = true;
+                    end;
+                  end else begin
+                    if(IVr.PayDate>todate and t>0 or creditanyvay)then begin
+                      creditthisinvoice = true;
+                    end;
+                  end;
+                end;
+              end;
+            end;
+          end;
+        end;
+      end;
+      
+      if(creditthisinvoice)then begin
+        recordcopy(setIVr,IVr);
+        mtrw = matrowcnt(setIVr);
+        clearvector(vIVItemOpenAmmount);
+        clearvector(vItemsToPay);
+        checkIfInvoiceFromAgreement(IVr,vIVItemOpenAmmount)
+        for(i=0;i<mtrw;i=i+1)begin
+          matrowget(setIVr,i,IVrw);
+          logtext(0,"IVrw.ArtCode " & IVrw.ArtCode & " sum " & vIVItemOpenAmmount[IVrw.ArtCode]);
+          IVrw.Price = vIVItemOpenAmmount[IVrw.ArtCode];
+          IVrw.Sum = vIVItemOpenAmmount[IVrw.ArtCode];
+          if(intcredsum>0 and IVrw.ArtCode==intItem)then begin
+            IVrw.Sum = intcredsum;            
+          end;
+          vItemsToPay[IVrw.ArtCode] = vItemsToPay[IVrw.ArtCode] + IVrw.Sum;
+          matrowput(setIVr,i,IVrw);
+        end;
+        for(i=0;i<mtrw;i=i+1)begin
+          matrowget(setIVr,i,IVrw);
+          if(IVrw.stp!=1 or blank(IVrw.ArtCode) or IVrw.Sum==0 or IVrw.Price==0 or !setinset(IVrw.ArtCode,itemtocredit))then begin
+            if(IVrw.stp==1 and nonblank(IVrw.ArtCode))then begin
+              nocreditsum[IVrw.ArtCode] = nocreditsum[IVrw.ArtCode] + IVrw.Sum;
+            end;
+            matrowdelete(setIVr,i);
+            i=i-1;
+            mtrw = mtrw - 1;
+          end else begin
+            if(IVrw.ArtCode==princItem)then begin
+              if(IVrw.stp==1 and nonblank(IVrw.ArtCode))then begin
+                nocreditsum[IVrw.ArtCode] = nocreditsum[IVrw.ArtCode] + IVrw.Sum;
+              end;
+            end;
+          end;
+        end;
+        setIVr.SerNr = -1;
+        setIVr.OKFlag = 0;
+        setIVr.NoInterestFlag = 1;
+
+        foundf = false;
+        
+        rwcnt2 = matrowcnt(setIVr);
+        for(j=0;j<rwcnt2;j=j+1)begin
+          matrowget(setIVr,j,IV2rw);
+          if(IV2rw.Sum>0 and nonblank(IV2rw.ArtCode))then begin
+            foundf = true;
+          end;
+        end;
+        logtext(0,"reconcile found " & foundf);
+
+        if(foundf)then begin
+          recordnew(IPr);
+          IPr.TransDate = todate;
+          IPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
+          IPr.RegDate = CurrentDate;
+          IPr.OKFlag = 0;
+          IPr.PayMode = CIb.PaymentMode;
+          IPPastePayMode(IPr);
+          
+          logtext(0,"IPPastePayMode");
+          
+          ClearRow(IPr,IPrw,1);
+          IPrw.InvoiceNr = IVr.SerNr;
+          logtext(0,"IVr.SerNr " & IVr.SerNr);
+          MatRowPut(IPr,0,IPrw);
+          PasteInvIn2IPr(IPr,0,IPr.TransDate,chk,false,installmentf);
+          DistributeCredHistValues(IPr,0);
+          
+          
+          mtrw = matrowcnt(IPr);
+          logtext(0,"mtrw " & mtrw);
+          for(i=0;i<mtrw;i=i+1)begin
+            matrowget(IPr,i,IPrw);
+            logtext(0,"IPrw.CredHistItem " & IPrw.CredHistItem & " " & vItemsToPay[IPrw.CredHistItem]);
+            if(nonblank(IPrw.CredHistItem))then begin
+              if(vItemsToPay[IPrw.CredHistItem]>0)then begin
+                if(vItemsToPay[IPrw.CredHistItem]!=IPrw.RecVal)then begin
+                  IPrw.RecVal = vItemsToPay[IPrw.CredHistItem];
+                  MatRowPut(IPr,i,IPrw);
+                  IPVc_PasteRecVal(IPr,i);
+                  IPSumup(IPr);
+                end;
+              end else begin
+                matrowdelete(IPr,i);
+                mtrw = mtrw - 1;
+                i = i - 1;
+              end;
+            end;
+          end;
+          mtrw = matrowcnt(IPr);
+          if(mtrw>0)then begin
+            logtext(0,"recordinsert " & IPr.SerNr);
+            recordinsert(IPr,true);
+            recordcopy(oldIPr,IPr);
+            IPr.OKFlag = 1;
+            recordupdate(oldIPr,IPr,true);
+          end;
+        end;
+        
+      end;
+    end;    
+  end;
+  
+return;
+end;
+
+
+global updating procedure CreditThisInvoiceFutureFees(record IVVc IVr,vector val vFutFeesSums,vector val vToBal,date todate)
+begin
+  array string 20 aFutFeesSums;
+  record IVVc setIVr,oldIVCreditr,IVCreditr;
+  row IVVc IVrw,IV2rw;
+  longint res;
+  integer rwcnt,i;
+  
+  
+  res = CreateCreditNoteIV(IVr,kInvoiceTypeCredit,IVCreditr,"",false);
+  IVCreditr.IsChangeAgrInvoice = 1;
+  if(IVCreditr.PayDate<IVCreditr.InvDate)then begin
+    IVCreditr.PayDate = IVCreditr.InvDate;
+  end;
+  IVCreditr.InvDate = todate;
+  logforadmin(0,"res " & res & " cred SerNr " & IVCreditr.SerNr);
+  if (res==0) then begin
+    IVCreditr.SerNr = NextSerNr("IVVc",IVCreditr.InvDate,-1,false,"");
+    RecordInsert(IVCreditr,true);
+    if(IVCreditr.SerNr>-1)then begin
+      recordcopy(oldIVCreditr,IVCreditr);
+    end;
+    rwcnt = matrowcnt(IVCreditr);
+    for(i=0;i<rwcnt;i=i+1)begin
+      matrowget(IVCreditr,i,IVrw);
+      if((blank(IVrw.ArtCode) and IVrw.stp==1) or IVrw.stp==kInvoiceRowTypeHidden)then begin
+        matrowdelete(IVCreditr,i);
+        i = i - 1;
+        rwcnt = rwcnt - 1;
+      end;
+    end;
+    rwcnt = matrowcnt(IVCreditr);
+    for(i=0;i<rwcnt;i=i+1)begin
+      matrowget(IVCreditr,i,IVrw);
+      if(IVrw.stp==kInvoiceRowTypeNormal)then begin
+        if(vFutFeesSums[IVrw.ArtCode]!=0)then begin
+          IVrw.Price = vFutFeesSums[IVrw.ArtCode];
+          IVrw.Sum = vFutFeesSums[IVrw.ArtCode];
+          MatRowPut(IVCreditr,i,IVrw);
+          IVDchsum(IVCreditr,i);
+        end else begin
+          if(vToBal[IVrw.ArtCode]!=0)then begin
+            IVrw.Price = vToBal[IVrw.ArtCode];
+            IVrw.Sum = vToBal[IVrw.ArtCode];
+            MatRowPut(IVCreditr,i,IVrw);
+            IVDchsum(IVCreditr,i);
+          end else begin
+            matrowdelete(IVCreditr,i);
+            i=i-1;
+            rwcnt = rwcnt - 1;
+          end;
+        end;
+      end;
+    end;
+    IVSumup(IVCreditr,true);   
+    IVCreditr.OKFlag = 1;
+    if(IVCreditr.SerNr>-1)then begin
+      recordupdate(oldIVCreditr,IVCreditr,true);
+    end;
+  end;
+  
+  
+  
+return;
+end;
+
+global updating procedure ReconcileThisInvoiceFutureFees(record IVVc IVr,vector val vFutFeesSums,vector val vToBal,date todate)
+begin
+  array string 20 aFutFeesSums;
+  record IVVc setIVr,oldIVCreditr,IVCreditr;
+  row IVVc IVrw,IV2rw;
+  record CMInvoicingBlock CIb;
+  record IPVc IPr,oldIPr;
+  row IPVc IPrw;
+  boolean installmentf;
+  integer i,mtrw,rwcnt;
+  val chk;
+  
+  blockload(CIb);
+  
+  
+  recordnew(IPr);
+  IPr.TransDate = todate;
+  IPr.SerNr = NextSerNr("IPVc",IPr.TransDate,-1,false,"");
+  IPr.RegDate = CurrentDate;
+  IPr.OKFlag = 0;
+  IPr.PayMode = CIb.PaymentMode;
+  IPPastePayMode(IPr);
+  
+  logtext(0,"IPPastePayMode");
+  
+  ClearRow(IPr,IPrw,1);
+  IPrw.InvoiceNr = IVr.SerNr;
+  logtext(0,"IVr.SerNr " & IVr.SerNr);
+  MatRowPut(IPr,0,IPrw);
+  PasteInvIn2IPr(IPr,0,IPr.TransDate,chk,false,installmentf);
+  DistributeCredHistValues(IPr,0);
+  
+  
+  mtrw = matrowcnt(IPr);
+  logtext(0,"mtrw " & mtrw);
+  for(i=0;i<mtrw;i=i+1)begin
+    matrowget(IPr,i,IPrw);
+    logtext(0,"IPrw.CredHistItem " & IPrw.CredHistItem & " " & vFutFeesSums[IPrw.CredHistItem]);
+    if(nonblank(IPrw.CredHistItem))then begin
+      if(vFutFeesSums[IPrw.CredHistItem]>0)then begin
+        if(vFutFeesSums[IPrw.CredHistItem]!=IPrw.RecVal)then begin
+          IPrw.RecVal = vFutFeesSums[IPrw.CredHistItem];
+          MatRowPut(IPr,i,IPrw);
+          IPVc_PasteRecVal(IPr,i);
+          IPSumup(IPr);
+        end;
+      end else begin
+        if(vToBal[IPrw.CredHistItem]>0)then begin
+          if(vToBal[IPrw.CredHistItem]!=IPrw.RecVal)then begin
+            IPrw.RecVal = vToBal[IPrw.CredHistItem];
+            MatRowPut(IPr,i,IPrw);
+            IPVc_PasteRecVal(IPr,i);
+            IPSumup(IPr);
+          end;
+        end else begin
+          matrowdelete(IPr,i);
+          IPSumup(IPr);
+          mtrw = mtrw - 1;
+          i = i - 1;
+        end;
+      end;
+    end;
+  end;
+  mtrw = matrowcnt(IPr);
+  if(mtrw>0)then begin
+    logtext(0,"recordinsert " & IPr.SerNr);
+    recordinsert(IPr,true);
+    recordcopy(oldIPr,IPr);
+    IPr.OKFlag = 1;
+    recordupdate(oldIPr,IPr,true);
+  end;
+  
+  
+return;
+end;
+
+
+global updating procedure AgrChangeCloseOldInvoices(record RcVc RepSpec,record CredManVc CredManr,Date todate,record ORVc ORr,string itemsclass,var vector val nocreditsum)
+begin
+  record IVVc IVr,setIVr,oldIVCreditr,IVCreditr;
+  row IVVc IVrw,IV2rw;
+  integer i,rwcnt,rwcnt2,j,mtrw;
+  boolean TrHs,testf,isfullpayed,creditanyvay;
+  record ARVc ARr;
+  integer credflag;
+  record CredHistVc CredHistr,CredHist2r;
+  boolean TrHs2,foundf,proceedinv,isoldinvoice;
+  record INVc INr;
+  string 255 tstr,itemtocredit,futurefeesitems;
+  string 20 demandItem,insurItem,prematureItem,intItem,feesItem,princItem;
+  val t,tt,tot1,tot2,tot3,intcredsum;
+  longint t2,res;
+  date blankd;
+  vector val vFutFeesSums,vToBal,vBlank;
+  array string 20 aFutFeesSums,aToBal;
+  record CredManSetBlock CMb;
+  record CMBuyOutBlock CMBuyOutb;
+  record CMInvoicingBlock CIb;
+    
+  logforadmin(0,"========AgrChangeCloseOldInvoices");
+  blockload(CMb);
+  blockload(CMBuyOutb);
+  blockload(CIb);
+  
+  //Search all items for work
+  
+  demandItem = CIb.LetterOfDemand;
+  insurItem = CIb.InsuranceCost;
+  prematureItem = CIb.BuyOutItem;
+  intItem = CMb.RateItem;
+  feesItem = CMb.LateRateItem;
+  princItem = CMb.InstalmentItem;
+  if(nonblank(itemsclass))then begin
+    futurefeesitems = "";
+    
+    while(loopmain(INr,1,true))begin
+      if(setinset(itemsclass,INr.DispGroups))then begin
+        futurefeesitems = futurefeesitems & INr.Code & ","; 
+      end;
+    end;
+  end;
+  logforadmin(0,"futurefeesitems " & futurefeesitems);
+  logforadmin(0,"demandItem " & demandItem);
+  logforadmin(0,"insurItem " & insurItem);
+  logforadmin(0,"prematureItem " & prematureItem);
+  logforadmin(0,"intItem " & intItem);
+  logforadmin(0,"feesItem " & feesItem);
+  logforadmin(0,"princItem " & princItem);
+
+  //Search all Open Invoices
+  
+  logtext(0,"Search all Open Invoices");
+  
+  IVr.CustCode = CredManr.CustCode;
+  TrHs = true;
+  while(loopkey("CustCode",IVr,1,TrHs))begin
+    
+    testf = true;
+    if(IVr.CustCode!=CredManr.CustCode)then begin TrHs = false; testf = false; end;
+    if(IVr.CustCredManNr!=CredManr.SerNr)then begin testf = false; end;
+    if(IVr.OKFlag==0)then begin testf = false; end;
+    if(IVr.Invalid==1)then begin testf = false; end;
+    if(IVr.InvType==kInvoiceTypeCredit)then begin testf = false; end;
+    if(IVr.CredFromDate>todate)then begin testf = false; end;
+    if(blankdate(IVr.CredToDate))then begin testf = false; end;
+   
+    if(CMBuyOutb.DoNotCreditlastDayInvoices==1)then begin
+      if(IVr.PayDate==todate)then begin
+        testf = false;
+      end;
+    end;
+    
+    if(testf)then begin
+      ARr.InvoiceNr = IVr.SerNr;
+      if(!readfirstmain(ARr,1,true))then begin
+        testf = false;
+      end;
+    end;
+    
+    if(testf)then begin 
+      isoldinvoice = false;
+           
+      logforadmin(0,"IVr.CredFromDate " & IVr.CredFromDate);
+      logforadmin(0,"IVr.CredToDate " & IVr.CredToDate);
+      
+      if(IVr.CredToDate<=todate)then begin
+        isoldinvoice = true;
+      end;
+      
+      logforadmin(0,IVr.SerNr & " isoldinvoice " & isoldinvoice);
+      
+      
+      clearvector(vFutFeesSums);
+      clearvector(vToBal);
+      
+      proceedinv = false;
+      rwcnt = matrowcnt(IVr);
+      for(i=0;i<rwcnt;i=i+1)begin
+        matrowget(IVr,i,IVrw);
+        if(IVrw.stp==kInvoiceRowTypeNormal and nonblank(IVrw.ArtCode))then begin
+          resetloop(CredHistr);
+          CredHistr.RecordNr = IVr.SerNr;
+          CredHistr.RecordType = 0;
+          TrHs2 = true;
+          foundf = false;
+          while (LoopKey("RecordNr",CredHistr,2,TrHs2)) begin
+            if ((CredHistr.RecordNr!=IVr.SerNr) or (CredHistr.RecordType!=0)) then begin
+              TrHs2 = false;
+            end;
+            if (TrHs2 and CredHistr.ArtCode==IVrw.ArtCode) then begin
+              foundf = true;
+              t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
+              if(t>0)then begin
+                
+                if(RepSpec.flags[4]==1 or isoldinvoice==false)then begin//Distribute Debts to Future Fees
+                  if(setinset(IVrw.ArtCode,futurefeesitems))then begin
+                    logforadmin(0,IVrw.ArtCode & " future fees " & t);
+                    vFutFeesSums[IVrw.ArtCode] = vFutFeesSums[IVrw.ArtCode] + t;
+                    proceedinv = true;
+                  end;
+                end;
+                
+                if(RepSpec.flags[6]==1 or isoldinvoice==false)then begin//Added to New Balance
+                  if(!setinset(IVrw.ArtCode,futurefeesitems))then begin
+                    vToBal[IVrw.ArtCode] = vToBal[IVrw.ArtCode] + t;
+                    logforadmin(0,IVrw.ArtCode & " to balance " & t);
+                    proceedinv = true;
+                  end;
+                end;
+                if(!setinset(IVrw.ArtCode,futurefeesitems))then begin
+                  nocreditsum[IVrw.ArtCode] = nocreditsum[IVrw.ArtCode] + t;
+                end;
+              end;
+            end;
+          end;
+        end;
+      end;
+      
+      if(proceedinv)then begin
+        logforadmin(0,"Need to reform this invoices " & IVr.SerNr);
+        
+        cleararray(aFutFeesSums);
+        cleararray(aToBal);
+        getvectortags(vFutFeesSums,aFutFeesSums);
+        getvectortags(vToBal,aToBal);
+        
+        for(i=0;i<aFutFeesSums.length;i=i+1)begin
+          logforadmin(0,"Future Fees Item " & aFutFeesSums[i] & " sum " & vFutFeesSums[aFutFeesSums[i]]);
+        end;
+        for(i=0;i<aToBal.length;i=i+1)begin
+          logforadmin(0,"To balance Item " & aToBal[i] & " sum " & vToBal[aToBal[i]]);
+        end;
+        
+        if(isoldinvoice)then begin
+          if(aFutFeesSums.length>0)then begin
+            if(CMBuyOutb.InterestCredOrPay==0)then begin
+              CreditThisInvoiceFutureFees(IVr,vFutFeesSums,vToBal,IVr.CredToDate);//Credit future fees and instaltment
+            end else begin
+              ReconcileThisInvoiceFutureFees(IVr,vFutFeesSums,vBlank,IVr.CredToDate);
+              if(aToBal.length>0)then begin
+                CreditThisInvoiceFutureFees(IVr,vBlank,vToBal,IVr.CredToDate);
+              end;
+            end;
+          end else begin
+            if(aToBal.length>0)then begin
+              CreditThisInvoiceFutureFees(IVr,vBlank,vToBal,IVr.CredToDate);
+            end;
+          end;
+        end else begin
+          if(aFutFeesSums.length>0 or aToBal.length>0)then begin
+            CreditThisInvoiceFutureFees(IVr,vFutFeesSums,vBlank,todate);//Credit future fees and instaltment
+          end;
+        end;
+        
+      end;
+    end;    
+  end;
+  
+  
+return;
+end;
 
 global updating procedure CreditOpenInvoices(record CredManVc CredManr,Date todate,record ORVc ORr,string itemsclass,var vector val nocreditsum)
 begin

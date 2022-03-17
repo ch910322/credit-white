@@ -790,9 +790,12 @@ end;
   CheckBox(h,v+=vs,0,"Prolong only when Prolongation Invoice is paid",flags[3]);
   
   HalPushButton(h,v+=vs,h+120,v+20,"NewPauseCredManWClassRecalculate","Recalculate");
-  v = v+vs;
+  if(currentuser=="EBS")then begin
+    HalPushButton(h+200,v,h+280,v+20,"CMATest","TEST");
+  end;
+  v = v+10;
   HalPushButton(h,v+=vs,h+120,v+20,"NewPauseCredManWClassPause","Register Changes");
-  v = v+vs;
+  v = v+10;
   HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassSendMail","Send e-mail");
   EndWindow;
   
