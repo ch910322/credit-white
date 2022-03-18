@@ -467,6 +467,7 @@ begin
   SetText(0,"Invoice");
   SetText(4,"Buy-out");
   SetText(5,"Payout");
+  SetText(6,"Credit");
   EndSet;
 
   SetBegin(2028);
