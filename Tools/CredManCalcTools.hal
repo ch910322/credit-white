@@ -721,6 +721,7 @@ begin
   return;
 end;
 
+//I'm not proud of this code, but I can't figure other way how to adjust monthly payment better. It's supposed to distribute the end balance diffs to other months equally and extreme cases with high interest and long periods it's difficult
 function val CalculateAnnuityDiff(record CredManVc CredManr,val diff,Integer usemonths)
 begin
   val res;
@@ -754,6 +755,13 @@ begin
   rate = rate/100;
   //rate = 0.0095 vs 0.032 (small vs large)
   res = FIN_PMT(rate, usemonths-1, diff*coef);//0.1 is so that we add/remove more diff by little fraction. Makes it a lot more precise
+  if (AbsoluteVal(res)<0.007) then begin
+    if (res>0) then begin
+      res = 0.007;
+    end else begin
+      res = -0.007;
+    end;    
+  end;
   CalculateAnnuityDiff = res;
   return;
 end;
@@ -907,8 +915,11 @@ begin
             tsum = FIN_PMT(rate, tusemonths, tusesum);
             tint = Round(GetCurMonthInterest(CredManPayPlanr,invdate),SetRoundModeD(2));
             //tsum = tsum - tint;
-            //extra_diff = FIN_PMT(rate, tusemonths-1, (sum - (tsum - tint)));
-            extra_diff = CalculateAnnuityDiff(CredManr,(sum - (tsum - tint)),tusemonths-1);
+            if (tsum-tint<0) then begin
+              extra_diff = CalculateAnnuityDiff(CredManr,sum - (tsum - tint),tusemonths-1);
+            end else begin
+              extra_diff = FIN_PMT(rate, tusemonths-1, (sum - (tsum - tint)));
+            end;  
             //um = Round(tsum + extra_diff,SetRoundModeD(2)) - tint;
             sum = tsum + extra_diff - tint;
           end else begin
