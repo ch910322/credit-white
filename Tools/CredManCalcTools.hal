@@ -287,7 +287,7 @@ begin
 end;
 
 global
-function Boolean TypeAffectsBalance(Integer type)
+function Boolean TypeAffectsBalance2(Integer type,Integer invtype,var val v)
 begin
   Boolean res;
 
@@ -298,9 +298,24 @@ begin
     case kEventTypeCalcDeposit:     res = true;
     case kEventTypePartialBuyout:   res = true;
     case 11:                        res = true;//old partial buyout?
+    case kEventTypePaidInstalment:  
+      if (invtype==3) then begin
+        res = true;
+        v = -v;
+      end;
   end;
   
-  TypeAffectsBalance = res;
+  TypeAffectsBalance2 = res;
+  return;
+end;
+
+global
+function Boolean TypeAffectsBalance(Integer type)
+begin
+  val v;
+  Boolean res;
+
+  TypeAffectsBalance = TypeAffectsBalance2(type,1,v);
   return;
 end;
 
@@ -362,7 +377,7 @@ begin
       end else begin
         CredManPayPlanrw.AcumulatedInt = acumint;
       end;
-      if (TypeAffectsBalance(type)) then begin
+      if (TypeAffectsBalance2(type,invtype,v)) then begin
         CredManPayPlanrw.Bal = calcbal - v;
       end else begin
         CredManPayPlanrw.Bal = calcbal;
@@ -746,7 +761,7 @@ begin
     ratecoef = ratecoef - 1;
   end;
   if (lengthcoef==1) then begin
-    coef = 0.1;//this is default for all loans up to 129 months
+    coef = 10.00/usemonths;//this is default for all loans up to 129 months
   end else begin
     ratecoef = ratecoef - 1;
     tmp = ratecoef + lengthcoef;
@@ -1221,6 +1236,7 @@ begin
   val prevusesum,intpart,delta;
   record CMBuyOutBlock CMBuyOutb;
   record IVVc IVr;
+  Integer invtype;
     
   blockload(CMBuyOutb);
   
@@ -1239,6 +1255,7 @@ begin
  //     if (CredHistr.RecordType==0) then begin
       if (CredHistr.ChargeType!=14 and CredHistr.RecordType!=5 and CredHistr.ChargeType!=17) then begin
         openamount = 0;
+        invtype = 1;
         switch (CredHistr.RecordType) begin
           case 0: 
             type = GetCredHistType(CredHistr.ArtCode,CredHistr.ChargeType,false); 
@@ -1248,13 +1265,16 @@ begin
           otherwise
             PrevCredHistr.SerNr = CredHistr.PreviousNr;
             ReadFirstMain(PrevCredHistr,1,true);
-            type = GetCredHistType(PrevCredHistr.ArtCode,-1,true);          
+            type = GetCredHistType(PrevCredHistr.ArtCode,-1,true); 
+            if (CredHistr.RecordType==3 and type==kEventTypePaidInstalment) then begin
+              invtype = 3;
+            end;         
         end;
         if (IsPartialBuyoutType(CredHistr.ChargeType) and ((CredHistr.TransDate>lastinvdate or blank(lastinvdate)) and planf)) then begin
           goto LAddActualsToPlan_Next;
         end;
-        AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,CredHistr.ArtCode,"",type,CredHistr.Sum,0,acumint,calcbal,CredHistr.CredFromDate,CredHistr.CredToDate,CredHistr.SerNr,-1,openamount);
-        if (IsPartialBuyoutType(CredHistr.ChargeType)) then begin
+        AddCredPayPlanLine2(CredManPayPlanr,CredHistr.TransDate,CredHistr.ArtCode,"",type,CredHistr.Sum,0,acumint,calcbal,CredHistr.CredFromDate,CredHistr.CredToDate,CredHistr.SerNr,-1,openamount,invtype);
+        if (IsPartialBuyoutType(CredHistr.ChargeType) or invtype==3) then begin
           prevusesum = usesum;
           usesum = calcbal;
         end;
@@ -1303,10 +1323,8 @@ begin
               delta = CredHistr.Sum - delta;
               addinterestval[months-1] = intpart + delta;
             end else begin
-              addinterestval[months-1] = addinterestval[months] + CredHistr.Sum;
+              addinterestval[months-1] = addinterestval[months-1] + CredHistr.Sum;
             end;
-          end else begin
-            logtext(0,"usesum " & usesum);
           end;
         end;
       end;
@@ -1315,6 +1333,7 @@ begin
         AddCredPayPlanLine(CredManPayPlanr,CredHistr.TransDate,"","",kEventTypePayout,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,-1,openamount);
         prevusesum = usesum;
         usesum = calcbal;
+        usemonths = months - (MonthDiff(CredManr.FirstInvDate,CredHistr.TransDate)+1);
       end;
     end;
 LAddActualsToPlan_Next:;

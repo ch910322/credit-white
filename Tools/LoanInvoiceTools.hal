@@ -2605,7 +2605,7 @@ begin
 */
     if(nonblank(princItem))then begin
       if(nocreditsum[princItem]>0)then begin
-        
+        /* we don't need manual entries for principal or interest
         tmpCredManr.InvSum4 = nocreditsum[princItem];
         tmpCredManr.DepositSum = blankval;
         tmpCredManr.ExtraDepositSum = blankval;
@@ -2618,6 +2618,7 @@ begin
         spec = spec  & " " & invdate & ":" & todate;
         SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,newint,blankval,kEventTypeCalcInterest,-1);
         spec = "";
+        */
 
         /*logtext(0,"nocreditsum[princItem] " & nocreditsum[princItem]);
         GetItemName(princItem,spec);
