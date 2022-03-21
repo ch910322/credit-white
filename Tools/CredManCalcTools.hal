@@ -2103,7 +2103,7 @@ lStepBack:;
           end;
         case 3://Bullet
           AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype,invdat,acumint,calcbal,frdat,todat,-1,false);
-          AddInterest2(inCredManr,CredManPayPlanr,CredManSetb,monthtype,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1,false,ChangeORr);
+          AddInterest2(inCredManr,CredManPayPlanr,CredManSetb,kMonthTypeLast,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1,false,ChangeORr);
           AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,addbal,int_frdat,int_todat,-1,false,int_type);
           if (int_type==2) then begin
             AddUnusedInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1,false);
