@@ -1263,7 +1263,7 @@ begin
   RepSpec.AccStr = ORr.DownPaySent;
   RepSpec.Notation = ORr.InvMark;
   RepSpec.TransStr = ORr.Sum2;
-  if(RepSpec.flags[6]==1)then begin
+  if(RepSpec.sm1==1)then begin
     RepSpec.f5 = ORr.Sum2 - ORr.CustVal01;//"Added to New Balance"
   end else begin
     RepSpec.f5 = blankval;
@@ -1284,7 +1284,7 @@ begin
     newbal = ORr.BaseSum4;
   end else begin
     newbal = ORr.BaseSum4 + RepSpec.vals4;
-    if(RepSpec.flags[6]==1)then begin
+    if(RepSpec.sm1==1)then begin
       newbal = newbal + (ORr.Sum2 - ORr.CustVal01);
     end;
     if(RepSpec.Custf==1)then begin//Revert flag value - if ticked!!!
@@ -1355,7 +1355,7 @@ begin
         RepSpec.long1 = CredManr.SerNr;
         RepSpec.Notation = 1; 
         RepSpec.flags[5] = 1;
-        RepSpec.flags[6] = 1;
+        RepSpec.sm1 = 1;
         RepSpec.flags[4] = CMBOb.DebtsToFutureFees;
         calcPauseData(CredManr,RepSpec);     
         OpenWindow("NewPauseCredManWClass",0,wn,"","",RepSpec);
@@ -4178,6 +4178,33 @@ begin
   NewPauseCredManWClassd1EFAfter = true;
 return;
 end;
+
+global
+function boolean NewPauseCredManWClasssm1ButtonAction(Integer wn,Integer value)
+begin
+  record RcVc RepSpec,RepSpec1;
+  integer mwn;
+  record CredManVc CredManr;
+  date tmpdate;
+  
+  getwindowrecord(wn,RepSpec);  
+  recordcopy(RepSpec1,RepSpec);
+  if(RepSpec1.sm1==0)then begin
+    RepSpec1.sm1 = 1;
+  end else begin
+    RepSpec1.sm1 = 0;
+  end;
+  mwn = motherwindow(wn);
+  getwindowrecord(mwn,CredManr);
+  calcPauseData(CredManr,RepSpec1);
+  RepSpec.f8 = RepSpec1.f8;
+  RepSpec.f5 = RepSpec1.f5;
+  putwindowrecord(wn,RepSpec);
+  
+  NewPauseCredManWClasssm1ButtonAction = true;
+return;
+end;
+
 
 function boolean recalcPause(integer wn,integer changed)
 begin

@@ -3337,7 +3337,7 @@ begin
                   end;
                 end;
                 
-                if(RepSpec.flags[6]==1 or isoldinvoice==false)then begin//Added to New Balance
+                if(RepSpec.sm1==1 or isoldinvoice==false)then begin//Added to New Balance
                   if(!setinset(IVrw.ArtCode,futurefeesitems))then begin
                     vToBal[IVrw.ArtCode] = vToBal[IVrw.ArtCode] + t;
                     logforadmin(0,IVrw.ArtCode & " to balance " & t);

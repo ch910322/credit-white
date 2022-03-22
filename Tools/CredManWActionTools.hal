@@ -607,7 +607,7 @@ begin
       end;
       CredManSetDatesCust(CredManr,false);
       if (addval>0) then begin
-        if(RepSpec.flags[6]==1)then begin
+        if(RepSpec.sm1==1)then begin
           addval = addval + stringtoval(RepSpec.f5,m4val);
         end;
         GenerateAgreementSchedule(CredManr,true,true);
@@ -730,7 +730,7 @@ begin
       CredManSetDatesCust(CredManr,false);
       if (addval>0) then begin
         payval = addval;
-        if(RepSpec.flags[6]==1)then begin
+        if(RepSpec.sm1==1)then begin
           addval = addval + stringtoval(RepSpec.f5,m4val);
         end;
         if(RepSpec.flags[5]==1)then begin
