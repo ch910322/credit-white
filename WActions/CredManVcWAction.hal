@@ -1292,7 +1292,7 @@ begin
     end;
   end;
   RepSpec.f12 = ORr.FrPrice;
-  if(RepSpec.flags[5]==1)then begin
+  if(RepSpec.ArtMode==1)then begin
     newbal = newbal + ORr.FrPrice;
   end;
   RepSpec.f8 = newbal;
@@ -1354,7 +1354,7 @@ begin
         RepSpec.d1 = td;
         RepSpec.long1 = CredManr.SerNr;
         RepSpec.Notation = 1; 
-        RepSpec.flags[5] = 1;
+        RepSpec.ArtMode = 1;
         RepSpec.sm1 = 1;
         RepSpec.flags[4] = CMBOb.DebtsToFutureFees;
         calcPauseData(CredManr,RepSpec);     
@@ -4188,6 +4188,7 @@ begin
   date tmpdate;
   
   getwindowrecord(wn,RepSpec);  
+  deselectwindow(wn,true); 
   recordcopy(RepSpec1,RepSpec);
   if(RepSpec1.sm1==0)then begin
     RepSpec1.sm1 = 1;
@@ -4202,6 +4203,33 @@ begin
   putwindowrecord(wn,RepSpec);
   
   NewPauseCredManWClasssm1ButtonAction = true;
+return;
+end;
+
+global
+function boolean NewPauseCredManWClassArtModeButtonAction(Integer wn,Integer value)
+begin
+  record RcVc RepSpec,RepSpec1;
+  integer mwn;
+  record CredManVc CredManr;
+  date tmpdate;
+  
+  getwindowrecord(wn,RepSpec); 
+  deselectwindow(wn,true); 
+  recordcopy(RepSpec1,RepSpec);
+  if(RepSpec1.ArtMode==0)then begin
+    RepSpec1.ArtMode = 1;
+  end else begin
+    RepSpec1.ArtMode = 0;
+  end;
+  mwn = motherwindow(wn);
+  getwindowrecord(mwn,CredManr);
+  calcPauseData(CredManr,RepSpec1);
+  RepSpec.f8 = RepSpec1.f8;
+  RepSpec.f5 = RepSpec1.f5;
+  putwindowrecord(wn,RepSpec);
+  
+  NewPauseCredManWClassArtModeButtonAction = true;
 return;
 end;
 

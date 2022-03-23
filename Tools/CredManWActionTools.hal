@@ -733,7 +733,7 @@ begin
         if(RepSpec.sm1==1)then begin
           addval = addval + stringtoval(RepSpec.f5,m4val);
         end;
-        if(RepSpec.flags[5]==1)then begin
+        if(RepSpec.ArtMode==1)then begin
           addval = addval + stringtoval(RepSpec.f12,m4val);
         end;
         
