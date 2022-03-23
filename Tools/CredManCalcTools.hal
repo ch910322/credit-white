@@ -1169,7 +1169,7 @@ begin
   
   IVr.CredInv = CredHistr.RecordNr;
   if (ReadFirstKey("CredInv",IVr,1,true)) then begin
-    if (IVr.IsChangeAgrInvoice==1) then begin
+    if (IVr.IsChangeAgrInvoice==2) then begin
       res = true;
     end;
   end;
