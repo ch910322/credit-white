@@ -3069,7 +3069,7 @@ return;
 end;
 
 
-global updating procedure CreditThisInvoiceFutureFees(record IVVc IVr,vector val vFutFeesSums,vector val vToBal,date todate)
+global updating procedure CreditThisInvoiceFutureFees(record IVVc IVr,vector val vFutFeesSums,vector val vToBal,date todate,integer changeinvtype)
 begin
   array string 20 aFutFeesSums;
   record IVVc setIVr,oldIVCreditr,IVCreditr;
@@ -3079,7 +3079,6 @@ begin
   
   
   res = CreateCreditNoteIV(IVr,kInvoiceTypeCredit,IVCreditr,"",false);
-  IVCreditr.IsChangeAgrInvoice = 1;
   if(IVCreditr.PayDate<IVCreditr.InvDate)then begin
     IVCreditr.PayDate = IVCreditr.InvDate;
   end;
@@ -3087,6 +3086,7 @@ begin
   logforadmin(0,"res " & res & " cred SerNr " & IVCreditr.SerNr);
   if (res==0) then begin
     IVCreditr.SerNr = NextSerNr("IVVc",IVCreditr.InvDate,-1,false,"");
+    IVCreditr.IsChangeAgrInvoice = changeinvtype;
     RecordInsert(IVCreditr,true);
     if(IVCreditr.SerNr>-1)then begin
       recordcopy(oldIVCreditr,IVCreditr);
@@ -3371,21 +3371,21 @@ begin
         if(isoldinvoice)then begin
           if(aFutFeesSums.length>0)then begin
             if(CMBuyOutb.InterestCredOrPay==0)then begin
-              CreditThisInvoiceFutureFees(IVr,vFutFeesSums,vToBal,IVr.CredToDate);//Credit future fees and instaltment
+              CreditThisInvoiceFutureFees(IVr,vFutFeesSums,vToBal,IVr.CredToDate,1);//Credit future fees and instaltment
             end else begin
               ReconcileThisInvoiceFutureFees(IVr,vFutFeesSums,vBlank,IVr.CredToDate);
               if(aToBal.length>0)then begin
-                CreditThisInvoiceFutureFees(IVr,vBlank,vToBal,IVr.CredToDate);
+                CreditThisInvoiceFutureFees(IVr,vBlank,vToBal,IVr.CredToDate,1);
               end;
             end;
           end else begin
             if(aToBal.length>0)then begin
-              CreditThisInvoiceFutureFees(IVr,vBlank,vToBal,IVr.CredToDate);
+              CreditThisInvoiceFutureFees(IVr,vBlank,vToBal,IVr.CredToDate,1);
             end;
           end;
         end else begin
           if(aFutFeesSums.length>0 or aToBal.length>0)then begin
-            CreditThisInvoiceFutureFees(IVr,vFutFeesSums,vBlank,todate);//Credit future fees and instaltment
+            CreditThisInvoiceFutureFees(IVr,vFutFeesSums,vBlank,todate,2);//Credit future fees and instaltment
           end;
         end;
         
