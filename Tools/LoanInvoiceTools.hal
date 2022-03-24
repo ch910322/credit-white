@@ -3086,6 +3086,7 @@ begin
   if (res==0) then begin
     IVCreditr.SerNr = NextSerNr("IVVc",IVCreditr.InvDate,-1,false,"");
     IVCreditr.IsChangeAgrInvoice = changeinvtype;
+    logtext(0,"Generated sernr " & IVCreditr.SerNr);
     RecordInsert(IVCreditr,true);
     if(IVCreditr.SerNr>-1)then begin
       recordcopy(oldIVCreditr,IVCreditr);

@@ -1498,12 +1498,14 @@ begin
   return;
 end;
 
-procedure LoadAgreementChangesToDate(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,Integer calculatedmonths,var Boolean prolongf,var Integer prolongstartmonths,var val prolongbal,var Integer months,var Integer usemonths,var val usesum,var Integer pausestartmonths,var Boolean waspausedf,var Date pausefrom,var Date pauseuntil,var Integer pausemonths,var val refinfees,var integer futfeesmonths,var boolean foundf,var date chdate)
+procedure LoadAgreementChangesToDate(record CredManVc CredManr,record CredManPayPlanVc CredManPayPlanr,Integer calculatedmonths,var Boolean prolongf,var Integer prolongstartmonths,var val prolongbal,var Integer months,var Integer usemonths,var val usesum,var Integer pausestartmonths,var Boolean waspausedf,var Date pausefrom,var Date pauseuntil,var Integer pausemonths,var boolean foundf,var date chdate,var vector val voneperfees)
 begin
   Date sd,ed;
   record CredManChangeVc Changer;
   Boolean TrHs;
   record CredManTypeVc CMTr;
+  integer i;
+  val tmpfee;
     
   sd = CredManr.startDate;
   ed = AddMonth(CredManr.FirstInvDate,calculatedmonths-1);
@@ -1511,7 +1513,7 @@ begin
   Changer.CredManNr = CredManr.SerNr;
   Changer.TransDate = sd;
   TrHs = true;
-  
+    
   while (LoopKey("CredManDate",Changer,2,TrHs)) begin
     if (CredManr.SerNr!=Changer.CredManNr or Changer.TransDate>ed) then begin
       TrHs = false;
@@ -1547,8 +1549,27 @@ begin
         end;
         
         
-        refinfees = Changer.FutureFees;
-        futfeesmonths = Changer.AddedFeesMonths;
+        //refinfees = Changer.FutureFees;
+        //futfeesmonths = Changer.AddedFeesMonths;
+        tmpfee = blankval;
+        if(voneperfees["ch" & Changer.SerNr]==0)then begin
+          voneperfees["ch" & Changer.SerNr] = 1;
+          if(Changer.AddedFeesMonths<=months)then begin
+            if(Changer.FutureFees>0 and  Changer.AddedFeesMonths!=0)then begin
+              for(i=0;i<Changer.AddedFeesMonths;i=i+1)begin
+          
+                voneperfees[months-i] = voneperfees[months-i] + round(Changer.FutureFees/Changer.AddedFeesMonths,defaultcurroundoff);
+                tmpfee = tmpfee + round(Changer.FutureFees/Changer.AddedFeesMonths,defaultcurroundoff);
+              end;
+              if(tmpfee!=Changer.FutureFees)then begin
+                voneperfees[months] = voneperfees[months] + (Changer.FutureFees-tmpfee);
+              end;
+            
+            end;
+          end;
+        end;
+        
+        
         if(Changer.IntRate!=blankval or Changer.AddValue!=0)then begin
           foundf = true;
           chdate = Changer.TransDate;
@@ -1669,12 +1690,14 @@ begin
   return;
 end;
 
-procedure LoadAgreementChangesMonthly(record CredManVc CredManr,Date invdat,var val refinfees,var integer futfeesmonths,var boolean foundf,var date chdate,var record ORVc ChangeORr)
+procedure LoadAgreementChangesMonthly(record CredManVc CredManr,Date invdat,var boolean foundf,var date chdate,var record ORVc ChangeORr,var vector val voneperfees,Integer calculatedmonths,Integer months,Integer usemonths)
 begin
   Date sd,ed;
   record CredManChangeVc Changer;
   Boolean TrHs;
   record CredManTypeVc CMTr;
+  integer i;
+  val tmpfee;
     
   sd = AddMonth(invdat,-1);
   ed = invdat;
@@ -1708,9 +1731,28 @@ begin
         if (Changer.MonthlyPaymentDay>0) then begin
           CredManr.MonthlyPaymentDay = Changer.MonthlyPaymentDay;
         end;
+                
+        //Changer.FutureFees;
+        //Changer.AddedFeesMonths;
+        tmpfee = blankval;
+        if(voneperfees["ch" & Changer.SerNr]==0)then begin
+          voneperfees["ch" & Changer.SerNr] = 1;
+          if(Changer.AddedFeesMonths<=months)then begin
+            if(Changer.FutureFees>0 and  Changer.AddedFeesMonths!=0)then begin
+              for(i=0;i<Changer.AddedFeesMonths;i=i+1)begin
+          
+                voneperfees[months-i] = voneperfees[months-i] + round(Changer.FutureFees/Changer.AddedFeesMonths,defaultcurroundoff);
+                tmpfee = tmpfee + round(Changer.FutureFees/Changer.AddedFeesMonths,defaultcurroundoff);
+              end;
+              if(tmpfee!=Changer.FutureFees)then begin
+                voneperfees[months] = voneperfees[months] + (Changer.FutureFees-tmpfee);
+              end;
+            
+            end;
+          end;
+        end;
         
-        refinfees = Changer.FutureFees;
-        futfeesmonths = Changer.AddedFeesMonths;
+        
         if(Changer.IntRate!=blankval or Changer.AddValue!=0)then begin
           foundf = true;
           chdate = Changer.TransDate;
@@ -1926,7 +1968,7 @@ begin
   Date payoutdate,chdate;
   val futfees,oneperfees,lastdelta,acumint1,calcbal1;
   record CMBuyOutBlock CMBuyOutb;
-  vector val addinterestval;
+  vector val addinterestval,voneperfees;
   record ORVc ChangeORr;
   
   blockload(CMBuyOutb);
@@ -1974,30 +2016,18 @@ LCalcSchedule:;
 
   basemonths = usemonths;
   substractmonths = delaymonths;
-  LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths,futfees,futfeesmonths,foundf,chdate);
+  LoadAgreementChangesToDate(inCredManr,CredManPayPlanr,calculatedmonths,prolongf,prolongstartmonths,prolongbal,months,usemonths,usesum,pausestartmonths,waspausedf,pausefrom,pauseuntil,pausemonths,foundf,chdate,voneperfees);
   
   for(i=calculatedmonths;i<months;i=i+1) begin
     if (calcbal>0 or int_type==2) then begin
       
       CalcCredManCurrentPeriod(inCredManr,CIb,i-1,payoutdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates, frdat, todat and invdat
       RecordClear(ChangeORr);
-      LoadAgreementChangesMonthly(inCredManr,invdat,futfees,futfeesmonths,foundf,chdate,ChangeORr);
+      LoadAgreementChangesMonthly(inCredManr,invdat,foundf,chdate,ChangeORr,voneperfees,calculatedmonths,months,usemonths);
 lStepBack:;
 
       if(CMBuyOutb.UseRedesignedByuOut==1)then begin
-        if(futfees!=0)then begin
-          oneperfees = round(futfees/futfeesmonths,defaultcurroundoff);
-          lastdelta = futfees - oneperfees * futfeesmonths;          
-          futfees = blankval;
-        end;
-        if(oneperfees!=0 and lastdelta!=0 and i==months-1)then begin
-          oneperfees = oneperfees + lastdelta;
-        end;
-
-        if(foundf)then begin
-          //frdat = chdate;
-          //int_frdat = chdate;
-        end;
+        oneperfees = voneperfees[i+1];
       end;
       
       UpdateAgreementBalance(CredManPayPlanr,inCredManr,calcbal,acumint,frdat,todat,usesum,usemonths,months,int_type,addbal,payoutdate,i,ChangeORr);

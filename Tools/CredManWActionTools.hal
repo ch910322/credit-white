@@ -733,9 +733,9 @@ begin
         if(RepSpec.sm1==1)then begin
           addval = addval + stringtoval(RepSpec.f5,m4val);
         end;
-        if(RepSpec.ArtMode==1)then begin
+        /*if(RepSpec.ArtMode==1)then begin  //Disabled: not invoiced overdues go to future fees
           addval = addval + stringtoval(RepSpec.f12,m4val);
-        end;
+        end;*/
         
         getvectortags(nocreditsum,anocreditsum);
         for(i=0;i<anocreditsum.length;i=i+1)begin

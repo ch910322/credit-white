@@ -1274,9 +1274,14 @@ begin
   
   if(RepSpec.flags[4]==1)then begin
     RepSpec.f6 = ORr.CustVal01;
+    if(RepSpec.ArtMode==1)then begin
+      RepSpec.f6 = ORr.CustVal01 + ORr.FrPrice;
+    end;
   end else begin
     RepSpec.f6 = blankval;
   end;
+  
+  
   
   RepSpec.f7 = ORr.PrepaidAmount;//prepayments
   
@@ -1292,9 +1297,7 @@ begin
     end;
   end;
   RepSpec.f12 = ORr.FrPrice;
-  if(RepSpec.ArtMode==1)then begin
-    newbal = newbal + ORr.FrPrice;
-  end;
+  
   RepSpec.f8 = newbal;
   RepSpec.wholemonthf = CalcMonthsBetween(RepSpec.d1,CredManr.endDate);
   if(nonblank(RepSpec.FirstAcc))then begin
@@ -4227,6 +4230,7 @@ begin
   calcPauseData(CredManr,RepSpec1);
   RepSpec.f8 = RepSpec1.f8;
   RepSpec.f5 = RepSpec1.f5;
+  RepSpec.f6 = RepSpec1.f6;
   putwindowrecord(wn,RepSpec);
   
   NewPauseCredManWClassArtModeButtonAction = true;
