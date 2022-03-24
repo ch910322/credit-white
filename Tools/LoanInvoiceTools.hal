@@ -3079,11 +3079,10 @@ begin
   
   
   res = CreateCreditNoteIV(IVr,kInvoiceTypeCredit,IVCreditr,"",false);
-  if(IVCreditr.PayDate<IVCreditr.InvDate)then begin
-    IVCreditr.PayDate = IVCreditr.InvDate;
-  end;
   IVCreditr.InvDate = todate;
-  logforadmin(0,"res " & res & " cred SerNr " & IVCreditr.SerNr);
+  IVCreditr.TransDate = IVCreditr.InvDate;
+  IVCreditr.PayDate = IVCreditr.InvDate;
+  logforadmin(0,"res " & res & " cred SerNr " & IVCreditr.SerNr & " IVCreditr.InvDate " & IVCreditr.InvDate);
   if (res==0) then begin
     IVCreditr.SerNr = NextSerNr("IVVc",IVCreditr.InvDate,-1,false,"");
     IVCreditr.IsChangeAgrInvoice = changeinvtype;
