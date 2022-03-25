@@ -2673,7 +2673,7 @@ begin
     if (blank(spec)) then begin
       GetItemName(CIb.ProlongItem,spec);
     end;
-    SetupInvoiceRowAndAdd(CredManr,IVr,CIb.ProlongItem,spec,1,sum,blankval,14,-1);//14 - is Prolong fee item type; see to MapChargeTypes()
+    SetupInvoiceRowAndAdd(CredManr,IVr,CIb.ProlongItem,spec,1,sum,blankval,14,-1);//14  - is Prolong fee item type; see to MapChargeTypes()
   end;
   CM_AddPrepayments(IVr,CredManr,CIb);
   
