@@ -4479,8 +4479,8 @@ begin
 	RadioButton(h,v+=16,2,0,"From Credit Agreement",FactOrFixedDaysBO);
   
   CheckBox(h,v+=20,0,"Calculate Interest for Buy-Out Day",CalcIntBOday);
-  CheckBox(h,v+=20,0,"Calculate Overdues for Buy-Out Day",CalcOvdBOday); 
   CheckBox(h,v+=20,0,"Calculate Interest for Change Day",CalcIntChangeDay);
+  CheckBox(h,v+=20,0,"Calculate Overdues for Buy-Out Day",CalcOvdBOday); 
   CheckBox(h,v+=20,0,"Calculate Overdues for Change Day",CalcOvdChangeDay);  
   CheckBox(h,v+=20,0,"Invoice future fees",InvFutFees);
   CheckBox(h,v+=20,0,"Do Not Credit Last Day Invoices",DoNotCreditlastDayInvoices);

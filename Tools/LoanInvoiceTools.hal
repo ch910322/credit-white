@@ -4588,7 +4588,7 @@ begin
   date todate;
   transaction boolean gBuyOutProcess;
   transaction boolean gChangeProcess;
-  boolean daysinmonth30;
+  boolean daysinmonth30,inclday;
   record CMApplicationSetBlock CMASb;
   date fissd,fised;
   
@@ -4597,10 +4597,6 @@ begin
   blockload(CMBOb);
   
   daysinmonth30 = GetAgreementChangeDaysType(CredManr);
-
-  if(!gChangeProcess)then begin
-    gBuyOutProcess = true;
-  end;
   
   CSr.CredManNr = CredManr.SerNr;
   if(readfirstmain(CSr,1,true))then begin
@@ -4623,23 +4619,28 @@ begin
         
         if(dateinrange(inputtodate,CSrw.FromDate,CSrw.ToDate))then begin
           todate = inputtodate;
+          inclday = false;
           if(gBuyOutProcess)then begin
-            if(CMBOb.CalcIntBOday==0)then begin
-              todate = addday(inputtodate,-1);
-            end else begin
-
+            if(CMBOb.CalcIntBOday==1)then begin
+              inclday = true;
             end;
           end;
           if(gChangeProcess)then begin
-            if(CMBOb.CalcIntChangeDay==0)then begin
-              todate = addday(inputtodate,-1);
-            end else begin
-
+            if(CMBOb.CalcIntChangeDay==1)then begin
+              inclday = true;
             end;
           end;
+          
+          
 
           fullperiod = datediff(CSrw.ToDate,CSrw.FromDate)+1;
           if(CSrw.Invoiced==0)then begin
+            if(inclday==false)then begin
+              todate = addday(inputtodate,-1);
+            end;
+            
+            
+            
             if(daysinmonth30)then begin
               vvals1["CURRPERIODINTEREST"] = vvals1["CURRPERIODINTEREST"] + round(CSrw.Interest * (datediff(todate,CSrw.FromDate)+1) / 30,defaultcurroundoff);
             end else begin
@@ -4648,7 +4649,7 @@ begin
             //logforadmin(0,CSrw.Interest & " vvals1[\"CURRPERIODINTEREST\"] " & vvals1["CURRPERIODINTEREST"]);
           end else begin
             todate = inputtodate;
-            if(CMBOb.CalcIntBOday==1)then begin
+            if(inclday)then begin
               todate = addday(todate,1);
               y = datediff(todate,CSrw.FromDate);
             end else begin
@@ -4658,11 +4659,11 @@ begin
             logforadmin(0,"CSrw.ToDate " & CSrw.ToDate & " CSrw.FromDate " & CSrw.FromDate);
             
             
-            if(CMBOb.CalcIntBOday==0)then begin
-              spenddays = datediff(inputtodate,CSrw.FromDate)-1;
+            if(inclday)then begin
+              spenddays = datediff(inputtodate,CSrw.FromDate);
               leftdays = fullperiod - spenddays;
             end else begin
-              spenddays = datediff(inputtodate,CSrw.FromDate);
+              spenddays = datediff(inputtodate,CSrw.FromDate)-1;
               leftdays = fullperiod - spenddays;
             end;
             
