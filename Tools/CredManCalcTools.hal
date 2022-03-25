@@ -1253,6 +1253,9 @@ begin
       TrHs = false;
     end else begin
  //     if (CredHistr.RecordType==0) then begin
+      if (CredHistr.ChargeType==14) then begin
+        AddCredPayPlanLine2(CredManPayPlanr,CredHistr.TransDate,CredHistr.ArtCode,"",kEventTypeIssueFees,CredHistr.Sum,0,acumint,calcbal,"","",CredHistr.SerNr,CredHistr.RecordNr,0,1);
+      end;
       if (CredHistr.ChargeType!=14 and CredHistr.RecordType!=5 and CredHistr.ChargeType!=17) then begin
         openamount = 0;
         invtype = 1;
@@ -1350,7 +1353,7 @@ LAddActualsToPlan_Next:;
 
     //end;
   end;
-
+    
   return;
 end;
 

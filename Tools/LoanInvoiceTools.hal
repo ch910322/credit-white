@@ -5876,7 +5876,6 @@ logtext(0,"GenerateAgreementSchedule1");
       CSrw.InvDate = SMrw.TransDate;
       CSrw.PayDate = SMrw.DueDate;
       CSrw.Type = SMrw.RowSimStat;
-      logtext(0,"CSrw.Type " & CSrw.Type);
       switch (CSrw.Type) begin
         case 4:
           CSrw.Total = SMrw.CurDebVal;

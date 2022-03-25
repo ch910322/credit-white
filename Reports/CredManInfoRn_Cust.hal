@@ -361,6 +361,13 @@ begin
           FMrw.Sum = IVrw.Sum;
           MatRowPut(FMr,MatRowCnt(FMr),FMrw);
           addf = true;
+        case 14: 
+          fees = fees + IVrw.Sum;
+          ClearRow(FMr,FMrw,1);
+          FMrw.ArtCode = IVrw.ArtCode;
+          FMrw.Sum = IVrw.Sum;
+          MatRowPut(FMr,MatRowCnt(FMr),FMrw);
+          addf = true;
 
       end;
     end;
@@ -520,7 +527,7 @@ begin
   vector Boolean vRec;
   Integer int_type;
   row SMVc SMrw,SM2rw,SM3rw;
-
+    
   int_type = GetInterestPaymentType(CredManr);
   if (int_type==2) then begin
     calcbal = 0;
@@ -531,6 +538,7 @@ begin
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
     if (CredManPayPlanrw.PlanType>=5) then begin
+      
       CredHistr.SerNr = CredManPayPlanrw.IssuedNr;
       if (ReadFirstMain(CredHistr,1,true)) then begin
         if ((vRec[CredHistr.RecordType & ":" & CredHistr.RecordNr]==false or CredHistr.RecordType==4 or CredHistr.RecordType==5) and CredManPayPlanrw.PlanType!=9) then begin
