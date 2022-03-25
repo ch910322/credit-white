@@ -2673,7 +2673,7 @@ begin
     if (blank(spec)) then begin
       GetItemName(CIb.ProlongItem,spec);
     end;
-    SetupInvoiceRowAndAdd(CredManr,IVr,CIb.ProlongItem,spec,1,sum,blankval,14,-1);
+    SetupInvoiceRowAndAdd(CredManr,IVr,CIb.ProlongItem,spec,1,sum,blankval,14,-1);//14 - is Prolong fee item type; see to MapChargeTypes()
   end;
   CM_AddPrepayments(IVr,CredManr,CIb);
   
@@ -5016,7 +5016,7 @@ begin
     end;
   end;
   
-  ORr.CustVal02 = Round(CredManr.StdProlongFee + (CredManr.InvSum4 * (CredManr.StdProlongPrc/100)),SetRoundModeD(2));
+  ORr.CustVal02 = Round(CredManr.StdProlongFee + (ORr.BaseSum4 * (CredManr.StdProlongPrc/100)),SetRoundModeD(2));
   
   
   //vcalcval1["CURRPERIODINTEREST"];
@@ -5514,7 +5514,7 @@ begin
   val instalmentSum,princpart,delta,rateItemSum,intpart,intdelta;
   row IVVc IVrw;
   integer counter;
-
+    
   if (IVr.CustCredManNr>0) then begin
     if(IVr.InvType!=kInvoiceRowTypeCredit)then begin
       CSr.CredManNr = IVr.CustCredManNr;
@@ -5828,7 +5828,7 @@ begin
   transaction Boolean gSilenceIVOpenPrepExists;
   Integer int_type;
   
-logforadmin(0,"GenerateAgreementSchedule1");
+logtext(0,"GenerateAgreementSchedule1");
   gSilenceIVOpenPrepExists = true;
   CSr.CredManNr = CredManr.SerNr;
   if (ReadFirstMain(CSr,1,true)) then begin
@@ -5876,6 +5876,7 @@ logforadmin(0,"GenerateAgreementSchedule1");
       CSrw.InvDate = SMrw.TransDate;
       CSrw.PayDate = SMrw.DueDate;
       CSrw.Type = SMrw.RowSimStat;
+      logtext(0,"CSrw.Type " & CSrw.Type);
       switch (CSrw.Type) begin
         case 4:
           CSrw.Total = SMrw.CurDebVal;
