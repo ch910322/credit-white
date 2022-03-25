@@ -1346,6 +1346,9 @@ begin
       messagebox(200311,"");
       goto lPauseCredManDsm;
     end;
+  end else begin
+    messagebox(200311,"");
+    goto lPauseCredManDsm;
   end;
   
   if (WindowState(wn)==Rs_Normal) then begin

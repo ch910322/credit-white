@@ -742,10 +742,12 @@ begin
           //addval = addval + nocreditsum[anocreditsum[i]];//Old Principles already splited for future months
         end;
         
-        payval = addval - payval;
+        
         CreateCredmanPurchaseInvoice(CredManr,0,VIr,addval,true,td);
         //if(payval>0)then begin
-          CM_CreatePaymentOrder(CredManr,VIr,addval);//KSZ 2022-02-13:: EBS said to make full payout
+          CM_CreatePaymentOrder(CredManr,VIr,payval);//Extra val payment//KSZ 2022-02-13:: EBS said to make full payout
+          payval = addval - payval;
+          CM_CreatePaymentOrder(CredManr,VIr,payval);//Add to New Balance part
         //end;
         
         //removing the schedule so that we can create "good-looking" invoices. Otherwise schedule has only totals for interest

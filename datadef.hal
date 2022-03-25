@@ -2458,6 +2458,7 @@ begin
   RecordField(AddedFeesMonths,M4Int,0,0);
   RecordField(RemPrincPart,M4Val,0,0);
   RecordField(ShortRemPrincPart,M4Val,0,0);
+  RecordField(IssueOverdueInv,M4Int,0,0);
   
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);

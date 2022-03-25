@@ -40,6 +40,10 @@ begin
   Changer.AddedFeesMonths = RepSpec.wholemonthf;
   Changer.RemPrincPart = stringtoval(RepSpec.f13,m4val);;
   Changer.ShortRemPrincPart = stringtoval(RepSpec.f14,m4val);
+  if(RepSpec.vals2!=0 or RepSpec.vals4!=0)then begin
+    Changer.IssueOverdueInv = RepSpec.ArtMode;
+  end;
+  
   RecordInsert(Changer,true);
   recordcopy(oldChanger,Changer);
   Changer.OKFlag = okflag;
