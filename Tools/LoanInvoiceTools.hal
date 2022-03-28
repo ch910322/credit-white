@@ -4814,7 +4814,8 @@ begin
   transaction boolean gBuyOutProcess;
   transaction boolean gChangeProcess;
   
-  if(!gChangeProcess)then begin
+  if(gChangeProcess==false)then begin
+    logtext(0,"gChangeProcess is false");
     gBuyOutProcess = true;
   end; 
    
@@ -6552,5 +6553,105 @@ LFindUnpaidCredHist:;
     end;
   end;
 
+return;
+end;
+
+
+
+
+function integer CalcMonthsBetween(date sd, date ed)
+begin
+  integer res;
+  date tmpdate;
+  
+    tmpdate = sd;
+    if(sd<ed)then begin
+      while(tmpdate<ed)begin
+        tmpdate = addmonth(tmpdate,1);
+        res = res + 1;
+      end;
+    end else begin
+      res = 0;
+    end;
+  
+  CalcMonthsBetween = res;
+return;
+end;
+
+global
+procedure calcPauseData(record CredManVc CredManr,var record RcVc RepSpec)
+begin
+  Integer wn;
+  Date td;
+  record CMInvoicingBlock CIb;
+  record ORVc ORr;
+  val newbal;
+  transaction boolean gChangeProcess;
+    
+  gChangeProcess = true;
+  
+  ORr.OrdDate = RepSpec.d1;
+  ORr.InvMark = RepSpec.Notation;
+  CheckBuyOutAgreementOmega(CredManr,ORr,false);
+  RepSpec.ObjStr = ORr.BaseSum4;//"Balance"
+  RepSpec.Stext = ORr.Sum1;
+  RepSpec.FirstAcc = ORr.TotGP;
+  RepSpec.AccStr = ORr.DownPaySent;
+  RepSpec.Notation = ORr.InvMark;
+  RepSpec.TransStr = ORr.Sum2;
+  if(RepSpec.sm1==1)then begin
+    RepSpec.f5 = ORr.Sum2 - ORr.CustVal01;//"Added to New Balance"
+  end else begin
+    RepSpec.f5 = blankval;
+  end;
+  if(blank(RepSpec.f9))then begin
+    RepSpec.f9 = ORr.CustVal02;
+  end;
+  
+  if(RepSpec.flags[4]==1)then begin
+    RepSpec.f6 = ORr.CustVal01;
+    if(RepSpec.ArtMode==1)then begin
+      RepSpec.f6 = ORr.CustVal01 + ORr.FrPrice;
+    end;
+  end else begin
+    RepSpec.f6 = blankval;
+  end;
+  
+  RepSpec.f7 = ORr.PrepaidAmount;//prepayments
+  
+  if(RepSpec.vals3==0 and RepSpec.vals4==0)then begin
+    newbal = ORr.BaseSum4;
+  end else begin
+    newbal = ORr.BaseSum4 + RepSpec.vals4;
+    if(RepSpec.sm1==1)then begin
+      newbal = newbal + (ORr.Sum2 - ORr.CustVal01);
+    end;
+    if(RepSpec.Custf==1)then begin//Revert flag value - if ticked!!!
+      newbal = newbal - ORr.PrepaidAmount;
+    end;
+  end;
+  RepSpec.f12 = ORr.FrPrice;
+  
+  RepSpec.f8 = newbal;
+  RepSpec.wholemonthf = CalcMonthsBetween(RepSpec.d1,CredManr.endDate);
+  if(nonblank(RepSpec.FirstAcc))then begin
+    RepSpec.wholemonthf = RepSpec.wholemonthf - 1;
+  end;
+  RepSpec.flags[2] = 1;
+  
+  RepSpec.flags[1] = 1;
+  if(blank(RepSpec.f2))then begin
+    BlockLoad(CIb);
+    RepSpec.f2 = CIb.FirstInvPayDeal;
+  end;
+  if(blank(RepSpec.f3))then begin
+    RepSpec.f3 = CurrentUser;
+  end;
+  //RepSpec.f4 = "";
+  
+  RepSpec.f13 = ORr.Sum0;
+  RepSpec.f14 = ORr.CustVal06;
+  GetItemName(CIb.ProlongItem,RepSpec.f4);
+  
 return;
 end;
