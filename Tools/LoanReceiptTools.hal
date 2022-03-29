@@ -719,6 +719,7 @@ begin
   array longint ivtomail;
   boolean testf;
   
+  logtext(0,"ReceiptEntryCreateReceipts start");
   
   PrepareIPRecord(SMr,IPr);
   BlockLoad(CMb);
@@ -756,6 +757,7 @@ begin
               SetupOverdueLangCode(IVr,CredManr);
               StoreLoanInvoice(IVr,CredManr);
               ivtomail[ivtomail.length] = IVr.SerNr;
+              logtext(0,"SetupLoanInvoice IVr.SerNr " & IVr.SerNr);
             end;
           end;
         end;
@@ -791,6 +793,7 @@ begin
         RepSpec.f2 = IVr.SerNr;
         RepSpec.flags[3] = 1;
         RepSpec.flags[1] = 1;
+        logtext(0,"ReceiptEntryCreateReceipts IVToMailMn " & i);
         IVToMailMn(RepSpec);
       end;
     end;
@@ -799,7 +802,9 @@ begin
   
 //this is needed for partial buy-out. In that case we will always have only one row/one customer
   totremsum = remsum;
-
+  
+  logtext(0,"ReceiptEntryCreateReceipts end");
+  
   return;
 end;
 
