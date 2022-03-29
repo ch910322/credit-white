@@ -2987,7 +2987,6 @@ begin
         checkIfInvoiceFromAgreement(IVr,vIVItemOpenAmmount)
         for(i=0;i<mtrw;i=i+1)begin
           matrowget(setIVr,i,IVrw);
-          logtext(0,"IVrw.ArtCode " & IVrw.ArtCode & " sum " & vIVItemOpenAmmount[IVrw.ArtCode]);
           IVrw.Price = vIVItemOpenAmmount[IVrw.ArtCode];
           IVrw.Sum = vIVItemOpenAmmount[IVrw.ArtCode];
           if(intcredsum>0 and IVrw.ArtCode==intItem)then begin
@@ -3026,7 +3025,6 @@ begin
             foundf = true;
           end;
         end;
-        logtext(0,"reconcile found " & foundf);
 
         if(foundf)then begin
           recordnew(IPr);
@@ -3036,22 +3034,17 @@ begin
           IPr.OKFlag = 0;
           IPr.PayMode = CIb.PaymentMode;
           IPPastePayMode(IPr);
-          
-          logtext(0,"IPPastePayMode");
-          
+                    
           ClearRow(IPr,IPrw,1);
           IPrw.InvoiceNr = IVr.SerNr;
-          logtext(0,"IVr.SerNr " & IVr.SerNr);
           MatRowPut(IPr,0,IPrw);
           PasteInvIn2IPr(IPr,0,IPr.TransDate,chk,false,installmentf);
           DistributeCredHistValues(IPr,0);
           
           
           mtrw = matrowcnt(IPr);
-          logtext(0,"mtrw " & mtrw);
           for(i=0;i<mtrw;i=i+1)begin
             matrowget(IPr,i,IPrw);
-            logtext(0,"IPrw.CredHistItem " & IPrw.CredHistItem & " " & vItemsToPay[IPrw.CredHistItem]);
             if(nonblank(IPrw.CredHistItem))then begin
               if(vItemsToPay[IPrw.CredHistItem]>0)then begin
                 if(vItemsToPay[IPrw.CredHistItem]!=IPrw.RecVal)then begin
@@ -3069,7 +3062,6 @@ begin
           end;
           mtrw = matrowcnt(IPr);
           if(mtrw>0)then begin
-            logtext(0,"recordinsert " & IPr.SerNr);
             recordinsert(IPr,true);
             recordcopy(oldIPr,IPr);
             IPr.OKFlag = 1;
@@ -3105,7 +3097,6 @@ begin
     if (res==0) then begin
       IVCreditr.SerNr = NextSerNr("IVVc",IVCreditr.InvDate,-1,false,"");
       IVCreditr.IsChangeAgrInvoice = changeinvtype;
-      logtext(0,"Generated sernr " & IVCreditr.SerNr);
       RecordInsert(IVCreditr,true);
       if(IVCreditr.SerNr>-1)then begin
         recordcopy(oldIVCreditr,IVCreditr);
@@ -3180,22 +3171,17 @@ begin
     IPr.OKFlag = 0;
     IPr.PayMode = CIb.PaymentMode;
     IPPastePayMode(IPr);
-  
-    logtext(0,"IPPastePayMode");
-  
+    
     ClearRow(IPr,IPrw,1);
     IPrw.InvoiceNr = IVr.SerNr;
-    logtext(0,"IVr.SerNr " & IVr.SerNr);
     MatRowPut(IPr,0,IPrw);
     PasteInvIn2IPr(IPr,0,IPr.TransDate,chk,false,installmentf);
     DistributeCredHistValues(IPr,0);
   
   
     mtrw = matrowcnt(IPr);
-    logtext(0,"mtrw " & mtrw);
     for(i=0;i<mtrw;i=i+1)begin
       matrowget(IPr,i,IPrw);
-      logtext(0,"IPrw.CredHistItem " & IPrw.CredHistItem & " " & vFutFeesSums[IPrw.CredHistItem]);
       if(nonblank(IPrw.CredHistItem))then begin
         if(vFutFeesSums[IPrw.CredHistItem]>0)then begin
           if(vFutFeesSums[IPrw.CredHistItem]!=IPrw.RecVal)then begin
@@ -3223,7 +3209,6 @@ begin
     end;
     mtrw = matrowcnt(IPr);
     if(mtrw>0)then begin
-      logtext(0,"recordinsert " & IPr.SerNr);
       recordinsert(IPr,true);
       recordcopy(oldIPr,IPr);
       IPr.OKFlag = 1;
@@ -3261,22 +3246,17 @@ begin
     IPr.OKFlag = 0;
     IPr.PayMode = CIb.PaymentMode;
     IPPastePayMode(IPr);
-  
-    logtext(0,"IPPastePayMode");
-  
+    
     ClearRow(IPr,IPrw,1);
     IPrw.InvoiceNr = IVr.SerNr;
-    logtext(0,"IVr.SerNr " & IVr.SerNr);
     MatRowPut(IPr,0,IPrw);
     PasteInvIn2IPr(IPr,0,IPr.TransDate,chk,false,installmentf);
     DistributeCredHistValues(IPr,0);
   
   
     mtrw = matrowcnt(IPr);
-    logtext(0,"mtrw " & mtrw);
     for(i=0;i<mtrw;i=i+1)begin
       matrowget(IPr,i,IPrw);
-      logtext(0,"IPrw.CredHistItem " & IPrw.CredHistItem & " " & vFutFeesSums[IPrw.CredHistItem]);
       if(nonblank(IPrw.CredHistItem))then begin
         if(vFutFeesSums[IPrw.CredHistItem]>0)then begin
           if(vFutFeesSums[IPrw.CredHistItem]!=IPrw.RecVal)then begin
@@ -3304,7 +3284,6 @@ begin
     end;
     mtrw = matrowcnt(IPr);
     if(mtrw>0)then begin
-      logtext(0,"recordinsert " & IPr.SerNr);
       recordinsert(IPr,true);
       recordcopy(oldIPr,IPr);
       IPr.OKFlag = 1;
@@ -4815,7 +4794,6 @@ begin
   transaction boolean gChangeProcess;
   
   if(gChangeProcess==false)then begin
-    logtext(0,"gChangeProcess is false");
     gBuyOutProcess = true;
   end; 
    
@@ -5308,8 +5286,9 @@ begin
   end;
   TrHs = true;
   CredHistr.RecordNr = invnr;
-  CredHistr.RecordType = 0;
+  CredHistr.RecordType = type;
   while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
+    logtext(0,CredHistr.SerNr);
     if (CredHistr.RecordNr!=invnr or CredHistr.RecordType!=type) then begin
       TrHs = false;
     end else begin
@@ -5409,11 +5388,16 @@ begin
   Integer i,rwcnt;
   Boolean prepayf;
   Longint histnr;
-  Integer firstf;
+  Integer firstf,mainf;
   record IVVc credIVr;
   date blankd;
   val vatprc,vatval,vatexclprc,vatinclprc,rowtax;
   vector boolean ifprepay;
+  record CredManSetBlock CMb;
+  string 20 princItem;
+  
+  blockload(CMb);
+  princItem = CMb.InstalmentItem;
     
   firstf = 1;
   if (IVr.InvType==kInvoiceTypeCredit) then begin
@@ -5426,8 +5410,11 @@ begin
             MatRowGet(IVr,i,IVrw);
             if (IVrw.ChargeType>0) then begin
               if (FindMatchingRow(credIVr,IVrw.CredHistNr,IVrw.ArtCode,tIVrw)) then begin
-                CreateCredHist(IVr.SerNr,10,IVr.CustCode,CalculateRowSumWithVAT(IVr,IVrw),3,"",IVr.TransDate,IVr.CustCredManNr,IVr.TransDate,histnr,"","",0,tIVrw.CredHistNr,IVrw.Sum,-1,0);
-
+                mainf = 0;
+                if(tIVrw.ArtCode==princItem)then begin
+                  mainf = 1;
+                end;
+                CreateCredHist(IVr.SerNr,10,IVr.CustCode,CalculateRowSumWithVAT(IVr,IVrw),3,tIVrw.ArtCode,IVr.TransDate,IVr.CustCredManNr,IVr.TransDate,histnr,"","",mainf,tIVrw.CredHistNr,IVrw.Sum,-1,0);
                 IVrw.CredHistNr = histnr;
                 MatRowPut(IVr,i,IVrw);
                 firstf = 0;
@@ -5500,7 +5487,11 @@ begin
     end;
   end;
   
-  UpdateCredHistBalance(IVr.CustCredManNr,IVr.SerNr,0);
+  if (IVr.InvType==kInvoiceTypeCredit) then begin
+    UpdateCredHistBalance(IVr.CustCredManNr,IVr.SerNr,3);
+  end else begin
+    UpdateCredHistBalance(IVr.CustCredManNr,IVr.SerNr,0);
+  end;
 
   return;
 end;
@@ -5724,7 +5715,10 @@ begin
       if (CredHistr.RecordType==4) then begin//partial buyout
         balance = balance - CredHistr.Sum;
       end;
-      if (CredHistr.RecordType==5 and int_type==2) then begin//payment
+      if (CredHistr.RecordType==3 and CredHistr.ChargeType==10 and CredHistr.MainRecord==1) then begin//credit invoice
+        balance = balance + CredHistr.Sum;
+      end;
+      if (CredHistr.RecordType==5/* and int_type==2*/) then begin//payment
         balance = balance + CredHistr.Sum;
       end;
       firstf = true;

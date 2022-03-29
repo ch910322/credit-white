@@ -45,7 +45,8 @@ begin
           if (ReadFirstMain(CredManr,1,true)) then begin
             int_type = GetInterestPaymentType(CredManr);
             if (int_type==2 or VIr.CredManExtraPayment==1) then begin
-              CreateCredHist(OPr.SerNr,18,VIr.VECode,OPrw.RecVal,5,"",OPr.TransDate,VIr.CustCredManNr,OPr.TransDate,histnr,"","",1,-1,OPrw.RecVal,-1,blankval);
+              logtext(0,"CreateCredHist " & OPrw.RecVal);
+              CreateCredHist(OPr.SerNr,18,VIr.VECode,OPrw.RecVal,5,"",OPr.TransDate,VIr.CustCredManNr,OPr.TransDate,histnr,"","",1,-1,OPrw.RecVal,-1,OPrw.RecVal);
               UpdateCredHistBalance(VIr.CustCredManNr,OPr.SerNr,5);
               updf = true;
               checkf = true;
