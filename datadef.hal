@@ -2824,6 +2824,7 @@ begin
     RecordField(UseRedesignedByuOut,M4Int,0,0);
     RecordField(FactOrFixedDaysBO,M4Int,0,0);
     RecordField(CredManChangeTran,M4Int,0,0);
+    RecordField(UseRedesignedRefinance,M4Int,0,0);
   EndBlock;
   
   BlockBegin(AppInterestRateBlock,-,"");

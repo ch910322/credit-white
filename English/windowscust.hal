@@ -894,8 +894,8 @@ end;
     HalPushButton(h2=h+140,v+24,h2+120,v+20+24,"ReportDo","Report");
   EndWindow;
 
-/* Old Window
-  WindowBegin("Refinance Agreement",RefinCredManWClass,CGother,RcType);
+// Old Window
+  WindowBegin("Refinance Agreement",RefinCredManOldWClass,CGother,RcType);
   UseView(RcVc);
   SetWRect(20,80,240,235);
   AutoSizeWindow(false);  
@@ -905,7 +905,7 @@ end;
   HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassTransfer","Transfer to Surety Provider");
   HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassPartial","Partial Buy-out");
   EndWindow;
- */ 
+  
   
 
   WindowBegin("Refinance Agreement",RefinCredMan2WClass,CGother,RcType);
@@ -4467,6 +4467,8 @@ begin
   Sizeable(-1,-1,0,0);
   
   CheckBox(h=180,v=6,0,"Use Redesigned Buy-Out",UseRedesignedByuOut); 
+  CheckBox(h,v+=16,0,"Use Redesigned Refinance",UseRedesignedRefinance); 
+    
   EditField(h,v+=20,100,"Buyout Paym. Term",Normal,BuyOutPayDeal,false,PDSClass); 
   EditField(h,v+=vs,100,"Premature Term. Item",Normal,BuyOutItem,false,INSClass);   
   EditField(h,v+=vs,100,"Premature Term. Principle",Normal,PremTermPrincpl,false,INSClass);

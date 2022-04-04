@@ -2037,6 +2037,7 @@ begin
   record CredManVc CredManr;
   Integer wn;
   record ORVc ORr;
+  record CMBuyOutBlock CMBb;
 
   wn = CurWindow;
   if (WindowState(wn)==Rs_Normal) then begin
@@ -2045,7 +2046,14 @@ begin
     //RepSpec.flags[29] = wn;
     ORr.HashKeyVersion = 1;
     ORr.SerNr = CredManr.SerNr;
-    OpenWindow("RefinCredManWClass",0,0,"","",ORr);
+    blockload(CMBb);
+    if(CMBb.UseRedesignedRefinance==1)then begin
+      OpenWindow("RefinCredManWClass",0,0,"","",ORr);
+    end else begin
+      RepSpec.long1 = CredManr.SerNr;
+      RepSpec.flags[29] = wn;
+      OpenWindow("RefinCredManOldWClass",0,0,"","",RepSpec);
+    end;
   end;
 
   return;
