@@ -1810,6 +1810,11 @@ begin
       if (ReadFirstMain(IVr,1,true)) then begin
         OpenWindow("IVDClass",1,0,"","",IVr);
       end;
+    case "3"://credit invoice
+      IVr.SerNr = CredHistr.RecordNr;
+      if (ReadFirstMain(IVr,1,true)) then begin
+        OpenWindow("IVDClass",1,0,"","",IVr);
+      end;
     case "5":
       OPr.SerNr = CredHistr.RecordNr;
       if (ReadFirstMain(OPr,1,true)) then begin
