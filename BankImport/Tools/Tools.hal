@@ -14,6 +14,7 @@ external updating procedure AsyncSEBBankImportSTIn(area);
 external updating procedure AsyncLuminorImportSTIn(area);
 external updating procedure AsyncSiauliuImportSTIn(area);
 external updating procedure GetCustomerLoanAmounts(var record IPVc,var integer,string,var string,var val,string,boolean,string,string,var vector Boolean,Date);
+external updating procedure GetCustomerLoanAmounts2(var record IPVc,var integer,string,var string,var val,string,boolean,string,string,var vector Boolean,Date,Longint);
 
 global function string 255 ConvertNameToSet(string name)
 begin
@@ -313,8 +314,7 @@ function Boolean ShouldAddInvoiceToIP(record IPVc IPr,record ARVc ARr,Date until
 begin
   Boolean res;
   record IVVc IVr;
-  
-
+    
   if (remsum>0 and ARr.RVal>0 and (blank(untildate) or ARr.InvDate<=untildate) and CredManPMCodeMatches(IPr.PayMode,ARr.InvoiceNr,false) and ARr.InvDate<=IPr.TransDate) then begin
     res = true;
   end;
@@ -326,7 +326,7 @@ begin
       end;
     end;
   end;
-
+    
   ShouldAddInvoiceToIP = res;
   return;
 end;
@@ -350,9 +350,8 @@ begin
   Integer k;
 	transaction Boolean gPDRAfterReciept;
 	transaction Boolean gPaymentProcedure;
-	
 	record CMInvoicingBlock CIb;
-	
+		
 	blockload(BCb);
 	blockload(BISb);
 		
@@ -370,7 +369,11 @@ begin
   end;
 	
 	if(nonblank(cucode))then begin
-    GetCustomerLoanAmounts(IPr,k,RecName,CurncyCode,remsum,cucode,cufnd,instr,origcomm,invused,untildate);
+	  if(crednr==-1)then begin
+      GetCustomerLoanAmounts(IPr,k,RecName,CurncyCode,remsum,cucode,cufnd,instr,origcomm,invused,untildate);
+    end else begin
+      GetCustomerLoanAmounts2(IPr,k,RecName,CurncyCode,remsum,cucode,cufnd,instr,origcomm,invused,untildate,crednr);
+    end;
 
 		ARr.CustCode = cucode;
 		TrHs = true;
@@ -826,7 +829,7 @@ begin
 							primsearch = StringInText(APr.InvoiceNr,Letr) and nonblank(APr.InvoiceNr);
 						end;
 					end;
-					logtext(0,origcomm & " " & primsearch);
+
 					if(primsearch)then begin
 						clearrow(OPr,OPrw,1);
 						OPrw.VISerNr = APr.SerNr;
