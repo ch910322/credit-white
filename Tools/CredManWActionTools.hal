@@ -747,7 +747,9 @@ begin
         //if(payval>0)then begin
           CM_CreatePaymentOrder(CredManr,VIr,payval);//Extra val payment//KSZ 2022-02-13:: EBS said to make full payout
           payval = addval - payval;
-          CM_CreatePaymentOrder(CredManr,VIr,payval);//Add to New Balance part
+          if(payval>0)then begin
+            CM_CreatePaymentOrder(CredManr,VIr,payval);//Add to New Balance part
+          end;
         //end;
         
         //removing the schedule so that we can create "good-looking" invoices. Otherwise schedule has only totals for interest
