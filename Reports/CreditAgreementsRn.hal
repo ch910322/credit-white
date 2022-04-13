@@ -401,22 +401,28 @@ begin
 
 		if (testf) then begin
       RecordClear(CredManPayr);
-      BuildCredManPayPlanCust(CredManr,CredManPayr,CredManSetb,true,false);
-  		curbal = GetFutureCredManBalance(CredManr,CredManPayr,RepSpec.d1,CredManSetb);
-      if (IsNovitiCustomer) then begin
-        GetCredManLateAmounts2(CredManr,CredManr.startDate,RepSpec.d1,5,principlelatedays,principlelateamount,notlateprinciple,limitdate);
-        curbal = curbal + principlelateamount;
-      end;
-			if(RepSpec.flags[5]==0 and curbal<=0)then begin testf = false; end;
-		end;
-		
-		if(testf)then begin
-		  CUr.Code = CredManr.CustCode;
-      tRepSpec.d1 = RepSpec.d1;
-      //CheckBuyOutAgreement(CredManr,tRepSpec);
+      BuildCredManPayPlanCust(CredManr,CredManPayr,CredManSetb,true,false);      
       recordnew(ORr);
       ORr.OrdDate = RepSpec.d1;
       CheckBuyOutAgreementOmega(CredManr,ORr,false);
+      
+  		/*curbal = GetFutureCredManBalance(CredManr,CredManPayr,RepSpec.d1,CredManSetb);
+      if (IsNovitiCustomer) then begin
+        GetCredManLateAmounts2(CredManr,CredManr.startDate,RepSpec.d1,5,principlelatedays,principlelateamount,notlateprinciple,limitdate);
+        curbal = curbal + principlelateamount;
+      end;*/
+      curbal = ORr.BaseSum4 + ORr.Sum4; //https://burti.atlassian.net/browse/NOV-1192
+      
+			if(RepSpec.flags[5]==0 and curbal<=0)then begin testf = false; end;
+		end;
+		
+		
+		
+		if(testf)then begin		
+		  CUr.Code = CredManr.CustCode;
+      tRepSpec.d1 = RepSpec.d1;
+      //CheckBuyOutAgreement(CredManr,tRepSpec);
+      
       tRepSpec.vals2 = stringtoval(ORr.OYDescription,m4val);
       realmonths = GetActualMonths(CredManr,CredManPayr);
       realrate = CredManr.IntRate;
