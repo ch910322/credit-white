@@ -3755,7 +3755,7 @@ begin
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
   RlCol(70,70,"Agr. No.",CredManNr,false);
-  RlCol(146,146,"Date",TransDate,false);
+  RlColKey(146,146,"Date",TransDate,false,TransDate);
   RlCol(222,222,"Prol. Months",ProlongMonths,false);
   RlCol(300,300,"Pause Months",PauseMonths,false);
   RlCol(-180,-180,"Rate",IntRate,false);
@@ -3777,7 +3777,7 @@ begin
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Ser. No.",SerNr,false,CredSerNr);
   RlCol(70,70,"Agr. No.",CredManNr,false);
-  RlCol(146,146,"Date",TransDate,false);
+  RlColKey(146,146,"Date",TransDate,false,CredTransDate);
   RlCol(222,222,"Prol. Months",ProlongMonths,false);
   RlCol(300,300,"Pause Months",PauseMonths,false);
   RlCol(-180,-180,"Rate",IntRate,false);
