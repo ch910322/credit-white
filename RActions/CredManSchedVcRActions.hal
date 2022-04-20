@@ -31,6 +31,9 @@ begin
     if (nonblank(CSrw.FromDate)) then begin
       periodf = true;
     end;
+    if(CSrw.Invoiced==1 and periodf)then begin
+      periodf = false;
+    end;
     if (periodf) then begin
       if (nonblank(lasted) and CSrw.Type==0 and nonblank(CSrw.FromDate) and (CSrw.Interest>0 or CSrw.Principle>0)) then begin
         if (lasted!=AddDay(CSrw.FromDate,-1)) then begin
