@@ -2567,7 +2567,7 @@ end;
 
 
 global
-updating procedure CreateChangesInvoice(record CredManVc CredManr,string paydeal,string salesman,string itemspec,var record IVVc nIVr,record RcVc RepSpec,vector val nocreditsum)
+updating procedure CreateChangesInvoice(record CredManVc CredManr,string paydeal,string salesman,string itemspec,var record IVVc nIVr,record RcVc RepSpec,vector val feessum)
 begin
   record CMInvoicingBlock CIb;
   record CredManSetBlock CMb;
@@ -2609,54 +2609,6 @@ begin
   end;
   
   SetupLoanInvoice3(CredManr,CMb,IVr,invdate,"","",true,false,"",1,true,pd,salesman);
-  if(RepSpec.vals3!=0 or RepSpec.vals4!=0)then begin
-/*  
-    if(stringtoval(RepSpec.FirstAcc,m4val)>0)then begin
-      logtext(0,"RepSpec.FirstAcc " & RepSpec.FirstAcc);
-      GetItemName(CMb.RateItem,spec);
-      spec = spec  & " " & frdate & ":" & addday(invdate,-1);
-      SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,stringtoval(RepSpec.FirstAcc,m4val),blankval,kEventTypeCalcInterest,-1);
-      spec = "";
-    end;
-*/
-    if(nonblank(princItem))then begin
-      if(nocreditsum[princItem]>0)then begin
-        /* we don't need manual entries for principal or interest
-        tmpCredManr.InvSum4 = nocreditsum[princItem];
-        tmpCredManr.DepositSum = blankval;
-        tmpCredManr.ExtraDepositSum = blankval;
-        calcbal = stringtoval(RepSpec.ObjStr,m4Val);
-        if(RepSpec.vals3!=0)then begin
-          tmpCredManr.IntRate = RepSpec.vals3;
-        end;
-        newint = GetRateAmount(tmpCredManr,tmpCredManr.IntRate,kMonthTypeFirst,invdate,todate,calcbal,false,false);      
-        GetItemName(CMb.RateItem,spec);
-        spec = spec  & " " & invdate & ":" & todate;
-        SetupInvoiceRowAndAdd(CredManr,IVr,CMb.RateItem,spec,1,newint,blankval,kEventTypeCalcInterest,-1);
-        spec = "";
-        */
-
-        /*logtext(0,"nocreditsum[princItem] " & nocreditsum[princItem]);
-        GetItemName(princItem,spec);
-        spec = spec  & " " & frdate & ":" & addday(invdate,-1);
-        SetupInvoiceRowAndAdd(CredManr,IVr,princItem,spec,1,nocreditsum[princItem],blankval,kEventTypeCalcInstalment,-1);
-        spec = "";*/
-      end;
-    end;
-    
-  end;
-
-  /*if(stringtoval(RepSpec.f6,m4val)>0)then begin
-    GetItemName(CMBOb.FutFeeItem,spec);
-    SetupInvoiceRowAndAdd(CredManr,IVr,CMBOb.FutFeeItem,spec,1,stringtoval(RepSpec.f6,m4val),blankval,kEventTypeCalcFees,-1);
-    spec = "";
-  end;*/
-
-  /*if(stringtoval(RepSpec.f12,m4val)>0)then begin
-    GetItemName(CMBOb.FutFeeItem,spec);
-    SetupInvoiceRowAndAdd(CredManr,IVr,CMBOb.FutFeeItem,spec,1,stringtoval(RepSpec.f12,m4val),blankval,kEventTypeCalcFees,-1);
-    spec = "";
-  end;*/
   
   if (RepSpec.flags[2]==1) then begin//Issue Prolong Invoice
     if(blank(RepSpec.f9)/*stringtoval(RepSpec.f9,m4val)==0*/)then begin
@@ -2673,6 +2625,7 @@ begin
     if (blank(spec)) then begin
       GetItemName(CIb.ProlongItem,spec);
     end;
+    feessum[CIb.ProlongItem] = sum;
     SetupInvoiceRowAndAdd(CredManr,IVr,CIb.ProlongItem,spec,1,sum,blankval,14,-1);//14  - is Prolong fee item type; see to MapChargeTypes()
   end;
   CM_AddPrepayments(IVr,CredManr,CIb);

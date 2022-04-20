@@ -93,6 +93,7 @@ external updating procedure PayAllOpenInvoices(record CredManVc,Date,record ORVc
 external updating procedure CreateSplitInvoice(record CredManVc,Date,record ORVc,string,date,date,longint);
 external updating procedure CM_CreatePaymentOrder(record CredManVc,record VIVc,val);
 external updating procedure AgrChangeCloseOldInvoices(record RcVc,record CredManVc,Date,record ORVc,string,var vector val);
+external updating procedure PayThisInvoiceFutureFees(record IVVc,vector val,vector val,date);
 
 
 global
@@ -669,6 +670,7 @@ begin
   array string 20 anocreditsum;
   transaction boolean gOffSeveralRecalc;
   record IVVc IV2r;
+  vector val vfeessum,vBlank;
   
   gOffSeveralRecalc = true;
   
@@ -720,8 +722,12 @@ begin
     if (RepSpec.flags[2]==1 and stringtoval(RepSpec.f9,m4val)>0) then begin//Issue Prolong Invoice
       CreateProlongSession(RepSpec,CredManr,td,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1],RepSpec.vals3,RepSpec.vals4);
     end;
-    CreateChangesInvoice(CredManr,RepSpec.f2,RepSpec.f3,RepSpec.f4,IVr,RepSpec,nocreditsum);
-
+    CreateChangesInvoice(CredManr,RepSpec.f2,RepSpec.f3,RepSpec.f4,IVr,RepSpec,vfeessum);
+    if(RepSpec.flags[5]==1 and stringtoval(RepSpec.f9,m4val)>0)then begin //Reconcile prolongation fees
+      PayThisInvoiceFutureFees(IVr,vfeessum,vBlank,td);
+    end;
+    
+    
     //PayAllOpenInvoices(CredManr,td,ORr,""); KSZ 2022-02-13:: EBS said that this is not needed??
     if (RepSpec.flags[3]==0) then begin
       if (tmonths>0 or tprolongmonths>0 or rate>0 or addval>0) then begin
@@ -742,13 +748,22 @@ begin
           //addval = addval + nocreditsum[anocreditsum[i]];//Old Principles already splited for future months
         end;
         
-        
+        if(RepSpec.flags[5]==1 and stringtoval(RepSpec.f9,m4val)>0)then begin //Add prolongation fee to reconcilation invoice
+          addval = addval + stringtoval(RepSpec.f9,m4val);
+        end;
         CreateCredmanPurchaseInvoice(CredManr,0,VIr,addval,true,td);
+        if(RepSpec.flags[5]==1 and stringtoval(RepSpec.f9,m4val)>0)then begin //Remove prolongation fee fromm addval
+          addval = addval - stringtoval(RepSpec.f9,m4val);
+        end;
+        
         //if(payval>0)then begin
           CM_CreatePaymentOrder(CredManr,VIr,payval);//Extra val payment//KSZ 2022-02-13:: EBS said to make full payout
           payval = addval - payval;
           if(payval>0)then begin
             CM_CreatePaymentOrder(CredManr,VIr,payval);//Add to New Balance part
+          end;
+          if(RepSpec.flags[5]==1 and stringtoval(RepSpec.f9,m4val)>0)then begin //Reconciling futures fees
+             CM_CreatePaymentOrder(CredManr,VIr,stringtoval(RepSpec.f9,m4val));
           end;
         //end;
         

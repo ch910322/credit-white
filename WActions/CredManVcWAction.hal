@@ -1432,6 +1432,12 @@ begin
   //if (RepSpec.long1>0) then begin
     mwn = MotherWindow(wn);
     if (WindowState(mwn)==Rs_Normal) then begin
+      if(RepSpec.flags[5]==1)then begin
+        if(RepSpec.vals4<stringtoval(RepSpec.f9,m4val))then begin
+          MessageBox(0,"Prolongation Fee exceeds Extra Value");
+          goto LNewPauseCredManWClassPause;
+        end;
+      end;
       if (RepSpec.flags[2]==0 and RepSpec.flags[3]==1) then begin
         MessageBox(200264,"");
         goto LNewPauseCredManWClassPause;
