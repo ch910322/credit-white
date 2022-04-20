@@ -1180,6 +1180,7 @@ begin
   RecordField(Surety5InvCust,M4Int,0,0);   
   RecordField(Surety6InvCust,M4Int,0,0);   
   RecordField(RefinancedAgreements,M4Str,255,0);
+  RecordField(DelTransaction,M4Int,0,0);   
   
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);

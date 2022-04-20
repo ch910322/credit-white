@@ -3493,11 +3493,13 @@ end;
 global
 function Boolean CredManDClassStatusButtonAction(Integer wn,Integer value)
 begin
-  record CredManVc CredManr;
+  record CredManVc CredManr,oldCredManr;
   Boolean res;
+  record RcVc RepSpec;
 
   res = true;
   GetWindowRecord(wn,CredManr);
+  GetPrevWindowRecord(wn,oldCredManr);
   if (value==3) then begin
     if (UserCanAction("AllowActivateCredMan",false)==false) then begin
       res = false;
@@ -3512,6 +3514,10 @@ begin
     if (ContractHasHistory(CredManr)) then begin
       res = false;
     end;
+  end;
+  
+  if(oldCredManr.Status==4 and value<4 and oldCredManr.OKFlag==1)then begin
+    OpenWindow("WhatToDoWithTransWClass",1,wn,"","",RepSpec);
   end;
 
 
@@ -3884,7 +3890,8 @@ global
 function Boolean CredManDClassOKFlagButtonAction(Integer wn,Integer value)
 BEGIN
   Boolean res;
-  record CredManVc CredManr;
+  record CredManVc CredManr,oldCredManr;
+  record RcVc RepSpec;
  
   res = inner.CredManDClassOKFlagButtonAction(wn,value);
   if (res and WindowState(wn)==Rs_update) then begin
@@ -3893,11 +3900,11 @@ BEGIN
       res = false;
     end;
   end;
-
-  /*GetWindowRecord(wn,CredManr);
-  if(HasCredManChanges(CredManr))then begin
-    messagebox(0,"Agreement has Changes, NL Transaction has to be manually adjusted");
-  end;*/
+  
+  GetPrevWindowRecord(wn,oldCredManr);
+  if(oldCredManr.OKFlag==1)then begin
+    OpenWindow("WhatToDoWithTransWClass",1,wn,"","",RepSpec);
+  end;
 
   CredManDClassOKFlagButtonAction = res;
   RETURN;
