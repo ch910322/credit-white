@@ -138,7 +138,7 @@ date blankd;
     if (TrHs) then begin
       res = true;
       t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
-      vIVItemOpenAmmount[CredHistr.ArtCode] = t;
+      vIVItemOpenAmmount[CredHistr.ArtCode & ":" & CredHistr.SerNr] = t;//IVrw.CredHistNr
       //messagebox(0,CredHistr.ArtCode & "  " & t);
       EndFormat;
     end;
@@ -1557,12 +1557,57 @@ global
 updating procedure StoreLoanInvoice(var record IVVc IVr,record CredManVc CredManr)
 begin
   record IVVc oldIVr;
+  row IVVc IVrw,IV2rw;
+  integer i,j,rwcnt;
   transaction Boolean gPDRAfterReciept;
+  
   
   SetOverdueLangCode(IVr,CredManr);
   
   if (IVr.Sum4>0) then begin
     IVr.SerNr = NextSerNr("IVVc",IVr.InvDate,-1,false,"");
+    
+    //Sorting rows for beauty// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 21 04 2022 y. at 10:58:49 AM
+      rwcnt = matrowcnt(IVr);
+      for(i=0;i<rwcnt;i=i+1)begin
+        matrowget(IVr,i,IVrw);
+        if(IVrw.stp==kInvoiceRowTypeHidden)then begin
+          rwcnt = i;
+        end;
+      end;
+      
+      for(i=0;i<rwcnt;i=i+1)begin
+        matrowget(IVr,i,IVrw);
+        if(IVrw.stp==1 and nonblank(IVrw.ArtCode))then begin
+          for(j=i;j<rwcnt;j=j+1)begin
+            matrowget(IVr,j,IV2rw);
+            if(IVrw.ArtCode>IV2rw.ArtCode)then begin
+              matrowput(IVr,j,IVrw);
+              matrowput(IVr,i,IV2rw);
+              
+              matrowget(IVr,i,IVrw);
+              matrowget(IVr,j,IV2rw);
+            end;
+          end;
+        end;
+      end;
+      
+      for(i=0;i<rwcnt;i=i+1)begin
+        matrowget(IVr,i,IVrw);
+        if(IVrw.stp==1 and nonblank(IVrw.ArtCode))then begin
+          for(j=i;j<rwcnt;j=j+1)begin
+            matrowget(IVr,j,IV2rw);
+            if(stringtodate(right(IVrw.Spec,10))>stringtodate(right(IV2rw.Spec,10)))then begin
+              matrowput(IVr,j,IVrw);
+              matrowput(IVr,i,IV2rw);
+              
+              matrowget(IVr,i,IVrw);
+              matrowget(IVr,j,IV2rw);
+            end;
+          end;
+        end;
+      end;
+    //Sorting rows for beauty// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 21 04 2022 y. at 10:58:52 AM
     if (RecordInsert(IVr,true)) then begin
       RecordCopy(oldIVr,IVr);
       IVr.OKFlag = 1;
