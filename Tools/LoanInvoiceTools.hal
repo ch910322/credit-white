@@ -138,7 +138,7 @@ date blankd;
     if (TrHs) then begin
       res = true;
       t = GetCredHistOpenValueOnDate(CredHistr.SerNr,blankd);
-      vIVItemOpenAmmount[CredHistr.ArtCode & ":" & CredHistr.SerNr] = t;//IVrw.CredHistNr
+      vIVItemOpenAmmount[CredHistr.ArtCode] = t;//IVrw.CredHistNr
       //messagebox(0,CredHistr.ArtCode & "  " & t);
       EndFormat;
     end;
