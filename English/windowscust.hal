@@ -727,7 +727,7 @@ end;
   
   WindowBegin("Register Agreement Changes",PauseCredManWClass,CGother,RcType);
   UseView(RcVc);
-  SetWRect(20,80,400,360);
+  SetWRect(20,80,480,390);
   AutoSizeWindow(false);  
   h = 150; h2 = 250; v=450;
   EditFieldTL(h,v=6,120,"Changes Start Date",M4Date,Normal,0,d1,false,PasteCurDate);
@@ -738,6 +738,7 @@ end;
   EditField(h,v+=vs,100,"Change Purpose",Normal,f1,false,AgrChangesPurpSClass);
   CheckBox(h,v+=vs,0,"Re-sign Schedule",flags[1]);
   CheckBox(h,v+=vs,0,"Issue Prolong Invoice",flags[2]);
+  CheckBox(h,v+=vs,0,"Prolong only when Prolongation Invoice is paid",flags[3]);
   if (IsOmegaCustomer) then begin
     EditFieldTL(h,v+=vs,50,"Payment Term",M4Code,Normal,20,f2,false,PDSClass);
     EditFieldTL(h,v+=vs,50,"Salesman",M4Code,Normal,20,f3,false,UserSClass);
