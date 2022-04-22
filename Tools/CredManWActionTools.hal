@@ -597,7 +597,7 @@ begin
     tmonths = blankval;
   end;
   if (CanPauseAgreement(CredManr,newtd,months,err)) then begin
-    if (RepSpec.flags[2]==1 and stringtoval(RepSpec.f9,m4val)>0) then begin
+    if (RepSpec.flags[3]==1 and stringtoval(RepSpec.f9,m4val)>0) then begin
       CreateProlongSession(RepSpec,CredManr,newtd,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1],RepSpec.vals3,RepSpec.vals4);
     end;
     CreateChangesInvoice(CredManr,RepSpec.f2,RepSpec.f3,RepSpec.f4,IVr,RepSpec,tmpval);
@@ -719,7 +719,7 @@ begin
     RepSpec.sStartDate = lastinvperiodfromdate;
     RepSpec.sEndDate = lastinvperioddate;
         
-    if (RepSpec.flags[2]==1 and stringtoval(RepSpec.f9,m4val)>0) then begin//Issue Prolong Invoice
+    if (RepSpec.flags[3]==1 and stringtoval(RepSpec.f9,m4val)>0) then begin//Issue Prolong Invoice
       CreateProlongSession(RepSpec,CredManr,td,months,prolongmonths,RepSpec.flags[3],RepSpec.flags[1],RepSpec.vals3,RepSpec.vals4);
     end;
     CreateChangesInvoice(CredManr,RepSpec.f2,RepSpec.f3,RepSpec.f4,IVr,RepSpec,vfeessum);
