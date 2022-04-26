@@ -1180,6 +1180,7 @@ begin
   RecordField(Surety5InvCust,M4Int,0,0);   
   RecordField(Surety6InvCust,M4Int,0,0);   
   RecordField(RefinancedAgreements,M4Str,255,0);
+  RecordField(DelTransaction,M4Int,0,0);   
   
   ArrayField(MinSum,M4Val,0,0);
   ArrayField(MaxSum,M4Val,0,0);
@@ -2108,6 +2109,7 @@ begin
     RecordField(CustVal03,M4Val,0,0);//Buy-out
     RecordField(CustVal04,M4Val,0,0);//Buy-out
     RecordField(CustVal05,M4Val,0,0);//Refinance Remaining Value
+    RecordField(CustVal06,M4Val,0,0);//Short Principle Value
   EndRecordAdd;
 
   RecordBegin(CMPropertyVc,-,"");
@@ -2455,6 +2457,10 @@ begin
   RecordField(FutureFees,M4Val,0,0);
   RecordField(AddedToNewBal,M4Val,0,0);
   RecordField(AddedFeesMonths,M4Int,0,0);
+  RecordField(RemPrincPart,M4Val,0,0);
+  RecordField(ShortRemPrincPart,M4Val,0,0);
+  RecordField(IssueOverdueInv,M4Int,0,0);
+  
   MainKeyBegin(SerNr,0);
   KeySegment(SerNr);
   KeyBegin(CredManDate);
@@ -2464,6 +2470,14 @@ begin
   SubsetKeyBegin2(CredSerNr);
   StoreInBaseKey;
   AppendFieldToKeyName(CredManNr);
+  KeySegment(SerNr);
+  KeyBegin(TransDate);
+  KeySegment(TransDate);
+  KeySegment(SerNr);
+  SubsetKeyBegin2(CredTransDate);
+  StoreInBaseKey;
+  AppendFieldToKeyName(CredManNr);
+  KeySegment(TransDate);
   KeySegment(SerNr);
   
   EndRecord; 
@@ -2803,22 +2817,23 @@ begin
   EndRecord;
   
   BlockBegin(CMBuyOutBlock,-,"");
-  RecordField(BuyOutPayDeal,M4Code,5,PDVc);
-  RecordField(BuyOutItem,M4Code,20,INVc);
-  RecordField(PremTermPrincpl,M4Code,20,0);
-  RecordField(CalcIntBOday,M4Int,0,0);
-  RecordField(CalcOvdBOday,M4Int,0,0);
-  RecordField(FutFeeItem,M4Code,20,0);
-  RecordField(InvFutFees,M4Int,0,0);
-  RecordField(FutFeeItemClass,M4Code,20,0);
-  RecordField(DoNotCreditlastDayInvoices,M4Int,0,0);
-  RecordField(DebtsToFutureFees,M4Int,0,0);
-  RecordField(CalcIntChangeDay,M4Int,0,0);
-  RecordField(CalcOvdChangeDay,M4Int,0,0);
-  RecordField(InterestCredOrPay,M4Int,0,0);
-  RecordField(UseRedesignedByuOut,M4Int,0,0);
-  RecordField(FactOrFixedDaysBO,M4Int,0,0);
-  
+    RecordField(BuyOutPayDeal,M4Code,5,PDVc);
+    RecordField(BuyOutItem,M4Code,20,INVc);
+    RecordField(PremTermPrincpl,M4Code,20,0);
+    RecordField(CalcIntBOday,M4Int,0,0);
+    RecordField(CalcOvdBOday,M4Int,0,0);
+    RecordField(FutFeeItem,M4Code,20,0);
+    RecordField(InvFutFees,M4Int,0,0);
+    RecordField(FutFeeItemClass,M4Code,20,0);
+    RecordField(DoNotCreditlastDayInvoices,M4Int,0,0);
+    RecordField(DebtsToFutureFees,M4Int,0,0);
+    RecordField(CalcIntChangeDay,M4Int,0,0);
+    RecordField(CalcOvdChangeDay,M4Int,0,0);
+    RecordField(InterestCredOrPay,M4Int,0,0);
+    RecordField(UseRedesignedByuOut,M4Int,0,0);
+    RecordField(FactOrFixedDaysBO,M4Int,0,0);
+    RecordField(CredManChangeTran,M4Int,0,0);
+    RecordField(UseRedesignedRefinance,M4Int,0,0);
   EndBlock;
   
   BlockBegin(AppInterestRateBlock,-,"");

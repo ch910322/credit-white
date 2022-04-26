@@ -14,6 +14,9 @@ external inner procedure AddEuroCurncyTrRow(record TRVc,string,string,string,str
 external inner function Boolean CheckTTRPerRow(string,string,string,Boolean,var string,Integer);
 external inner function val MulRateToBase1(var string,val,val,val,val,val,val,roundmode);
 external inner procedure GetFullCurncyRate(var string,Date,var val,var val,var val,var val,var val);
+external outer procedure AddCMTransactionControlAccounts(record CredManVc,var string,var string,var val,var val);
+external procedure GetPrinciplePartsLeft(record CredManVc,var val,var val);
+external procedure CM_GetTransactionControlAcc(record CredManVc,var string,var string);
 
 
 global
@@ -32,68 +35,71 @@ BEGIN
   val rs,totsum;
   string 10 controlacc,aracc;
   Boolean invfound;
-//CUST-BEGIN
   val shortval,longval;
   string 255 shortacc,longacc;
   Boolean addf;
-//CUST-END
-  
-  messagebox(0,"MakeTransFromCredManChange");
-  
+  record CMBuyOutBlock CMBOb;
+  record CredManVc CredManr;
+    
   res = 1085;
   BlockLoad(TRGenRec);
   BlockLoad(CredManSetb);
-
+  BlockLoad(CMBOb);
+  
+  if(CMBOb.CredManChangeTran==0)then begin
+    res = 0;
+    goto LMakeTransFromCredManChange;
+  end;
+  
   RecordNew(gTRp);
-  /*if (rpt==false) then begin
-    if (TRGenRec.CredManGenTrans==0) then begin
-      res = 0;
-      goto LMakeTransFromCredManChange;
-    end;
-    if ((nonblankdate(TRGenRec.CredManStartDate)) and
-        (CredManChanger.TransDate<TRGenRec.CredManStartDate) ) then begin
-      res = 0;
-      goto LMakeTransFromCredManChange;
-    end;
-  end;*/
+  
+  CredManr.SerNr = CredManChanger.CredManNr;
+  if(readfirstmain(CredManr,1,true)==false)then begin
+    res = 0;
+    goto LMakeTransFromCredManChange;
+  end;
+  
   gTRp.IntYc = 300;//300 For CredManChange IntYc
   gTRp.Number = CredManChanger.SerNr;
   gTRp.RefStr = "";
-  /*if (rpt==false) then begin
-    lTRr.IntYc = gTRp.IntYc;
-    lTRr.Number = gTRp.Number;
-    if (ReadFirstMain(lTRr,2,true)) then begin
-      res = 1032;
-      errfield = "SerNr";//EBS 20200408
-      goto LMakeTransFromCredManChange;
-    end;
-  end;
-  gTRp.RegDate = CurrentDate;
+  
+  gTRp.RegDate = CredManChanger.TransDate;
   gTRp.RegTime = CurrentTime;
-  gTRp.TransDate = CredManr.TransDate;
-  if (rpt==false) then begin
-    if (TransInFiscal(gTRp.TransDate)==false) then begin
-      res = 0;
-      goto LMakeTransFromCredManChange;
-    end;
+  gTRp.TransDate = CredManChanger.TransDate;
+  
+  if (TransInFiscal(gTRp.TransDate)==false) then begin
+    res = 0;
+    goto LMakeTransFromCredManChange;
   end;
+  
+  IVr.SerNr = CredManr.IVNr;
+  invfound = ReadFirstMain(IVr,1,true);
+  
   if (invfound) then begin
     ftxt = "" & CredManr.IVNr & " " & CredManr.Addr0;
   end else begin
     ftxt = CredManr.Addr0;
   end;
   gTRp.Comment = ftxt;
-  dc1 = true;
-  dc2 = false;
-  v = CredManr.InvSum4;
+  
+  
+  
+  dc1 = false;
+  dc2 = true;
+  v = CredManChanger.RemPrincPart;
   rs = MulRateToBase1(CredManr.CurncyCode,v,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2,DefaultCurRoundOff);
   controlacc = CredManr.CredManAcc;
   if (blank(controlacc)) then begin
     controlacc = CredManSetb.CredManAcc;
   end;
   otxt = CredManr.Objects;
-//CUST-BEGIN
-  AddCMTransactionControlAccounts(CredManr,shortacc,longacc,shortval,longval);
+  
+  //BEFORE
+  
+  CM_GetTransactionControlAcc(CredManr,shortacc,longacc);
+  shortval = CredManChanger.ShortRemPrincPart;
+  longval = CredManChanger.RemPrincPart - CredManChanger.ShortRemPrincPart;
+  
   if (nonblank(shortacc) and shortval>0) then begin
     rs = shortval;
     controlacc = shortacc;
@@ -105,7 +111,6 @@ BEGIN
     end;
   end;
 LAddAccount:;
-//CUST-END
   Accr.AccNumber = controlacc;
   if (ReadFirstMain(Accr,1,true)==false) then begin
     res = 1007;
@@ -121,14 +126,12 @@ LAddAccount:;
   end;
   if (CheckTTRPerRow("CredManVc",controlacc,otxt,dc1,taccnumber,1)) then begin end;
   AddEuroCurncyTrRow(gTRp,controlacc,otxt,"",ftxt,rs,false,dc1,totsum,CredManr.CurncyCode,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2,v,blankval,-1,false,taccnumber);
-//CUST-BEGIN
   if (addf==false and nonblank(longacc) and longval>0) then begin
     rs = longval;
     controlacc = longacc;
     addf = true;
     goto LAddAccount;
   end;
-//CUST-END
   rs = MulRateToBase1(CredManr.CurncyCode,v,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2,DefaultCurRoundOff);
 
   aracc = CredManr.ARAcc;
@@ -136,15 +139,11 @@ LAddAccount:;
     controlacc = CredManSetb.ARAcc;
   end;
   otxt = CredManr.ARAccObject;
-  //CUST-BEGIN
   otxt = AddObjectToObjectList(otxt,CredManr.Objects);
-  //CUST-END
   if (invfound) then begin
     ftxt = "" & CredManr.IVNr & " " & CredManr.Addr0;
   end;
-//CUST-BEGIN
   aracc = CM_GetTransactionDebtorsAcc(CredManr,aracc);
-//CUST-END
   Accr.AccNumber = aracc;
   if (ReadFirstMain(Accr,1,true)==false) then begin
     res = 1007;
@@ -160,8 +159,94 @@ LAddAccount:;
   end;
   if (CheckTTRPerRow("CredManVc",aracc,otxt,dc2,taccnumber,1)) then begin end;
   AddEuroCurncyTrRow(gTRp,aracc,otxt,"",ftxt,rs,false,dc2,totsum,Accr.Curncy,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2,v,blankval,-1,false,taccnumber);
+  
+  //=====================================AFTER
+  
+  dc1 = true;
+  dc2 = false;
+  
+  GetPrinciplePartsLeft(CredManr,shortval,longval);
+  
+  
+  
+  v = shortval + longval;
+  
+  logtext(0,"shortval " & shortval);
+  logtext(0,"longval " & longval);
+  logtext(0,"v " & v);
+  addf = false;
+  if (nonblank(shortacc) and shortval>0) then begin
+    rs = shortval;
+    controlacc = shortacc;
+  end else begin
+    if (nonblank(longacc) and longval>0) then begin
+      rs = longval;
+      controlacc = longacc;
+      addf = true;
+    end;
+  end;
+LAddAccount1:;
+  Accr.AccNumber = controlacc;
+  if (ReadFirstMain(Accr,1,true)==false) then begin
+    res = 1007;
+    errfield = "CredManAcc";
+    goto LMakeTransFromCredManChange;
+  end;
+  if (nonblank(Accr.Curncy)) then begin
+    if (Accr.Curncy!=CredManr.CurncyCode) then begin
+      res = 1217;
+      errfield = "CredManAcc";
+      goto LMakeTransFromCredManChange;
+    end;
+  end;
+  if (CheckTTRPerRow("CredManVc",controlacc,otxt,dc1,taccnumber,1)) then begin end;
+  AddEuroCurncyTrRow(gTRp,controlacc,otxt,"",ftxt,rs,false,dc1,totsum,CredManr.CurncyCode,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2,v,blankval,-1,false,taccnumber);
+  if (addf==false and nonblank(longacc) and longval>0) then begin
+    rs = longval;
+    controlacc = longacc;
+    addf = true;
+    logtext(0,"add long val");
+    goto LAddAccount1;
+  end;
+  rs = MulRateToBase1(CredManr.CurncyCode,v,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2,DefaultCurRoundOff);
+
+  aracc = CredManr.ARAcc;
+  if (blank(controlacc)) then begin
+    controlacc = CredManSetb.ARAcc;
+  end;
+  otxt = CredManr.ARAccObject;
+  otxt = AddObjectToObjectList(otxt,CredManr.Objects);
+  if (invfound) then begin
+    ftxt = "" & CredManr.IVNr & " " & CredManr.Addr0;
+  end;
+  aracc = CM_GetTransactionDebtorsAcc(CredManr,aracc);
+  Accr.AccNumber = aracc;
+  if (ReadFirstMain(Accr,1,true)==false) then begin
+    res = 1007;
+    errfield = "ARAccObject";
+    goto LMakeTransFromCredManChange;
+  end;
+  if (nonblank(Accr.Curncy)) then begin
+    if (Accr.Curncy!=CredManr.CurncyCode) then begin
+      res = 1217;
+      errfield = "ARAccObject";
+      goto LMakeTransFromCredManChange;
+    end;
+  end;
+  if (CheckTTRPerRow("CredManVc",aracc,otxt,dc2,taccnumber,1)) then begin end;
+  AddEuroCurncyTrRow(gTRp,aracc,otxt,"",ftxt,rs,false,dc2,totsum,Accr.Curncy,CredManr.FrRate,CredManr.ToRateB1,CredManr.ToRateB2,CredManr.BaseRate1,CredManr.BaseRate2,v,blankval,-1,false,taccnumber);
+  
+  
+  
+  //AFTER
+  
+  
+  
   TRSumup(gTRp,t);
-  AddTransAutoTransRows(gTRp);*/
+  AddTransAutoTransRows(gTRp);
+  
+  
+  
   res = 0;
 LMakeTransFromCredManChange:;
   MakeTransFromCredManChange = res;
@@ -285,7 +370,7 @@ BEGIN
       res = -1;
       goto LCredManChangeVcRecordCheck;
     end;
-    if ((gTRp.Number>0) and (gTRp.IntYc==CredManYc)) then begin
+    if ((gTRp.Number>0) and (gTRp.IntYc==300)) then begin
       errstr = CheckTrans(gTRp,2,true);
       if (nonblank(errstr)) then begin
         RecordCheckError(1085,errstr,-1,"SerNr");
@@ -336,7 +421,7 @@ begin
   end;
   
   if(Changer.OKFlag==0 and Change2r.OKFlag!=0)then begin
-    DeleteTransaction(CredManr.SerNr,300);//300 - CredManChangr IntYc
+    DeleteTransaction(Changer.SerNr,300);//300 - CredManChangr IntYc
   end;
 
   CredManChangeVcRecordUpdateAfter = res;

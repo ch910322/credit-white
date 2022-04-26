@@ -361,6 +361,13 @@ begin
           FMrw.Sum = IVrw.Sum;
           MatRowPut(FMr,MatRowCnt(FMr),FMrw);
           addf = true;
+        case 14: 
+          fees = fees + IVrw.Sum;
+          ClearRow(FMr,FMrw,1);
+          FMrw.ArtCode = IVrw.ArtCode;
+          FMrw.Sum = IVrw.Sum;
+          MatRowPut(FMr,MatRowCnt(FMr),FMrw);
+          addf = true;
 
       end;
     end;
@@ -520,7 +527,7 @@ begin
   vector Boolean vRec;
   Integer int_type;
   row SMVc SMrw,SM2rw,SM3rw;
-
+    
   int_type = GetInterestPaymentType(CredManr);
   if (int_type==2) then begin
     calcbal = 0;
@@ -531,6 +538,7 @@ begin
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(CredManPayPlanr,i,CredManPayPlanrw);
     if (CredManPayPlanrw.PlanType>=5) then begin
+      
       CredHistr.SerNr = CredManPayPlanrw.IssuedNr;
       if (ReadFirstMain(CredHistr,1,true)) then begin
         if ((vRec[CredHistr.RecordType & ":" & CredHistr.RecordNr]==false or CredHistr.RecordType==4 or CredHistr.RecordType==5) and CredManPayPlanrw.PlanType!=9) then begin
@@ -568,19 +576,21 @@ begin
     IVr.SerNr = -1;
     AddInvoiceToList(CredManr,IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate,CMb);
   end;
-
+   
   SortRows(SMr,"TransDate",true);//ExtraComment
   if(matrowcnt(SMr)>1)then begin
     for(i=0;i<matrowcnt(SMr)-1;i=i+1)begin
        matrowget(SMr,i,SMrw);
        matrowget(SMr,i+1,SM2rw);
-       if(SMrw.RowSimStat==0 or SMrw.RowSimStat==6)then begin
-          if(SM2rw.RowSimStat==0 or SM2rw.RowSimStat==6)then begin
-            if(SM2rw.ExtraComment<SMrw.ExtraComment and nonblank(SM2rw.ExtraComment) and SM2rw.ExtraComment!="-1")then begin
-              matrowput(SMr,i+1,SMrw);
-              matrowput(SMr,i,SM2rw);
+       if(SMrw.TransDate==SM2rw.TransDate)then begin
+         if(SMrw.RowSimStat==0 or SMrw.RowSimStat==6)then begin
+            if(SM2rw.RowSimStat==0 or SM2rw.RowSimStat==6)then begin
+              if(SM2rw.ExtraComment<SMrw.ExtraComment and nonblank(SM2rw.ExtraComment) and SM2rw.ExtraComment!="-1")then begin
+                matrowput(SMr,i+1,SMrw);
+                matrowput(SMr,i,SM2rw);
+              end;
             end;
-          end;
+         end;
        end;
     end;
   end;
@@ -686,6 +696,7 @@ begin
       IVr.SerNr = -1;
       AddInvoiceToList(CredManr,IVr,SMr,calcbal,IVr.CredFromDate,IVr.CredToDate,CredManSetb);
     end;
+    
     SortRows(SMr,"TransDate",true);
   end;
 

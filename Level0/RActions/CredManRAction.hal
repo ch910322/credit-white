@@ -262,7 +262,7 @@ BEGIN
   Integer insertmode,updatemode;
   Integer i,rwcnt,errcode;
   Boolean transf,gentrans,unokf;
-  record TRVc gTRp;
+  record TRVc gTRp,oldTRr;
   string 255 errstr;
   
   res = 0;
@@ -300,6 +300,13 @@ L12:;
     end;
   end;
   if (gentrans==false) then begin transf = false; end;
+  if(transf)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 20 04 2022 y. at 10:48:43 AM
+    oldTRr.IntYc = CredManYc;
+    oldTRr.Number = CredManr.SerNr;
+    if(ReadFirstMain(oldTRr,2,true)) then begin
+      transf = false;
+    end;
+  end;
   if (transf) then begin
     errcode = MakeTransFromCredMan(gTRp,CredManr,false,errstr);
     if (errcode!=0) then begin
@@ -491,7 +498,11 @@ global
 function LongInt CredManVcRecordUpdate(var record CredManVc CredManr,record CredManVc CredMan2r,LongInt stat,LongInt long4)
 BEGIN
   LongInt res;
-
+  
+  if ((CredManr.OKFlag==1) and (CredMan2r.OKFlag==0)) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 20 04 2022 y. at 10:54:17 AM
+    CredManr.DelTransaction = 0;
+  end;
+  
   CredManVcRecordUpdate = res;
   return;
 END;
@@ -508,7 +519,9 @@ BEGIN
   if ((CredManr.OKFlag==0) and (CredMan2r.OKFlag==1)) then begin
 //CUST-BEGIN
     if (CredManr.Status!=5) then begin
-      DeleteTransaction(CredManr.SerNr,CredManYc);
+      if(CredManr.DelTransaction==0)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 20 04 2022 y. at 10:53:17 AM
+        DeleteTransaction(CredManr.SerNr,CredManYc);
+      end;
     end;
 //CUST-END
     UpdateARFromCredMan(CredManr,true,false);

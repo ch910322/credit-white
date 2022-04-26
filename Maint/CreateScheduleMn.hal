@@ -7,7 +7,7 @@ begin
   record CredManVc CredManr;
   
   while (LoopMain(CredManr,1,true)) begin
-    if (CredManr.OKFlag==1 and CredManr.endDate>CurrentDate) then begin
+    if (/*CredManr.OKFlag==1 and */CredManr.endDate>CurrentDate) then begin// disable check of OKFlag https://burti.atlassian.net/browse/HAL-2742
       ResetLoop(CSr);
       CSr.CredManNr = CredManr.SerNr;
       if (ReadFirstMain(CSr,1,true)==false) then begin

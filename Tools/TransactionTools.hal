@@ -204,6 +204,42 @@ begin
   return;
 end;
 
+global
+procedure GetPrinciplePartsLeft(record CredManVc CredManr,var val shortval,var val longval)
+begin
+  record CredManSetBlock CredManSetb;
+  record CredManPayPlanVc CredManPayPlanr;
+  record SMVc SMr;
+  row SMVc SMrw;
+  Integer curyear,i,rwcnt;
+
+  BlockLoad(CredManSetb);
+
+  if (BuildCredManInfoMatrixOnSchedule(CredManr,CredManSetb,SMr)==false) then begin
+    BuildCredManPayPlanCust(CredManr,CredManPayPlanr,CredManSetb,true,true);
+    BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
+  end;
+  longval = blankval;
+  shortval = blankval;
+  
+  curyear = GetYear(CurrentDate);
+  rwcnt = MatRowCnt(SMr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(SMr,i,SMrw);
+    if(SMrw.RowSimStat==0 or SMrw.RowSimStat==6)then begin
+      if(blank(SMrw.ExtraComment))then begin
+        if (GetYear(SMrw.TransDate)==curyear) then begin
+          shortval = shortval + SMrw.DebVal;
+        end else begin
+          longval = longval + SMrw.DebVal;
+        end;
+        Logtext(0,"shortval " & shortval & " longval " & longval);
+      end;
+    end;
+  end;
+
+  return;
+end;
 
 procedure GetPrincipleParts(record CredManVc CredManr,var val shortval,var val longval)
 begin

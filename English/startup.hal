@@ -479,6 +479,7 @@ begin
   SetText(3,"Credit Note");
   SetText(4,"Partial Buy-out");
   SetText(5,"Made Payment");
+  SetText(6,"Credit Note");
   EndSet;
 
   SetBegin(2012);

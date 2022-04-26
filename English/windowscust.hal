@@ -727,7 +727,7 @@ end;
   
   WindowBegin("Register Agreement Changes",PauseCredManWClass,CGother,RcType);
   UseView(RcVc);
-  SetWRect(20,80,400,360);
+  SetWRect(20,80,480,390);
   AutoSizeWindow(false);  
   h = 150; h2 = 250; v=450;
   EditFieldTL(h,v=6,120,"Changes Start Date",M4Date,Normal,0,d1,false,PasteCurDate);
@@ -738,6 +738,7 @@ end;
   EditField(h,v+=vs,100,"Change Purpose",Normal,f1,false,AgrChangesPurpSClass);
   CheckBox(h,v+=vs,0,"Re-sign Schedule",flags[1]);
   CheckBox(h,v+=vs,0,"Issue Prolong Invoice",flags[2]);
+  CheckBox(h,v+=vs,0,"Prolong only when Prolongation Invoice is paid",flags[3]);
   if (IsOmegaCustomer) then begin
     EditFieldTL(h,v+=vs,50,"Payment Term",M4Code,Normal,20,f2,false,PDSClass);
     EditFieldTL(h,v+=vs,50,"Salesman",M4Code,Normal,20,f3,false,UserSClass);
@@ -765,13 +766,14 @@ end;
   CheckBox(h+110,v,0,"Credit Interest",Notation);//====================Credit Interest
   EditField(h,v+=vs,100,"Overdue invoices",ViewOnly,TransStr,false,0);//====================Overdue invoices
   EditField(h,v+=vs,100,"Added to New Balance",ViewOnly,f5,false,0);//====================Added to New Balance
+  CheckBox(h+110,v,0,"Added to New Balance",sm1);
   EditField(h,v+=vs,100,"Added to Future Fees",ViewOnly,f6,false,0);//====================Added to Future Feesvals4  
   CheckBox(h+110,v,0,"Distribute Debts to Future Fees",flags[4]);// Edit ************************** BPI Ukraine - KramarAlexandr - 02, 21 12 2021 y. at 9:48:05 AM
   EditField(h,v+=vs,100,"Future Fees Period",Normal,wholemonthf,false,0);//====================Future Fees Period
   EditField(h,v+=vs,100,"Prolongation Fee",Normal,f9,false,0);//====================Future Fees Period
-  CheckBox(h+110,v,0,"Issue Prolong Invoice",flags[2]);
+  CheckBox(h+110,v,0,"Reconcile from Extra Value",flags[5]);
   EditFieldTL(h,v+=vs,100,"Not invoiced Overdues",M4Str,ViewOnly,255,f12,false,0);//// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 16 12 2021 y. at 10:57:47 PM
-  CheckBox(h+110,v,0,"Issue Overdued Invoice",flags[5]);
+  CheckBox(h+110,v,0,"Issue Overdued Invoice",ArtMode);
   
   EditField(h,v+=vs,100,"Prepayments",ViewOnly,f7,false,0);//=====================Prepayments
   CheckBox(h+110,v,0,"Reduce from Balance",Custf);//"Reduce from Balance"
@@ -788,10 +790,13 @@ end;
   CheckBox(h,v+=vs,0,"Re-sign Schedule",flags[1]);
   CheckBox(h,v+=vs,0,"Prolong only when Prolongation Invoice is paid",flags[3]);
   
-  HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassRecalculate","Recalculate");
-  v = v+vs;
+  HalPushButton(h,v+=vs,h+120,v+20,"NewPauseCredManWClassRecalculate","Recalculate");
+  if(currentuser=="EBS")then begin
+    //HalPushButton(h+200,v,h+280,v+20,"CMATest","TEST");
+  end;
+  v = v+10;
   HalPushButton(h,v+=vs,h+120,v+20,"NewPauseCredManWClassPause","Register Changes");
-  v = v+vs;
+  v = v+10;
   HalPushButton(h,v+=vs,h+120,v+20,"PauseCredManWClassSendMail","Send e-mail");
   EndWindow;
   
@@ -890,8 +895,8 @@ end;
     HalPushButton(h2=h+140,v+24,h2+120,v+20+24,"ReportDo","Report");
   EndWindow;
 
-/* Old Window
-  WindowBegin("Refinance Agreement",RefinCredManWClass,CGother,RcType);
+// Old Window
+  WindowBegin("Refinance Agreement",RefinCredManOldWClass,CGother,RcType);
   UseView(RcVc);
   SetWRect(20,80,240,235);
   AutoSizeWindow(false);  
@@ -901,7 +906,7 @@ end;
   HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassTransfer","Transfer to Surety Provider");
   HalPushButton(h,v+=30,h+180,v+20,"RefinCredManWClassPartial","Partial Buy-out");
   EndWindow;
- */ 
+  
   
 
   WindowBegin("Refinance Agreement",RefinCredMan2WClass,CGother,RcType);
@@ -3751,7 +3756,7 @@ begin
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Ser. No.",SerNr,false,SerNr);
   RlCol(70,70,"Agr. No.",CredManNr,false);
-  RlCol(146,146,"Date",TransDate,false);
+  RlColKey(146,146,"Date",TransDate,false,TransDate);
   RlCol(222,222,"Prol. Months",ProlongMonths,false);
   RlCol(300,300,"Pause Months",PauseMonths,false);
   RlCol(-180,-180,"Rate",IntRate,false);
@@ -3773,7 +3778,7 @@ begin
   RecordList(4,17,-21,-39);
   RlColKey(4,4,"Ser. No.",SerNr,false,CredSerNr);
   RlCol(70,70,"Agr. No.",CredManNr,false);
-  RlCol(146,146,"Date",TransDate,false);
+  RlColKey(146,146,"Date",TransDate,false,CredTransDate);
   RlCol(222,222,"Prol. Months",ProlongMonths,false);
   RlCol(300,300,"Pause Months",PauseMonths,false);
   RlCol(-180,-180,"Rate",IntRate,false);
@@ -3809,9 +3814,13 @@ begin
   EditField(h,v+=vs,100,"New Type",Normal,NewType,false,CredManTypeSClass);
   EditField(h,v+=vs,100,"Added to New Balance",Normal,AddedToNewBal,false,0);//====================Added to New Balance
   EditField(h,v+=vs,100,"Added to Future Fees",Normal,FutureFees,false,0);//====================Added to Future Feesvals4  
+  Checkbox(h2,v,0,"Issue Overdue Inv",IssueOverdueInv);
   EditField(h,v+=vs,100,"Future Fees Period",Normal,AddedFeesMonths,false,0);//====================Future Fees Period
+  EditField(h,v+=vs,100,"Remaining Principle Part",Normal,RemPrincPart,false,0);
+  EditField(h,v+=vs,100,"Short Remaining Principle Part",Normal,ShortRemPrincPart,false,0);
 
   //EditField(h,v+=vs,100,"Monthly Payment Day",Normal,MonthlyPaymentDay,false,0);
+  SpecialMenu("Open #NL# Transaction",'t',8,"OpenTRFromCredManChange");
   EndWindow;
 end;
 
@@ -4459,6 +4468,8 @@ begin
   Sizeable(-1,-1,0,0);
   
   CheckBox(h=180,v=6,0,"Use Redesigned Buy-Out",UseRedesignedByuOut); 
+  CheckBox(h,v+=16,0,"Use Redesigned Refinance",UseRedesignedRefinance); 
+    
   EditField(h,v+=20,100,"Buyout Paym. Term",Normal,BuyOutPayDeal,false,PDSClass); 
   EditField(h,v+=vs,100,"Premature Term. Item",Normal,BuyOutItem,false,INSClass);   
   EditField(h,v+=vs,100,"Premature Term. Principle",Normal,PremTermPrincpl,false,INSClass);
@@ -4471,8 +4482,8 @@ begin
 	RadioButton(h,v+=16,2,0,"From Credit Agreement",FactOrFixedDaysBO);
   
   CheckBox(h,v+=20,0,"Calculate Interest for Buy-Out Day",CalcIntBOday);
-  CheckBox(h,v+=20,0,"Calculate Overdues for Buy-Out Day",CalcOvdBOday); 
   CheckBox(h,v+=20,0,"Calculate Interest for Change Day",CalcIntChangeDay);
+  CheckBox(h,v+=20,0,"Calculate Overdues for Buy-Out Day",CalcOvdBOday); 
   CheckBox(h,v+=20,0,"Calculate Overdues for Change Day",CalcOvdChangeDay);  
   CheckBox(h,v+=20,0,"Invoice future fees",InvFutFees);
   CheckBox(h,v+=20,0,"Do Not Credit Last Day Invoices",DoNotCreditlastDayInvoices);
@@ -4480,6 +4491,8 @@ begin
   ButtonFrame(h,v+=45,200,2,"Close Due Invoices");
 	RadioButton(h,v,0,0,"Credit Future Fees",InterestCredOrPay);
 	RadioButton(h,v+=vs,1,0,"Reconcile Future Fees",InterestCredOrPay);
+	CheckBox(h,v+=20,0,"Create Transactions from Cred.Man.Changes",CredManChangeTran);
+
 
   EndWindow;
   return;

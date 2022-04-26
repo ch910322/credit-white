@@ -248,3 +248,30 @@ begin
   EndWindow;
 
 end;
+
+
+window WhatToDoWithTransWClass:1
+  wtag("language","ENG"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vs,h2,h3,h4,h5,vm;
+
+  WindowBegin("Delete Transaction?",WhatToDoWithTransWClass,CGother,RcType);
+  UseView(RcVc);
+  Modality(kModalityGlobal);
+//  Sizeable(-1,-1,0,0);
+  SetWRect(20,80,500,230);
+  h = 80; v = 27;
+  vs = 25; vm = 25;
+  StaticText(h,v=20,"Remove N/L Transaction?",false);
+	
+  ButtonFrame(h,v+=vm,300,5,"");
+  RadioButton(h,v,0,0,"Yes - deletes NL transaction",flags[0]);
+  RadioButton(h,v+=16,1,0,"No - does NOT delete NL transaction",flags[0]);
+  RadioButton(h,v+=16,2,0,"Cancel - does not save the record",flags[0]);
+  
+  
+  HalPushButton(h,v+=vs,h+100,v+20,"WhatToDoWithTransWClassDo","Confirm");
+
+  EndWindow;
+  return;
+end;

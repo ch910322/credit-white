@@ -22,7 +22,7 @@ end;
 global
 updating procedure CreatePauseRecord(record RcVc RepSpec, Longint sernr,Date td,val months,val months2,val rate,val addval,Integer okflag,string purpose)
 begin
-  record CredManChangeVc Changer;
+  record CredManChangeVc Changer,oldChanger;
   
   RecordNew(Changer);
   Changer.SerNr = NextSerNr("CredManChangeVc",td,-1,false,"");
@@ -31,14 +31,23 @@ begin
   Changer.ProlongMonths = months2;
   Changer.IntRate = rate;
   Changer.AddValue = addval;
-  Changer.OKFlag = okflag;
+  
   Changer.CredManNr = sernr;
   Changer.ChangePurpose = purpose;
   Changer.NewType = RepSpec.f10;
   Changer.FutureFees = stringtoval(RepSpec.f6,m4val);
   Changer.AddedToNewBal = stringtoval(RepSpec.f5,m4val);
   Changer.AddedFeesMonths = RepSpec.wholemonthf;
-  RecordStore(Changer,true);
+  Changer.RemPrincPart = stringtoval(RepSpec.f13,m4val);;
+  Changer.ShortRemPrincPart = stringtoval(RepSpec.f14,m4val);
+  if(RepSpec.vals2!=0 or RepSpec.vals4!=0)then begin
+    Changer.IssueOverdueInv = RepSpec.ArtMode;
+  end;
+  
+  RecordInsert(Changer,true);
+  recordcopy(oldChanger,Changer);
+  Changer.OKFlag = okflag;
+  recordupdate(oldChanger,Changer,true);
 
   return;
 end;

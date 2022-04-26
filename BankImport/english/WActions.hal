@@ -796,3 +796,32 @@ begin
 
 return;
 end;
+
+
+global procedure WhatToDoWithTransWClassDo()
+begin
+  integer wn,mwn;
+  record RcVc RepSpec;
+  record CredManVc CredManr;
+  
+  wn = curwindow;
+  mwn = motherwindow(wn);
+  
+  getwindowrecord(wn,RepSpec);
+  getwindowrecord(mwn,CredManr);
+  
+  if(RepSpec.flags[0]==2)then begin
+    closewindow(wn);
+    WindowDoCancel(mwn);
+  end;
+  if(RepSpec.flags[0]==0)then begin
+    closewindow(wn);
+  end;
+  if(RepSpec.flags[0]==1)then begin
+    CredManr.DelTransaction = 1;
+    closewindow(wn);
+    putwindowrecord(mwn,CredManr);
+  end;
+  
+return;
+end;
