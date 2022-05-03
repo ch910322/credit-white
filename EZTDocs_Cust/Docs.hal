@@ -1049,6 +1049,8 @@ begin
   vVals["F_DELAYMONTHS"] = CredManr.PrincipleDelayMonths;
   ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_TOTSUMINTEXT"] = tstr;
+  ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,"LIT",tstr);
+  vVals["F_TOTSUMINTEXT_LT"] = tstr;
   
   vVals["F_BANKACC"] = CUr.BankAccount;
   Bankr.Code = CUr.AccOperator;
@@ -1673,6 +1675,8 @@ begin
   vVals["F_TOTSUM"] = CredManr.InvSum4;
   ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_TOTSUMINTEXT"] = LowerCase(tstr);
+  ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,"LIT",tstr);
+  vVals["F_TOTSUMINTEXT_LT"] = LowerCase(tstr);
   vVals["F_OVERDUEPRC"] = CredManr.OverduePercentage;
 
 
@@ -1837,6 +1841,8 @@ begin
   vVals["F_TOTSUM"] = CredManr.InvSum4;
   ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_TOTSUMINTEXT"] = tstr;
+  ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,"LIT",tstr);
+  vVals["F_TOTSUMINTEXT_LT"] = tstr;
   vVals["F_CREDHALFSUM"] = (CredManr.InvSum4/2);
   ValToText((CredManr.InvSum4/2),M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
   vVals["F_CREDHALFSUMTEXT"] = tstr;
