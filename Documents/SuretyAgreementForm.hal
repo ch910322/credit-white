@@ -9,6 +9,7 @@ external procedure PrintOwnBankDetails(Longint);
 external inner function roundmode SetRoundModeD(integer);
 external inner function val GetMonthlyFees(record CredManVc,Integer);
 
+
 global
 procedure PrintDocumentSigner()
 begin
