@@ -288,6 +288,10 @@ begin
     ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,getAdditionalCredManLangCode(CredManr),tstr);
     OUTFORMFIELD("F_TOTSUMINTEXT",tstr);
   end;
+  if (FIELDINFORM("F_TOTSUMINTEXT_LT")) then begin
+    ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,"LIT",tstr);
+    OUTFORMFIELD("F_TOTSUMINTEXT_LT",tstr);
+  end;
   
   OUTFORMFIELD("F_BANKACC",CUr.BankAccount);
   Bankr.Code = CUr.AccOperator;

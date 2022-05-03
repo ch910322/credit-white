@@ -225,6 +225,10 @@ LBREAK:;
           ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,CUr.LangCode,tstr);
           OUTFORMFIELD("F_TOTSUMINTEXT",tstr);
         end;
+        if (FIELDINFORM("F_TOTSUMINTEXT_LT")) then begin
+          ValToText(CredManr.InvSum4,M4Val,CredManr.CurncyCode,"LIT",tstr);
+          OUTFORMFIELD("F_TOTSUMINTEXT_LT",tstr);
+        end;
 
         RecordCLear(CUr);
         if (FindCEOContact(CredManr.CustCode,CUr)) then begin
