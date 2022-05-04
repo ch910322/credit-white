@@ -434,9 +434,7 @@ begin
   IVToMailMnRun(RepSpec);
 
   if (oldcomp!=CurrentCompany) then begin
-    logtext(0,currentcompany & " " & oldcomp & " resetcompany 1 before " & currentdate);
     ResetCompany(oldcomp);
-    logtext(0,currentcompany & " " & oldcomp & " resetcompany 1 after " & currentdate);
   end;
   return;
 end;

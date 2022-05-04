@@ -79,9 +79,7 @@ begin
     NewTimedTask2("AutoPauseTask_" & GetCurTick & "_" & CurrentCompany,"AutoPauseTask","AutoPauseCredManTask",CurrentCompany,td,tt,"","");
   end;
   if (CurrentCompany!=oldcomp) then begin
-    logtext(0,currentcompany & " " & oldcomp & " resetcompany 21 before " & currentdate);
     ResetCompany(oldcomp);
-    logtext(0,currentcompany & " " & oldcomp & " resetcompany 21 before " & currentdate);
   end;
 
   return;
@@ -113,9 +111,7 @@ begin
       NewTimedTask2("AutoPauseTask" & comp,"AutoPauseTask","AutoPauseCredManTask",comp,td,tt,"","");
     end;
   end;
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 22 before " & currentdate);
   ResetCompany(oldcomp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 22 after " & currentdate);
 
   return;
 end;

@@ -45,9 +45,7 @@ updating function LongInt IVVcRecordUpdateAfter(var record IVVc IVr,record IVVc 
 begin
   LongInt res;
   date checkdate;
-  
-  logtext(0,"IVVcRecordUpdateAfter " & IVr.SerNr);
-  
+    
   res = inner.IVVcRecordUpdateAfter(IVr,IV2r,stat,long4);
   UpdateSMSReminderQueue(IVr,IV2r);
   if (IVr.OKFlag==1 and IV2r.OKFlag==0) then begin
@@ -57,7 +55,6 @@ begin
     if(checkdate<IVr.InvDate)then begin
       checkdate = IVr.InvDate;
     end;
-    logtext(0,"CheckCredManFinished before");
     CheckCredManFinished(IVr.CustCredManNr,checkdate);
   end;
   if (IVr.OKFlag==0 and IV2r.OKFlag==1) then begin
@@ -74,9 +71,7 @@ begin
   LongInt res;
   record IVVc IV3r;
   date checkdate;
-  
-  logtext(0,"IVVcRecordSaveAfter " & IVr.SerNr);
-  
+    
   RecordCopy(IV3r,IVr);
   IV3r.OKFlag = 0;
   res = inner.IVVcRecordSaveAfter(IVr,IV2r,stat,long4);
@@ -88,7 +83,6 @@ begin
     if(checkdate<IVr.InvDate)then begin
       checkdate = IVr.InvDate;
     end;
-    logtext(0,"CheckCredManFinished before");
     CheckCredManFinished(IVr.CustCredManNr,checkdate);
   end;
 

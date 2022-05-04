@@ -152,9 +152,7 @@ begin
       end;
     end;
   end;
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 2 before " & currentdate);
   ResetCompany(oldcomp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 2 after " & currentdate);
 
   if (treatedf) then begin
     t = CurrentTime;
@@ -203,9 +201,7 @@ begin
   if (ReadFirstMain(Actr,1,true)) then begin
   end;
   if (oldcomp!=Alarmr.CompNo) then begin
-    logtext(0,currentcompany & " " & oldcomp & " resetcompany 3 before " & currentdate);
     ResetCompany(oldcomp);
-    logtext(0,currentcompany & " " & oldcomp & " resetcompany 3 after " & currentdate);
   end;
   recidstr = BuildRecordIdStr(Actr,Alarmr.CompNo);
   
@@ -286,9 +282,7 @@ begin
       end;
     end;
     if (oldcomp!=Alarmr.CompNo) then begin
-      logtext(0,currentcompany & " " & oldcomp & " resetcompany 4 before " & currentdate);
       ResetCompany(oldcomp);
-      logtext(0,currentcompany & " " & oldcomp & " resetcompany 4 after " & currentdate);
     end;
     ExtractObj(Alarmr.MainPersons,pos,person);
   end;  
@@ -311,9 +305,7 @@ begin
       end;
     end;
     if (oldcomp!=Alarmr.CompNo) then begin
-      logtext(0,currentcompany & " " & oldcomp & " resetcompany 5 before " & currentdate);
       ResetCompany(oldcomp);
-      logtext(0,currentcompany & " " & oldcomp & " resetcompany 5 after " & currentdate);
     end;
     ExtractObj(Alarmr.CCPersons,pos,person);
   end;  
@@ -796,9 +788,7 @@ begin
   Actr.SerNr = RepSpec.long1;
   res = ReadFirstMain(Actr,1,true);
   if (resetf) then begin
-    logtext(0,currentcompany & " " & oldcomp & " resetcompany 6 before " & currentdate);
     ResetCompany(oldcomp);
-    logtext(0,currentcompany & " " & oldcomp & " resetcompany 6 after " & currentdate);
   end;
   AlarmWClassOpenActRemote = res;
   return;
@@ -1015,9 +1005,7 @@ begin
       NewTimedTask("StartPOSUpdateStock-InCompany-" & CurrentCompany,"Start Update Stock from POS in Company " & CurrentCompany,"StartPOSUpdateStockIdleTasks",CurrentCompany,td,tt,"","");
     end;
   end;
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 7 before " & currentdate);
   ResetCompany(oldcomp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 7 after " & currentdate);
   return;
 end;
 
@@ -1064,9 +1052,7 @@ begin
       NewTimedTask("StartRestaurantUpdateStock-InCompany-" & CurrentCompany,"Start Update Stock from Restaurant in Company " & CurrentCompany,"StartRestaurantUpdateStockIdleTasks",CurrentCompany,td,tt,"","");
     end;
   end;
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 8 before " & currentdate);
   ResetCompany(oldcomp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 8 after " & currentdate);
   return;
 end;
 
@@ -1123,9 +1109,7 @@ begin
       end;
     end;
   end;
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 9 before " & currentdate);
   ResetCompany(oldcomp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 9 after " & currentdate);
   return;
 end;
 
@@ -1164,9 +1148,7 @@ begin
       end;
     end;
   end;
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 10 before " & currentdate);
   ResetCompany(oldcomp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 10 after " & currentdate);
   return;
 end;
 
@@ -1205,9 +1187,7 @@ begin
       end;
     end;
   end;
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 11 before " & currentdate);
   ResetCompany(oldcomp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 11 after " & currentdate);
   return;
 end;
 
@@ -1246,9 +1226,7 @@ begin
       end;
     end;
   end;
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 12 before " & currentdate);
   ResetCompany(oldcomp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 12 after " & currentdate);
   return;
 end;
 
@@ -1286,9 +1264,7 @@ begin
       end;
     end;
   end;
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 13 before " & currentdate);
   ResetCompany(oldcomp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 13 after " & currentdate);
   return;
 end;
 
@@ -1686,9 +1662,7 @@ begin
       PullBookingComStatus;
     end;
   end;
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 14 before " & currentdate);
   ResetCompany(oldcomp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 14 after " & currentdate);
   return;
 end;
 
@@ -1726,9 +1700,7 @@ begin
       RetriveSiteMinderReservations;
     end;
   end;
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 15 before " & currentdate);
   ResetCompany(oldcomp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 15 after " & currentdate);
   return;
 end;
 
@@ -1784,8 +1756,6 @@ begin
       end;
     end;
   end;
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 16 before " & currentdate);
   ResetCompany(oldcomp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 16 after " & currentdate);
   return;
 end;

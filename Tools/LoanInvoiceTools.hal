@@ -1888,6 +1888,10 @@ begin
         SetupInvoiceRowAndAdd(CredManr,IVr,CredManPayPlanrw.ArtCode,CredManPayPlanrw.Spec,1,CredManPayPlanrw.Sum,CredManPayPlanrw.Reb,CredManPayPlanrw.PlanType,CredManPayPlanrw.FactoringInvoice);
       end;
 
+    end else begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 04 05 2022 y. at 11:42:03 AM
+      if(CredManPayPlanrw.FromDate<IVr.CredFromDate)then begin
+        IVr.CredFromDate = CredManPayPlanrw.FromDate;
+      end;
     end;
     if (CredManPayPlanrw.TransDate>ed) then begin
       i = rwcnt;
@@ -5286,7 +5290,6 @@ begin
   CredHistr.RecordNr = invnr;
   CredHistr.RecordType = type;
   while (LoopKey("RecordNr",CredHistr,2,TrHs)) begin
-    logtext(0,CredHistr.SerNr);
     if (CredHistr.RecordNr!=invnr or CredHistr.RecordType!=type) then begin
       TrHs = false;
     end else begin

@@ -39,9 +39,7 @@ begin
   UpdateBrowses("PipelineWClass");
   
 LColumnGridDraggedCell:;
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 26 before " & currentdate);
   ResetCompany(oldcomp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 26 after " & currentdate);
 end;
 
 global
@@ -73,9 +71,7 @@ begin
   UpdateBrowses("PipelineWClass");
   
 LColumnGridDraggedCell:;
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 27 before " & currentdate);
   ResetCompany(oldcomp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 27 after " & currentdate);
 end;
 
 

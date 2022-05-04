@@ -284,7 +284,6 @@ begin
         pos = 0;
         while (pos<l) begin
           tstr = GetStringFromArea(a,pos,255);
-          logtext(0,tstr);
           AddToText(tstr,Mailr); 
           pos = pos+255;
         end;

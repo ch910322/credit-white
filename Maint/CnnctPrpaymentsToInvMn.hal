@@ -47,8 +47,6 @@ begin
      // ARPayHistr.TransDate = RepSpec.sStartDate;
       ARPayr.CustCode = CUr.Code;
       while(loopkey("CustPay",ARPayr,1,TrHs1))begin
-        logtext(0,"+++++++Prepayment " & ARPayr.CUPNr);
-
         testf1 = true;
         if(ARPayr.CustCode!=CUr.Code)then begin TrHs1 = false; testf1 = false; end;
         if(ARPayr.PayDate>RepSpec.sEndDate)then begin TrHs1 = false; testf1 = false; end;
@@ -94,7 +92,6 @@ begin
         MatRowGet(IPr,k,IPrw);
         IPrw.PayDate = ipdate;
         MatRowPut(IPr,k,IPrw);
-        logtext(0,Cur.Code & " " & CUr.Name);
         k=k+1;
 
         added = false;        

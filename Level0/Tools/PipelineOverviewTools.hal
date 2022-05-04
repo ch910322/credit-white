@@ -1933,9 +1933,7 @@ LSkipCompany:;
   AddAreaToArea(acol6,adhp);
   AddAreaToArea(acol7,adhp);
   AddAreaToArea(acol8,adhp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 18 before " & currentdate);
   ResetCompany(oldcomp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 18 after " & currentdate);
 LFillPipelineOverview:;
   if (wn>0) then begin
     //clientremoteasync.FillPipelineOverviewClient_Lower(wn,RepSpec,adhp);

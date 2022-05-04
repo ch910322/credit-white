@@ -2219,7 +2219,6 @@ begin
     BuildCredManInfoMatrix(CredManr,CredManPayPlanr,CredManSetb,SMr);
     rwcnt = MatRowCnt(SMr);   
     for (i=0;i<rwcnt;i=i+1) begin
-      logtext(0,i);
       MatRowGet(SMr,i,SMrw);
       prflag = false;
       if(PCb.PrintRowWithBlankFees==1)then begin

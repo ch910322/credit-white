@@ -31,9 +31,7 @@ begin
       i = rwcnt;
     end;
   end;
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 19 before " & currentdate);
   ResetCompany(oldcomp);
-  logtext(0,currentcompany & " " & oldcomp & " resetcompany 19 after " & currentdate);
   GetGlobalUserRow = res;
   return;
 end;
