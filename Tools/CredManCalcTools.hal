@@ -1670,7 +1670,8 @@ begin
   record CMBuyOutBlock CMBuyOutb;
   
   BlockLoad(CMBuyOutb);
-
+  
+  ChangeORr.OrdDate = td;
   if (CMBuyOutb.UseRedesignedByuOut==1) then begin
     rwcnt = MatRowCnt(ChangeORr);
     for (i=0;i<rwcnt;i=i+1) begin
@@ -2059,9 +2060,10 @@ lStepBack:;
       if (GetDay(invdat)!=inCredManr.MonthlyPaymentDay) then begin
         CalcCredManCurrentPeriod(inCredManr,CIb,i-1,payoutdate,frdat,todat,int_frdat,int_todat,invdat,int_invdat); //sets dates,   frdat, todat and invdat
       end;
-      if(dateinrange(chdate,frdat,todat))then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 04 05 2022 y. at 10:20:59 AM
-        invdat = chdate;
-        int_invdat = chdate;
+      
+      if(matrowcnt(ChangeORr)>0)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 03, 04 05 2022 y. at 10:20:59 AM
+        invdat = ChangeORr.OrdDate;
+        int_invdat = ChangeORr.OrdDate;
       end;
       
       /*if(CMBuyOutb.UseRedesignedByuOut==1)then begin
@@ -2118,14 +2120,11 @@ lStepBack:;
           end;
           AddPlannedFees(inCredManr,CredManPayPlanr,CredManSetb,kPlannedFeesMonthly,monthtype2,invdat,acumint,calcbal,frdat,todat,-1,false);
           if (curmonth>=inCredManr.PrincipleDelayMonths and ispausedf==false) then begin
-            logtext(0,"0 AddInterest2 " & int_invdat & "  " & int_frdat & " " & int_todat);
             AddInterest2(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1,false,ChangeORr);
             AddExtraInterest(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,addbal,int_frdat,int_todat,-1,false,int_type);
-            logtext(0,"0 AddInstalment " & invdat & "  " & frdat & " " & todat);
             AddInstalment(inCredManr,CredManPayPlanr,CredManSetb,2,monthtype,invdat,acumint,calcbal,frdat,todat,sendcurmonth,usesum,usemonths,annuity_diff);
           end else begin
             if (ispausedf) then begin
-              logtext(0,"1 AddInterest2 " & int_invdat & "  " & int_frdat & " " & int_todat);
               AddInterest2(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1,false,ChangeORr);
            end else begin
               AddInterestDelay(inCredManr,CredManPayPlanr,CredManSetb,monthtype3,int_invdat,acumint,int_calcbal,int_frdat,int_todat,-1);

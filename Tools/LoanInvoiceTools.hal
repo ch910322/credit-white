@@ -1866,6 +1866,7 @@ begin
   val lateamount;
   array string 255 lateformula;
   transaction Boolean gSilenceIVOpenPrepExists;
+  date bd;
   
   gSilenceIVOpenPrepExists = true;
   lastd2 = CredManr.FirstInvDate;
@@ -1877,9 +1878,16 @@ begin
         //Setup new invoice
         if (nonblank(lastd)) then begin
           aIVr[aIVr.length] = IVr;
+          IVr.CredFromDate = bd;
+          IVr.CredToDate = bd;
         end;
         lastd2 = AddDay(lastd,1);//to get the start date for penalty calculation.
         lastd = CredManPayPlanrw.TransDate;
+        if(nonblankdate(IVr.CredFromDate))then begin// Edit ************************** BPI Ukraine - KramarAlexandr - 04, 05 05 2022 y. at 8:45:36 AM
+          if(CredManPayPlanrw.FromDate>IVr.CredFromDate)then begin
+            CredManPayPlanrw.FromDate = IVr.CredFromDate;
+          end;
+        end;
         SetupLoanInvoice(CredManr,CMb,IVr,lastd,CredManPayPlanrw.FromDate,CredManPayPlanrw.ToDate,false,false,"",-1,false);
 
       end;

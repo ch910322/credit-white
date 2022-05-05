@@ -659,7 +659,7 @@ begin
   record AgreementDocVc ADr;
   record VIVc VIr;
   boolean scenario;
-  val tmonths,tprolongmonths,rate,addval,payval;
+  val tmonths,tprolongmonths,rate,addval,payval,xtravalpay,addtonewbalpay;
   record ORVc ORr;
   string 100 itemclass;
   record CMBuyOutBlock CMBuyOutb;
@@ -703,6 +703,7 @@ begin
     end;
     if (nonblank(RepSpec.vals4)) then begin
       addval = RepSpec.vals4;
+      xtravalpay = RepSpec.vals4;
     end;
     if (tmonths==0) then begin
       tmonths = blankval;
@@ -740,6 +741,7 @@ begin
         payval = addval;
         if(RepSpec.sm1==1)then begin
           addval = addval + stringtoval(RepSpec.f5,m4val);
+          addtonewbalpay = stringtoval(RepSpec.f5,m4val);
         end;
         /*if(RepSpec.ArtMode==1)then begin  //Disabled: not invoiced overdues go to future fees
           addval = addval + stringtoval(RepSpec.f12,m4val);
@@ -750,23 +752,24 @@ begin
           //addval = addval + nocreditsum[anocreditsum[i]];//Old Principles already splited for future months
         end;
         
-        if(RepSpec.flags[5]==1 and stringtoval(RepSpec.f9,m4val)>0)then begin //Add prolongation fee to reconcilation invoice
-          addval = addval + stringtoval(RepSpec.f9,m4val);
-        end;
         CreateCredmanPurchaseInvoice(CredManr,0,VIr,addval,true,td);
         if(RepSpec.flags[5]==1 and stringtoval(RepSpec.f9,m4val)>0)then begin //Remove prolongation fee fromm addval
           addval = addval - stringtoval(RepSpec.f9,m4val);
         end;
         
         //if(payval>0)then begin
-          CM_CreatePaymentOrder(CredManr,VIr,payval);//Extra val payment//KSZ 2022-02-13:: EBS said to make full payout
-          payval = addval - payval;
-          if(payval>0)then begin
-            CM_CreatePaymentOrder(CredManr,VIr,payval);//Add to New Balance part
+          if(RepSpec.flags[5]==1 and stringtoval(RepSpec.f9,m4val)>0)then begin //Add prolongation fee to reconcilation invoice
+            CM_CreatePaymentOrder(CredManr,VIr,stringtoval(RepSpec.f9,m4val));//Extra val payment//KSZ 2022-02-13:: EBS said to make full payout
+            xtravalpay = xtravalpay - stringtoval(RepSpec.f9,m4val);
           end;
-          if(RepSpec.flags[5]==1 and stringtoval(RepSpec.f9,m4val)>0)then begin //Reconciling futures fees
-             CM_CreatePaymentOrder(CredManr,VIr,stringtoval(RepSpec.f9,m4val));
+          CM_CreatePaymentOrder(CredManr,VIr,xtravalpay);//Extra val payment//KSZ 2022-02-13:: EBS said to make full payout
+
+
+          if(addtonewbalpay>0)then begin
+            CM_CreatePaymentOrder(CredManr,VIr,addtonewbalpay);//Add to New Balance part
           end;
+          
+          
         //end;
         
         //removing the schedule so that we can create "good-looking" invoices. Otherwise schedule has only totals for interest
